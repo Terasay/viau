@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Вход в игру</title>
+	<link rel="stylesheet" href="css/style.css">
+	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+	<div class="container">
+		<div id="welcome" class="hidden">
+			<div class="welcome-panel">
+				<p id="welcome-text"></p>
+				<button id="logout-btn" type="button" class="logout-btn">Выйти</button>
+			</div>
+		</div>
+		<div id="auth-block">
+			<div class="top-bar">
+				<div class="hero-text">
+					<h1>Добро пожаловать!</h1>
+				</div>
+				<button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
+					<span class="theme-toggle__track">
+						<span class="theme-toggle__thumb"></span>
+					</span>
+					<span class="theme-toggle__label">Тёмная тема</span>
+				</button>
+			</div>
+			<div id="choose-block">
+				<button id="login-btn" class="active">Войти</button>
+				<button id="register-btn">Зарегистрироваться</button>
+			</div>
+			<form id="login-form">
+				<input type="text" id="login-username" placeholder="Логин" required>
+				<input type="password" id="login-password" placeholder="Пароль" required>
+				<button type="submit">Войти</button>
+				<div id="login-error" class="error"></div>
+				<div class="action-links">
+					<a href="#" class="muted-link">Забыли пароль?</a>
+					<a href="#" class="muted-link">Нужна помощь</a>
+				</div>
+			</form>
+			<form id="register-form" class="hidden">
+				<input type="text" id="register-username" placeholder="Логин" required>
+				<input type="password" id="register-password" placeholder="Пароль" required>
+				<input type="email" id="register-email" placeholder="Почта" required>
+				<button type="submit">Зарегистрироваться</button>
+				<div id="register-error" class="error"></div>
+				<div class="hint">
+					<span class="dot"></span>
+					Используйте почту, к которой есть доступ — код придёт мгновенно.
+				</div>
+			</form>
+			<form id="verify-form" class="hidden">
+				<p>Введите код, отправленный на вашу почту:</p>
+				<input type="text" id="verify-code" placeholder="Код подтверждения" required>
+				<button type="submit">Подтвердить</button>
+				<div id="verify-error" class="error"></div>
+			</form>
+			<div class="progress">
+				<div class="progress-label">Готовность профиля</div>
+				<div class="progress-bar"><span></span></div>
+			</div>
+		</div>
+	</div>
+	<script src="js/main.js"></script>
+</body>
+</html>
