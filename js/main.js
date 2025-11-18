@@ -290,16 +290,18 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
+	const mainContainer = document.querySelector('.container');
+
 	function showWelcome(username) {
 		authBlock.classList.add('hidden');
 		welcomeBlock.classList.remove('hidden');
 		logoutBtn.classList.remove('hidden');
+		if (mainContainer) mainContainer.classList.add('hidden');
 		if (welcomeText) {
 			welcomeText.textContent = `Добро пожаловать, ${username}! Выберите действие:`;
 		}
 		localStorage.setItem('username', username);
 		pendingEmail = null;
-		// Сбрасываем карусель в начальное положение
 		currentIndex = 0;
 		updateCarousel();
 	}
@@ -312,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			welcomeBlock.classList.add('hidden');
 			authBlock.classList.remove('hidden');
 			logoutBtn.classList.add('hidden');
+			if (mainContainer) mainContainer.classList.remove('hidden');
 			if (welcomeText) {
 				welcomeText.textContent = '';
 			}
