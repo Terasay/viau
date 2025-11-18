@@ -8,33 +8,31 @@
 	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-	<div class="container">
-		<div id="welcome" class="hidden">
-			<button id="logout-btn" type="button" class="logout-btn corner">Выйти</button>
-			<div class="carousel-container pure">
-				<div class="carousel" id="main-carousel">
-					<div class="carousel-slide active" data-link="#profile">
-						<img src="https://cdn.jsdelivr.net/gh/tabler/icons/icons/user.svg" alt="Профиль" class="carousel-icon">
-						<span>Профиль</span>
-					</div>
-					<div class="carousel-slide" data-link="#settings">
-						<img src="https://cdn.jsdelivr.net/gh/tabler/icons/icons/settings.svg" alt="Настройки" class="carousel-icon">
-						<span>Настройки</span>
-					</div>
-					<div class="carousel-slide" data-link="#chat">
-						<img src="https://cdn.jsdelivr.net/gh/tabler/icons/icons/message.svg" alt="Чат" class="carousel-icon">
-						<span>Чат</span>
-					</div>
-					<div class="carousel-slide" data-link="#logout">
-						<img src="https://cdn.jsdelivr.net/gh/tabler/icons/icons/logout.svg" alt="Выход" class="carousel-icon">
-						<span>Выход</span>
-					</div>
-				</div>
-				<button class="carousel-arrow left" id="carousel-left" aria-label="Назад">&#8592;</button>
-				<button class="carousel-arrow right" id="carousel-right" aria-label="Вперёд">&#8594;</button>
+	<button id="logout-btn" type="button" class="logout-btn corner">Выйти</button>
+	<div id="welcome" class="hidden">
+		<div class="carousel" id="main-carousel">
+			<div class="carousel-slide active" data-link="#profile">
+				<img src="https://cdn.jsdelivr.net/gh/tabler/icons/icons/user.svg" alt="Профиль" class="carousel-icon">
+				<span>Профиль</span>
 			</div>
-			<p id="welcome-text"></p>
+			<div class="carousel-slide" data-link="#settings">
+				<img src="https://cdn.jsdelivr.net/gh/tabler/icons/icons/settings.svg" alt="Настройки" class="carousel-icon">
+				<span>Настройки</span>
+			</div>
+			<div class="carousel-slide" data-link="#chat">
+				<img src="https://cdn.jsdelivr.net/gh/tabler/icons/icons/message.svg" alt="Чат" class="carousel-icon">
+				<span>Чат</span>
+			</div>
+			<div class="carousel-slide" data-link="#logout">
+				<img src="https://cdn.jsdelivr.net/gh/tabler/icons/icons/logout.svg" alt="Выход" class="carousel-icon">
+				<span>Выход</span>
+			</div>
 		</div>
+		<button class="carousel-arrow left" id="carousel-left" aria-label="Назад">&#8592;</button>
+		<button class="carousel-arrow right" id="carousel-right" aria-label="Вперёд">&#8594;</button>
+		<p id="welcome-text"></p>
+	</div>
+	<div class="container">
 		<div id="auth-block">
 			<div class="top-bar">
 				<div class="hero-text">
