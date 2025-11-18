@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (data.success) {
 			sessionToken = data.token;
 			localStorage.setItem('token', sessionToken);
-			isAdmin = !!data.is_admin; // Проверка на админа
+			isAdmin = (typeof data.role !== 'undefined' && data.role === 0); // Проверка на админа по role
 			showWelcome(data.username);
 		} else {
 			errorBlock.textContent = data.error || 'Ошибка входа';
@@ -314,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (data.success) {
 			sessionToken = data.token;
 			localStorage.setItem('token', sessionToken);
+			isAdmin = (typeof data.role !== 'undefined' && data.role === 0); // Проверка на админа по role
 			showWelcome(data.username);
 		} else {
 			errorBlock.textContent = data.error || 'Ошибка входа';
@@ -358,6 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (data.success) {
 			sessionToken = data.token;
 			localStorage.setItem('token', sessionToken);
+			isAdmin = (typeof data.role !== 'undefined' && data.role === 0);
 			showWelcome(data.username);
 			pendingEmail = null;
 		} else {
@@ -410,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			const data = await res.json();
 			if (data.logged_in && data.username === savedUsername) {
 				sessionToken = savedToken;
+				isAdmin = (typeof data.role !== 'undefined' && data.role === 0);
 				showWelcome(savedUsername);
 			} else {
 				localStorage.removeItem('token');
