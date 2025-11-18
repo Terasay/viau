@@ -9,6 +9,7 @@ import os
 from dotenv import load_dotenv
 import random
 
+
 import string
 import sqlite3
 from email.mime.text import MIMEText
@@ -23,9 +24,28 @@ GMAIL_CLIENT_SECRET = os.getenv('GMAIL_CLIENT_SECRET')
 GMAIL_REFRESH_TOKEN = os.getenv('GMAIL_REFRESH_TOKEN')
 GMAIL_SENDER = os.getenv('GMAIL_SENDER')
 
+
 app = FastAPI()
 app.mount('/js', StaticFiles(directory='js'), name='js')
 app.mount('/css', StaticFiles(directory='css'), name='css')
+
+@app.post('/forgot')
+async def forgot(request: Request):
+	data = await request.json()
+	email = data.get('email')
+	user = get_user_by_email(email)
+	if not user:
+		return JSONResponse({'success': False, 'error': 'Пользователь с такой почтой не найден'})
+	code = ''.join(random.choices(string.digits, k=6))
+	RESET_CODES[email] = {
+		'code': code,
+		'email': email
+	}
+	try:
+		send_reset_code(email, code)
+	except Exception:
+		return JSONResponse({'success': False, 'error': 'Ошибка отправки почты'})
+	return JSONResponse({'success': True})
 
 DB_FILE = 'users.db'
 VERIFICATION_CODES = {}
