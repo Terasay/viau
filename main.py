@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-import sendgrid
-from sendgrid.helpers.mail import Mail
+from email.mime.text import MIMEText
+import base64
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 import os
 from dotenv import load_dotenv
 import random
@@ -15,7 +17,10 @@ from datetime import datetime, timedelta
 
 
 load_dotenv()
-SENDGRID_API_KEY = os.getenv('SENDGRID_API_KEY')
+GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID')
+GMAIL_CLIENT_SECRET = os.getenv('GMAIL_CLIENT_SECRET')
+GMAIL_REFRESH_TOKEN = os.getenv('GMAIL_REFRESH_TOKEN')
+GMAIL_SENDER = os.getenv('GMAIL_SENDER')
 
 app = FastAPI()
 app.mount('/js', StaticFiles(directory='js'), name='js')
@@ -86,20 +91,24 @@ def decode_jwt(token):
 		return None
 
 def send_verification_code(email, code):
-	sg = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
-	message = Mail(
-		from_email='noreply@zxcmirok.ru',
-		to_emails=email,
-		subject='Код подтверждения регистрации',
-		plain_text_content=f'Ваш код подтверждения: {code}'
+	creds = Credentials(
+		None,
+		refresh_token=GMAIL_REFRESH_TOKEN,
+		client_id=GMAIL_CLIENT_ID,
+		client_secret=GMAIL_CLIENT_SECRET,
+		token_uri='https://oauth2.googleapis.com/token',
+		scopes=['https://mail.google.com/']
 	)
+	service = build('gmail', 'v1', credentials=creds)
+	message = MIMEText(f'Здравствуйте!\n\nВаш код подтверждения для регистрации: {code}\n\nЕсли вы не запрашивали регистрацию, просто проигнорируйте это письмо.\n\nС уважением, команда VIAU.')
+	message['to'] = email
+	message['from'] = GMAIL_SENDER
+	message['subject'] = 'Код подтверждения регистрации'
+	raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
 	try:
-		response = sg.send(message)
-		if response.status_code >= 400:
-			print(f"SendGrid error: {response.status_code} {response.body}")
-			raise Exception("Ошибка отправки через SendGrid")
+		service.users().messages().send(userId='me', body={'raw': raw}).execute()
 	except Exception as e:
-		print(f"Ошибка SendGrid: {e}")
+		print(f"Ошибка Gmail API: {e}")
 		raise
 
 @app.on_event('startup')
@@ -111,7 +120,7 @@ async def login(request: Request):
 	data = await request.json()
 	user = get_user_by_username(data['username'])
 	if user and user[1] == data['password']:
-		if user[6]:  # banned
+		if user[6]:
 			return JSONResponse({'success': False, 'error': 'Аккаунт забанен'})
 		token = create_jwt(user[0], user[5])
 		return JSONResponse({
