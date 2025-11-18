@@ -80,36 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 	bindCarouselClicks();
 
-	function updateCarousel() {
-		const rotationAngle = -currentIndex * angleStep;
-		carousel3D.style.transform = `rotateY(${rotationAngle}deg)`;
-		
-		carouselItems.forEach((item, index) => {
-			const itemAngle = index * angleStep;
-			const distance = 280;
-			item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px)`;
-			
-			// Определяем центральный элемент
-			const normalizedIndex = ((index - currentIndex) % totalItems + totalItems) % totalItems;
-			if (normalizedIndex === 0) {
-				item.style.opacity = '1';
-				item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(1.15)`;
-				item.style.zIndex = '10';
-				item.style.boxShadow = '0 16px 40px rgba(33, 147, 176, 0.4)';
-			} else if (normalizedIndex === 1 || normalizedIndex === totalItems - 1) {
-				item.style.opacity = '0.7';
-				item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(0.9)`;
-				item.style.zIndex = '5';
-				item.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.2)';
-			} else {
-				item.style.opacity = '0.4';
-				item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(0.75)`;
-				item.style.zIndex = '1';
-				item.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-			}
-		});
-	}
-
 	function rotateCarousel(direction) {
 		const items = carousel3D.querySelectorAll('.carousel-item');
 		const total = items.length;
