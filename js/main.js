@@ -103,6 +103,81 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Инициализация карусели
 	updateCarousel();
 
+	let isAdmin = false; // Добавлено для проверки админа
+
+	// Поддержка клавиатуры
+	document.addEventListener('keydown', (e) => {
+		if (!welcomeBlock.classList.contains('hidden')) {
+			if (e.key === 'ArrowLeft') {
+				rotateCarousel('left');
+			} else if (e.key === 'ArrowRight') {
+				rotateCarousel('right');
+			}
+		}
+	});
+
+	// ...existing code...
+
+	// Вход
+	loginForm.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const username = document.getElementById('login-username').value;
+		const password = document.getElementById('login-password').value;
+		const errorBlock = document.getElementById('login-error');
+		errorBlock.textContent = '';
+		const res = await fetch('/login', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ username, password })
+		});
+		const data = await res.json();
+		if (data.success) {
+			sessionToken = data.token;
+			localStorage.setItem('token', sessionToken);
+			isAdmin = !!data.is_admin; // Проверка на админа
+			showWelcome(data.username);
+		} else {
+			errorBlock.textContent = data.error || 'Ошибка входа';
+		}
+	});
+
+	// Функция для отображения приветствия
+	function showWelcome(username) {
+		authBlock.classList.add('hidden');
+		welcomeBlock.classList.remove('hidden');
+		logoutBtn.classList.remove('hidden');
+		if (mainContainer) mainContainer.classList.add('hidden');
+		if (welcomeText) {
+			welcomeText.textContent = `Добро пожаловать, ${username}! Выберите действие:`;
+		}
+		localStorage.setItem('username', username);
+		pendingEmail = null;
+
+		// Добавляем admin-элемент только если isAdmin
+		const adminSelector = '.carousel-item[data-link="#admin"]';
+		if (isAdmin && !carousel3D.querySelector(adminSelector)) {
+			const adminItem = document.createElement('div');
+			adminItem.className = 'carousel-item';
+			adminItem.setAttribute('data-link', '#admin');
+			adminItem.innerHTML = `
+				<img src="https://cdn.jsdelivr.net/gh/tabler/icons/icons/shield.svg" alt="Админ" class="carousel-icon">
+				<span>Админ</span>
+			`;
+			carousel3D.appendChild(adminItem);
+			updateCarousel();
+		} else if (!isAdmin && carousel3D.querySelector(adminSelector)) {
+			// Если не админ, удаляем admin-элемент
+			carousel3D.querySelector(adminSelector).remove();
+			updateCarousel();
+		}
+
+		currentIndex = 0;
+		updateCarousel();
+	}
+
+	// Проверка авторизации при загрузке
+	// ...existing code...
+
 	// Поддержка клавиатуры
 	document.addEventListener('keydown', (e) => {
 		if (!welcomeBlock.classList.contains('hidden')) {
