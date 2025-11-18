@@ -132,15 +132,15 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (data.success) {
 			sessionToken = data.token;
 			localStorage.setItem('token', sessionToken);
-			isAdmin = (typeof data.role !== 'undefined' && data.role === 'admin'); // Проверка на админа по строке
-			showWelcome(data.username);
+			isAdmin = (typeof data.role !== 'undefined' && data.role === 'admin');
+			showWelcome(data.username, isAdmin);
 		} else {
 			errorBlock.textContent = data.error || 'Ошибка входа';
 		}
 	});
 
 	// Функция для отображения приветствия
-	function showWelcome(username) {
+	function showWelcome(username, adminFlag) {
 		authBlock.classList.add('hidden');
 		welcomeBlock.classList.remove('hidden');
 		logoutBtn.classList.remove('hidden');
@@ -151,9 +151,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		localStorage.setItem('username', username);
 		pendingEmail = null;
 
-		// Добавляем admin-элемент только если isAdmin
+		// Добавляем admin-элемент только если adminFlag
 		const adminSelector = '.carousel-item[data-link="#admin"]';
-		if (isAdmin && !carousel3D.querySelector(adminSelector)) {
+		if (adminFlag && !carousel3D.querySelector(adminSelector)) {
 			const adminItem = document.createElement('div');
 			adminItem.className = 'carousel-item';
 			adminItem.setAttribute('data-link', '#admin');
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			`;
 			carousel3D.appendChild(adminItem);
 			updateCarousel();
-		} else if (!isAdmin && carousel3D.querySelector(adminSelector)) {
+		} else if (!adminFlag && carousel3D.querySelector(adminSelector)) {
 			// Если не админ, удаляем admin-элемент
 			carousel3D.querySelector(adminSelector).remove();
 			updateCarousel();
@@ -411,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (data.logged_in && data.username === savedUsername) {
 				sessionToken = savedToken;
 				isAdmin = (typeof data.role !== 'undefined' && data.role === 'admin');
-				showWelcome(savedUsername);
+				showWelcome(savedUsername, isAdmin);
 			} else {
 				localStorage.removeItem('token');
 				localStorage.removeItem('username');

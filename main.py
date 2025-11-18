@@ -196,7 +196,7 @@ async def login(request: Request):
 			'success': True,
 			'username': user[0],
 			'token': token,
-			'role': user[5],
+			'role': user[4],
 			'country': user[3],
 			'muted': bool(user[6])
 		})
@@ -237,7 +237,7 @@ async def verify(request: Request):
 			'success': True,
 			'username': info['username'],
 			'token': token,
-			'role': user[5],
+			'role': user[4],
 			'country': user[3],
 			'muted': bool(user[6])
 		})
