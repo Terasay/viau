@@ -116,8 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
-	// ...existing code...
-
 	// Вход
 	loginForm.addEventListener('submit', async (e) => {
 		e.preventDefault();

@@ -252,10 +252,10 @@ async def me(request: Request):
 		return JSONResponse({
 			'logged_in': True,
 			'username': payload['username'],
-			'role': user[5],
+			'role': user[5],  # строка 'admin' или 'user'
 			'country': user[3],
-			'muted': bool(user[6]),
-			'banned': bool(user[5])
+			'muted': bool(user[7]),  # muted
+			'banned': bool(user[6])  # banned
 		})
 	return JSONResponse({'logged_in': False})
 
