@@ -24,12 +24,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// 3D Карусель
 	const carousel3D = document.getElementById('carousel-3d');
-	const carouselItems = document.querySelectorAll('.carousel-item');
 	const leftArrow = document.getElementById('carousel-left');
 	const rightArrow = document.getElementById('carousel-right');
 	let currentIndex = 0;
-	const totalItems = carouselItems.length;
-	const angleStep = 360 / totalItems;
+
+	function updateCarousel() {
+		const items = carousel3D.querySelectorAll('.carousel-item');
+		const total = items.length;
+		const angle = 360 / total;
+		const rotationAngle = -currentIndex * angle;
+		carousel3D.style.transform = `rotateY(${rotationAngle}deg)`;
+		items.forEach((item, index) => {
+			const itemAngle = index * angle;
+			const distance = 280;
+			item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px)`;
+			const normalizedIndex = ((index - currentIndex) % total + total) % total;
+			if (normalizedIndex === 0) {
+				item.style.opacity = '1';
+				item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(1.15)`;
+				item.style.zIndex = '10';
+				item.style.boxShadow = '0 16px 40px rgba(33, 147, 176, 0.4)';
+			} else if (normalizedIndex === 1 || normalizedIndex === total - 1) {
+				item.style.opacity = '0.7';
+				item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(0.9)`;
+				item.style.zIndex = '5';
+				item.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.2)';
+			} else {
+				item.style.opacity = '0.4';
+				item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(0.75)`;
+				item.style.zIndex = '1';
+				item.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+			}
+		});
+	}
+
+	function bindCarouselClicks() {
+		const items = carousel3D.querySelectorAll('.carousel-item');
+		items.forEach((item, index) => {
+			item.onclick = () => {
+				const link = item.getAttribute('data-link');
+				const total = items.length;
+				const normalizedIndex = ((index - currentIndex) % total + total) % total;
+				if (normalizedIndex === 0) {
+					if (link === '#logout') {
+						if (logoutBtn) logoutBtn.click();
+					} else {
+						alert('Переход: ' + link.replace('#', ''));
+					}
+				} else {
+					currentIndex = index;
+					updateCarousel();
+				}
+			};
+		});
+	}
+	bindCarouselClicks();
 
 	function updateCarousel() {
 		const rotationAngle = -currentIndex * angleStep;
@@ -62,10 +111,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function rotateCarousel(direction) {
+		const items = carousel3D.querySelectorAll('.carousel-item');
+		const total = items.length;
 		if (direction === 'left') {
-			currentIndex = (currentIndex - 1 + totalItems) % totalItems;
+			currentIndex = (currentIndex - 1 + total) % total;
 		} else {
-			currentIndex = (currentIndex + 1) % totalItems;
+			currentIndex = (currentIndex + 1) % total;
 		}
 		updateCarousel();
 	}
@@ -78,27 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		rightArrow.addEventListener('click', () => rotateCarousel('right'));
 	}
 
-	// Клик по элементу карусели
-	carouselItems.forEach((item, index) => {
-		item.addEventListener('click', () => {
-			const link = item.getAttribute('data-link');
-			const normalizedIndex = ((index - currentIndex) % totalItems + totalItems) % totalItems;
-			
-			if (normalizedIndex === 0) {
-				// Центральный элемент - выполняем действие
-				if (link === '#logout') {
-					if (logoutBtn) logoutBtn.click();
-				} else {
-					alert('Переход: ' + link.replace('#', ''));
-					// Здесь можно реализовать переход на другие страницы
-				}
-			} else {
-				// Не центральный - делаем его центральным
-				currentIndex = index;
-				updateCarousel();
-			}
-		});
-	});
+	// ...клики теперь через bindCarouselClicks...
 
 	// Инициализация карусели
 	updateCarousel();
@@ -398,12 +429,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		items.forEach((item, idx) => {
 			item.setAttribute('data-index', idx);
 		});
-		// Обновляем глобальные переменные
-		window.carouselItems = items;
-		window.totalItems = items.length;
-		window.angleStep = 360 / window.totalItems;
 		currentIndex = 0;
 		updateCarousel();
+		bindCarouselClicks();
 	}
 
 	if (logoutBtn) {
