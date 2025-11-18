@@ -41,6 +41,8 @@ async def reset(request: Request):
 		return JSONResponse({'success': False, 'error': 'Нет запроса на восстановление'})
 	if code != info['code']:
 		return JSONResponse({'success': False, 'error': 'Неверный код'})
+	if not new_password:
+		return JSONResponse({'success': False, 'error': 'Пароль не может быть пустым'})
 	update_user_password(email, new_password)
 	RESET_CODES.pop(email)
 	return JSONResponse({'success': True})
