@@ -109,7 +109,15 @@ body.dark-mode::after {
 	justify-content: center;
 	margin-bottom: 18px;
 	position: relative;
-}
+	}
+	.carousel-container.pure {
+		background: none;
+		box-shadow: none;
+		border-radius: 0;
+		padding: 0;
+		margin-bottom: 0;
+	}
+
 
 .carousel {
 	display: flex;
