@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			sessionToken = data.token;
 			localStorage.setItem('token', sessionToken);
 			isAdmin = (typeof data.role !== 'undefined' && data.role === 'admin'); // Проверка на админа по строке
-			showWelcome(data.username);
+			showWelcome(data.username, isAdmin);
 		} else {
 			errorBlock.textContent = data.error || 'Ошибка входа';
 		}
@@ -367,7 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const mainContainer = document.querySelector('.container');
 
-	function showWelcome(username) {
+	function showWelcome(username, adminFlag) {
 		authBlock.classList.add('hidden');
 		welcomeBlock.classList.remove('hidden');
 		logoutBtn.classList.remove('hidden');
@@ -377,6 +377,24 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 		localStorage.setItem('username', username);
 		pendingEmail = null;
+		// Добавляем admin-элемент только если adminFlag
+		const adminSelector = '.carousel-item[data-link="#admin"]';
+		if (adminFlag && !carousel3D.querySelector(adminSelector)) {
+			const adminItem = document.createElement('div');
+			adminItem.className = 'carousel-item';
+			adminItem.setAttribute('data-link', '#admin');
+			adminItem.innerHTML = `
+				<svg class="carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v5c0 5-3.5 9.74-7 11-3.5-1.26-7-6-7-11V6z"/></svg>
+				<span>Админ</span>
+			`;
+			carousel3D.appendChild(adminItem);
+			updateCarousel();
+		} else if (!adminFlag && carousel3D.querySelector(adminSelector)) {
+			const adminItem = carousel3D.querySelector(adminSelector);
+			if (adminItem) adminItem.remove();
+			updateCarousel();
+		}
+
 		currentIndex = 0;
 		updateCarousel();
 	}
