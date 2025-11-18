@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	const welcomeText = document.getElementById('welcome-text');
 	const logoutBtn = document.getElementById('logout-btn');
 	const themeToggle = document.getElementById('theme-toggle');
+	
 	// Элементы для восстановления пароля
 	const forgotBtn = document.getElementById('forgot-btn');
 	const forgotForm = document.getElementById('forgot-form');
@@ -21,43 +22,97 @@ document.addEventListener('DOMContentLoaded', () => {
 	let resetEmail = null;
 	let resetStep = 0;
 
-	// Карусель welcome
-	const carousel = document.getElementById('main-carousel');
-	const slides = carousel ? Array.from(carousel.getElementsByClassName('carousel-slide')) : [];
+	// 3D Карусель
+	const carousel3D = document.getElementById('carousel-3d');
+	const carouselItems = document.querySelectorAll('.carousel-item');
 	const leftArrow = document.getElementById('carousel-left');
 	const rightArrow = document.getElementById('carousel-right');
-	let currentSlide = 0;
+	let currentIndex = 0;
+	const totalItems = carouselItems.length;
+	const angleStep = 360 / totalItems;
 
-	function showSlide(idx) {
-		slides.forEach((slide, i) => {
-			slide.classList.toggle('active', i === idx);
+	function updateCarousel() {
+		const rotationAngle = -currentIndex * angleStep;
+		carousel3D.style.transform = `rotateY(${rotationAngle}deg)`;
+		
+		carouselItems.forEach((item, index) => {
+			const itemAngle = index * angleStep;
+			const distance = 280;
+			item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px)`;
+			
+			// Определяем центральный элемент
+			const normalizedIndex = ((index - currentIndex) % totalItems + totalItems) % totalItems;
+			if (normalizedIndex === 0) {
+				item.style.opacity = '1';
+				item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(1.15)`;
+				item.style.zIndex = '10';
+				item.style.boxShadow = '0 16px 40px rgba(33, 147, 176, 0.4)';
+			} else if (normalizedIndex === 1 || normalizedIndex === totalItems - 1) {
+				item.style.opacity = '0.7';
+				item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(0.9)`;
+				item.style.zIndex = '5';
+				item.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.2)';
+			} else {
+				item.style.opacity = '0.4';
+				item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(0.75)`;
+				item.style.zIndex = '1';
+				item.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+			}
 		});
-		currentSlide = idx;
 	}
-	if (carousel && slides.length) {
-		showSlide(0);
-		if (leftArrow) {
-			leftArrow.addEventListener('click', () => {
-				showSlide((currentSlide - 1 + slides.length) % slides.length);
-			});
+
+	function rotateCarousel(direction) {
+		if (direction === 'left') {
+			currentIndex = (currentIndex - 1 + totalItems) % totalItems;
+		} else {
+			currentIndex = (currentIndex + 1) % totalItems;
 		}
-		if (rightArrow) {
-			rightArrow.addEventListener('click', () => {
-				showSlide((currentSlide + 1) % slides.length);
-			});
-		}
-		slides.forEach((slide) => {
-			slide.addEventListener('click', () => {
-				const link = slide.getAttribute('data-link');
+		updateCarousel();
+	}
+
+	if (leftArrow) {
+		leftArrow.addEventListener('click', () => rotateCarousel('left'));
+	}
+
+	if (rightArrow) {
+		rightArrow.addEventListener('click', () => rotateCarousel('right'));
+	}
+
+	// Клик по элементу карусели
+	carouselItems.forEach((item, index) => {
+		item.addEventListener('click', () => {
+			const link = item.getAttribute('data-link');
+			const normalizedIndex = ((index - currentIndex) % totalItems + totalItems) % totalItems;
+			
+			if (normalizedIndex === 0) {
+				// Центральный элемент - выполняем действие
 				if (link === '#logout') {
 					if (logoutBtn) logoutBtn.click();
 				} else {
 					alert('Переход: ' + link.replace('#', ''));
-					// Здесь можно реализовать переход на другие страницы или разделы
+					// Здесь можно реализовать переход на другие страницы
 				}
-			});
+			} else {
+				// Не центральный - делаем его центральным
+				currentIndex = index;
+				updateCarousel();
+			}
 		});
-	}
+	});
+
+	// Инициализация карусели
+	updateCarousel();
+
+	// Поддержка клавиатуры
+	document.addEventListener('keydown', (e) => {
+		if (!welcomeBlock.classList.contains('hidden')) {
+			if (e.key === 'ArrowLeft') {
+				rotateCarousel('left');
+			} else if (e.key === 'ArrowRight') {
+				rotateCarousel('right');
+			}
+		}
+	});
 
 	let pendingEmail = null;
 	let sessionToken = null;
@@ -85,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		forgotForm.classList.add('hidden');
 		resetForm.classList.add('hidden');
 	});
+	
 	registerBtn.addEventListener('click', () => {
 		registerBtn.classList.add('active');
 		loginBtn.classList.remove('active');
@@ -237,11 +293,15 @@ document.addEventListener('DOMContentLoaded', () => {
 	function showWelcome(username) {
 		authBlock.classList.add('hidden');
 		welcomeBlock.classList.remove('hidden');
+		logoutBtn.classList.remove('hidden');
 		if (welcomeText) {
-			welcomeText.textContent = `Добро пожаловать, ${username}! Выберите действие ниже:`;
+			welcomeText.textContent = `Добро пожаловать, ${username}! Выберите действие:`;
 		}
 		localStorage.setItem('username', username);
 		pendingEmail = null;
+		// Сбрасываем карусель в начальное положение
+		currentIndex = 0;
+		updateCarousel();
 	}
 
 	if (logoutBtn) {
@@ -251,6 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			sessionToken = null;
 			welcomeBlock.classList.add('hidden');
 			authBlock.classList.remove('hidden');
+			logoutBtn.classList.add('hidden');
 			if (welcomeText) {
 				welcomeText.textContent = '';
 			}
@@ -278,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 		});
 	}
+
 	function resetForms() {
 		loginBtn.classList.add('active');
 		registerBtn.classList.remove('active');
