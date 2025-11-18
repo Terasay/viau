@@ -102,6 +102,77 @@ body.dark-mode::after {
 	color: inherit;
 }
 
+.carousel-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 18px;
+	position: relative;
+}
+
+.carousel {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 180px;
+	height: 120px;
+	overflow: hidden;
+	position: relative;
+}
+
+.carousel-slide {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-width: 180px;
+	height: 120px;
+	opacity: 0.5;
+	transition: opacity 0.3s, transform 0.3s;
+	cursor: pointer;
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+.carousel-slide.active {
+	opacity: 1;
+	z-index: 2;
+	transform: scale(1.12);
+}
+.carousel-icon {
+	width: 48px;
+	height: 48px;
+	margin-bottom: 8px;
+	filter: drop-shadow(0 2px 8px rgba(33,147,176,0.12));
+}
+.carousel-arrow {
+	background: var(--button-gradient);
+	color: #fff;
+	border: none;
+	border-radius: 50%;
+	width: 36px;
+	height: 36px;
+	font-size: 22px;
+	font-weight: bold;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	cursor: pointer;
+	z-index: 3;
+	box-shadow: 0 2px 8px rgba(33,147,176,0.10);
+	transition: background 0.2s;
+}
+.carousel-arrow.left {
+	left: -44px;
+}
+.carousel-arrow.right {
+	right: -44px;
+}
+.carousel-arrow:hover {
+	background: var(--button-gradient-hover);
+}
+
 h1 {
 	font-weight: 700;
 	margin-bottom: 24px;

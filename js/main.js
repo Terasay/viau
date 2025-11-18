@@ -21,6 +21,44 @@ document.addEventListener('DOMContentLoaded', () => {
 	let resetEmail = null;
 	let resetStep = 0;
 
+	// Карусель welcome
+	const carousel = document.getElementById('main-carousel');
+	const slides = carousel ? Array.from(carousel.getElementsByClassName('carousel-slide')) : [];
+	const leftArrow = document.getElementById('carousel-left');
+	const rightArrow = document.getElementById('carousel-right');
+	let currentSlide = 0;
+
+	function showSlide(idx) {
+		slides.forEach((slide, i) => {
+			slide.classList.toggle('active', i === idx);
+		});
+		currentSlide = idx;
+	}
+	if (carousel && slides.length) {
+		showSlide(0);
+		if (leftArrow) {
+			leftArrow.addEventListener('click', () => {
+				showSlide((currentSlide - 1 + slides.length) % slides.length);
+			});
+		}
+		if (rightArrow) {
+			rightArrow.addEventListener('click', () => {
+				showSlide((currentSlide + 1) % slides.length);
+			});
+		}
+		slides.forEach((slide) => {
+			slide.addEventListener('click', () => {
+				const link = slide.getAttribute('data-link');
+				if (link === '#logout') {
+					if (logoutBtn) logoutBtn.click();
+				} else {
+					alert('Переход: ' + link.replace('#', ''));
+					// Здесь можно реализовать переход на другие страницы или разделы
+				}
+			});
+		});
+	}
+
 	let pendingEmail = null;
 	let sessionToken = null;
 	const THEME_KEY = 'theme-mode';
@@ -200,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		authBlock.classList.add('hidden');
 		welcomeBlock.classList.remove('hidden');
 		if (welcomeText) {
-			welcomeText.textContent = `Приветствуем вновь, ${username}!`;
+			welcomeText.textContent = `Добро пожаловать, ${username}! Выберите действие ниже:`;
 		}
 		localStorage.setItem('username', username);
 		pendingEmail = null;
