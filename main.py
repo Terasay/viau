@@ -35,7 +35,7 @@ async def reset(request: Request):
 	data = await request.json()
 	email = data.get('email')
 	code = data.get('code')
-	new_password = data.get('password')
+	new_password = data.get('new_password') or data.get('password')
 	info = RESET_CODES.get(email)
 	if not info:
 		return JSONResponse({'success': False, 'error': 'Нет запроса на восстановление'})
