@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			adminItem.className = 'carousel-item';
 			adminItem.setAttribute('data-link', '#admin');
 			adminItem.innerHTML = `
-				<img src="https://cdn.jsdelivr.net/gh/tabler/icons/icons/shield.svg" alt="Админ" class="carousel-icon">
+				<svg class="carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v5c0 5-3.5 9.74-7 11-3.5-1.26-7-6-7-11V6z"/></svg>
 				<span>Админ</span>
 			`;
 			carousel3D.appendChild(adminItem);
