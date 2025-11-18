@@ -37,7 +37,7 @@
 				<button type="submit">Войти</button>
 				<div id="login-error" class="error"></div>
 				<div class="action-links">
-					<button type="button" id="forgot-btn" class="muted-link">Забыли пароль?</button>
+					<a href="#" id="forgot-btn" class="muted-link">Забыли пароль?</a>
 					<a href="#" class="muted-link">Нужна помощь</a>
 				</div>
 			</form>
@@ -58,24 +58,25 @@
 				<button type="submit">Подтвердить</button>
 				<div id="verify-error" class="error"></div>
 
-			<!-- Форма восстановления пароля: ввод email -->
-			<form id="forgot-form" class="hidden">
-				<p>Восстановление пароля</p>
-				<input type="email" id="forgot-email" placeholder="Введите вашу почту" required>
-				<button type="submit">Выслать код</button>
-				<div id="forgot-error" class="error"></div>
-			</form>
-
-			<!-- Форма восстановления пароля: ввод кода и нового пароля -->
-			<form id="reset-form" class="hidden">
-				<p>Введите код из письма и новый пароль:</p>
-				<input type="text" id="reset-code" placeholder="Код из письма" required>
-				<input type="password" id="reset-password" placeholder="Новый пароль" required>
-				<button type="submit">Сменить пароль</button>
-				<div id="reset-error" class="error"></div>
-			</form>
+			<!-- ...existing code... -->
 			</form>
 			<div class="progress">
+							<!-- Форма восстановления пароля: ввод email -->
+							<form id="forgot-form" class="hidden">
+								<p>Восстановление пароля</p>
+								<input type="email" id="forgot-email" placeholder="Введите вашу почту" required>
+								<button type="submit">Выслать код</button>
+								<div id="forgot-error" class="error"></div>
+							</form>
+
+							<!-- Форма восстановления пароля: ввод кода и нового пароля -->
+							<form id="reset-form" class="hidden">
+								<p>Введите код из письма и новый пароль:</p>
+								<input type="text" id="reset-code" placeholder="Код из письма" required>
+								<input type="password" id="reset-password" placeholder="Новый пароль" required>
+								<button type="submit">Сменить пароль</button>
+								<div id="reset-error" class="error"></div>
+							</form>
 				<div class="progress-label">Готовность профиля</div>
 				<div class="progress-bar"><span></span></div>
 			</div>
