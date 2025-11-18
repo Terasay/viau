@@ -9,6 +9,17 @@ document.addEventListener('DOMContentLoaded', () => {
 	const welcomeText = document.getElementById('welcome-text');
 	const logoutBtn = document.getElementById('logout-btn');
 	const themeToggle = document.getElementById('theme-toggle');
+	// Элементы для восстановления пароля
+	const forgotBtn = document.getElementById('forgot-btn');
+	const forgotForm = document.getElementById('forgot-form');
+	const resetForm = document.getElementById('reset-form');
+	const forgotEmailInput = document.getElementById('forgot-email');
+	const forgotError = document.getElementById('forgot-error');
+	const resetCodeInput = document.getElementById('reset-code');
+	const resetPasswordInput = document.getElementById('reset-password');
+	const resetError = document.getElementById('reset-error');
+	let resetEmail = null;
+	let resetStep = 0;
 
 	let pendingEmail = null;
 	let sessionToken = null;
@@ -33,6 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		loginForm.classList.remove('hidden');
 		registerForm.classList.add('hidden');
 		verifyForm.classList.add('hidden');
+		forgotForm.classList.add('hidden');
+		resetForm.classList.add('hidden');
 	});
 	registerBtn.addEventListener('click', () => {
 		registerBtn.classList.add('active');
@@ -40,7 +53,81 @@ document.addEventListener('DOMContentLoaded', () => {
 		registerForm.classList.remove('hidden');
 		loginForm.classList.add('hidden');
 		verifyForm.classList.add('hidden');
+		forgotForm.classList.add('hidden');
+		resetForm.classList.add('hidden');
 	});
+
+	// Кнопка "Забыл пароль"
+	if (forgotBtn) {
+		forgotBtn.addEventListener('click', () => {
+			loginForm.classList.add('hidden');
+			registerForm.classList.add('hidden');
+			verifyForm.classList.add('hidden');
+			forgotForm.classList.remove('hidden');
+			resetForm.classList.add('hidden');
+			forgotError.textContent = '';
+			resetStep = 0;
+		});
+	}
+
+	// Ввод email для восстановления
+	if (forgotForm) {
+		forgotForm.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const email = forgotEmailInput.value;
+			forgotError.textContent = '';
+			const res = await fetch('/forgot', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email })
+			});
+			const data = await res.json();
+			if (data.success) {
+				resetEmail = email;
+				forgotForm.classList.add('hidden');
+				resetForm.classList.remove('hidden');
+				resetStep = 1;
+				resetError.textContent = 'Код выслан на почту. Введите код.';
+				resetCodeInput.value = '';
+				resetPasswordInput.value = '';
+			} else {
+				forgotError.textContent = data.error || 'Ошибка восстановления';
+			}
+		});
+	}
+
+	// Ввод кода и нового пароля
+	if (resetForm) {
+		resetForm.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const code = resetCodeInput.value;
+			const new_password = resetPasswordInput.value;
+			resetError.textContent = '';
+			if (resetStep === 1) {
+				if (!code || !new_password) {
+					resetError.textContent = 'Введите код и новый пароль';
+					return;
+				}
+				const res = await fetch('/reset', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ email: resetEmail, code, new_password })
+				});
+				const data = await res.json();
+				if (data.success) {
+					resetError.textContent = 'Пароль успешно изменён!';
+					setTimeout(() => {
+						resetForm.classList.add('hidden');
+						loginForm.classList.remove('hidden');
+						loginBtn.classList.add('active');
+						registerBtn.classList.remove('active');
+					}, 1500);
+				} else {
+					resetError.textContent = data.error || 'Ошибка смены пароля';
+				}
+			}
+		});
+	}
 
 	// Вход
 	loginForm.addEventListener('submit', async (e) => {
@@ -159,6 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		loginForm.classList.remove('hidden');
 		registerForm.classList.add('hidden');
 		verifyForm.classList.add('hidden');
+		forgotForm.classList.add('hidden');
+		resetForm.classList.add('hidden');
 	}
 
 	function setTheme(theme) {

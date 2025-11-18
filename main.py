@@ -8,6 +8,7 @@ from googleapiclient.discovery import build
 import os
 from dotenv import load_dotenv
 import random
+
 import string
 import sqlite3
 from email.mime.text import MIMEText
@@ -28,6 +29,7 @@ app.mount('/css', StaticFiles(directory='css'), name='css')
 
 DB_FILE = 'users.db'
 VERIFICATION_CODES = {}
+RESET_CODES = {}
 JWT_SECRET = 'supersecretkey'
 JWT_ALGORITHM = 'HS256'
 
@@ -73,6 +75,14 @@ def create_user(username, password, email):
     conn.commit()
     conn.close()
 
+def update_user_password(email, new_password):
+	conn = sqlite3.connect(DB_FILE)
+	c = conn.cursor()
+	c.execute('UPDATE users SET password=? WHERE email=?', (new_password, email))
+	conn.commit()
+	conn.close()
+
+
 def create_jwt(username, role):
 	payload = {
 		'username': username,
@@ -104,6 +114,27 @@ def send_verification_code(email, code):
 	message['to'] = email
 	message['from'] = GMAIL_SENDER
 	message['subject'] = 'Код подтверждения регистрации'
+	raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
+	try:
+		service.users().messages().send(userId='me', body={'raw': raw}).execute()
+	except Exception as e:
+		print(f"Ошибка Gmail API: {e}")
+		raise
+
+def send_reset_code(email, code):
+	creds = Credentials(
+		None,
+		refresh_token=GMAIL_REFRESH_TOKEN,
+		client_id=GMAIL_CLIENT_ID,
+		client_secret=GMAIL_CLIENT_SECRET,
+		token_uri='https://oauth2.googleapis.com/token',
+		scopes=['https://mail.google.com/']
+	)
+	service = build('gmail', 'v1', credentials=creds)
+	message = MIMEText(f'Здравствуйте!\n\nВаш код для восстановления пароля: {code}\n\nЕсли вы не запрашивали восстановление, просто проигнорируйте это письмо.\n\nС уважением, команда VIAU.')
+	message['to'] = email
+	message['from'] = GMAIL_SENDER
+	message['subject'] = 'Код восстановления пароля'
 	raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
 	try:
 		service.users().messages().send(userId='me', body={'raw': raw}).execute()
