@@ -88,7 +88,7 @@ def decode_jwt(token):
 def send_verification_code(email, code):
 	sg = sendgrid.SendGridAPIClient(api_key=SENDGRID_API_KEY)
 	message = Mail(
-		from_email='limonorigin@gmail.com',
+		from_email='noreply@zxcmirok.ru',
 		to_emails=email,
 		subject='Код подтверждения регистрации',
 		plain_text_content=f'Ваш код подтверждения: {code}'
