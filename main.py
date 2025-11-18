@@ -25,9 +25,25 @@ GMAIL_REFRESH_TOKEN = os.getenv('GMAIL_REFRESH_TOKEN')
 GMAIL_SENDER = os.getenv('GMAIL_SENDER')
 
 
+
 app = FastAPI()
 app.mount('/js', StaticFiles(directory='js'), name='js')
 app.mount('/css', StaticFiles(directory='css'), name='css')
+
+@app.post('/reset')
+async def reset(request: Request):
+	data = await request.json()
+	email = data.get('email')
+	code = data.get('code')
+	new_password = data.get('password')
+	info = RESET_CODES.get(email)
+	if not info:
+		return JSONResponse({'success': False, 'error': 'Нет запроса на восстановление'})
+	if code != info['code']:
+		return JSONResponse({'success': False, 'error': 'Неверный код'})
+	update_user_password(email, new_password)
+	RESET_CODES.pop(email)
+	return JSONResponse({'success': True})
 
 @app.post('/forgot')
 async def forgot(request: Request):
