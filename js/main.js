@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (data.success) {
 			sessionToken = data.token;
 			localStorage.setItem('token', sessionToken);
-			isAdmin = (typeof data.role !== 'undefined' && data.role === 0); // Проверка на админа по role
+			isAdmin = (typeof data.role !== 'undefined' && data.role === 'admin'); // Проверка на админа по строке
 			showWelcome(data.username);
 		} else {
 			errorBlock.textContent = data.error || 'Ошибка входа';
@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (data.success) {
 			sessionToken = data.token;
 			localStorage.setItem('token', sessionToken);
-			isAdmin = (typeof data.role !== 'undefined' && data.role === 0); // Проверка на админа по role
+			isAdmin = (typeof data.role !== 'undefined' && data.role === 'admin'); // Проверка на админа по строке
 			showWelcome(data.username);
 		} else {
 			errorBlock.textContent = data.error || 'Ошибка входа';
@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (data.success) {
 			sessionToken = data.token;
 			localStorage.setItem('token', sessionToken);
-			isAdmin = (typeof data.role !== 'undefined' && data.role === 0);
+			isAdmin = (typeof data.role !== 'undefined' && data.role === 'admin');
 			showWelcome(data.username);
 			pendingEmail = null;
 		} else {
@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			const data = await res.json();
 			if (data.logged_in && data.username === savedUsername) {
 				sessionToken = savedToken;
-				isAdmin = (typeof data.role !== 'undefined' && data.role === 0);
+				isAdmin = (typeof data.role !== 'undefined' && data.role === 'admin');
 				showWelcome(savedUsername);
 			} else {
 				localStorage.removeItem('token');
