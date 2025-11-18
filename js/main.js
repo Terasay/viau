@@ -24,50 +24,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// 3D Карусель
 	const carousel3D = document.getElementById('carousel-3d');
-	const carouselItems = document.querySelectorAll('.carousel-item');
 	const leftArrow = document.getElementById('carousel-left');
 	const rightArrow = document.getElementById('carousel-right');
 	let currentIndex = 0;
-	const totalItems = carouselItems.length;
-	const angleStep = 360 / totalItems;
+	const leftArrow = document.getElementById('carousel-left');
+	const rightArrow = document.getElementById('carousel-right');
+	let currentIndex = 0;
+
+	function getCarouselItems() {
+	    return carousel3D.querySelectorAll('.carousel-item');
+	}
+
+	function getTotalItems() {
+	    return getCarouselItems().length;
+	}
+
+	function getAngleStep() {
+	    const totalItems = getTotalItems();
+	    return totalItems > 0 ? 360 / totalItems : 90;
+	}
 
 	function updateCarousel() {
-		const rotationAngle = -currentIndex * angleStep;
-		carousel3D.style.transform = `rotateY(${rotationAngle}deg)`;
-		
-		carouselItems.forEach((item, index) => {
-			const itemAngle = index * angleStep;
-			const distance = 280;
-			item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px)`;
-			
-			// Определяем центральный элемент
-			const normalizedIndex = ((index - currentIndex) % totalItems + totalItems) % totalItems;
-			if (normalizedIndex === 0) {
-				item.style.opacity = '1';
-				item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(1.15)`;
-				item.style.zIndex = '10';
-				item.style.boxShadow = '0 16px 40px rgba(33, 147, 176, 0.4)';
-			} else if (normalizedIndex === 1 || normalizedIndex === totalItems - 1) {
-				item.style.opacity = '0.7';
-				item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(0.9)`;
-				item.style.zIndex = '5';
-				item.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.2)';
-			} else {
-				item.style.opacity = '0.4';
-				item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(0.75)`;
-				item.style.zIndex = '1';
-				item.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
-			}
-		});
+	const carouselItems = getCarouselItems();
+	const totalItems = carouselItems.length;
+	const angleStep = getAngleStep();
+	const rotationAngle = -currentIndex * angleStep;
+	carousel3D.style.transform = `rotateY(${rotationAngle}deg)`;
+    
+	carouselItems.forEach((item, index) => {
+		const itemAngle = index * angleStep;
+		const distance = 280;
+		item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px)`;
+		// Определяем центральный элемент
+		const normalizedIndex = ((index - currentIndex) % totalItems + totalItems) % totalItems;
+		if (normalizedIndex === 0) {
+			item.style.opacity = '1';
+			item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(1.15)`;
+			item.style.zIndex = '10';
+			item.style.boxShadow = '0 16px 40px rgba(33, 147, 176, 0.4)';
+		} else if (normalizedIndex === 1 || normalizedIndex === totalItems - 1) {
+			item.style.opacity = '0.7';
+			item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(0.9)`;
+			item.style.zIndex = '5';
+			item.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.2)';
+		} else {
+			item.style.opacity = '0.4';
+			item.style.transform = `rotateY(${itemAngle}deg) translateZ(${distance}px) scale(0.75)`;
+			item.style.zIndex = '1';
+			item.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+		}
+	});
 	}
 
 	function rotateCarousel(direction) {
-		if (direction === 'left') {
-			currentIndex = (currentIndex - 1 + totalItems) % totalItems;
-		} else {
-			currentIndex = (currentIndex + 1) % totalItems;
-		}
-		updateCarousel();
+	const totalItems = getTotalItems();
+	if (totalItems === 0) return;
+	if (direction === 'left') {
+		currentIndex = (currentIndex - 1 + totalItems) % totalItems;
+	} else {
+		currentIndex = (currentIndex + 1) % totalItems;
+	}
+	updateCarousel();
+	attachCarouselItemHandlers();
 	}
 
 	if (leftArrow) {
@@ -79,29 +97,31 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	// Клик по элементу карусели
-	carouselItems.forEach((item, index) => {
-		item.addEventListener('click', () => {
-			const link = item.getAttribute('data-link');
-			const normalizedIndex = ((index - currentIndex) % totalItems + totalItems) % totalItems;
-			
-			if (normalizedIndex === 0) {
-				// Центральный элемент - выполняем действие
-				if (link === '#logout') {
-					if (logoutBtn) logoutBtn.click();
+	function attachCarouselItemHandlers() {
+		const carouselItems = getCarouselItems();
+		const totalItems = carouselItems.length;
+		carouselItems.forEach((item, index) => {
+			item.onclick = () => {
+				const link = item.getAttribute('data-link');
+				const normalizedIndex = ((index - currentIndex) % totalItems + totalItems) % totalItems;
+				if (normalizedIndex === 0) {
+					if (link === '#logout') {
+						if (logoutBtn) logoutBtn.click();
+					} else {
+						alert('Переход: ' + link.replace('#', ''));
+					}
 				} else {
-					alert('Переход: ' + link.replace('#', ''));
-					// Здесь можно реализовать переход на другие страницы
+					currentIndex = index;
+					updateCarousel();
+					attachCarouselItemHandlers();
 				}
-			} else {
-				// Не центральный - делаем его центральным
-				currentIndex = index;
-				updateCarousel();
-			}
+			};
 		});
-	});
+	}
 
 	// Инициализация карусели
 	updateCarousel();
+	attachCarouselItemHandlers();
 
 	let isAdmin = false; // Добавлено для проверки админа
 
@@ -151,26 +171,23 @@ document.addEventListener('DOMContentLoaded', () => {
 		localStorage.setItem('username', username);
 		pendingEmail = null;
 
-		// Добавляем admin-элемент только если adminFlag
-		const adminSelector = '.carousel-item[data-link="#admin"]';
-		if (adminFlag && !carousel3D.querySelector(adminSelector)) {
-			const adminItem = document.createElement('div');
-			adminItem.className = 'carousel-item';
-			adminItem.setAttribute('data-link', '#admin');
-			adminItem.innerHTML = `
-				<svg class="carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v5c0 5-3.5 9.74-7 11-3.5-1.26-7-6-7-11V6z"/></svg>
-				<span>Админ</span>
-			`;
-			carousel3D.appendChild(adminItem);
-			updateCarousel();
-		} else if (!adminFlag && carousel3D.querySelector(adminSelector)) {
-			// Если не админ, удаляем admin-элемент
-			carousel3D.querySelector(adminSelector).remove();
-			updateCarousel();
-		}
-
-		currentIndex = 0;
-		updateCarousel();
+	    // Добавляем admin-элемент только если adminFlag
+	    const adminSelector = '.carousel-item[data-link="#admin"]';
+	    if (adminFlag && !carousel3D.querySelector(adminSelector)) {
+	        const adminItem = document.createElement('div');
+	        adminItem.className = 'carousel-item';
+	        adminItem.setAttribute('data-link', '#admin');
+	        adminItem.innerHTML = `
+	            <svg class="carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v5c0 5-3.5 9.74-7 11-3.5-1.26-7-6-7-11V6z"/></svg>
+	            <span>Админ</span>
+	        `;
+	        carousel3D.appendChild(adminItem);
+	    } else if (!adminFlag && carousel3D.querySelector(adminSelector)) {
+	        carousel3D.querySelector(adminSelector).remove();
+	    }
+	    currentIndex = 0;
+	    updateCarousel();
+	    attachCarouselItemHandlers();
 	}
 
 	// Проверка авторизации при загрузке
