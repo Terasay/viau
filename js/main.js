@@ -388,13 +388,20 @@ document.addEventListener('DOMContentLoaded', () => {
 				<span>Админ</span>
 			`;
 			carousel3D.appendChild(adminItem);
-			updateCarousel();
 		} else if (!adminFlag && carousel3D.querySelector(adminSelector)) {
 			const adminItem = carousel3D.querySelector(adminSelector);
 			if (adminItem) adminItem.remove();
-			updateCarousel();
 		}
 
+		// Пересчитываем индексы и элементы
+		const items = carousel3D.querySelectorAll('.carousel-item');
+		items.forEach((item, idx) => {
+			item.setAttribute('data-index', idx);
+		});
+		// Обновляем глобальные переменные
+		window.carouselItems = items;
+		window.totalItems = items.length;
+		window.angleStep = 360 / window.totalItems;
 		currentIndex = 0;
 		updateCarousel();
 	}
