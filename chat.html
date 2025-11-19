@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIAU - Игровой чат</title>
+    <link rel="stylesheet" href="/css/chat.css">
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Заголовок чата -->
+        <div class="chat-header">
+            <div class="header-left">
+                <h1>🎮 Игровой чат</h1>
+                <span class="online-count" id="onlineCount">0 онлайн</span>
+            </div>
+            <div class="header-right">
+                <span class="user-info" id="userInfo"></span>
+                <button class="btn-logout" id="logoutBtn">Выход</button>
+            </div>
+        </div>
+
+        <!-- Основная область чата -->
+        <div class="chat-main">
+            <!-- Список пользователей онлайн -->
+            <div class="users-sidebar">
+                <h3>Пользователи онлайн</h3>
+                <div class="users-list" id="usersList">
+                    <!-- Список пользователей будет добавляться динамически -->
+                </div>
+            </div>
+
+            <!-- Область сообщений -->
+            <div class="messages-area">
+                <div class="messages-container" id="messagesContainer">
+                    <!-- Сообщения будут добавляться динамически -->
+                </div>
+
+                <!-- Форма ввода сообщения -->
+                <div class="message-input-area">
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="messageInput" 
+                            placeholder="Введите сообщение..." 
+                            maxlength="500"
+                            autocomplete="off"
+                        >
+                        <button class="btn-send" id="sendBtn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="char-counter" id="charCounter">0 / 500</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для входа -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h2>Войдите, чтобы начать чат</h2>
+            <p>Для доступа к игровому чату необходимо войти в систему</p>
+            <button class="btn-primary" onclick="window.location.href='/'">Перейти к входу</button>
+        </div>
+    </div>
+
+    <script src="/js/chat.js"></script>
+</body>
+</html>
