@@ -275,8 +275,7 @@ async def admin_users(request: Request):
 	token = request.headers.get('Authorization')
 	payload = decode_jwt(token)
 	role = payload.get('role') if payload else None
-	# допускаем 'admin' или 1
-	if role not in ('admin', 1, '1'):
+	if role != 'admin':
 		return JSONResponse({'detail': 'Forbidden'}, status_code=403)
 	conn = sqlite3.connect(DB_FILE)
 	c = conn.cursor()
