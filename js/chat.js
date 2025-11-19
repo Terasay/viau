@@ -16,6 +16,8 @@ const logoutBtn = document.getElementById('logoutBtn');
 const mainBtn = document.getElementById('mainBtn');
 const themeBtn = document.getElementById('themeBtn');
 const charCounter = document.getElementById('charCounter');
+const fileInput = document.getElementById('fileInput');
+const attachBtn = document.getElementById('attachBtn');
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
@@ -162,7 +164,12 @@ function addMessage(messageData, save = true) {
     header.appendChild(time);
     const text = document.createElement('div');
     text.className = 'message-text';
-    text.textContent = messageData.text;
+    // Если текст содержит <img> или <a>, вставляем как html
+    if (/<img|<a/.test(messageData.text)) {
+        text.innerHTML = messageData.text;
+    } else {
+        text.textContent = messageData.text;
+    }
     content.appendChild(header);
     content.appendChild(text);
     message.appendChild(avatar);
@@ -269,16 +276,13 @@ function logout() {
 function setupEventListeners() {
     // Отправка сообщения
     sendBtn.addEventListener('click', sendMessage);
-    
     messageInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             sendMessage();
         }
     });
-    
     // Счетчик символов
     messageInput.addEventListener('input', updateCharCounter);
-    
     // Выход
     logoutBtn.addEventListener('click', logout);
     // Переход на главную
@@ -291,29 +295,88 @@ function setupEventListeners() {
     if (themeBtn) {
         themeBtn.addEventListener('click', () => {
             document.body.classList.toggle('dark-theme');
-            // Сохраняем выбор пользователя
             if (document.body.classList.contains('dark-theme')) {
                 localStorage.setItem('theme', 'dark');
             } else {
                 localStorage.setItem('theme', 'light');
             }
         });
-        // При загрузке страницы — применяем сохранённую тему
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
             document.body.classList.add('dark-theme');
         }
     }
+    // Кнопка прикрепления файла
+    if (attachBtn && fileInput) {
+        attachBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        fileInput.addEventListener('change', handleFileUpload);
+    }
+    // Вставка файла через Ctrl+V
+    messageInput.addEventListener('paste', handlePasteFile);
 }
 
-// Обновление счетчика символов
-function updateCharCounter() {
-    const length = messageInput.value.length;
-    charCounter.textContent = `${length} / 500`;
-    if (length >= 500) {
-        charCounter.style.color = '#ff6b6b';
+function handleFileUpload(e) {
+    const file = e.target.files[0];
+    if (file) {
+        uploadFile(file);
+        fileInput.value = '';
+    }
+}
+
+function handlePasteFile(e) {
+    const items = e.clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.kind === 'file') {
+            const file = item.getAsFile();
+            if (file) {
+                uploadFile(file);
+                e.preventDefault();
+                break;
+            }
+        }
+    }
+}
+
+function uploadFile(file) {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
+    fetch('/chat/upload', {
+        method: 'POST',
+        headers: {
+            'Authorization': token
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success && data.url) {
+            // Отправить ссылку на файл как сообщение
+            sendFileMessage(data.url, file.type);
+        } else {
+            alert(data.error || 'Ошибка загрузки файла');
+        }
+    })
+    .catch(() => {
+        alert('Ошибка загрузки файла');
+    });
+}
+
+function sendFileMessage(url, fileType) {
+    const token = localStorage.getItem('token');
+    let text = '';
+    if (fileType.startsWith('image/')) {
+        text = `<img src="${url}" alt="image" style="max-width:300px;max-height:300px;">`;
     } else {
-        charCounter.style.color = '#999';
+        text = `<a href="${url}" target="_blank">Документ</a>`;
+    }
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ token, text }));
+    } else {
+        alert('Нет соединения с сервером');
     }
 }
 

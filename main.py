@@ -1,3 +1,5 @@
+from fastapi import UploadFile, File
+import uuid
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -39,6 +41,33 @@ app.add_middleware(
 )
 app.mount('/js', StaticFiles(directory='js'), name='js')
 app.mount('/css', StaticFiles(directory='css'), name='css')
+
+
+# --- Эндпоинт для загрузки файлов (изображения/документы) ---
+UPLOAD_DIR = 'uploads'
+if not os.path.exists(UPLOAD_DIR):
+	os.makedirs(UPLOAD_DIR)
+
+@app.post('/chat/upload')
+async def chat_upload(request: Request, file: UploadFile = File(...)):
+	token = request.headers.get('Authorization')
+	payload = decode_jwt(token)
+	if not payload:
+		return JSONResponse({'success': False, 'error': 'Unauthorized'}, status_code=401)
+	filename = str(uuid.uuid4()) + '_' + file.filename
+	file_path = os.path.join(UPLOAD_DIR, filename)
+	try:
+		with open(file_path, 'wb') as f:
+			content = await file.read()
+			f.write(content)
+		# Формируем ссылку для клиента
+		url = f'/uploads/{filename}'
+		return JSONResponse({'success': True, 'url': url})
+	except Exception as e:
+		return JSONResponse({'success': False, 'error': 'Ошибка сохранения файла'})
+# Статические файлы для загруженных файлов
+
+app.mount('/uploads', StaticFiles(directory=UPLOAD_DIR), name='uploads')
 
 @app.post('/reset')
 async def reset(request: Request):
