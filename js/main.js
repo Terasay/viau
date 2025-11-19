@@ -69,6 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
 						if (logoutBtn) logoutBtn.click();
 					} else if (link === '#admin') {
 						window.location.href = 'admin.html';
+					} else if (link === 'chat.html') {
+						window.location.href = 'chat.html';
 					} else {
 						alert('Переход: ' + link.replace('#', ''));
 					}
