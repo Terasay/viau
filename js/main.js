@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		pendingEmail = null;
 
 		// Добавляем admin-элемент только если adminFlag
-		const adminSelector = '.carousel-item[data-link="#admin"]';
+		const adminSelector = '.carousel-item[data-link="admin.html"]';
 		if (adminFlag && !carousel3D.querySelector(adminSelector)) {
 			const adminItem = document.createElement('div');
 			adminItem.className = 'carousel-item';
