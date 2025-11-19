@@ -65,69 +65,42 @@ async function checkAuth() {
 
 // Инициализация чата
 function initChat() {
-    userInfo.textContent = `${currentUser.username} ${currentUser.role === 'admin' ? '👑' : ''}`;
-    
+    userInfo.textContent = `${currentUser.username}${currentUser.role === 'admin' ? ' (админ)' : ''}`;
     if (currentUser.muted) {
         showMutedNotice();
     }
-    
-    // Симуляция WebSocket соединения (в реальном проекте нужен WebSocket сервер)
-    simulateChat();
-    
-    // Загрузка истории сообщений (если есть)
+    updateOnlineUsers();
     loadChatHistory();
 }
 
 // Симуляция чата (замените на реальный WebSocket)
 function simulateChat() {
-    // Добавляем системное сообщение о входе
-    addSystemMessage(`${currentUser.username} присоединился к чату`);
-    
-    // Обновляем список пользователей онлайн
-    updateOnlineUsers();
-    
-    // Симуляция получения сообщений от других пользователей
-    setTimeout(() => {
-        if (messages.length === 1) {
-            addMessage({
-                username: 'GameMaster',
-                role: 'admin',
-                text: 'Добро пожаловать в игровой чат! 🎮',
-                timestamp: new Date()
-            });
-        }
-    }, 2000);
+    // Симуляция больше не используется
 }
 
 // Загрузка истории чата
 function loadChatHistory() {
-    const savedMessages = localStorage.getItem('chatMessages');
-    if (savedMessages) {
-        try {
-            const parsed = JSON.parse(savedMessages);
-            // Загружаем только последние 50 сообщений
-            messages = parsed.slice(-50);
-            messages.forEach(msg => {
-                if (msg.type === 'system') {
-                    addSystemMessage(msg.text, false);
-                } else {
-                    addMessage(msg, false);
-                }
-            });
-            scrollToBottom();
-        } catch (e) {
-            console.error('Ошибка загрузки истории:', e);
-        }
-    }
+    // Загрузка истории чата с сервера
+    fetch('/chat/messages', {
+        method: 'GET'
+    })
+    .then(res => res.json())
+    .then(data => {
+        messages = [];
+        messagesContainer.innerHTML = '';
+        data.messages.forEach(msg => {
+            addMessage(msg, false);
+        });
+        scrollToBottom();
+    })
+    .catch(e => {
+        console.error('Ошибка загрузки истории:', e);
+    });
 }
 
 // Сохранение истории чата
 function saveChatHistory() {
-    try {
-        localStorage.setItem('chatMessages', JSON.stringify(messages.slice(-50)));
-    } catch (e) {
-        console.error('Ошибка сохранения истории:', e);
-    }
+    // История сохраняется на сервере, ничего не делаем
 }
 
 // Обновление списка пользователей онлайн
@@ -179,112 +152,81 @@ function updateOnlineUsers() {
 function addMessage(messageData, save = true) {
     const message = document.createElement('div');
     message.className = 'message';
-    
     if (messageData.username === currentUser.username) {
         message.classList.add('own');
     }
-    
     const avatar = document.createElement('div');
     avatar.className = 'message-avatar';
     avatar.textContent = messageData.username[0].toUpperCase();
-    
     const content = document.createElement('div');
     content.className = 'message-content';
-    
     const header = document.createElement('div');
     header.className = 'message-header';
-    
     const username = document.createElement('div');
     username.className = 'message-username';
     username.textContent = messageData.username;
-    
     header.appendChild(username);
-    
     if (messageData.role === 'admin') {
         const role = document.createElement('div');
         role.className = 'message-role admin';
         role.textContent = 'ADMIN';
         header.appendChild(role);
     }
-    
     const time = document.createElement('div');
     time.className = 'message-time';
     const timestamp = messageData.timestamp ? new Date(messageData.timestamp) : new Date();
     time.textContent = formatTime(timestamp);
     header.appendChild(time);
-    
     const text = document.createElement('div');
     text.className = 'message-text';
     text.textContent = messageData.text;
-    
     content.appendChild(header);
     content.appendChild(text);
-    
     message.appendChild(avatar);
     message.appendChild(content);
-    
     messagesContainer.appendChild(message);
     scrollToBottom();
-    
-    if (save) {
-        messages.push({
-            username: messageData.username,
-            role: messageData.role,
-            text: messageData.text,
-            timestamp: timestamp
-        });
-        saveChatHistory();
-    }
 }
 
 // Добавление системного сообщения
 function addSystemMessage(text, save = true) {
-    const message = document.createElement('div');
-    message.className = 'message system';
-    
-    const content = document.createElement('div');
-    content.className = 'message-content';
-    content.textContent = text;
-    
-    message.appendChild(content);
-    messagesContainer.appendChild(message);
-    scrollToBottom();
-    
-    if (save) {
-        messages.push({
-            type: 'system',
-            text: text,
-            timestamp: new Date()
-        });
-        saveChatHistory();
-    }
+    // В новой версии системные сообщения не используются
 }
 
 // Отправка сообщения
 function sendMessage() {
     const text = messageInput.value.trim();
-    
     if (!text) return;
-    
     if (currentUser.muted) {
         alert('Вы не можете отправлять сообщения, так как вы замучены');
         return;
     }
-    
-    const messageData = {
-        username: currentUser.username,
-        role: currentUser.role,
-        text: text,
-        timestamp: new Date()
-    };
-    
-    addMessage(messageData);
-    
-    // Здесь должна быть отправка на сервер через WebSocket
-    // ws.send(JSON.stringify(messageData));
-    
-    messageInput.value = '';
-    updateCharCounter();
+    const token = localStorage.getItem('token');
+    sendBtn.disabled = true;
+    fetch('/chat/send', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+        },
+        body: JSON.stringify({ text })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            messageInput.value = '';
+            updateCharCounter();
+            loadChatHistory();
+        } else {
+            alert(data.error || 'Ошибка отправки сообщения');
+        }
+    })
+    .catch(() => {
+        alert('Ошибка отправки сообщения');
+    })
+    .finally(() => {
+        sendBtn.disabled = false;
+    });
 }
 
 // Обновление счетчика символов
@@ -315,9 +257,8 @@ function scrollToBottom() {
 function showMutedNotice() {
     const notice = document.createElement('div');
     notice.className = 'muted-notice';
-    notice.textContent = '⚠️ Вы не можете отправлять сообщения. Вы замучены администратором.';
+    notice.textContent = 'Вы не можете отправлять сообщения. Вы замучены администратором.';
     messagesContainer.insertBefore(notice, messagesContainer.firstChild);
-    
     messageInput.disabled = true;
     sendBtn.disabled = true;
 }

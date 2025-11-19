@@ -86,8 +86,61 @@ def init_db():
 		ban_until TEXT,
 		mute_until TEXT
 	)''')
+	c.execute('''CREATE TABLE IF NOT EXISTS messages (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		username TEXT NOT NULL,
+		role TEXT NOT NULL,
+		text TEXT NOT NULL,
+		timestamp TEXT NOT NULL
+	)''')
 	conn.commit()
 	conn.close()
+# Эндпоинт для получения истории чата
+@app.get('/chat/messages')
+async def get_chat_messages():
+	conn = sqlite3.connect(DB_FILE)
+	c = conn.cursor()
+	c.execute('SELECT username, role, text, timestamp FROM messages ORDER BY id DESC LIMIT 50')
+	rows = c.fetchall()
+	conn.close()
+	# Возвращаем в обратном порядке (от старых к новым)
+	messages = [
+		{
+			'username': row[0],
+			'role': row[1],
+			'text': row[2],
+			'timestamp': row[3]
+		}
+		for row in reversed(rows)
+	]
+	return JSONResponse({'messages': messages})
+
+# Эндпоинт для отправки сообщения
+@app.post('/chat/send')
+async def send_chat_message(request: Request):
+	data = await request.json()
+	token = request.headers.get('Authorization')
+	payload = decode_jwt(token)
+	if not payload:
+		return JSONResponse({'success': False, 'error': 'Unauthorized'}, status_code=401)
+	user = get_user_by_username(payload['username'])
+	if not user:
+		return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
+	if user[5]:
+		return JSONResponse({'success': False, 'error': 'User banned'}, status_code=403)
+	if user[6]:
+		return JSONResponse({'success': False, 'error': 'User muted'}, status_code=403)
+	text = data.get('text', '').strip()
+	if not text:
+		return JSONResponse({'success': False, 'error': 'Empty message'}, status_code=400)
+	timestamp = datetime.utcnow().isoformat()
+	conn = sqlite3.connect(DB_FILE)
+	c = conn.cursor()
+	c.execute('INSERT INTO messages (username, role, text, timestamp) VALUES (?, ?, ?, ?)',
+			  (user[0], user[4], text, timestamp))
+	conn.commit()
+	conn.close()
+	return JSONResponse({'success': True})
 
 def get_user_by_username(username):
 	conn = sqlite3.connect(DB_FILE)
