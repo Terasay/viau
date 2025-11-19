@@ -260,16 +260,21 @@ function setupWebSocket() {
 // --- Переопределение sendMessage для WebSocket ---
 function sendMessage() {
     const text = messageInput.value.trim();
-    if (!text) return;
+    if (!text && selectedFiles.length === 0) return;
     if (currentUser.muted) {
         alert('Вы не можете отправлять сообщения, так как вы замучены');
         return;
     }
     const token = localStorage.getItem('token');
     if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ token, text }));
+        if (selectedFiles.length > 0) {
+            uploadAllFiles(selectedFiles, text, token);
+        } else {
+            ws.send(JSON.stringify({ token, text }));
+        }
         messageInput.value = '';
         updateCharCounter();
+        clearFilePreview();
     } else {
         alert('Нет соединения с сервером');
     }
@@ -487,7 +492,7 @@ function handlePasteFile(e) {
         if (item.kind === 'file') {
             const file = item.getAsFile();
             if (file) {
-                uploadFile(file);
+                addFileToPreview(file);
                 e.preventDefault();
                 break;
             }
