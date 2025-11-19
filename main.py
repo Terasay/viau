@@ -162,7 +162,6 @@ class ConnectionManager:
 		self.online_users: dict[str, dict] = {}  # username -> {username, role}
 
 	async def connect(self, websocket: WebSocket, username: str, role: str):
-		await websocket.accept()
 		self.active_connections.append(websocket)
 		self.online_users[username] = {"username": username, "role": role}
 		await self.broadcast_online_users()
