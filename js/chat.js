@@ -4,6 +4,10 @@ let messages = [];
 let onlineUsers = [];
 let ws = null;
 
+// Для предпросмотра файлов
+let selectedFiles = [];
+let filePreviewContainer = null;
+
 // Модальное окно для просмотра изображений
 let imageModal = null;
 let modalImg = null;
@@ -33,6 +37,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     await checkAuth();
     setupEventListeners();
     setupImageModal();
+
+    // Создаём контейнер для предпросмотра файлов
+    filePreviewContainer = document.createElement('div');
+    filePreviewContainer.id = 'filePreviewContainer';
+    filePreviewContainer.style.display = 'flex';
+    filePreviewContainer.style.flexWrap = 'wrap';
+    filePreviewContainer.style.gap = '10px';
+    filePreviewContainer.style.margin = '10px 0';
+    messagesContainer.parentNode.insertBefore(filePreviewContainer, messagesContainer);
 });
 
 // Проверка авторизации
