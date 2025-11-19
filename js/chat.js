@@ -345,12 +345,126 @@ function setupEventListeners() {
     messageInput.addEventListener('paste', handlePasteFile);
 }
 
-function handleFileUpload(e) {
-    const file = e.target.files[0];
-    if (file) {
-        uploadFile(file);
-        fileInput.value = '';
-    }
+function handleFileSelect(e) {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+        addFileToPreview(file);
+    });
+    fileInput.value = '';
+}
+function addFileToPreview(file) {
+    // Проверка на дубликаты
+    if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) return;
+    selectedFiles.push(file);
+    renderFilePreview();
+}
+
+function renderFilePreview() {
+    if (!filePreviewContainer) return;
+    filePreviewContainer.innerHTML = '';
+    selectedFiles.forEach((file, idx) => {
+        const preview = document.createElement('div');
+        preview.style.position = 'relative';
+        preview.style.display = 'flex';
+        preview.style.flexDirection = 'column';
+        preview.style.alignItems = 'center';
+        preview.style.border = '1px solid #ccc';
+        preview.style.borderRadius = '8px';
+        preview.style.padding = '6px';
+        preview.style.background = '#f9f9f9';
+        preview.style.maxWidth = '120px';
+        preview.style.maxHeight = '120px';
+        preview.style.overflow = 'hidden';
+        // Кнопка удаления
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '×';
+        removeBtn.style.position = 'absolute';
+        removeBtn.style.top = '2px';
+        removeBtn.style.right = '2px';
+        removeBtn.style.background = '#ff6b6b';
+        removeBtn.style.color = '#fff';
+        removeBtn.style.border = 'none';
+        removeBtn.style.borderRadius = '50%';
+        removeBtn.style.width = '22px';
+        removeBtn.style.height = '22px';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.onclick = () => {
+            selectedFiles.splice(idx, 1);
+            renderFilePreview();
+        };
+        preview.appendChild(removeBtn);
+        if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.style.maxWidth = '100px';
+            img.style.maxHeight = '100px';
+            img.style.borderRadius = '6px';
+            img.src = URL.createObjectURL(file);
+            preview.appendChild(img);
+        } else {
+            const icon = document.createElement('div');
+            icon.textContent = '📄';
+            icon.style.fontSize = '40px';
+            preview.appendChild(icon);
+        }
+        const name = document.createElement('div');
+        name.textContent = file.name;
+        name.style.fontSize = '12px';
+        name.style.wordBreak = 'break-all';
+        preview.appendChild(name);
+        filePreviewContainer.appendChild(preview);
+    });
+}
+
+function clearFilePreview() {
+    selectedFiles = [];
+    renderFilePreview();
+}
+function uploadAllFiles(files, text, token) {
+    let uploaded = [];
+    let errors = [];
+    let count = files.length;
+    files.forEach(file => {
+        const formData = new FormData();
+        formData.append('file', file);
+        fetch('/chat/upload', {
+            method: 'POST',
+            headers: {
+                'Authorization': token
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.url) {
+                uploaded.push({ url: data.url, type: file.type });
+            } else {
+                errors.push(data.error || 'Ошибка загрузки файла');
+            }
+        })
+        .catch(() => {
+            errors.push('Ошибка загрузки файла');
+        })
+        .finally(() => {
+            count--;
+            if (count === 0) {
+                // Все файлы обработаны
+                let msgText = text;
+                uploaded.forEach(f => {
+                    if (f.type.startsWith('image/')) {
+                        msgText += `<img src="${f.url}" alt="image" style="max-width:300px;max-height:300px;">`;
+                    } else {
+                        msgText += `<a href="${f.url}" target="_blank">Документ</a>`;
+                    }
+                });
+                if (msgText) {
+                    ws.send(JSON.stringify({ token, text: msgText }));
+                }
+                if (errors.length > 0) {
+                    alert(errors.join('\n'));
+                }
+            }
+        });
+    });
 }
 
 function handlePasteFile(e) {
