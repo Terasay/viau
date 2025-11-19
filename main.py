@@ -214,12 +214,16 @@ async def login(request: Request):
 					c.execute('UPDATE users SET banned=0, ban_until=NULL WHERE username=?', (user[0],))
 					conn.commit()
 					conn.close()
-					banned = False
-				else:
+					# Получаем свежие данные пользователя
+					user = get_user_by_username(data['username'])
+					banned = bool(user[5])
+			# После обновления, если бан всё ещё есть — отказ
+			if banned:
+				if ban_until:
 					return JSONResponse({'success': False, 'error': f'Аккаунт забанен до {ban_until}'})
-			else:
-				return JSONResponse({'success': False, 'error': 'Аккаунт забанен'})
-			
+				else:
+					return JSONResponse({'success': False, 'error': 'Аккаунт забанен'})
+		# Если бан снят, разрешаем вход
 		token = create_jwt(user[0], user[4])
 		return JSONResponse({
 			'success': True,
