@@ -122,9 +122,15 @@ def update_user_password(email, new_password):
 
 
 def create_jwt(username, role):
+	# Преобразуем роль к строке
+	role_str = str(role)
+	if role_str == '1':
+		role_str = 'admin'
+	elif role_str == '0':
+		role_str = 'user'
 	payload = {
 		'username': username,
-		'role': role,
+		'role': role_str,
 		'exp': datetime.utcnow() + timedelta(days=7)
 	}
 	return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
@@ -268,7 +274,9 @@ async def index():
 async def admin_users(request: Request):
 	token = request.headers.get('Authorization')
 	payload = decode_jwt(token)
-	if not payload or payload.get('role') != 'admin':
+	role = payload.get('role') if payload else None
+	# допускаем 'admin' или 1
+	if role not in ('admin', 1, '1'):
 		return JSONResponse({'detail': 'Forbidden'}, status_code=403)
 	conn = sqlite3.connect(DB_FILE)
 	c = conn.cursor()
