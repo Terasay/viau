@@ -41,7 +41,7 @@ function setupFilePreview() {
     previewContainer.style.flexWrap = 'wrap';
     inputWrapper.parentNode.insertBefore(previewContainer, inputWrapper.nextSibling);
     renderFilePreview();
-
+        }
 function renderFilePreview() {
     if (!previewContainer) return;
     previewContainer.innerHTML = '';
