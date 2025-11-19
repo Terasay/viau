@@ -197,7 +197,7 @@ async def login(request: Request):
 	data = await request.json()
 	user = get_user_by_username(data['username'])
 	if user and user[1] == data['password']:
-		banned = bool(user[6])
+		banned = bool(user[5])
 		ban_until = user[7]
 		now = datetime.utcnow()
 		# Проверка временного бана
