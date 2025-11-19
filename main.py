@@ -238,7 +238,7 @@ async def verify(request: Request):
 		create_user(info['username'], info['password'], info['email'])
 		VERIFICATION_CODES.pop(info['email'])
 		user = get_user_by_username(info['username'])
-		token = create_jwt(user[0], user[5])
+		token = create_jwt(user[0], user[4])
 		return JSONResponse({
 			'success': True,
 			'username': info['username'],
