@@ -197,8 +197,29 @@ async def login(request: Request):
 	data = await request.json()
 	user = get_user_by_username(data['username'])
 	if user and user[1] == data['password']:
-		if user[6]:
-			return JSONResponse({'success': False, 'error': 'Аккаунт забанен'})
+		banned = bool(user[6])
+		ban_until = user[7]
+		now = datetime.utcnow()
+		# Проверка временного бана
+		if banned:
+			if ban_until:
+				try:
+					ban_dt = datetime.fromisoformat(ban_until.replace('Z', ''))
+				except Exception:
+					ban_dt = None
+				if ban_dt and now >= ban_dt:
+					# Срок бана истек, снимаем бан
+					conn = sqlite3.connect(DB_FILE)
+					c = conn.cursor()
+					c.execute('UPDATE users SET banned=0, ban_until=NULL WHERE username=?', (user[0],))
+					conn.commit()
+					conn.close()
+					banned = False
+				else:
+					return JSONResponse({'success': False, 'error': f'Аккаунт забанен до {ban_until}'})
+			else:
+				return JSONResponse({'success': False, 'error': 'Аккаунт забанен'})
+			
 		token = create_jwt(user[0], user[4])
 		return JSONResponse({
 			'success': True,
