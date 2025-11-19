@@ -120,6 +120,16 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
+	function updateCharCounter() {
+		const length = messageInput.value.length;
+		charCounter.textContent = `${length} / 500`;
+		if (length >= 500) {
+			charCounter.style.color = '#ff6b6b';
+		} else {
+			charCounter.style.color = '#999';
+		}
+	}
+
 	// Вход
 	loginForm.addEventListener('submit', async (e) => {
 		e.preventDefault();
