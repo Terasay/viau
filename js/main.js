@@ -67,6 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
 				if (normalizedIndex === 0) {
 					if (link === '#logout') {
 						if (logoutBtn) logoutBtn.click();
+					} else if (link === '#admin') {
+						window.location.href = 'admin.html';
 					} else {
 						alert('Переход: ' + link.replace('#', ''));
 					}
