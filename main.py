@@ -143,7 +143,7 @@ async def send_chat_message(request: Request):
 	text = data.get('text', '').strip()
 	if not text:
 		return JSONResponse({'success': False, 'error': 'Empty message'}, status_code=400)
-	timestamp = datetime.utcnow().isoformat()
+	timestamp = datetime.utcnow().isoformat() + 'Z'
 	conn = sqlite3.connect(DB_FILE)
 	c = conn.cursor()
 	c.execute('INSERT INTO messages (username, role, text, timestamp) VALUES (?, ?, ?, ?)',
@@ -237,7 +237,7 @@ async def websocket_endpoint(websocket: WebSocket):
 			if not text:
 				await websocket.send_json({"error": "Empty message"})
 				continue
-			timestamp = datetime.utcnow().isoformat()
+			timestamp = datetime.utcnow().isoformat() + 'Z'
 			# Сохраняем сообщение в БД
 			conn = sqlite3.connect(DB_FILE)
 			c = conn.cursor()
