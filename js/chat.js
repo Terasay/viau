@@ -4,6 +4,15 @@ let messages = [];
 let onlineUsers = [];
 let ws = null;
 
+// Модальное окно для просмотра изображений
+let imageModal = null;
+let modalImg = null;
+let modalClose = null;
+let modalZoomIn = null;
+let modalZoomOut = null;
+let modalZoomReset = null;
+let currentScale = 1;
+
 // Элементы DOM
 const messagesContainer = document.getElementById('messagesContainer');
 const messageInput = document.getElementById('messageInput');
@@ -23,6 +32,7 @@ const attachBtn = document.getElementById('attachBtn');
 document.addEventListener('DOMContentLoaded', async () => {
     await checkAuth();
     setupEventListeners();
+    setupImageModal();
 });
 
 // Проверка авторизации
@@ -177,6 +187,14 @@ function addMessage(messageData, save = true) {
     // Если текст содержит <img> или <a>, вставляем как html
     if (/<img|<a/.test(messageData.text)) {
         text.innerHTML = messageData.text;
+        // Добавляем обработчик клика по картинке для открытия модального окна
+        const imgs = text.querySelectorAll('img');
+        imgs.forEach(img => {
+            img.style.cursor = 'pointer';
+            img.addEventListener('click', () => {
+                openImageModal(img.src);
+            });
+        });
     } else {
         text.textContent = messageData.text;
     }
@@ -391,10 +409,80 @@ function sendFileMessage(url, fileType) {
 }
 
 // Экспорт для использования в других модулях (если нужно)
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        addMessage,
-        addSystemMessage,
-        updateOnlineUsers
-    };
+
+// --- Модальное окно для просмотра изображений ---
+function setupImageModal() {
+    // Создаём элементы модального окна, если их нет
+    if (document.getElementById('imageModal')) return;
+    imageModal = document.createElement('div');
+    imageModal.id = 'imageModal';
+    imageModal.style.position = 'fixed';
+    imageModal.style.top = '0';
+    imageModal.style.left = '0';
+    imageModal.style.width = '100vw';
+    imageModal.style.height = '100vh';
+    imageModal.style.background = 'rgba(0,0,0,0.85)';
+    imageModal.style.display = 'none';
+    imageModal.style.alignItems = 'center';
+    imageModal.style.justifyContent = 'center';
+    imageModal.style.zIndex = '9999';
+    imageModal.innerHTML = `
+        <div style="position:relative;max-width:90vw;max-height:90vh;display:flex;flex-direction:column;align-items:center;">
+            <img id="modalImg" src="" style="max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 0 40px #000;transition:transform 0.2s;" />
+            <div style="margin-top:15px;display:flex;gap:10px;">
+                <button id="modalZoomIn" style="padding:8px 16px;border-radius:8px;border:none;background:#667eea;color:#fff;font-size:18px;cursor:pointer;">+</button>
+                <button id="modalZoomOut" style="padding:8px 16px;border-radius:8px;border:none;background:#667eea;color:#fff;font-size:18px;cursor:pointer;">-</button>
+                <button id="modalZoomReset" style="padding:8px 16px;border-radius:8px;border:none;background:#764ba2;color:#fff;font-size:16px;cursor:pointer;">Сброс</button>
+                <button id="modalClose" style="padding:8px 16px;border-radius:8px;border:none;background:#ff6b6b;color:#fff;font-size:16px;cursor:pointer;">Закрыть</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(imageModal);
+    modalImg = document.getElementById('modalImg');
+    modalClose = document.getElementById('modalClose');
+    modalZoomIn = document.getElementById('modalZoomIn');
+    modalZoomOut = document.getElementById('modalZoomOut');
+    modalZoomReset = document.getElementById('modalZoomReset');
+
+    modalClose.addEventListener('click', closeImageModal);
+    modalZoomIn.addEventListener('click', () => zoomImage(1.2));
+    modalZoomOut.addEventListener('click', () => zoomImage(0.8));
+    modalZoomReset.addEventListener('click', () => zoomImage(1, true));
+    imageModal.addEventListener('click', (e) => {
+        if (e.target === imageModal) closeImageModal();
+    });
+    modalImg.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        if (e.deltaY < 0) zoomImage(1.1);
+        else zoomImage(0.9);
+    });
+    document.addEventListener('keydown', (e) => {
+        if (imageModal.style.display === 'flex' && (e.key === 'Escape' || e.key === 'Esc')) {
+            closeImageModal();
+        }
+    });
+}
+
+function openImageModal(src) {
+    if (!imageModal) setupImageModal();
+    modalImg.src = src;
+    imageModal.style.display = 'flex';
+    currentScale = 1;
+    modalImg.style.transform = 'scale(1)';
+}
+
+function closeImageModal() {
+    imageModal.style.display = 'none';
+    modalImg.src = '';
+}
+
+function zoomImage(factor, reset = false) {
+    if (reset) {
+        currentScale = 1;
+    } else {
+        currentScale *= factor;
+        if (currentScale < 0.2) currentScale = 0.2;
+        if (currentScale > 5) currentScale = 5;
+    }
+    modalImg.style.transform = `scale(${currentScale})`;
 }
