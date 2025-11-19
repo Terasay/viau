@@ -339,7 +339,7 @@ function setupEventListeners() {
         attachBtn.addEventListener('click', () => {
             fileInput.click();
         });
-        fileInput.addEventListener('change', handleFileUpload);
+        fileInput.addEventListener('change', handleFileSelect);
     }
     // Вставка файла через Ctrl+V
     messageInput.addEventListener('paste', handlePasteFile);
