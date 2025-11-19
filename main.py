@@ -204,7 +204,8 @@ manager = ConnectionManager()
 
 @app.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket):
-	# При первом подключении ждём токен
+	# Сначала принимаем соединение
+	await websocket.accept()
 	try:
 		data = await websocket.receive_json()
 		token = data.get("token")
