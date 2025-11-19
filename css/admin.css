@@ -1,3 +1,23 @@
+input[type="number"], input[type="datetime-local"], select {
+    background: #232323;
+    color: #e0e0e0;
+    border: 1px solid #00ffc6;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 1em;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    margin: 4px 6px 4px 0;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px #0003;
+}
+input[type="number"]:focus, input[type="datetime-local"]:focus, select:focus {
+    border: 1.5px solid #00ffc6;
+    box-shadow: 0 2px 8px #00ffc633;
+}
+select {
+    cursor: pointer;
+}
 body {
     background: #181818;
     color: #e0e0e0;
