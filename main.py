@@ -262,3 +262,28 @@ async def me(request: Request):
 @app.get('/')
 async def index():
 	return FileResponse('index.html')
+
+# Эндпоинт для получения всех пользователей (только для админа)
+@app.get('/admin/users')
+async def admin_users(request: Request):
+	token = request.headers.get('Authorization')
+	payload = decode_jwt(token)
+	if not payload or payload.get('role') != 'admin':
+		return JSONResponse({'detail': 'Forbidden'}, status_code=403)
+	conn = sqlite3.connect(DB_FILE)
+	c = conn.cursor()
+	c.execute('SELECT id, username, email, country, role, banned, muted FROM users')
+	users = [
+		{
+			'id': row[0],
+			'username': row[1],
+			'email': row[2],
+			'country': row[3],
+			'role': row[4],
+			'banned': bool(row[5]),
+			'muted': bool(row[6])
+		}
+		for row in c.fetchall()
+	]
+	conn.close()
+	return JSONResponse({'users': users})

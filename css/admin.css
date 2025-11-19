@@ -1,0 +1,63 @@
+body {
+    background: #181818;
+    color: #e0e0e0;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    margin: 0;
+    padding: 0;
+}
+
+#admin-root {
+    max-width: 900px;
+    margin: 40px auto;
+    background: #232323;
+    border-radius: 12px;
+    box-shadow: 0 4px 32px #000a;
+    padding: 32px 40px;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2.2em;
+    margin-bottom: 32px;
+    color: #00ffc6;
+    letter-spacing: 2px;
+}
+
+.terminal {
+    background: #111;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 2px 16px #0006;
+    margin-bottom: 32px;
+}
+
+.terminal-output {
+    background: #181818;
+    color: #00ff88;
+    font-size: 1.1em;
+    padding: 16px;
+    border-radius: 6px;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    white-space: pre;
+    overflow-x: auto;
+    min-height: 180px;
+}
+
+.forbidden {
+    text-align: center;
+    color: #ff4444;
+    margin-top: 60px;
+}
+
+@media (max-width: 600px) {
+    #admin-root {
+        padding: 16px 4px;
+    }
+    .terminal {
+        padding: 12px;
+    }
+    .terminal-output {
+        padding: 8px;
+        font-size: 0.95em;
+    }
+}

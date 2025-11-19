@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	const logoutBtn = document.getElementById('logout-btn');
 	const themeToggle = document.getElementById('theme-toggle');
 	
-	// Элементы для восстановления пароля
 	const forgotBtn = document.getElementById('forgot-btn');
 	const forgotForm = document.getElementById('forgot-form');
 	const resetForm = document.getElementById('reset-form');

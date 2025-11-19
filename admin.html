@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Админ-панель VIAU</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <script src="/js/admin.js" defer></script>
+</head>
+<body>
+    <div id="admin-root">
+        <h1>Админ-панель VIAU</h1>
+        <div id="forbidden" style="display:none" class="forbidden">
+            <h2>403 Forbidden</h2>
+            <p>У вас нет доступа к этой странице.</p>
+        </div>
+        <div id="admin-content" style="display:none">
+            <section class="terminal">
+                <h2>Пользователи</h2>
+                <pre id="users-list" class="terminal-output">Загрузка...</pre>
+            </section>
+            <!-- Здесь можно добавить другие админ-функции -->
+        </div>
+    </div>
+</body>
+</html>
