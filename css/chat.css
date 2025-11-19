@@ -161,6 +161,43 @@ body {
     overflow: hidden;
 }
 
+/* Кнопка со скрепкой (прикрепить файл) */
+.btn-attach {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--btn-bg);
+    border: none;
+    color: var(--btn-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+}
+
+.btn-attach:hover:not(:disabled) {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+body.dark-theme .btn-attach {
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    box-shadow: 0 4px 15px rgba(108, 155, 207, 0.15);
+}
+
+body.dark-theme .btn-attach:hover:not(:disabled) {
+    box-shadow: 0 5px 15px rgba(108, 155, 207, 0.3);
+}
+
+.btn-attach:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .btn-theme {
     background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
     color: #333;
