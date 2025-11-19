@@ -317,6 +317,17 @@ function setupEventListeners() {
     }
 }
 
+// Обновление счетчика символов
+function updateCharCounter() {
+    const length = messageInput.value.length;
+    charCounter.textContent = `${length} / 500`;
+    if (length >= 500) {
+        charCounter.style.color = '#ff6b6b';
+    } else {
+        charCounter.style.color = '#999';
+    }
+}
+
 // Экспорт для использования в других модулях (если нужно)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
