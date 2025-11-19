@@ -160,25 +160,22 @@ class ConnectionManager:
 	def __init__(self):
 		self.active_connections: list[WebSocket] = []
 		self.online_users: dict[str, dict] = {}  # username -> {username, role}
+		self.websocket_to_username: dict[WebSocket, str] = {}
 
 	async def connect(self, websocket: WebSocket, username: str, role: str):
 		self.active_connections.append(websocket)
 		self.online_users[username] = {"username": username, "role": role}
+		self.websocket_to_username[websocket] = username
 		await self.broadcast_online_users()
 
 	def disconnect(self, websocket: WebSocket):
-		# Найти username по websocket
-		username_to_remove = None
-		for username, info in self.online_users.items():
-			# Проверяем, есть ли этот websocket среди активных
-			if websocket in self.active_connections:
-				username_to_remove = username
-				break
+		username_to_remove = self.websocket_to_username.pop(websocket, None)
 		if websocket in self.active_connections:
 			self.active_connections.remove(websocket)
 		if username_to_remove:
-			self.online_users.pop(username_to_remove, None)
-			# После удаления пользователя обновить онлайн
+			# Проверяем, есть ли ещё соединения с этим username
+			if username_to_remove not in self.websocket_to_username.values():
+				self.online_users.pop(username_to_remove, None)
 		# После любого disconnect обновить онлайн
 		import asyncio
 		asyncio.create_task(self.broadcast_online_users())
