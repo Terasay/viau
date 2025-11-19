@@ -155,17 +155,34 @@ async def send_chat_message(request: Request):
 # --- WebSocket для чата ---
 import asyncio
 
+
 class ConnectionManager:
 	def __init__(self):
 		self.active_connections: list[WebSocket] = []
+		self.online_users: dict[str, dict] = {}  # username -> {username, role}
 
-	async def connect(self, websocket: WebSocket):
+	async def connect(self, websocket: WebSocket, username: str, role: str):
 		await websocket.accept()
 		self.active_connections.append(websocket)
+		self.online_users[username] = {"username": username, "role": role}
+		await self.broadcast_online_users()
 
 	def disconnect(self, websocket: WebSocket):
+		# Найти username по websocket
+		username_to_remove = None
+		for username, info in self.online_users.items():
+			# Проверяем, есть ли этот websocket среди активных
+			if websocket in self.active_connections:
+				username_to_remove = username
+				break
 		if websocket in self.active_connections:
 			self.active_connections.remove(websocket)
+		if username_to_remove:
+			self.online_users.pop(username_to_remove, None)
+			# После удаления пользователя обновить онлайн
+		# После любого disconnect обновить онлайн
+		import asyncio
+		asyncio.create_task(self.broadcast_online_users())
 
 	async def broadcast(self, message: dict):
 		for connection in self.active_connections:
@@ -174,20 +191,42 @@ class ConnectionManager:
 			except Exception:
 				pass
 
+	async def broadcast_online_users(self):
+		online_list = list(self.online_users.values())
+		for connection in self.active_connections:
+			try:
+				await connection.send_json({"type": "online_users", "users": online_list})
+			except Exception:
+				pass
+
+
 manager = ConnectionManager()
 
 @app.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket):
-	await manager.connect(websocket)
+	# При первом подключении ждём токен
 	try:
+		data = await websocket.receive_json()
+		token = data.get("token")
+		payload = decode_jwt(token)
+		if not payload:
+			await websocket.send_json({"error": "Unauthorized"})
+			await websocket.close()
+			return
+		user = get_user_by_username(payload["username"])
+		if not user:
+			await websocket.send_json({"error": "User not found"})
+			await websocket.close()
+			return
+		if user[5]:
+			await websocket.send_json({"error": "User banned"})
+			await websocket.close()
+			return
+		await manager.connect(websocket, user[0], user[4])
 		while True:
 			data = await websocket.receive_json()
-			token = data.get("token")
 			text = data.get("text", "").strip()
-			payload = decode_jwt(token)
-			if not payload:
-				await websocket.send_json({"error": "Unauthorized"})
-				continue
+			# Повторно проверяем mute/ban
 			user = get_user_by_username(payload["username"])
 			if not user:
 				await websocket.send_json({"error": "User not found"})

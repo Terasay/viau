@@ -71,7 +71,6 @@ function initChat() {
     if (currentUser.muted) {
         showMutedNotice();
     }
-    updateOnlineUsers();
     loadChatHistory();
     setupWebSocket();
 }
@@ -107,46 +106,27 @@ function saveChatHistory() {
 }
 
 // Обновление списка пользователей онлайн
-function updateOnlineUsers() {
-    // В реальном проекте список приходил бы с сервера
-    onlineUsers = [
-        { username: currentUser.username, role: currentUser.role },
-        { username: 'GameMaster', role: 'admin' },
-        { username: 'Player1', role: 'user' },
-        { username: 'Player2', role: 'user' }
-    ];
-    
-    // Убираем дубликаты
-    onlineUsers = onlineUsers.filter((user, index, self) =>
-        index === self.findIndex(u => u.username === user.username)
-    );
-    
+function updateOnlineUsers(users) {
+    onlineUsers = users || [];
     onlineCount.textContent = `${onlineUsers.length} онлайн`;
-    
-    // Обновляем список
     usersList.innerHTML = '';
     onlineUsers.forEach(user => {
         const userItem = document.createElement('div');
         userItem.className = 'user-item';
-        
         const avatar = document.createElement('div');
         avatar.className = 'user-avatar';
         avatar.textContent = user.username[0].toUpperCase();
-        
         const name = document.createElement('div');
         name.className = 'user-name';
         name.textContent = user.username;
-        
         userItem.appendChild(avatar);
         userItem.appendChild(name);
-        
         if (user.role === 'admin') {
             const badge = document.createElement('div');
             badge.className = 'user-badge admin';
             badge.textContent = 'ADMIN';
             userItem.appendChild(badge);
         }
-        
         usersList.appendChild(userItem);
     });
 }
@@ -203,7 +183,9 @@ function setupWebSocket() {
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-        // Соединение установлено
+        // При открытии сразу отправляем токен для авторизации
+        const token = localStorage.getItem('token');
+        ws.send(JSON.stringify({ token }));
     };
 
     ws.onmessage = (event) => {
@@ -211,6 +193,8 @@ function setupWebSocket() {
             const data = JSON.parse(event.data);
             if (data.type === 'message' && data.message) {
                 addMessage(data.message, false);
+            } else if (data.type === 'online_users' && Array.isArray(data.users)) {
+                updateOnlineUsers(data.users);
             } else if (data.error) {
                 alert(data.error);
             }
