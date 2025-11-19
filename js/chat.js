@@ -67,6 +67,16 @@ async function checkAuth() {
     }
 }
 
+function updateCharCounter() {
+	const length = messageInput.value.length;
+	charCounter.textContent = `${length} / 500`;
+	if (length >= 500) {
+		charCounter.style.color = '#ff6b6b';
+	} else {
+		charCounter.style.color = '#999';
+	}
+}
+
 // Инициализация чата
 function initChat() {
     userInfo.textContent = `${currentUser.username}${currentUser.role === 'admin' ? ' (админ)' : ''}`;
