@@ -177,6 +177,42 @@ body {
     margin-bottom: 20px;
     animation: slideIn 0.3s ease;
 }
+/* Темы */
+:root {
+    --bg-main: rgba(255,255,255,0.95);
+    --bg-header: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --header-color: #fff;
+    --sidebar-bg: #f8f9fa;
+    --sidebar-title: #667eea;
+    --user-bg: #fff;
+    --user-hover: #e8eaf6;
+    --user-avatar-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --user-admin-bg: #ff6b6b;
+    --user-admin-color: #fff;
+    --msg-bg: #fff;
+    --msg-own-bg: #e8eaf6;
+    --msg-system-bg: #f0f0f0;
+    --msg-system-color: #666;
+    --input-bg: #f8f9fa;
+    --input-border: #e0e0e0;
+    --input-focus: #667eea;
+    --input-disabled: #f5f5f5;
+    --btn-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --btn-color: #fff;
+    --btn-hover-bg: rgba(255,255,255,0.3);
+    --scrollbar-bg: #667eea;
+    --scrollbar-hover: #764ba2;
+    --muted-bg: #fff3cd;
+    --muted-color: #856404;
+    --muted-border: #ffc107;
+    --modal-bg: #fff;
+    --modal-title: #667eea;
+    --modal-text: #666;
+    --modal-btn-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --modal-btn-color: #fff;
+    --main-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
 
 @keyframes slideIn {
     from {
@@ -211,6 +247,12 @@ body {
     align-items: center;
     gap: 10px;
     margin-bottom: 5px;
+}
+.users-sidebar {
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--input-border);
+    padding: 20px;
+    overflow-y: auto;
 }
 
 .message-username {

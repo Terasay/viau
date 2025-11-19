@@ -13,6 +13,8 @@ const onlineCount = document.getElementById('onlineCount');
 const usersList = document.getElementById('usersList');
 const loginModal = document.getElementById('loginModal');
 const logoutBtn = document.getElementById('logoutBtn');
+const mainBtn = document.getElementById('mainBtn');
+const themeBtn = document.getElementById('themeBtn');
 const charCounter = document.getElementById('charCounter');
 
 // Инициализация при загрузке страницы
@@ -290,6 +292,29 @@ function setupEventListeners() {
     
     // Выход
     logoutBtn.addEventListener('click', logout);
+    // Переход на главную
+    if (mainBtn) {
+        mainBtn.addEventListener('click', () => {
+            window.location.href = '/index.html';
+        });
+    }
+    // Переключение темы
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            // Сохраняем выбор пользователя
+            if (document.body.classList.contains('dark-theme')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+        // При загрузке страницы — применяем сохранённую тему
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+    }
 }
 
 // Экспорт для использования в других модулях (если нужно)
