@@ -49,15 +49,27 @@ h1 {
     margin-top: 60px;
 }
 
-@media (max-width: 600px) {
-    #admin-root {
-        padding: 16px 4px;
-    }
-    .terminal {
-        padding: 12px;
-    }
-    .terminal-output {
-        padding: 8px;
-        font-size: 0.95em;
-    }
+
+button, input[type="submit"] {
+    background: #00ffc6;
+    color: #181818;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 1em;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px #0004;
+    margin: 4px 0;
+    outline: none;
+}
+button:hover, input[type="submit"]:hover {
+    background: #00c6a2;
+    color: #fff;
+    box-shadow: 0 4px 16px #00ffc666;
+}
+button:active, input[type="submit"]:active {
+    background: #009e8a;
+    color: #fff;
 }
