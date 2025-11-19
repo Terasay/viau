@@ -9,6 +9,9 @@ import os
 from dotenv import load_dotenv
 import random
 
+from fastapi import WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+
 
 import string
 import sqlite3
@@ -27,6 +30,13 @@ GMAIL_SENDER = os.getenv('GMAIL_SENDER')
 
 
 app = FastAPI()
+app.add_middleware(
+	CORSMiddleware,
+	allow_origins=["*"],
+	allow_credentials=True,
+	allow_methods=["*"],
+	allow_headers=["*"],
+)
 app.mount('/js', StaticFiles(directory='js'), name='js')
 app.mount('/css', StaticFiles(directory='css'), name='css')
 
@@ -141,6 +151,73 @@ async def send_chat_message(request: Request):
 	conn.commit()
 	conn.close()
 	return JSONResponse({'success': True})
+
+# --- WebSocket для чата ---
+import asyncio
+
+class ConnectionManager:
+	def __init__(self):
+		self.active_connections: list[WebSocket] = []
+
+	async def connect(self, websocket: WebSocket):
+		await websocket.accept()
+		self.active_connections.append(websocket)
+
+	def disconnect(self, websocket: WebSocket):
+		if websocket in self.active_connections:
+			self.active_connections.remove(websocket)
+
+	async def broadcast(self, message: dict):
+		for connection in self.active_connections:
+			try:
+				await connection.send_json(message)
+			except Exception:
+				pass
+
+manager = ConnectionManager()
+
+@app.websocket("/ws/chat")
+async def websocket_endpoint(websocket: WebSocket):
+	await manager.connect(websocket)
+	try:
+		while True:
+			data = await websocket.receive_json()
+			token = data.get("token")
+			text = data.get("text", "").strip()
+			payload = decode_jwt(token)
+			if not payload:
+				await websocket.send_json({"error": "Unauthorized"})
+				continue
+			user = get_user_by_username(payload["username"])
+			if not user:
+				await websocket.send_json({"error": "User not found"})
+				continue
+			if user[5]:
+				await websocket.send_json({"error": "User banned"})
+				continue
+			if user[6]:
+				await websocket.send_json({"error": "User muted"})
+				continue
+			if not text:
+				await websocket.send_json({"error": "Empty message"})
+				continue
+			timestamp = datetime.utcnow().isoformat()
+			# Сохраняем сообщение в БД
+			conn = sqlite3.connect(DB_FILE)
+			c = conn.cursor()
+			c.execute('INSERT INTO messages (username, role, text, timestamp) VALUES (?, ?, ?, ?)',
+					  (user[0], user[4], text, timestamp))
+			conn.commit()
+			conn.close()
+			msg = {
+				"username": user[0],
+				"role": user[4],
+				"text": text,
+				"timestamp": timestamp
+			}
+			await manager.broadcast({"type": "message", "message": msg})
+	except WebSocketDisconnect:
+		manager.disconnect(websocket)
 
 def get_user_by_username(username):
 	conn = sqlite3.connect(DB_FILE)

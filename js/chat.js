@@ -73,6 +73,7 @@ function initChat() {
     }
     updateOnlineUsers();
     loadChatHistory();
+    setupWebSocket();
 }
 
 // Симуляция чата (замените на реальный WebSocket)
@@ -195,7 +196,36 @@ function addSystemMessage(text, save = true) {
     // В новой версии системные сообщения не используются
 }
 
-// Отправка сообщения
+// --- WebSocket ---
+function setupWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const wsUrl = `${protocol}://${window.location.host}/ws/chat`;
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+        // Соединение установлено
+    };
+
+    ws.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'message' && data.message) {
+                addMessage(data.message, false);
+            } else if (data.error) {
+                alert(data.error);
+            }
+        } catch (e) {
+            console.error('Ошибка обработки сообщения WebSocket:', e);
+        }
+    };
+
+    ws.onclose = () => {
+        // Попробовать переподключиться через 2 секунды
+        setTimeout(setupWebSocket, 2000);
+    };
+}
+
+// --- Переопределение sendMessage для WebSocket ---
 function sendMessage() {
     const text = messageInput.value.trim();
     if (!text) return;
@@ -204,42 +234,12 @@ function sendMessage() {
         return;
     }
     const token = localStorage.getItem('token');
-    sendBtn.disabled = true;
-    fetch('/chat/send', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': token
-        },
-        body: JSON.stringify({ text })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            messageInput.value = '';
-            updateCharCounter();
-            loadChatHistory();
-        } else {
-            alert(data.error || 'Ошибка отправки сообщения');
-        }
-    })
-    .catch(() => {
-        alert('Ошибка отправки сообщения');
-    })
-    .finally(() => {
-        sendBtn.disabled = false;
-    });
-}
-
-// Обновление счетчика символов
-function updateCharCounter() {
-    const length = messageInput.value.length;
-    charCounter.textContent = `${length} / 500`;
-    
-    if (length >= 500) {
-        charCounter.style.color = '#ff6b6b';
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ token, text }));
+        messageInput.value = '';
+        updateCharCounter();
     } else {
-        charCounter.style.color = '#999';
+        alert('Нет соединения с сервером');
     }
 }
 
