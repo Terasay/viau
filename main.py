@@ -82,7 +82,9 @@ def init_db():
 		country TEXT,
 		role TEXT DEFAULT 'user',
 		banned INTEGER DEFAULT 0,
-		muted INTEGER DEFAULT 0
+		muted INTEGER DEFAULT 0,
+		ban_until TEXT,
+		mute_until TEXT
 	)''')
 	conn.commit()
 	conn.close()
@@ -90,7 +92,7 @@ def init_db():
 def get_user_by_username(username):
 	conn = sqlite3.connect(DB_FILE)
 	c = conn.cursor()
-	c.execute('SELECT username, password, email, country, role, banned, muted FROM users WHERE username=?', (username,))
+	c.execute('SELECT username, password, email, country, role, banned, muted, ban_until, mute_until FROM users WHERE username=?', (username,))
 	user = c.fetchone()
 	conn.close()
 	return user
@@ -98,7 +100,7 @@ def get_user_by_username(username):
 def get_user_by_email(email):
 	conn = sqlite3.connect(DB_FILE)
 	c = conn.cursor()
-	c.execute('SELECT username, password, email, country, role, banned, muted FROM users WHERE email=?', (email,))
+	c.execute('SELECT username, password, email, country, role, banned, muted, ban_until, mute_until FROM users WHERE email=?', (email,))
 	user = c.fetchone()
 	conn.close()
 	return user
@@ -261,13 +263,16 @@ async def me(request: Request):
 			'role': user[4],  # строка 'admin' или 'user'
 			'country': user[3],
 			'muted': bool(user[6]),  # muted
-			'banned': bool(user[5])  # banned
+			'banned': bool(user[5]),  # banned
+			'ban_until': user[7],
+			'mute_until': user[8]
 		})
 	return JSONResponse({'logged_in': False})
 
 @app.get('/')
 async def index():
 	return FileResponse('index.html')
+
 
 # Эндпоинт для получения всех пользователей (только для админа)
 @app.get('/admin/users')
@@ -279,7 +284,7 @@ async def admin_users(request: Request):
 		return JSONResponse({'detail': 'Forbidden'}, status_code=403)
 	conn = sqlite3.connect(DB_FILE)
 	c = conn.cursor()
-	c.execute('SELECT id, username, email, country, role, banned, muted FROM users')
+	c.execute('SELECT id, username, email, country, role, banned, muted, ban_until, mute_until FROM users')
 	users = [
 		{
 			'id': row[0],
@@ -288,9 +293,36 @@ async def admin_users(request: Request):
 			'country': row[3],
 			'role': row[4],
 			'banned': bool(row[5]),
-			'muted': bool(row[6])
+			'muted': bool(row[6]),
+			'ban_until': row[7],
+			'mute_until': row[8]
 		}
 		for row in c.fetchall()
 	]
 	conn.close()
 	return JSONResponse({'users': users})
+
+# Эндпоинт для изменения статуса бан/мут пользователя
+@app.post('/admin/set_status')
+async def admin_set_status(request: Request):
+	token = request.headers.get('Authorization')
+	payload = decode_jwt(token)
+	role = payload.get('role') if payload else None
+	if role != 'admin':
+		return JSONResponse({'detail': 'Forbidden'}, status_code=403)
+	data = await request.json()
+	user_id = data.get('id')
+	action = data.get('action')  # 'ban' или 'mute'
+	value = data.get('value')    # True/False
+	until = data.get('until')    # строка даты или None
+	if action not in ('ban', 'mute'):
+		return JSONResponse({'success': False, 'error': 'Некорректное действие'})
+	conn = sqlite3.connect(DB_FILE)
+	c = conn.cursor()
+	if action == 'ban':
+		c.execute('UPDATE users SET banned=?, ban_until=? WHERE id=?', (1 if value else 0, until, user_id))
+	elif action == 'mute':
+		c.execute('UPDATE users SET muted=?, mute_until=? WHERE id=?', (1 if value else 0, until, user_id))
+	conn.commit()
+	conn.close()
+	return JSONResponse({'success': True})

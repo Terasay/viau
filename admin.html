@@ -17,6 +17,23 @@
             <section class="terminal">
                 <h2>Пользователи</h2>
                 <pre id="users-list" class="terminal-output">Загрузка...</pre>
+                <div id="user-actions" style="margin-top:24px">
+                    <h3>Управление пользователем</h3>
+                    <form id="user-action-form">
+                        <label>ID пользователя: <input type="number" id="user-id" required style="width:60px"></label>
+                        <select id="action-type">
+                            <option value="ban">Бан</option>
+                            <option value="mute">Мут</option>
+                        </select>
+                        <select id="action-value">
+                            <option value="true">Включить</option>
+                            <option value="false">Снять</option>
+                        </select>
+                        <label>До (дата/время, пусто — навсегда): <input type="datetime-local" id="action-until"></label>
+                        <button type="submit">Применить</button>
+                    </form>
+                    <div id="action-result" style="margin-top:8px;color:#00ffc6"></div>
+                </div>
             </section>
             <!-- Здесь можно добавить другие админ-функции -->
         </div>
