@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded', async () => {
+        // Кнопка выхода на главную
+        const exitBtn = document.getElementById('admin-exit-btn');
+        if (exitBtn) {
+            exitBtn.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+        }
     const forbidden = document.getElementById('forbidden');
     const adminContent = document.getElementById('admin-content');
     const usersList = document.getElementById('users-list');
