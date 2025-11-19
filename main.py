@@ -197,7 +197,7 @@ async def login(request: Request):
 	if user and user[1] == data['password']:
 		if user[6]:
 			return JSONResponse({'success': False, 'error': 'Аккаунт забанен'})
-		token = create_jwt(user[0], user[5])
+		token = create_jwt(user[0], user[4])
 		return JSONResponse({
 			'success': True,
 			'username': user[0],
