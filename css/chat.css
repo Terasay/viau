@@ -372,6 +372,35 @@ body.dark-theme .btn-attach:hover:not(:disabled) {
     animation: slideIn 0.3s ease;
 }
 
+.message-actions {
+    display: none;
+    font-size: 11px;
+    gap: 8px;
+    margin-top: 2px;
+    opacity: 0.8;
+}
+.delete-btn {
+    color: #ff6b6b;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    padding: 0 6px;
+    transition: color 0.2s;
+}
+.edit-btn {
+    color: var(--msg-text-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    padding: 0 6px;
+    transition: color 0.2s;
+}
+body.dark-theme .edit-btn {
+    color: var(--msg-text-color);
+}
+
 @keyframes slideIn {
     from {
         opacity: 0;

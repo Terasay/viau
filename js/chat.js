@@ -173,6 +173,7 @@ function addMessage(messageData, save = true) {
     if (messageData.username === currentUser.username) {
         message.classList.add('own');
     }
+    message.dataset.id = messageData.id;
     const avatar = document.createElement('div');
     avatar.className = 'message-avatar';
     avatar.textContent = messageData.username[0].toUpperCase();
@@ -197,10 +198,8 @@ function addMessage(messageData, save = true) {
     header.appendChild(time);
     const text = document.createElement('div');
     text.className = 'message-text';
-    // Если текст содержит <img> или <a>, вставляем как html
     if (/<img|<a/.test(messageData.text)) {
         text.innerHTML = messageData.text;
-        // Добавляем обработчик клика по картинке для открытия модального окна
         const imgs = text.querySelectorAll('img');
         imgs.forEach(img => {
             img.style.cursor = 'pointer';
@@ -213,10 +212,116 @@ function addMessage(messageData, save = true) {
     }
     content.appendChild(header);
     content.appendChild(text);
+
+    // Кнопки редактирования и удаления
+    const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
+    if (canEditOrDelete && messageData.id) {
+        const actions = document.createElement('div');
+        actions.className = 'message-actions';
+        actions.style.display = 'none';
+        actions.style.marginTop = '2px';
+        actions.style.fontSize = '11px';
+        actions.style.gap = '8px';
+        actions.style.alignItems = 'center';
+        actions.style.opacity = '0.8';
+        // Кнопка удалить
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Удалить';
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.style.color = '#ff6b6b';
+        deleteBtn.style.background = 'none';
+        deleteBtn.style.border = 'none';
+        deleteBtn.style.cursor = 'pointer';
+        deleteBtn.style.fontSize = '11px';
+        deleteBtn.style.padding = '0 6px';
+        deleteBtn.onclick = async (e) => {
+            e.stopPropagation();
+            if (confirm('Удалить сообщение?')) {
+                await deleteMessageApi(messageData.id);
+            }
+        };
+        actions.appendChild(deleteBtn);
+        // Кнопка редактировать
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Редактировать';
+        editBtn.className = 'edit-btn';
+        editBtn.style.color = '';
+        editBtn.style.background = 'none';
+        editBtn.style.border = 'none';
+        editBtn.style.cursor = 'pointer';
+        editBtn.style.fontSize = '11px';
+        editBtn.style.padding = '0 6px';
+        editBtn.onclick = (e) => {
+            e.stopPropagation();
+            showEditMessageInput(message, messageData);
+        };
+        actions.appendChild(editBtn);
+        content.appendChild(actions);
+        // Показывать действия при наведении
+        message.addEventListener('mouseenter', () => {
+            actions.style.display = 'flex';
+        });
+        message.addEventListener('mouseleave', () => {
+            actions.style.display = 'none';
+        });
+    }
+
     message.appendChild(avatar);
     message.appendChild(content);
     messagesContainer.appendChild(message);
     scrollToBottom();
+
+    // ---
+    function showEditMessageInput(messageElem, msgData) {
+        // Скрыть текст
+        text.style.display = 'none';
+        // Скрыть действия
+        const actionsElem = content.querySelector('.message-actions');
+        if (actionsElem) actionsElem.style.display = 'none';
+        // Создать поле ввода
+        const editInput = document.createElement('input');
+        editInput.type = 'text';
+        editInput.value = msgData.text.replace(/<[^>]+>/g, '');
+        editInput.style.fontSize = '13px';
+        editInput.style.width = '90%';
+        editInput.style.marginTop = '4px';
+        editInput.style.borderRadius = '6px';
+        editInput.style.border = '1px solid #ccc';
+        editInput.style.padding = '4px 8px';
+        content.appendChild(editInput);
+        // Кнопки сохранить/отмена
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Сохранить';
+        saveBtn.style.fontSize = '11px';
+        saveBtn.style.marginLeft = '6px';
+        saveBtn.style.background = 'var(--btn-bg)';
+        saveBtn.style.color = 'var(--btn-color)';
+        saveBtn.style.border = 'none';
+        saveBtn.style.borderRadius = '6px';
+        saveBtn.style.cursor = 'pointer';
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Отмена';
+        cancelBtn.style.fontSize = '11px';
+        cancelBtn.style.marginLeft = '6px';
+        cancelBtn.style.background = 'none';
+        cancelBtn.style.color = '#999';
+        cancelBtn.style.border = 'none';
+        cancelBtn.style.cursor = 'pointer';
+        content.appendChild(saveBtn);
+        content.appendChild(cancelBtn);
+        saveBtn.onclick = async () => {
+            const newText = editInput.value.trim();
+            if (!newText) return alert('Текст не может быть пустым');
+            await editMessageApi(msgData.id, newText);
+        };
+        cancelBtn.onclick = () => {
+            editInput.remove();
+            saveBtn.remove();
+            cancelBtn.remove();
+            text.style.display = '';
+            if (actionsElem) actionsElem.style.display = 'none';
+        };
+    }
 }
 
 // Добавление системного сообщения
@@ -241,6 +346,8 @@ function setupWebSocket() {
             const data = JSON.parse(event.data);
             if (data.type === 'message' && data.message) {
                 addMessage(data.message, false);
+                // После добавления сообщения обновить историю
+                loadChatHistory();
             } else if (data.type === 'online_users' && Array.isArray(data.users)) {
                 updateOnlineUsers(data.users);
             } else if (data.error) {
@@ -255,6 +362,52 @@ function setupWebSocket() {
         // Попробовать переподключиться через 2 секунды
         setTimeout(setupWebSocket, 2000);
     };
+}
+
+// API для удаления сообщения
+async function deleteMessageApi(id) {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch('/chat/delete_message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (data.success) {
+            loadChatHistory();
+        } else {
+            alert(data.error || 'Ошибка удаления');
+        }
+    } catch (e) {
+        alert('Ошибка удаления');
+    }
+}
+
+// API для редактирования сообщения
+async function editMessageApi(id, text) {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch('/chat/edit_message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({ id, text })
+        });
+        const data = await res.json();
+        if (data.success) {
+            loadChatHistory();
+        } else {
+            alert(data.error || 'Ошибка редактирования');
+        }
+    } catch (e) {
+        alert('Ошибка редактирования');
+    }
 }
 
 // --- Переопределение sendMessage для WebSocket ---

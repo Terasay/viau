@@ -139,16 +139,17 @@ def init_db():
 async def get_chat_messages():
 	conn = sqlite3.connect(DB_FILE)
 	c = conn.cursor()
-	c.execute('SELECT username, role, text, timestamp FROM messages ORDER BY id DESC LIMIT 50')
+	c.execute('SELECT id, username, role, text, timestamp FROM messages ORDER BY id DESC LIMIT 50')
 	rows = c.fetchall()
 	conn.close()
 	# Возвращаем в обратном порядке (от старых к новым)
 	messages = [
 		{
-			'username': row[0],
-			'role': row[1],
-			'text': row[2],
-			'timestamp': row[3]
+			'id': row[0],
+			'username': row[1],
+			'role': row[2],
+			'text': row[3],
+			'timestamp': row[4]
 		}
 		for row in reversed(rows)
 	]
@@ -180,6 +181,67 @@ async def send_chat_message(request: Request):
 	conn.commit()
 	conn.close()
 	return JSONResponse({'success': True})
+
+	# Эндпоинт для удаления сообщения
+	@app.post('/chat/delete_message')
+	async def delete_message(request: Request):
+		data = await request.json()
+		token = request.headers.get('Authorization')
+		payload = decode_jwt(token)
+		if not payload:
+			return JSONResponse({'success': False, 'error': 'Unauthorized'}, status_code=401)
+		user = get_user_by_username(payload['username'])
+		if not user:
+			return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
+		message_id = data.get('id')
+		if not message_id:
+			return JSONResponse({'success': False, 'error': 'Message id required'}, status_code=400)
+		conn = sqlite3.connect(DB_FILE)
+		c = conn.cursor()
+		c.execute('SELECT username FROM messages WHERE id=?', (message_id,))
+		row = c.fetchone()
+		if not row:
+			conn.close()
+			return JSONResponse({'success': False, 'error': 'Message not found'}, status_code=404)
+		# Только автор или админ может удалить
+		if row[0] != user[0] and user[4] != 'admin':
+			conn.close()
+			return JSONResponse({'success': False, 'error': 'Forbidden'}, status_code=403)
+		c.execute('DELETE FROM messages WHERE id=?', (message_id,))
+		conn.commit()
+		conn.close()
+		return JSONResponse({'success': True})
+
+	# Эндпоинт для редактирования сообщения
+	@app.post('/chat/edit_message')
+	async def edit_message(request: Request):
+		data = await request.json()
+		token = request.headers.get('Authorization')
+		payload = decode_jwt(token)
+		if not payload:
+			return JSONResponse({'success': False, 'error': 'Unauthorized'}, status_code=401)
+		user = get_user_by_username(payload['username'])
+		if not user:
+			return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
+		message_id = data.get('id')
+		new_text = data.get('text', '').strip()
+		if not message_id or not new_text:
+			return JSONResponse({'success': False, 'error': 'Message id and text required'}, status_code=400)
+		conn = sqlite3.connect(DB_FILE)
+		c = conn.cursor()
+		c.execute('SELECT username FROM messages WHERE id=?', (message_id,))
+		row = c.fetchone()
+		if not row:
+			conn.close()
+			return JSONResponse({'success': False, 'error': 'Message not found'}, status_code=404)
+		# Только автор или админ может редактировать
+		if row[0] != user[0] and user[4] != 'admin':
+			conn.close()
+			return JSONResponse({'success': False, 'error': 'Forbidden'}, status_code=403)
+		c.execute('UPDATE messages SET text=? WHERE id=?', (new_text, message_id))
+		conn.commit()
+		conn.close()
+		return JSONResponse({'success': True})
 
 # --- WebSocket для чата ---
 import asyncio
