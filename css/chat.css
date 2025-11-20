@@ -556,7 +556,7 @@ body.dark-theme .message.own .message-avatar {
     display: flex;
     gap: 10px;
     margin-bottom: 5px;
-        position: relative;
+    position: relative;
 }
 
 #messageInput {
