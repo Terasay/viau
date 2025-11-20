@@ -162,11 +162,11 @@ body {
 }
 
 .btn-emoji {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
-    color: #333;
+    background: var(--btn-bg);
+    color: var(--btn-color);
     border: none;
     display: flex;
     align-items: center;
@@ -174,12 +174,22 @@ body {
     font-size: 22px;
     margin-right: 8px;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.15);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
     transition: all 0.3s ease;
+    position: relative;
+    vertical-align: middle;
 }
 .btn-emoji:hover {
     transform: scale(1.1);
-    box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+body.dark-theme .btn-emoji {
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    box-shadow: 0 4px 15px rgba(108, 155, 207, 0.15);
+}
+body.dark-theme .btn-emoji:hover {
+    box-shadow: 0 5px 15px rgba(108, 155, 207, 0.3);
 }
 
 /* Кнопка со скрепкой (прикрепить файл) */
