@@ -46,6 +46,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     filePreviewContainer.style.gap = '10px';
     filePreviewContainer.style.margin = '10px 0';
     messagesContainer.parentNode.insertBefore(filePreviewContainer, messagesContainer);
+
+    // --- Emoji Picker ---
+    const emojiPicker = document.createElement('emoji-picker');
+    emojiPicker.style.position = 'absolute';
+    emojiPicker.style.bottom = '70px';
+    emojiPicker.style.right = '40px';
+    emojiPicker.style.zIndex = '1000';
+    emojiPicker.style.display = 'none';
+    document.body.appendChild(emojiPicker);
+
+    // Кнопка для открытия emoji picker
+    const emojiBtn = document.createElement('button');
+    emojiBtn.id = 'emojiBtn';
+    emojiBtn.className = 'btn-emoji';
+    emojiBtn.type = 'button';
+    emojiBtn.title = 'Эмодзи';
+    emojiBtn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zm0-4a6 6 0 0 0 6-6H6a6 6 0 0 0 6 6zm-3-7a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm6 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    emojiBtn.style.marginRight = '8px';
+    emojiBtn.style.background = 'none';
+    emojiBtn.style.border = 'none';
+    emojiBtn.style.cursor = 'pointer';
+    emojiBtn.style.fontSize = '22px';
+    emojiBtn.style.verticalAlign = 'middle';
+    emojiBtn.style.position = 'relative';
+    // Вставляем кнопку перед sendBtn
+    const inputWrapper = document.querySelector('.input-wrapper');
+    inputWrapper.insertBefore(emojiBtn, inputWrapper.querySelector('#sendBtn'));
+
+    // Открытие/закрытие emoji picker
+    emojiBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (emojiPicker.style.display === 'none') {
+            emojiPicker.style.display = 'block';
+            // Позиционируем рядом с кнопкой
+            const rect = emojiBtn.getBoundingClientRect();
+            emojiPicker.style.left = (rect.left - 10) + 'px';
+            emojiPicker.style.top = (rect.top - 320) + 'px';
+        } else {
+            emojiPicker.style.display = 'none';
+        }
+    });
+    // Вставка emoji в поле ввода
+    emojiPicker.addEventListener('emoji-click', (event) => {
+        const emoji = event.detail.unicode;
+        const input = document.getElementById('messageInput');
+        if (input) {
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            const value = input.value;
+            input.value = value.slice(0, start) + emoji + value.slice(end);
+            input.focus();
+            input.selectionStart = input.selectionEnd = start + emoji.length;
+        }
+        emojiPicker.style.display = 'none';
+    });
+    // Закрытие picker при клике вне
+    document.addEventListener('click', (e) => {
+        if (emojiPicker.style.display === 'block' && !emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+            emojiPicker.style.display = 'none';
+        }
+    });
 });
 
 // Проверка авторизации

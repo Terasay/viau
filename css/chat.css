@@ -161,6 +161,27 @@ body {
     overflow: hidden;
 }
 
+.btn-emoji {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+    color: #333;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-right: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.15);
+    transition: all 0.3s ease;
+}
+.btn-emoji:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+}
+
 /* Кнопка со скрепкой (прикрепить файл) */
 .btn-attach {
     width: 50px;
