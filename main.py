@@ -59,8 +59,8 @@ class LimitUploadSizeMiddleware(BaseHTTPMiddleware):
 				return JSONResponse({"success": False, "error": "File too large"}, status_code=413)
 		return await call_next(request)
 
-# Установить лимит 20 МБ (можно изменить)
-app.add_middleware(LimitUploadSizeMiddleware, max_upload_size=20 * 1024 * 1024)
+# Установить лимит 100 МБ (можно изменить)
+app.add_middleware(LimitUploadSizeMiddleware, max_upload_size=100 * 1024 * 1024)
 
 
 # --- Эндпоинт для загрузки файлов (изображения/документы) ---
