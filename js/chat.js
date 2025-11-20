@@ -269,6 +269,10 @@ function addMessage(messageData, save = true) {
     message.appendChild(avatar);
     message.appendChild(content);
     messagesContainer.appendChild(message);
+    // Рендерим emoji через Twemoji
+    if (window.twemoji) {
+        twemoji.parse(message);
+    }
     scrollToBottom();
 
     // ---
