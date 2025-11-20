@@ -42,6 +42,26 @@ app.add_middleware(
 app.mount('/js', StaticFiles(directory='js'), name='js')
 app.mount('/css', StaticFiles(directory='css'), name='css')
 
+# --- Middleware для увеличения лимита размера загружаемых файлов ---
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as StarletteRequest
+
+class LimitUploadSizeMiddleware(BaseHTTPMiddleware):
+	def __init__(self, app, max_upload_size: int):
+		super().__init__(app)
+		self.max_upload_size = max_upload_size
+
+	async def dispatch(self, request: StarletteRequest, call_next):
+		# Проверяем только POST/PUT/PATCH
+		if request.method in ("POST", "PUT", "PATCH"):
+			content_length = request.headers.get("content-length")
+			if content_length and int(content_length) > self.max_upload_size:
+				return JSONResponse({"success": False, "error": "File too large"}, status_code=413)
+		return await call_next(request)
+
+# Установить лимит 20 МБ (можно изменить)
+app.add_middleware(LimitUploadSizeMiddleware, max_upload_size=20 * 1024 * 1024)
+
 
 # --- Эндпоинт для загрузки файлов (изображения/документы) ---
 UPLOAD_DIR = 'uploads'
