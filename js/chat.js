@@ -66,6 +66,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Вставляем кнопку перед sendBtn
     const inputWrapper = document.querySelector('.input-wrapper');
     inputWrapper.insertBefore(emojiBtn, inputWrapper.querySelector('#sendBtn'));
+        inputWrapper.style.position = 'relative';
+        emojiPicker.style.bottom = '60px';
+        emojiPicker.style.left = '0';
 
     // Открытие/закрытие emoji picker
     emojiBtn.addEventListener('click', (e) => {
