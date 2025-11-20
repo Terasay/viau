@@ -189,6 +189,10 @@ function loadChatHistory() {
         data.messages.forEach(msg => {
             addMessage(msg, false);
         });
+        // После загрузки истории — парсим emoji
+        if (window.twemoji) {
+            twemoji.parse(messagesContainer);
+        }
         scrollToBottom();
     })
     .catch(e => {
@@ -333,6 +337,10 @@ function addMessage(messageData, save = true) {
     // Рендерим emoji через Twemoji
     if (window.twemoji) {
         twemoji.parse(message);
+    }
+    // Также парсим все сообщения (на случай, если emoji вставлены через picker)
+    if (window.twemoji) {
+        twemoji.parse(messagesContainer);
     }
     scrollToBottom();
 
