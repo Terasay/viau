@@ -70,19 +70,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     emojiPicker.style.bottom = '60px';
     emojiPicker.style.left = '0';
 
-    // Открытие/закрытие emoji picker
-    emojiBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (emojiPicker.style.display === 'none') {
-            emojiPicker.style.display = 'block';
-            // Позиционируем рядом с кнопкой
-            const rect = emojiBtn.getBoundingClientRect();
-            emojiPicker.style.left = (rect.left - 10) + 'px';
-            emojiPicker.style.top = (rect.top - 320) + 'px';
-        } else {
-            emojiPicker.style.display = 'none';
-        }
-    });
+        emojiBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Показываем emoji-picker
+            emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
+            if (emojiPicker.style.display === 'block') {
+                // Сброс позиции
+                emojiPicker.style.left = '0px';
+                emojiPicker.style.right = '';
+                // Динамическое позиционирование
+                setTimeout(() => {
+                    const pickerRect = emojiPicker.getBoundingClientRect();
+                    const wrapperRect = inputWrapper.getBoundingClientRect();
+                    const windowWidth = window.innerWidth;
+                    // Если выходит за правый край окна
+                    if (pickerRect.right > windowWidth) {
+                        // Смещаем влево на разницу
+                        let shift = pickerRect.right - windowWidth + 8; // 8px отступ
+                        let left = parseInt(emojiPicker.style.left || '0', 10) - shift;
+                        // Не даём уйти за левый край
+                        if (wrapperRect.left + left < 0) left = -wrapperRect.left + 8;
+                        emojiPicker.style.left = left + 'px';
+                    }
+                }, 0);
+            }
+        });
     // Вставка emoji в поле ввода
     emojiPicker.addEventListener('emoji-click', (event) => {
         const emoji = event.detail.unicode;
