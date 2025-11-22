@@ -924,3 +924,4 @@ function zoomImage(factor, reset = false) {
         if (currentScale > 5) currentScale = 5;
     }
     modalImg.style.transform = `scale(${currentScale})`;
+}
