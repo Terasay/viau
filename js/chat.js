@@ -925,3 +925,4 @@ function zoomImage(factor, reset = false) {
     }
     modalImg.style.transform = `scale(${currentScale})`;
 }
+}
