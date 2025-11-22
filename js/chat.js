@@ -34,6 +34,48 @@ const attachBtn = document.getElementById('attachBtn');
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
+        // --- Emoji alias map (базовые, можно расширить) ---
+        const emojiAliasMap = {
+            ':smile:': '😄', ':laughing:': '😆', ':blush:': '😊', ':heart:': '❤️', ':thumbsup:': '👍',
+            ':sob:': '😭', ':joy:': '😂', ':wink:': '😉', ':sunglasses:': '😎', ':thinking:': '🤔',
+            ':fire:': '🔥', ':star:': '⭐', ':100:': '💯', ':clap:': '👏', ':ok_hand:': '👌',
+            ':grin:': '😁', ':cry:': '😢', ':angry:': '😠', ':kiss:': '😘', ':wave:': '👋',
+            ':pray:': '🙏', ':see_no_evil:': '🙈', ':tada:': '🎉', ':poop:': '💩', ':cat:': '🐱',
+            ':dog:': '🐶', ':upside_down:': '🙃', ':eyes:': '👀', ':zzz:': '💤', ':skull:': '💀',
+            ':monkey:': '🐵', ':apple:': '🍎', ':peach:': '🍑', ':eggplant:': '🍆', ':rocket:': '🚀',
+            ':unicorn:': '🦄', ':muscle:': '💪', ':broken_heart:': '💔', ':confetti_ball:': '🎊', ':crown:': '👑',
+            ':checkered_flag:': '🏁', ':soccer:': '⚽', ':basketball:': '🏀', ':football:': '🏈', ':tennis:': '🎾',
+            ':ping_pong:': '🏓', ':medal:': '🏅', ':trophy:': '🏆', ':gem:': '💎', ':moneybag:': '💰',
+            ':robot:': '🤖', ':alien:': '👽', ':ghost:': '👻', ':clown:': '🤡', ':nerd:': '🤓',
+            ':star_struck:': '🤩', ':partying_face:': '🥳', ':exploding_head:': '🤯', ':shushing_face:': '🤫', ':facepalm:': '🤦',
+            ':shrug:': '🤷', ':man_shrugging:': '🤷‍♂️', ':woman_shrugging:': '🤷‍♀️', ':man_dancing:': '🕺', ':dancer:': '💃',
+            ':man_facepalming:': '🤦‍♂️', ':woman_facepalming:': '🤦‍♀️', ':v:': '✌️', ':peace:': '✌️', ':wave:': '👋',
+            ':smirk:': '😏', ':neutral_face:': '😐', ':expressionless:': '😑', ':no_mouth:': '😶', ':grinning:': '😀',
+            ':relieved:': '😌', ':sleeping:': '😴', ':mask:': '😷', ':scream:': '😱', ':confused:': '😕',
+            ':yum:': '😋', ':stuck_out_tongue:': '😛', ':money_mouth:': '🤑', ':hugs:': '🤗', ':thinking_face:': '🤔'
+        };
+
+        // --- Автозамена :alias: на emoji ---
+        function replaceEmojiAliases(text) {
+            return text.replace(/:([a-zA-Z0-9_]+):/g, (match) => emojiAliasMap[match] || match);
+        }
+
+        // При вводе — автозамена alias на emoji
+        messageInput.addEventListener('input', (e) => {
+            const cursor = messageInput.selectionStart;
+            const newText = replaceEmojiAliases(messageInput.value);
+            if (newText !== messageInput.value) {
+                messageInput.value = newText;
+                messageInput.selectionStart = messageInput.selectionEnd = cursor;
+            }
+        });
+
+        // При отправке — автозамена alias на emoji (на всякий случай)
+        const origSendMessage = sendMessage;
+        window.sendMessage = function() {
+            messageInput.value = replaceEmojiAliases(messageInput.value);
+            origSendMessage();
+        };
     await checkAuth();
     setupEventListeners();
     setupImageModal();
@@ -104,6 +146,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             const end = input.selectionEnd;
             const value = input.value;
             input.value = value.slice(0, start) + emoji + value.slice(end);
+    
+    // --- Emoji Preview Block ---
+    const emojiPreview = document.createElement('div');
+    emojiPreview.id = 'emojiPreview';
+    emojiPreview.style.display = 'none';
+    emojiPreview.style.position = 'absolute';
+    emojiPreview.style.left = '0';
+    emojiPreview.style.bottom = 'calc(100% + 10px)';
+    emojiPreview.style.width = '220px';
+    emojiPreview.style.minHeight = '60px';
+    emojiPreview.style.background = 'var(--picker-bg, #fff)';
+    emojiPreview.style.borderRadius = '14px';
+    emojiPreview.style.boxShadow = '0 2px 16px rgba(0,0,0,0.13)';
+    emojiPreview.style.padding = '12px 10px 10px 10px';
+    emojiPreview.style.fontSize = '32px';
+    emojiPreview.style.textAlign = 'center';
+    emojiPreview.style.color = 'var(--picker-color, #222)';
+    emojiPreview.style.pointerEvents = 'none';
+    emojiPreview.style.transition = 'opacity 0.15s';
+    emojiPreview.style.opacity = '0.98';
+    emojiPreview.style.userSelect = 'none';
+    emojiPreview.style.fontFamily = 'inherit';
+    emojiPreview.style.lineHeight = '1.1';
+    emojiPreview.innerHTML = '';
+    emojiPicker.appendChild(emojiPreview);
+
             input.focus();
             input.selectionStart = input.selectionEnd = start + emoji.length;
         }
