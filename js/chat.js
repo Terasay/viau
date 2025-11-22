@@ -188,33 +188,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 emojiPreview.style.display = 'none';
             }
         });
-    emojiPreview.style.borderRadius = '14px';
-    emojiPreview.style.boxShadow = '0 2px 16px rgba(0,0,0,0.13)';
-    emojiPreview.style.padding = '12px 10px 10px 10px';
-    emojiPreview.style.fontSize = '32px';
-    emojiPreview.style.textAlign = 'center';
-    emojiPreview.style.color = 'var(--picker-color, #222)';
-    emojiPreview.style.pointerEvents = 'none';
-    emojiPreview.style.transition = 'opacity 0.15s';
-    emojiPreview.style.opacity = '0.98';
-    emojiPreview.style.userSelect = 'none';
-    emojiPreview.style.fontFamily = 'inherit';
-    emojiPreview.style.lineHeight = '1.1';
-    emojiPreview.innerHTML = '';
-    emojiPicker.appendChild(emojiPreview);
-
-            input.focus();
-            input.selectionStart = input.selectionEnd = start + emoji.length;
-        }
-        emojiPicker.style.display = 'none';
-    });
-    // Закрытие picker при клике вне
-    document.addEventListener('click', (e) => {
-        if (emojiPicker.style.display === 'block' && !emojiPicker.contains(e.target) && e.target !== emojiBtn) {
-            emojiPicker.style.display = 'none';
-        }
-    });
-});
+    // (Удалён дублирующийся и ошибочный блок)
 
 // Проверка авторизации
 async function checkAuth() {
@@ -950,4 +924,3 @@ function zoomImage(factor, reset = false) {
         if (currentScale > 5) currentScale = 5;
     }
     modalImg.style.transform = `scale(${currentScale})`;
-}
