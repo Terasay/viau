@@ -295,18 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const mainContainer = document.querySelector('.container');
 
-	function showWelcome(username, adminFlag) {
-		authBlock.classList.add('hidden');
-		welcomeBlock.classList.remove('hidden');
-		logoutBtn.classList.remove('hidden');
-		if (mainContainer) mainContainer.classList.add('hidden');
-		if (welcomeText) {
-			welcomeText.textContent = `Добро пожаловать, ${username}! Выберите действие:`;
-		}
-		localStorage.setItem('username', username);
-		pendingEmail = null;
-		// ...admin-функционал для карусели удалён...
-	}
+
 
 	if (logoutBtn) {
 		logoutBtn.addEventListener('click', () => {
