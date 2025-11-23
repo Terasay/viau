@@ -214,7 +214,7 @@ async def get_chat_messages():
 	return JSONResponse({'messages': messages})
 
 @app.post('/maps/upload')
-async def upload_map(request: Request, file: UploadFile = File(...)):
+async def upload_map(request: Request):
     token = request.headers.get('Authorization')
     payload = decode_jwt(token)
     if not payload:
@@ -224,12 +224,16 @@ async def upload_map(request: Request, file: UploadFile = File(...)):
     if not user or user[4] != 'admin':
         return JSONResponse({'success': False, 'error': 'Only admins can upload maps'}, status_code=403)
     
-    # Получить название из формы
+    # Получить данные из формы
     form = await request.form()
-    name = form.get('name', '').strip()
+    name = form.get('name', '').strip() if form.get('name') else ''
+    file = form.get('file')
     
     if not name:
         return JSONResponse({'success': False, 'error': 'Map name is required'}, status_code=400)
+    
+    if not file:
+        return JSONResponse({'success': False, 'error': 'File is required'}, status_code=400)
     
     # Проверить тип файла
     if not file.content_type.startswith('image/'):
