@@ -2,6 +2,17 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const fileInput = document.getElementById('fileInput');
 const zoomInfo = document.getElementById('zoomInfo');
+const zoomInput = document.getElementById('zoomInput');
+if (zoomInput) {
+    zoomInput.addEventListener('change', (e) => {
+        let val = parseFloat(zoomInput.value.replace(',', '.'));
+        if (isNaN(val)) return;
+        if (val < 0.05) val = 0.05;
+        if (val > 100) val = 100;
+        zoom = val;
+        draw();
+    });
+}
 
 let mapImage = null;
 let zoom = 1.0;
@@ -172,6 +183,7 @@ function draw() {
     drawQuadTree(offsetX, offsetY, mapWidth, mapHeight, level);
 
     zoomInfo.textContent = `Zoom: ${zoom.toFixed(2)}x | Level: ${level}`;
+    if (zoomInput) zoomInput.value = zoom.toFixed(2);
 }
 
 function drawQuadTree(x, y, width, height, maxLevel) {
