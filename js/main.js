@@ -56,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
-	// ...удалена функция showWelcome с carousel3D...
 	function showWelcome(username, adminFlag) {
 		authBlock.classList.add('hidden');
 		welcomeBlock.classList.remove('hidden');
@@ -64,6 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (mainContainer) mainContainer.classList.add('hidden');
 		if (welcomeText) {
 			welcomeText.textContent = `Добро пожаловать, ${username}! Выберите действие:`;
+		}
+		// Обновляем ник в username-display
+		const usernameDisplay = document.getElementById('username-display');
+		if (usernameDisplay) {
+			usernameDisplay.textContent = username;
 		}
 		localStorage.setItem('username', username);
 		pendingEmail = null;
