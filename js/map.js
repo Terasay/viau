@@ -144,11 +144,18 @@ function getQuadLevel() {
     let mapWidth = mapImage ? mapImage.width * zoom : 800 * zoom;
     const quadSize = (mapWidth / 4);
 
-    if (quadSize < 120) return 0;      // Только буквы A-S
-    if (quadSize < 360) return 1;      // A1-A9
-    if (quadSize < 1080) return 2;     // A11-A99
-    if (quadSize < 3240) return 3;     // A111-A999
-    return 4;                          // A1111-A9999
+    // Новые пороги для уровней:
+    // 0: только буквы (до 0.3 зума)
+    // 1: A1-A9 (от 0.3 до 0.8)
+    // 2: A11-A99 (от 0.8 до 1.5)
+    // 3: A111-A999 (от 1.5 до 3.5)
+    // 4: A1111-A9999 (от 3.5 и выше)
+
+    if (zoom < 0.3) return 0;         // Только буквы A-S
+    if (zoom < 0.8) return 1;         // A1-A9
+    if (zoom < 1.5) return 2;         // A11-A99
+    if (zoom < 3.5) return 3;         // A111-A999
+    return 4;                         // A1111-A9999
 }
 
 function draw() {
