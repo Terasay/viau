@@ -14,6 +14,14 @@
         <button onclick="zoomOutButton()">Отдалить</button>
         <button onclick="fitToScreen()">Вписать в экран</button>
         <input type="number" id="zoomInput" min="0.05" max="100" step="0.01" value="1.00" style="width:70px; font-size:14px; padding:4px 8px; border-radius:4px; border:1px solid #ccc;">
+        <select id="quadLevelSelect" style="font-size:14px; padding:4px 8px; border-radius:4px; border:1px solid #ccc;">
+            <option value="auto">Авто-уровень</option>
+            <option value="0">Только буквы</option>
+            <option value="1">Буква+цифра (A1-A9)</option>
+            <option value="2">Две цифры (A11-A99)</option>
+            <option value="3">Три цифры (A111-A999)</option>
+            <option value="4">Четыре цифры (A1111-A9999)</option>
+        </select>
         <div id="zoomInfo">Zoom: 1.00x | Level: 0</div>
     </div>
 

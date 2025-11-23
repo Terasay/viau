@@ -3,6 +3,20 @@ const ctx = canvas.getContext('2d');
 const fileInput = document.getElementById('fileInput');
 const zoomInfo = document.getElementById('zoomInfo');
 const zoomInput = document.getElementById('zoomInput');
+const quadLevelSelect = document.getElementById('quadLevelSelect');
+
+let manualQuadLevel = null; // null = авто, иначе 0-4
+
+if (quadLevelSelect) {
+    quadLevelSelect.addEventListener('change', () => {
+        if (quadLevelSelect.value === 'auto') {
+            manualQuadLevel = null;
+        } else {
+            manualQuadLevel = parseInt(quadLevelSelect.value, 10);
+        }
+        draw();
+    });
+}
 if (zoomInput) {
     zoomInput.addEventListener('change', (e) => {
         let val = parseFloat(zoomInput.value.replace(',', '.'));
@@ -141,6 +155,8 @@ canvas.addEventListener('mouseleave', () => {
 });
 
 function getQuadLevel() {
+    if (manualQuadLevel !== null) return manualQuadLevel;
+    // авто-режим
     let mapWidth = mapImage ? mapImage.width * zoom : 800 * zoom;
     const quadSize = (mapWidth / 4);
 
@@ -189,8 +205,10 @@ function draw() {
     const level = getQuadLevel();
     drawQuadTree(offsetX, offsetY, mapWidth, mapHeight, level);
 
-    zoomInfo.textContent = `Zoom: ${zoom.toFixed(2)}x | Level: ${level}`;
+    let levelText = manualQuadLevel !== null ? `Ручной: ${level}` : `Авто: ${level}`;
+    zoomInfo.textContent = `Zoom: ${zoom.toFixed(2)}x | Level: ${levelText}`;
     if (zoomInput) zoomInput.value = zoom.toFixed(2);
+    if (quadLevelSelect) quadLevelSelect.value = manualQuadLevel === null ? 'auto' : String(manualQuadLevel);
 }
 
 function drawQuadTree(x, y, width, height, maxLevel) {
