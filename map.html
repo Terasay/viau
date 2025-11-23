@@ -5,51 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Галерея карт</title>
     <link rel="stylesheet" href="css/map.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <!-- Экран галереи -->
     <div id="galleryScreen">
         <div id="galleryHeader">
-            <h1>Галерея карт</h1>
-            <button id="uploadMapBtn" style="display:none;">Загрузить карту</button>
-            <button id="backToMainBtn">Назад</button>
+            <div class="header-left">
+                <i class="fas fa-map-marked-alt header-icon"></i>
+                <h1>Галерея карт</h1>
+            </div>
+            <div class="header-right">
+                <button id="uploadMapBtn" class="btn-primary" style="display:none;">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    Загрузить карту
+                </button>
+                <button id="backToMainBtn" class="btn-secondary">
+                    <i class="fas fa-home"></i>
+                    Назад
+                </button>
+            </div>
         </div>
         
         <div id="mapGallery">
-            <div id="loadingMaps">Загрузка карт...</div>
+            <div id="loadingMaps">
+                <div class="spinner"></div>
+                <p>Загрузка карт...</p>
+            </div>
         </div>
     </div>
 
     <!-- Экран просмотра карты -->
     <div id="viewerScreen" style="display:none;">
         <div id="controls">
-            <button onclick="closeViewer()">← Назад к галерее</button>
-            <button onclick="zoomInButton()">Приблизить</button>
-            <button onclick="zoomOutButton()">Отдалить</button>
-            <button onclick="fitToScreen()">Вписать в экран</button>
-            <input type="number" id="zoomInput" min="0.05" max="100" step="0.01" value="1.00" style="width:70px; font-size:14px; padding:4px 8px; border-radius:4px; border:1px solid #ccc;">
-            <select id="quadLevelSelect" style="font-size:14px; padding:4px 8px; border-radius:4px; border:1px solid #ccc;">
-                <option value="auto">Авто-уровень</option>
-                <option value="0">Только буквы</option>
-                <option value="1">Буква+цифра (A1-A9)</option>
-                <option value="2">Две цифры (A11-A99)</option>
-                <option value="3">Три цифры (A111-A999)</option>
-                <option value="4">Четыре цифры (A1111-A9999)</option>
-            </select>
-            <div id="zoomInfo">Zoom: 1.00x | Level: 0</div>
+            <button onclick="closeViewer()" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                К галерее
+            </button>
+            
+            <div class="controls-divider"></div>
+            
+            <button onclick="zoomInButton()" class="btn-icon" title="Приблизить">
+                <i class="fas fa-search-plus"></i>
+            </button>
+            <button onclick="zoomOutButton()" class="btn-icon" title="Отдалить">
+                <i class="fas fa-search-minus"></i>
+            </button>
+            <button onclick="fitToScreen()" class="btn-icon" title="Вписать в экран">
+                <i class="fas fa-expand"></i>
+            </button>
+            
+            <div class="controls-divider"></div>
+            
+            <div class="input-group">
+                <label>Zoom:</label>
+                <input type="number" id="zoomInput" min="0.05" max="100" step="0.01" value="1.00">
+            </div>
+            
+            <div class="input-group">
+                <label>Уровень:</label>
+                <select id="quadLevelSelect">
+                    <option value="auto">Авто</option>
+                    <option value="0">Буквы</option>
+                    <option value="1">A1-A9</option>
+                    <option value="2">A11-A99</option>
+                    <option value="3">A111-A999</option>
+                    <option value="4">A1111-A9999</option>
+                </select>
+            </div>
+            
+            <div id="zoomInfo">
+                <i class="fas fa-info-circle"></i>
+                <span>Zoom: 1.00x | Level: 0</span>
+            </div>
         </div>
         <canvas id="canvas"></canvas>
     </div>
 
     <!-- Модальное окно загрузки карты -->
     <div id="uploadModal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeUploadModal()"></div>
         <div class="modal-content">
-            <h2>Загрузить новую карту</h2>
-            <input type="text" id="mapNameInput" placeholder="Название карты" maxlength="100">
-            <input type="file" id="mapFileInput" accept="image/*">
-            <div class="modal-buttons">
-                <button onclick="submitUploadMap()">Загрузить</button>
-                <button onclick="closeUploadModal()">Отмена</button>
+            <div class="modal-header">
+                <h2><i class="fas fa-cloud-upload-alt"></i> Загрузить новую карту</h2>
+                <button class="modal-close" onclick="closeUploadModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="input-field">
+                    <label for="mapNameInput">
+                        <i class="fas fa-tag"></i> Название карты
+                    </label>
+                    <input type="text" id="mapNameInput" placeholder="Введите название..." maxlength="100">
+                </div>
+                <div class="input-field">
+                    <label for="mapFileInput">
+                        <i class="fas fa-image"></i> Файл изображения
+                    </label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="mapFileInput" accept="image/*">
+                        <div class="file-input-display">
+                            <i class="fas fa-file-image"></i>
+                            <span>Выберите файл...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="submitUploadMap()" class="btn-primary">
+                    <i class="fas fa-check"></i>
+                    Загрузить
+                </button>
+                <button onclick="closeUploadModal()" class="btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Отмена
+                </button>
             </div>
             <div id="uploadStatus"></div>
         </div>
@@ -57,12 +128,31 @@
 
     <!-- Модальное окно редактирования -->
     <div id="editModal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeEditModal()"></div>
         <div class="modal-content">
-            <h2>Редактировать карту</h2>
-            <input type="text" id="editMapNameInput" placeholder="Название карты" maxlength="100">
-            <div class="modal-buttons">
-                <button onclick="submitEditMap()">Сохранить</button>
-                <button onclick="closeEditModal()">Отмена</button>
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> Редактировать карту</h2>
+                <button class="modal-close" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="input-field">
+                    <label for="editMapNameInput">
+                        <i class="fas fa-tag"></i> Название карты
+                    </label>
+                    <input type="text" id="editMapNameInput" placeholder="Введите название..." maxlength="100">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="submitEditMap()" class="btn-primary">
+                    <i class="fas fa-save"></i>
+                    Сохранить
+                </button>
+                <button onclick="closeEditModal()" class="btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Отмена
+                </button>
             </div>
         </div>
     </div>
