@@ -281,30 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 		localStorage.setItem('username', username);
 		pendingEmail = null;
-		// Добавляем admin-элемент только если adminFlag
-		const adminSelector = '.carousel-item[data-link="#admin"]';
-		if (adminFlag && !carousel3D.querySelector(adminSelector)) {
-			const adminItem = document.createElement('div');
-			adminItem.className = 'carousel-item';
-			adminItem.setAttribute('data-link', '#admin');
-			adminItem.innerHTML = `
-				<svg class="carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 4v5c0 5-3.5 9.74-7 11-3.5-1.26-7-6-7-11V6z"/></svg>
-				<span>Админ</span>
-			`;
-			carousel3D.appendChild(adminItem);
-		} else if (!adminFlag && carousel3D.querySelector(adminSelector)) {
-			const adminItem = carousel3D.querySelector(adminSelector);
-			if (adminItem) adminItem.remove();
-		}
-
-		// Пересчитываем индексы и элементы
-		const items = carousel3D.querySelectorAll('.carousel-item');
-		items.forEach((item, idx) => {
-			item.setAttribute('data-index', idx);
-		});
-		currentIndex = 0;
-		updateCarousel();
-		bindCarouselClicks();
+		// ...admin-функционал для карусели удалён...
 	}
 
 	if (logoutBtn) {
