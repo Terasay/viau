@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', async () => {
-        // Кнопка выхода на главную
         const exitBtn = document.getElementById('admin-exit-btn');
         if (exitBtn) {
             exitBtn.addEventListener('click', () => {
@@ -10,14 +9,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const adminContent = document.getElementById('admin-content');
     const usersList = document.getElementById('users-list');
 
-    // Получаем токен из localStorage (или другого хранилища)
     const token = localStorage.getItem('token');
     if (!token) {
         forbidden.style.display = 'block';
         return;
     }
 
-    // Проверяем роль пользователя
     const meResp = await fetch('/me', {
         headers: { 'Authorization': token }
     });
@@ -28,7 +25,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     adminContent.style.display = 'block';
 
-    // Загружаем пользователей
     async function loadUsers() {
         try {
             const resp = await fetch('/admin/users', {
@@ -47,7 +43,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     await loadUsers();
 
-    // Управление баном/мутом
     const form = document.getElementById('user-action-form');
     const resultDiv = document.getElementById('action-result');
     form.addEventListener('submit', async (e) => {
@@ -82,7 +77,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function formatUsers(users) {
     if (!users || users.length === 0) return 'Нет пользователей.';
-    // Фиксированные ширины
     const widths = {
         id: 2,
         username: 10,

@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Экран галереи -->
     <div id="galleryScreen">
         <div id="galleryHeader">
             <div class="header-left">
@@ -35,7 +34,6 @@
         </div>
     </div>
 
-    <!-- Экран просмотра карты -->
     <div id="viewerScreen" style="display:none;">
         <div id="controls">
             <button onclick="closeViewer()" class="btn-back">
@@ -82,7 +80,6 @@
         <canvas id="canvas"></canvas>
     </div>
 
-    <!-- Модальное окно загрузки карты -->
     <div id="uploadModal" class="modal" style="display:none;">
         <div class="modal-overlay" onclick="closeUploadModal()"></div>
         <div class="modal-content">
@@ -126,7 +123,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно редактирования -->
     <div id="editModal" class="modal" style="display:none;">
         <div class="modal-overlay" onclick="closeEditModal()"></div>
         <div class="modal-content">

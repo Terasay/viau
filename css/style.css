@@ -64,7 +64,6 @@ body {
 	transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Анимированный фон */
 .background-animation {
 	position: fixed;
 	top: 0;
@@ -124,7 +123,6 @@ body {
 	}
 }
 
-/* Навигация */
 .navbar {
 	position: fixed;
 	top: 0;
@@ -206,7 +204,6 @@ body.dark-mode .navbar {
 	box-shadow: var(--shadow-lg);
 }
 
-/* Главный экран */
 #welcome {
 	padding-top: 100px;
 	min-height: 100vh;
@@ -240,7 +237,6 @@ body.dark-mode .navbar {
 	color: var(--text-secondary);
 }
 
-/* Сетка функций */
 .features-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -332,7 +328,6 @@ body.dark-mode .navbar {
 	background: var(--warning);
 }
 
-/* Статистика */
 .user-stats {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -373,7 +368,6 @@ body.dark-mode .navbar {
 	letter-spacing: 0.5px;
 }
 
-/* Авторизация */
 .auth-container {
 	min-height: 100vh;
 	display: flex;
@@ -457,7 +451,6 @@ body.dark-mode .navbar {
 	box-shadow: var(--shadow-sm);
 }
 
-/* Формы */
 .auth-form {
 	display: flex;
 	flex-direction: column;
@@ -601,7 +594,6 @@ body.dark-mode .navbar {
 	margin-bottom: 8px;
 }
 
-/* Декоративные элементы */
 .auth-decoration {
 	position: absolute;
 	top: 0;
@@ -646,12 +638,10 @@ body.dark-mode .navbar {
 	animation-delay: 10s;
 }
 
-/* Утилиты */
 .hidden {
 	display: none !important;
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
 	.navbar {
 		padding: 0 16px;
@@ -722,7 +712,6 @@ body.dark-mode .navbar {
 	}
 }
 
-/* Дополнительные анимации */
 @keyframes slideUp {
 	from {
 		opacity: 0;
@@ -751,12 +740,10 @@ body.dark-mode .navbar {
 .stat-card:nth-child(2) { animation-delay: 0.6s; opacity: 0; }
 .stat-card:nth-child(3) { animation-delay: 0.7s; opacity: 0; }
 
-/* Плавное появление форм */
 .auth-form {
 	animation: slideUp 0.4s ease;
 }
 
-/* Скролл бар */
 ::-webkit-scrollbar {
 	width: 10px;
 }
@@ -774,7 +761,6 @@ body.dark-mode .navbar {
 	background: var(--primary-dark);
 }
 
-/* Дополнительные эффекты для кнопок */
 button {
 	position: relative;
 	overflow: hidden;
@@ -798,18 +784,15 @@ button:active::before {
 	height: 300px;
 }
 
-/* Тёмная тема - иконка луны/солнца */
 body.dark-mode .theme-toggle i::before {
 	content: "\f185"; /* fa-sun */
 }
 
-/* Фокус для доступности */
 *:focus-visible {
 	outline: 2px solid var(--primary);
 	outline-offset: 2px;
 }
 
-/* Прелоадер (можно добавить при желании) */
 .loading-spinner {
 	width: 40px;
 	height: 40px;
@@ -823,7 +806,6 @@ body.dark-mode .theme-toggle i::before {
 	to { transform: rotate(360deg); }
 }
 
-/* Успешное сообщение */
 .success-message {
 	background: rgba(16, 185, 129, 0.1);
 	border-left: 3px solid var(--success);
@@ -840,7 +822,6 @@ body.dark-mode .theme-toggle i::before {
 	font-size: 16px;
 }
 
-/* Информационное сообщение */
 .info-message {
 	background: rgba(59, 130, 246, 0.1);
 	border-left: 3px solid var(--info);
@@ -853,7 +834,6 @@ body.dark-mode .theme-toggle i::before {
 	gap: 8px;
 }
 
-/* Предупреждение */
 .warning-message {
 	background: rgba(245, 158, 11, 0.1);
 	border-left: 3px solid var(--warning);
@@ -866,7 +846,6 @@ body.dark-mode .theme-toggle i::before {
 	gap: 8px;
 }
 
-/* Карточка с градиентной рамкой */
 .gradient-border {
 	position: relative;
 	background: var(--bg-secondary);
@@ -886,7 +865,6 @@ body.dark-mode .theme-toggle i::before {
 	mask-composite: exclude;
 }
 
-/* Плавающие частицы (опционально) */
 .particle {
 	position: absolute;
 	border-radius: 50%;
@@ -906,7 +884,6 @@ body.dark-mode .theme-toggle i::before {
 	}
 }
 
-/* Эффект свечения при hover */
 .glow-effect {
 	position: relative;
 	transition: all 0.3s ease;
@@ -932,12 +909,10 @@ body.dark-mode .theme-toggle i::before {
 	opacity: 0.6;
 }
 
-/* Подсветка для активных элементов */
 .active-highlight {
 	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
 }
 
-/* Пульсация для badge */
 .feature-badge {
 	animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -951,7 +926,6 @@ body.dark-mode .theme-toggle i::before {
 	}
 }
 
-/* Hover эффект для stat-card */
 .stat-card {
 	transition: all 0.3s ease;
 }
@@ -962,7 +936,6 @@ body.dark-mode .theme-toggle i::before {
 	border-color: var(--primary);
 }
 
-/* Градиентный текст */
 .gradient-text {
 	background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
 	-webkit-background-clip: text;
@@ -970,14 +943,12 @@ body.dark-mode .theme-toggle i::before {
 	background-clip: text;
 }
 
-/* Разделитель */
 .divider {
 	height: 1px;
 	background: var(--border);
 	margin: 24px 0;
 }
 
-/* Тултип */
 .tooltip {
 	position: relative;
 }

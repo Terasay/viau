@@ -21,12 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	let resetEmail = null;
 	let resetStep = 0;
 
-	// ...удалён код 3D-карусели...
-	let isAdmin = false; // Добавлено для проверки админа
+	let isAdmin = false;
 
-	// ...удалена поддержка клавиатуры для карусели...
-
-	// Вход
 	loginForm.addEventListener('submit', async (e) => {
 		e.preventDefault();
 		const username = document.getElementById('login-username').value;
@@ -64,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (welcomeText) {
 			welcomeText.textContent = `Добро пожаловать, ${username}! Выберите действие:`;
 		}
-		// Обновляем ник в username-display
 		const usernameDisplay = document.getElementById('username-display');
 		if (usernameDisplay) {
 			usernameDisplay.textContent = username;
@@ -72,14 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
 		localStorage.setItem('username', username);
 		pendingEmail = null;
 
-		// Админ-карточка
 		const featuresGrid = document.querySelector('.features-grid');
 		if (featuresGrid) {
-			// Удаляем старую админ-карточку, если есть (чтобы не дублировать)
 			const oldAdminCard = featuresGrid.querySelector('.feature-card.admin-panel');
 			if (oldAdminCard) oldAdminCard.remove();
 			if (adminFlag) {
-				// Создаём карточку админа
 				const adminCard = document.createElement('a');
 				adminCard.href = 'admin.html';
 				adminCard.className = 'feature-card admin-panel';
@@ -94,10 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 
-	// Проверка авторизации при загрузке
-	// ...existing code...
-
-	// Поддержка клавиатуры
 	document.addEventListener('keydown', (e) => {
 		if (!welcomeBlock.classList.contains('hidden')) {
 			if (e.key === 'ArrowLeft') {
@@ -112,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	let sessionToken = null;
 	const THEME_KEY = 'theme-mode';
 
-	// Инициализация темы
 	const savedTheme = localStorage.getItem(THEME_KEY);
 	const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 	setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
@@ -124,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Переключение между формами
 	loginBtn.addEventListener('click', () => {
 		loginBtn.classList.add('active');
 		registerBtn.classList.remove('active');
@@ -145,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		resetForm.classList.add('hidden');
 	});
 
-	// Кнопка "Забыл пароль"
 	if (forgotBtn) {
 		forgotBtn.addEventListener('click', () => {
 			loginForm.classList.add('hidden');
@@ -158,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Ввод email для восстановления
 	if (forgotForm) {
 		forgotForm.addEventListener('submit', async (e) => {
 			e.preventDefault();
@@ -184,7 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Ввод кода и нового пароля
 	if (resetForm) {
 		resetForm.addEventListener('submit', async (e) => {
 			e.preventDefault();
@@ -217,7 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Вход
 	loginForm.addEventListener('submit', async (e) => {
 		e.preventDefault();
 		const username = document.getElementById('login-username').value;
@@ -247,7 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
-	// Регистрация
 	registerForm.addEventListener('submit', async (e) => {
 		e.preventDefault();
 		const username = document.getElementById('register-username').value;
@@ -270,7 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 
-	// Подтверждение кода
 	verifyForm.addEventListener('submit', async (e) => {
 		e.preventDefault();
 		const code = document.getElementById('verify-code').value;
@@ -314,11 +294,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	// Проверка авторизации при загрузке
 	const savedToken = localStorage.getItem('token');
 	const savedUsername = localStorage.getItem('username');
 	if (savedToken && savedUsername) {
-		// Проверяем токен на сервере
 		fetch('/me', {
 			method: 'GET',
 			headers: { 'Authorization': savedToken }
@@ -359,7 +337,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	function formatUsers(users) {
 		if (!users || users.length === 0) return 'Нет пользователей.';
-		// Фиксированные ширины
 		const widths = {
 			id: 2,
 			username: 10,

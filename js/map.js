@@ -1,9 +1,7 @@
-// Состояние приложения
 let currentUser = null;
 let maps = [];
 let currentMapId = null;
 
-// Canvas переменные
 const canvas = document.getElementById('canvas');
 const ctx = canvas ? canvas.getContext('2d') : null;
 const zoomInfo = document.getElementById('zoomInfo');
@@ -22,7 +20,6 @@ let animationFrame = null;
 let mouseX = 0;
 let mouseY = 0;
 
-// Инициализация
 async function init() {
     await checkAuth();
     if (currentUser) {
@@ -34,7 +31,6 @@ async function init() {
     setupEventListeners();
 }
 
-// Проверка авторизации
 async function checkAuth() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -58,7 +54,6 @@ async function checkAuth() {
     }
 }
 
-// Загрузка списка карт
 async function loadMaps() {
     const token = localStorage.getItem('token');
     try {
@@ -75,7 +70,6 @@ async function loadMaps() {
     }
 }
 
-// Отрисовка галереи
 function renderGallery() {
     const gallery = document.getElementById('mapGallery');
     
@@ -103,7 +97,6 @@ function renderGallery() {
             </div>
         `;
         
-        // Клик по карточке открывает просмотр (кроме кликов по кнопкам)
         card.querySelector('.map-card-image').onclick = () => openMapViewer(map.id);
         card.querySelector('.map-card-title').onclick = () => openMapViewer(map.id);
         
@@ -111,7 +104,6 @@ function renderGallery() {
     });
 }
 
-// Открыть просмотрщик карты
 function openMapViewer(mapId) {
     currentMapId = mapId;
     const map = maps.find(m => m.id === mapId);
@@ -129,7 +121,6 @@ function openMapViewer(mapId) {
     img.src = map.file_url;
 }
 
-// Закрыть просмотрщик
 function closeViewer() {
     document.getElementById('viewerScreen').style.display = 'none';
     document.getElementById('galleryScreen').style.display = 'block';
@@ -137,7 +128,6 @@ function closeViewer() {
     mapImage = null;
 }
 
-// Модальное окно загрузки
 function openUploadModal() {
     document.getElementById('uploadModal').style.display = 'flex';
 }
@@ -199,7 +189,6 @@ function showUploadStatus(message, type) {
     status.className = type;
 }
 
-// Модальное окно редактирования
 let editingMapId = null;
 
 function openEditModal(mapId, currentName) {
@@ -249,7 +238,6 @@ async function submitEditMap() {
     }
 }
 
-// Удаление карты
 async function deleteMap(mapId) {
     if (!confirm('Вы уверены, что хотите удалить эту карту?')) {
         return;
@@ -279,7 +267,6 @@ async function deleteMap(mapId) {
     }
 }
 
-// Canvas функции
 function setupEventListeners() {
     document.getElementById('uploadMapBtn')?.addEventListener('click', openUploadModal);
     document.getElementById('backToMainBtn')?.addEventListener('click', () => {
@@ -539,5 +526,4 @@ function drawSubQuadrants(x, y, width, height, prefix, currentLevel, maxLevel) {
     }
 }
 
-// Запуск приложения
 init();
