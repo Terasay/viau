@@ -3,29 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Карта</title>
+    <title>Галерея карт</title>
     <link rel="stylesheet" href="css/map.css">
 </head>
 <body>
-    <div id="controls">
-        <button onclick="document.getElementById('fileInput').click()">Загрузить карту</button>
-        <input type="file" id="fileInput" accept="image/*">
-        <button onclick="zoomInButton()">Приблизить</button>
-        <button onclick="zoomOutButton()">Отдалить</button>
-        <button onclick="fitToScreen()">Вписать в экран</button>
-        <input type="number" id="zoomInput" min="0.05" max="100" step="0.01" value="1.00" style="width:70px; font-size:14px; padding:4px 8px; border-radius:4px; border:1px solid #ccc;">
-        <select id="quadLevelSelect" style="font-size:14px; padding:4px 8px; border-radius:4px; border:1px solid #ccc;">
-            <option value="auto">Авто-уровень</option>
-            <option value="0">Только буквы</option>
-            <option value="1">Буква+цифра (A1-A9)</option>
-            <option value="2">Две цифры (A11-A99)</option>
-            <option value="3">Три цифры (A111-A999)</option>
-            <option value="4">Четыре цифры (A1111-A9999)</option>
-        </select>
-        <div id="zoomInfo">Zoom: 1.00x | Level: 0</div>
+    <!-- Экран галереи -->
+    <div id="galleryScreen">
+        <div id="galleryHeader">
+            <h1>Галерея карт</h1>
+            <button id="uploadMapBtn" style="display:none;">Загрузить карту</button>
+            <button id="backToMainBtn">Назад</button>
+        </div>
+        
+        <div id="mapGallery">
+            <div id="loadingMaps">Загрузка карт...</div>
+        </div>
     </div>
 
-    <canvas id="canvas"></canvas>
+    <!-- Экран просмотра карты -->
+    <div id="viewerScreen" style="display:none;">
+        <div id="controls">
+            <button onclick="closeViewer()">← Назад к галерее</button>
+            <button onclick="zoomInButton()">Приблизить</button>
+            <button onclick="zoomOutButton()">Отдалить</button>
+            <button onclick="fitToScreen()">Вписать в экран</button>
+            <input type="number" id="zoomInput" min="0.05" max="100" step="0.01" value="1.00" style="width:70px; font-size:14px; padding:4px 8px; border-radius:4px; border:1px solid #ccc;">
+            <select id="quadLevelSelect" style="font-size:14px; padding:4px 8px; border-radius:4px; border:1px solid #ccc;">
+                <option value="auto">Авто-уровень</option>
+                <option value="0">Только буквы</option>
+                <option value="1">Буква+цифра (A1-A9)</option>
+                <option value="2">Две цифры (A11-A99)</option>
+                <option value="3">Три цифры (A111-A999)</option>
+                <option value="4">Четыре цифры (A1111-A9999)</option>
+            </select>
+            <div id="zoomInfo">Zoom: 1.00x | Level: 0</div>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <!-- Модальное окно загрузки карты -->
+    <div id="uploadModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h2>Загрузить новую карту</h2>
+            <input type="text" id="mapNameInput" placeholder="Название карты" maxlength="100">
+            <input type="file" id="mapFileInput" accept="image/*">
+            <div class="modal-buttons">
+                <button onclick="submitUploadMap()">Загрузить</button>
+                <button onclick="closeUploadModal()">Отмена</button>
+            </div>
+            <div id="uploadStatus"></div>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования -->
+    <div id="editModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h2>Редактировать карту</h2>
+            <input type="text" id="editMapNameInput" placeholder="Название карты" maxlength="100">
+            <div class="modal-buttons">
+                <button onclick="submitEditMap()">Сохранить</button>
+                <button onclick="closeEditModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/map.js"></script>
 </body>
 </html>

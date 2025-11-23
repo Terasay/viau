@@ -6,8 +6,106 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    overflow: hidden;
     background: #2c3e50;
+    color: white;
+}
+
+/* Галерея */
+#galleryScreen {
+    min-height: 100vh;
+    padding: 20px;
+}
+
+#galleryHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(44, 62, 80, 0.95);
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+#galleryHeader h1 {
+    font-size: 28px;
+    color: #3498db;
+}
+
+#mapGallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.map-card {
+    background: rgba(52, 73, 94, 0.9);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.map-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+}
+
+.map-card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background: #34495e;
+}
+
+.map-card-info {
+    padding: 15px;
+}
+
+.map-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #ecf0f1;
+}
+
+.map-card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.map-card-actions button {
+    flex: 1;
+    padding: 8px;
+    font-size: 13px;
+}
+
+.btn-edit {
+    background: #f39c12;
+}
+
+.btn-edit:hover {
+    background: #e67e22;
+}
+
+.btn-delete {
+    background: #e74c3c;
+}
+
+.btn-delete:hover {
+    background: #c0392b;
+}
+
+/* Viewer экран */
+#viewerScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 #controls {
@@ -46,10 +144,6 @@ button:active {
     transform: translateY(0);
 }
 
-#fileInput {
-    display: none;
-}
-
 #zoomInfo {
     color: white;
     font-size: 14px;
@@ -74,15 +168,83 @@ button:active {
     cursor: grabbing;
 }
 
-.help-text {
+/* Модальные окна */
+.modal {
     position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(0,0,0,0.7);
-    color: white;
-    padding: 10px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal-content {
+    background: #34495e;
+    padding: 30px;
+    border-radius: 10px;
+    min-width: 400px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+    color: #3498db;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #7f8c8d;
     border-radius: 5px;
-    font-size: 13px;
-    z-index: 1000;
+    background: #2c3e50;
+    color: white;
+    font-size: 14px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-buttons button {
+    flex: 1;
+}
+
+#uploadStatus {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 14px;
+}
+
+#uploadStatus.success {
+    background: rgba(46, 204, 113, 0.3);
+    color: #2ecc71;
+}
+
+#uploadStatus.error {
+    background: rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+}
+
+#loadingMaps {
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+    color: #95a5a6;
+}
+
+.no-maps {
+    text-align: center;
+    padding: 40px;
+    font-size: 18px;
+    color: #95a5a6;
 }
