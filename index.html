@@ -3,108 +3,250 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Вход в игру</title>
+	<title>VIAU - Игровая платформа</title>
 	<link rel="stylesheet" href="css/style.css">
-	<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-	<button id="logout-btn" type="button" class="logout-btn corner hidden">Выйти</button>
-	
-	<div id="welcome" class="hidden">
-		<div class="carousel-3d-container">
-			<div class="carousel-3d" id="carousel-3d">
-				<div class="carousel-item" data-link="#register" data-index="0">
-					<svg class="carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/><path d="M16 11h6m-3 -3v6"/></svg>
-					<span>Регистрация</span>
-				</div>
-				<div class="carousel-item" data-link="#settings" data-index="1">
-					<svg class="carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-					<span>Настройки</span>
-				</div>
-				<div class="carousel-item" data-link="chat.html" data-index="2">
-					<svg class="carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-					<span>Чат</span>
-				</div>
-                <div class="carousel-item" data-link="map.html" data-index="3">
-                    <svg class="carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/><path d="M12 4v16"/><circle cx="12" cy="10" r="2"/></svg>
-                    <span>Карта</span>
-                </div>
-				<div class="carousel-item" data-link="#game" data-index="3">
-					<svg class="carousel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/></svg>
-					<span>Игра</span>
-				</div>
-			</div>
-		</div>
-		<div class="carousel-controls">
-			<button class="carousel-arrow" id="carousel-left" aria-label="Назад">←</button>
-			<button class="carousel-arrow" id="carousel-right" aria-label="Вперёд">→</button>
-		</div>
-		<p id="welcome-text"></p>
+	<!-- Анимированный фон -->
+	<div class="background-animation">
+		<div class="blob blob-1"></div>
+		<div class="blob blob-2"></div>
+		<div class="blob blob-3"></div>
 	</div>
 
-	<div class="container">
-		<div id="auth-block">
-			<div class="top-bar">
-				<div class="hero-text">
-					<h1>Добро пожаловать!</h1>
-				</div>
-				<button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
-					<span class="theme-toggle__track">
-						<span class="theme-toggle__thumb"></span>
-					</span>
-					<span class="theme-toggle__label">Тёмная тема</span>
-				</button>
+	<!-- Навигационная панель -->
+	<nav class="navbar" id="navbar">
+		<div class="nav-brand">
+			<i class="fas fa-gamepad"></i>
+			<span>VIAU</span>
+		</div>
+		<div class="nav-actions">
+			<button type="button" id="theme-toggle" class="theme-toggle" aria-label="Переключить тему">
+				<i class="fas fa-moon"></i>
+			</button>
+			<button id="logout-btn" type="button" class="logout-btn hidden">
+				<i class="fas fa-sign-out-alt"></i>
+				Выйти
+			</button>
+		</div>
+	</nav>
+
+	<!-- Главный экран после входа -->
+	<div id="welcome" class="hidden">
+		<div class="welcome-container">
+			<div class="welcome-header">
+				<h1 class="welcome-title">Добро пожаловать, <span id="username-display"></span>!</h1>
+				<p class="welcome-subtitle">Выберите раздел для начала работы</p>
 			</div>
-			<div id="choose-block">
-				<button id="login-btn" class="active">Войти</button>
-				<button id="register-btn">Зарегистрироваться</button>
+
+			<div class="features-grid">
+				<a href="chat.html" class="feature-card">
+					<div class="feature-icon">
+						<i class="fas fa-comments"></i>
+					</div>
+					<h3>Чат</h3>
+					<p>Общайтесь с другими игроками в реальном времени</p>
+					<div class="feature-badge">Активно</div>
+				</a>
+
+				<a href="map.html" class="feature-card">
+					<div class="feature-icon">
+						<i class="fas fa-map-marked-alt"></i>
+					</div>
+					<h3>Карты</h3>
+					<p>Просматривайте и управляйте игровыми картами</p>
+					<div class="feature-badge">Новое</div>
+				</a>
+
+				<a href="#settings" class="feature-card" id="settings-link">
+					<div class="feature-icon">
+						<i class="fas fa-cog"></i>
+					</div>
+					<h3>Настройки</h3>
+					<p>Настройте свой профиль и параметры</p>
+				</a>
+
+				<a href="#game" class="feature-card">
+					<div class="feature-icon">
+						<i class="fas fa-gamepad"></i>
+					</div>
+					<h3>Игра</h3>
+					<p>Начните новую игровую сессию</p>
+					<div class="feature-badge coming-soon">Скоро</div>
+				</a>
 			</div>
-			<form id="login-form">
-				<input type="text" id="login-username" placeholder="Логин" required>
-				<input type="password" id="login-password" placeholder="Пароль" required>
-				<button type="submit">Войти</button>
-				<div id="login-error" class="error"></div>
-				<div class="action-links">
-					<a href="#" id="forgot-btn" class="muted-link">Забыли пароль?</a>
-					<a href="#" class="muted-link">Нужна помощь</a>
+
+			<!-- Статистика пользователя -->
+			<div class="user-stats">
+				<div class="stat-card">
+					<i class="fas fa-clock"></i>
+					<div class="stat-info">
+						<span class="stat-value">24ч</span>
+						<span class="stat-label">Онлайн</span>
+					</div>
 				</div>
-			</form>
-			<form id="register-form" class="hidden">
-				<input type="text" id="register-username" placeholder="Логин" required>
-				<input type="password" id="register-password" placeholder="Пароль" required>
-				<input type="email" id="register-email" placeholder="Почта" required>
-				<button type="submit">Зарегистрироваться</button>
-				<div id="register-error" class="error"></div>
-				<div class="hint">
-					<span class="dot"></span>
-					Используйте почту, к которой есть доступ — код придёт мгновенно.
+				<div class="stat-card">
+					<i class="fas fa-trophy"></i>
+					<div class="stat-info">
+						<span class="stat-value">Level 5</span>
+						<span class="stat-label">Уровень</span>
+					</div>
 				</div>
-			</form>
-			<form id="verify-form" class="hidden">
-				<p>Введите код, отправленный на вашу почту:</p>
-				<input type="text" id="verify-code" placeholder="Код подтверждения" required>
-				<button type="submit">Подтвердить</button>
-				<div id="verify-error" class="error"></div>
-			</form>
-			<form id="forgot-form" class="hidden">
-				<p>Восстановление пароля</p>
-				<input type="email" id="forgot-email" placeholder="Введите вашу почту" required>
-				<button type="submit">Выслать код</button>
-				<div id="forgot-error" class="error"></div>
-			</form>
-			<form id="reset-form" class="hidden">
-				<p>Введите код из письма и новый пароль:</p>
-				<input type="text" id="reset-code" placeholder="Код из письма" required>
-				<input type="password" id="reset-password" placeholder="Новый пароль" required>
-				<button type="submit">Сменить пароль</button>
-				<div id="reset-error" class="error"></div>
-			</form>
-			<div class="progress">
-				<div class="progress-label">Готовность профиля</div>
-				<div class="progress-bar"><span></span></div>
+				<div class="stat-card">
+					<i class="fas fa-users"></i>
+					<div class="stat-info">
+						<span class="stat-value">142</span>
+						<span class="stat-label">Друзья</span>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
+
+	<!-- Форма авторизации/регистрации -->
+	<div class="auth-container" id="auth-block">
+		<div class="auth-card">
+			<div class="auth-header">
+				<div class="auth-logo">
+					<i class="fas fa-shield-alt"></i>
+				</div>
+				<h1>Вход в систему</h1>
+				<p>Войдите или создайте новый аккаунт</p>
+			</div>
+
+			<!-- Переключатель вход/регистрация -->
+			<div class="auth-tabs" id="choose-block">
+				<button id="login-btn" class="auth-tab active">
+					<i class="fas fa-sign-in-alt"></i>
+					Вход
+				</button>
+				<button id="register-btn" class="auth-tab">
+					<i class="fas fa-user-plus"></i>
+					Регистрация
+				</button>
+			</div>
+
+			<!-- Форма входа -->
+			<form id="login-form" class="auth-form">
+				<div class="input-group">
+					<i class="fas fa-user"></i>
+					<input type="text" id="login-username" placeholder="Логин" required>
+				</div>
+				<div class="input-group">
+					<i class="fas fa-lock"></i>
+					<input type="password" id="login-password" placeholder="Пароль" required>
+				</div>
+				<button type="submit" class="btn-primary">
+					<span>Войти</span>
+					<i class="fas fa-arrow-right"></i>
+				</button>
+				<div id="login-error" class="error"></div>
+				<div class="auth-links">
+					<a href="#" id="forgot-btn" class="link">
+						<i class="fas fa-key"></i>
+						Забыли пароль?
+					</a>
+				</div>
+			</form>
+
+			<!-- Форма регистрации -->
+			<form id="register-form" class="auth-form hidden">
+				<div class="input-group">
+					<i class="fas fa-user"></i>
+					<input type="text" id="register-username" placeholder="Логин" required>
+				</div>
+				<div class="input-group">
+					<i class="fas fa-lock"></i>
+					<input type="password" id="register-password" placeholder="Пароль" required>
+				</div>
+				<div class="input-group">
+					<i class="fas fa-envelope"></i>
+					<input type="email" id="register-email" placeholder="Email" required>
+				</div>
+				<button type="submit" class="btn-primary">
+					<span>Создать аккаунт</span>
+					<i class="fas fa-arrow-right"></i>
+				</button>
+				<div id="register-error" class="error"></div>
+				<div class="info-hint">
+					<i class="fas fa-info-circle"></i>
+					<span>На указанный email будет отправлен код подтверждения</span>
+				</div>
+			</form>
+
+			<!-- Форма подтверждения -->
+			<form id="verify-form" class="auth-form hidden">
+				<div class="verify-icon">
+					<i class="fas fa-envelope-open-text"></i>
+				</div>
+				<h2>Подтверждение email</h2>
+				<p class="form-description">Введите код, отправленный на вашу почту</p>
+				<div class="input-group">
+					<i class="fas fa-key"></i>
+					<input type="text" id="verify-code" placeholder="Код подтверждения" required>
+				</div>
+				<button type="submit" class="btn-primary">
+					<span>Подтвердить</span>
+					<i class="fas fa-check"></i>
+				</button>
+				<div id="verify-error" class="error"></div>
+			</form>
+
+			<!-- Форма восстановления пароля -->
+			<form id="forgot-form" class="auth-form hidden">
+				<div class="verify-icon">
+					<i class="fas fa-lock-open"></i>
+				</div>
+				<h2>Восстановление пароля</h2>
+				<p class="form-description">Введите email для получения кода</p>
+				<div class="input-group">
+					<i class="fas fa-envelope"></i>
+					<input type="email" id="forgot-email" placeholder="Ваш email" required>
+				</div>
+				<button type="submit" class="btn-primary">
+					<span>Отправить код</span>
+					<i class="fas fa-paper-plane"></i>
+				</button>
+				<div id="forgot-error" class="error"></div>
+				<a href="#" class="back-link" onclick="showForm('login-form')">
+					<i class="fas fa-arrow-left"></i>
+					Назад к входу
+				</a>
+			</form>
+
+			<!-- Форма сброса пароля -->
+			<form id="reset-form" class="auth-form hidden">
+				<div class="verify-icon">
+					<i class="fas fa-key"></i>
+				</div>
+				<h2>Новый пароль</h2>
+				<p class="form-description">Введите код и установите новый пароль</p>
+				<div class="input-group">
+					<i class="fas fa-key"></i>
+					<input type="text" id="reset-code" placeholder="Код из письма" required>
+				</div>
+				<div class="input-group">
+					<i class="fas fa-lock"></i>
+					<input type="password" id="reset-password" placeholder="Новый пароль" required>
+				</div>
+				<button type="submit" class="btn-primary">
+					<span>Сменить пароль</span>
+					<i class="fas fa-check"></i>
+				</button>
+				<div id="reset-error" class="error"></div>
+			</form>
+		</div>
+
+		<!-- Декоративные элементы -->
+		<div class="auth-decoration">
+			<div class="decoration-circle circle-1"></div>
+			<div class="decoration-circle circle-2"></div>
+			<div class="decoration-circle circle-3"></div>
+		</div>
+	</div>
+
 	<script src="js/main.js"></script>
 </body>
 </html>

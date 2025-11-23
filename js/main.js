@@ -27,6 +27,22 @@ document.addEventListener('DOMContentLoaded', () => {
 	const rightArrow = document.getElementById('carousel-right');
 	let currentIndex = 0;
 
+	function updateWelcomeScreen() {
+		const usernameDisplay = document.getElementById('username-display');
+		if (usernameDisplay && currentUser) {
+			usernameDisplay.textContent = currentUser.username;
+		}
+	}
+
+	// Добавить функцию для показа форм
+	function showForm(formId) {
+		document.querySelectorAll('.auth-form').forEach(form => {
+			form.classList.add('hidden');
+		});
+		document.getElementById(formId).classList.remove('hidden');
+		return false; // для preventDefault в onclick
+	}
+
 	function updateCarousel() {
 		const items = carousel3D.querySelectorAll('.carousel-item');
 		const total = items.length;
