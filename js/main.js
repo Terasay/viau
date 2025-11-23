@@ -71,6 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
 						window.location.href = 'admin.html';
 					} else if (link === 'chat.html') {
 						window.location.href = 'chat.html';
+                } else if (link === 'map.html') {
+                    window.location.href = 'map.html';
 					} else {
 						alert('Переход: ' + link.replace('#', ''));
 					}
