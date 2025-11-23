@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			sessionToken = data.token;
 			localStorage.setItem('token', sessionToken);
 			isAdmin = (typeof data.role !== 'undefined' && data.role === 'admin');
-			showWelcome(data.username);
+			showWelcome(data.username, isAdmin);
 			pendingEmail = null;
 		} else {
 			errorBlock.textContent = data.error || 'Неверный код';
