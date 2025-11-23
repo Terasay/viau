@@ -164,7 +164,7 @@ def init_db():
 	conn.commit()
 	conn.close()
 
-app.mount('/maps', StaticFiles(directory=MAPS_DIR), name='maps')
+app.mount('/maps_files', StaticFiles(directory=MAPS_DIR), name='maps_files')
 
 @app.get('/maps/list')
 async def get_maps_list(request: Request):
@@ -183,7 +183,7 @@ async def get_maps_list(request: Request):
         {
             'id': row[0],
             'name': row[1],
-            'file_url': f'/maps/{row[2]}',
+            'file_url': f'/maps_files/{row[2]}',
             'uploaded_by': row[3],
             'uploaded_at': row[4]
         }
@@ -267,7 +267,7 @@ async def upload_map(request: Request):
             'map': {
                 'id': map_id,
                 'name': name,
-                'file_url': f'/maps/{unique_filename}',
+                'file_url': f'/maps_files/{unique_filename}',  # Изменено с /maps/ на /maps_files/
                 'uploaded_by': user[0],
                 'uploaded_at': timestamp
             }
