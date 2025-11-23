@@ -67,7 +67,27 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 		localStorage.setItem('username', username);
 		pendingEmail = null;
-		// ...admin-функционал для карусели удалён...
+
+		// Админ-карточка
+		const featuresGrid = document.querySelector('.features-grid');
+		if (featuresGrid) {
+			// Удаляем старую админ-карточку, если есть (чтобы не дублировать)
+			const oldAdminCard = featuresGrid.querySelector('.feature-card.admin-panel');
+			if (oldAdminCard) oldAdminCard.remove();
+			if (adminFlag) {
+				// Создаём карточку админа
+				const adminCard = document.createElement('a');
+				adminCard.href = 'admin.html';
+				adminCard.className = 'feature-card admin-panel';
+				adminCard.innerHTML = `
+					<div class="feature-icon"><i class="fas fa-user-shield"></i></div>
+					<h3>Админ-панель</h3>
+					<p>Управление пользователями и платформой</p>
+					<div class="feature-badge">Только для админов</div>
+				`;
+				featuresGrid.appendChild(adminCard);
+			}
+		}
 	}
 
 	// Проверка авторизации при загрузке
