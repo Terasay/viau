@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квадродерево карты</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/map.js"></script>
+</head>
+<body>
+    <div id="controls">
+        <button onclick="document.getElementById('fileInput').click()">Загрузить карту</button>
+        <input type="file" id="fileInput" accept="image/*">
+        <button onclick="zoomInButton()">Приблизить</button>
+        <button onclick="zoomOutButton()">Отдалить</button>
+        <button onclick="fitToScreen()">Вписать в экран</button>
+        <div id="zoomInfo">Zoom: 1.00x | Level: 0</div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+</body>
+</html>
