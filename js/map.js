@@ -207,9 +207,9 @@ function drawQuadTree(x, y, width, height, maxLevel) {
                 const fontSize = Math.max(12, Math.min(32, quadWidth / 8));
                 ctx.fillStyle = '#e74c3c';
                 ctx.font = `bold ${fontSize}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(letter, qx + quadWidth / 2, qy + quadHeight / 2);
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(letter, qx + 6, qy + 4);
             }
 
             if (maxLevel >= 1) {
@@ -250,9 +250,9 @@ function drawSubQuadrants(x, y, width, height, prefix, currentLevel, maxLevel) {
                 const fontSize = Math.max(7, Math.min(16, subWidth / 5));
                 ctx.fillStyle = color;
                 ctx.font = `${fontSize}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(label, sx + subWidth / 2, sy + subHeight / 2);
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(label, sx + 4, sy + 2);
             }
 
             if (currentLevel < maxLevel) {
