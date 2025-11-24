@@ -803,10 +803,6 @@ emoji-picker {
     margin-bottom: 16px;
 }
 
-body.dark-theme .message-group {
-    background: rgba(129, 140, 248, 0.05);
-}
-
 /* Убираем gap у сообщений внутри группы */
 .message-group .message {
     margin-bottom: 0;
