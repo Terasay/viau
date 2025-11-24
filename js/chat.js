@@ -304,15 +304,37 @@ function addMessage(messageData, save = true) {
     // Проверяем, нужно ли группировать с предыдущим сообщением
     const lastMessage = messagesContainer.lastElementChild;
     let shouldGroup = false;
+    let groupContainer = null;
     
-    if (lastMessage && lastMessage.classList.contains('message')) {
-        const lastUsername = lastMessage.dataset.username;
-        const lastTimestamp = parseInt(lastMessage.dataset.timestamp || '0');
-        const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
-        const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60; // разница в минутах
-        
-        if (lastUsername === messageData.username && timeDiff < 15) {
-            shouldGroup = true;
+    if (lastMessage) {
+        // Проверяем, является ли последний элемент группой или сообщением
+        if (lastMessage.classList.contains('message-group')) {
+            const lastChild = lastMessage.lastElementChild;
+            if (lastChild && lastChild.classList.contains('message')) {
+                const lastUsername = lastChild.dataset.username;
+                const lastTimestamp = parseInt(lastChild.dataset.timestamp || '0');
+                const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
+                const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60;
+                
+                if (lastUsername === messageData.username && timeDiff < 15) {
+                    shouldGroup = true;
+                    groupContainer = lastMessage;
+                }
+            }
+        } else if (lastMessage.classList.contains('message')) {
+            const lastUsername = lastMessage.dataset.username;
+            const lastTimestamp = parseInt(lastMessage.dataset.timestamp || '0');
+            const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
+            const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60;
+            
+            if (lastUsername === messageData.username && timeDiff < 15) {
+                shouldGroup = true;
+                // Создаем группу и перемещаем предыдущее сообщение в нее
+                groupContainer = document.createElement('div');
+                groupContainer.className = 'message-group';
+                messagesContainer.insertBefore(groupContainer, lastMessage);
+                groupContainer.appendChild(lastMessage);
+            }
         }
     }
     
@@ -329,6 +351,12 @@ function addMessage(messageData, save = true) {
     message.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
     
     if (!shouldGroup) {
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = messageData.username[0].toUpperCase();
+        message.appendChild(avatar);
+    } else {
+        // Добавляем невидимый placeholder для аватара
         const avatar = document.createElement('div');
         avatar.className = 'message-avatar';
         avatar.textContent = messageData.username[0].toUpperCase();
@@ -386,7 +414,7 @@ function addMessage(messageData, save = true) {
         actions.style.gap = '8px';
         actions.style.alignItems = 'center';
         actions.style.opacity = '0.8';
-        // Кнопка удалить
+        
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Удалить';
         deleteBtn.className = 'delete-btn';
@@ -403,7 +431,7 @@ function addMessage(messageData, save = true) {
             }
         };
         actions.appendChild(deleteBtn);
-        // Кнопка редактировать
+        
         const editBtn = document.createElement('button');
         editBtn.textContent = 'Редактировать';
         editBtn.className = 'edit-btn';
@@ -419,7 +447,7 @@ function addMessage(messageData, save = true) {
         };
         actions.appendChild(editBtn);
         content.appendChild(actions);
-        // Показывать действия при наведении
+        
         message.addEventListener('mouseenter', () => {
             actions.style.display = 'flex';
         });
@@ -429,7 +457,13 @@ function addMessage(messageData, save = true) {
     }
 
     message.appendChild(content);
-    messagesContainer.appendChild(message);
+    
+    // Добавляем сообщение в контейнер или группу
+    if (shouldGroup && groupContainer) {
+        groupContainer.appendChild(message);
+    } else {
+        messagesContainer.appendChild(message);
+    }
     
     // Рендерим emoji через Twemoji
     if (window.twemoji) {
