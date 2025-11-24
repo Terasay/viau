@@ -776,102 +776,20 @@ emoji-picker {
     font-size: 20px;
 }
 
-.message.grouped {
-    margin-top: 4px !important;
+.message-text.grouped-text {
+    margin-top: 6px;
 }
 
-.message.grouped .message-avatar {
-    visibility: hidden;
-}
-
-.message.grouped .message-content {
-    margin-left: 0;
-}
-
-.message.grouped {
-    padding-top: 2px;
-    padding-bottom: 2px;
-}
-
+/* Убираем лишние стили для message-group, он больше не нужен */
 .message-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 12px;
-    background: rgba(99, 102, 241, 0.03);
-    border-radius: 16px;
-    margin-bottom: 16px;
+    display: none;
 }
 
-/* Убираем gap у сообщений внутри группы */
-.message-group .message {
-    margin-bottom: 0;
-}
-
-/* Уменьшаем отступ для группированных сообщений */
+/* Стили для grouped классов тоже не нужны */
 .message.grouped {
-    margin-top: 0 !important;
-    gap: 12px;
+    display: none;
 }
 
-/* Для группированных сообщений делаем аватар невидимым но сохраняем место */
-.message.grouped .message-avatar {
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* Сообщения выравниваются одинаково */
-.message.grouped .message-content {
-    margin-left: 0;
-}
-
-/* Убираем фон у отдельных сообщений в группе */
-.message-group .message .message-text {
-    background: transparent;
-    box-shadow: none;
-    padding: 8px 16px;
-}
-
-/* Первое сообщение в группе с фоном */
-.message-group .message:first-child .message-text {
-    background: var(--bg-secondary);
-    box-shadow: var(--shadow-sm);
-}
-
-/* Последнее сообщение группы */
-.message-group .message:last-child .message-text {
-    background: var(--bg-secondary);
-    box-shadow: var(--shadow-sm);
-}
-
-/* Если в группе только одно сообщение */
-.message-group .message:only-child .message-text {
-    background: var(--bg-secondary);
-    box-shadow: var(--shadow-sm);
-}
-
-/* Для собственных сообщений в группе */
-.message-group .message.own .message-text {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    color: white;
-}
-
-/* Скругления углов для группы */
-.message-group .message:first-child:not(.own) .message-text {
-    border-radius: 12px 12px 12px 4px;
-}
-
-.message-group .message.grouped:not(.own) .message-text {
-    border-radius: 12px 12px 12px 4px;
-}
-
-.message-group .message:first-child.own .message-text {
-    border-radius: 12px 12px 4px 12px;
-}
-
-.message-group .message.grouped.own .message-text {
-    border-radius: 12px 12px 4px 12px;
-}
 
 @media (max-width: 1024px) {
     .users-sidebar {

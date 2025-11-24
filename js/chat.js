@@ -304,45 +304,112 @@ function addMessage(messageData, save = true) {
     // Проверяем, нужно ли группировать с предыдущим сообщением
     const lastMessage = messagesContainer.lastElementChild;
     let shouldGroup = false;
-    let groupContainer = null;
     
-    if (lastMessage) {
-        // Проверяем, является ли последний элемент группой или сообщением
-        if (lastMessage.classList.contains('message-group')) {
-            const lastChild = lastMessage.lastElementChild;
-            if (lastChild && lastChild.classList.contains('message')) {
-                const lastUsername = lastChild.dataset.username;
-                const lastTimestamp = parseInt(lastChild.dataset.timestamp || '0');
-                const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
-                const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60;
-                
-                if (lastUsername === messageData.username && timeDiff < 15) {
-                    shouldGroup = true;
-                    groupContainer = lastMessage;
+    if (lastMessage && lastMessage.classList.contains('message')) {
+        const lastUsername = lastMessage.dataset.username;
+        const lastTimestamp = parseInt(lastMessage.dataset.timestamp || '0');
+        const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
+        const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60; // разница в минутах
+        
+        if (lastUsername === messageData.username && timeDiff < 15) {
+            shouldGroup = true;
+            // Добавляем новый текстовый блок в существующий message-content
+            const lastContent = lastMessage.querySelector('.message-content');
+            if (lastContent) {
+                const text = document.createElement('div');
+                text.className = 'message-text grouped-text';
+                if (/<img|<a/.test(messageData.text)) {
+                    text.innerHTML = messageData.text;
+                    const imgs = text.querySelectorAll('img');
+                    imgs.forEach(img => {
+                        img.style.cursor = 'pointer';
+                        img.addEventListener('click', () => {
+                            openImageModal(img.src);
+                        });
+                    });
+                } else {
+                    text.textContent = messageData.text;
                 }
-            }
-        } else if (lastMessage.classList.contains('message')) {
-            const lastUsername = lastMessage.dataset.username;
-            const lastTimestamp = parseInt(lastMessage.dataset.timestamp || '0');
-            const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
-            const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60;
-            
-            if (lastUsername === messageData.username && timeDiff < 15) {
-                shouldGroup = true;
-                // Создаем группу и перемещаем предыдущее сообщение в нее
-                groupContainer = document.createElement('div');
-                groupContainer.className = 'message-group';
-                messagesContainer.insertBefore(groupContainer, lastMessage);
-                groupContainer.appendChild(lastMessage);
+                
+                // Добавляем кнопки редактирования и удаления для нового текста
+                const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
+                if (canEditOrDelete && messageData.id) {
+                    text.dataset.messageId = messageData.id;
+                    const actions = document.createElement('div');
+                    actions.className = 'message-actions';
+                    actions.style.display = 'none';
+                    actions.style.marginTop = '2px';
+                    actions.style.fontSize = '11px';
+                    actions.style.gap = '8px';
+                    actions.style.alignItems = 'center';
+                    actions.style.opacity = '0.8';
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Удалить';
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.style.color = '#ff6b6b';
+                    deleteBtn.style.background = 'none';
+                    deleteBtn.style.border = 'none';
+                    deleteBtn.style.cursor = 'pointer';
+                    deleteBtn.style.fontSize = '11px';
+                    deleteBtn.style.padding = '0 6px';
+                    deleteBtn.onclick = async (e) => {
+                        e.stopPropagation();
+                        if (confirm('Удалить сообщение?')) {
+                            await deleteMessageApi(messageData.id);
+                        }
+                    };
+                    actions.appendChild(deleteBtn);
+                    
+                    const editBtn = document.createElement('button');
+                    editBtn.textContent = 'Редактировать';
+                    editBtn.className = 'edit-btn';
+                    editBtn.style.color = '';
+                    editBtn.style.background = 'none';
+                    editBtn.style.border = 'none';
+                    editBtn.style.cursor = 'pointer';
+                    editBtn.style.fontSize = '11px';
+                    editBtn.style.padding = '0 6px';
+                    editBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        showEditMessageInputForText(text, messageData);
+                    };
+                    actions.appendChild(editBtn);
+                    
+                    const textWrapper = document.createElement('div');
+                    textWrapper.style.position = 'relative';
+                    textWrapper.appendChild(text);
+                    textWrapper.appendChild(actions);
+                    
+                    textWrapper.addEventListener('mouseenter', () => {
+                        actions.style.display = 'flex';
+                    });
+                    textWrapper.addEventListener('mouseleave', () => {
+                        actions.style.display = 'none';
+                    });
+                    
+                    lastContent.appendChild(textWrapper);
+                } else {
+                    lastContent.appendChild(text);
+                }
+                
+                // Обновляем timestamp последнего сообщения
+                lastMessage.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
+                
+                // Рендерим emoji через Twemoji
+                if (window.twemoji) {
+                    twemoji.parse(text);
+                }
+                
+                scrollToBottom();
+                return;
             }
         }
     }
     
+    // Создаем новое сообщение (если не группируется)
     const message = document.createElement('div');
     message.className = 'message';
-    if (shouldGroup) {
-        message.classList.add('grouped');
-    }
     if (messageData.username === currentUser.username) {
         message.classList.add('own');
     }
@@ -350,42 +417,32 @@ function addMessage(messageData, save = true) {
     message.dataset.username = messageData.username;
     message.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
     
-    if (!shouldGroup) {
-        const avatar = document.createElement('div');
-        avatar.className = 'message-avatar';
-        avatar.textContent = messageData.username[0].toUpperCase();
-        message.appendChild(avatar);
-    } else {
-        // Добавляем невидимый placeholder для аватара
-        const avatar = document.createElement('div');
-        avatar.className = 'message-avatar';
-        avatar.textContent = messageData.username[0].toUpperCase();
-        message.appendChild(avatar);
-    }
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.textContent = messageData.username[0].toUpperCase();
+    message.appendChild(avatar);
     
     const content = document.createElement('div');
     content.className = 'message-content';
     
-    if (!shouldGroup) {
-        const header = document.createElement('div');
-        header.className = 'message-header';
-        const username = document.createElement('div');
-        username.className = 'message-username';
-        username.textContent = messageData.username;
-        header.appendChild(username);
-        if (messageData.role === 'admin') {
-            const role = document.createElement('div');
-            role.className = 'message-role admin';
-            role.textContent = 'ADMIN';
-            header.appendChild(role);
-        }
-        const time = document.createElement('div');
-        time.className = 'message-time';
-        const timestamp = messageData.timestamp ? new Date(messageData.timestamp) : new Date();
-        time.textContent = formatTime(timestamp);
-        header.appendChild(time);
-        content.appendChild(header);
+    const header = document.createElement('div');
+    header.className = 'message-header';
+    const username = document.createElement('div');
+    username.className = 'message-username';
+    username.textContent = messageData.username;
+    header.appendChild(username);
+    if (messageData.role === 'admin') {
+        const role = document.createElement('div');
+        role.className = 'message-role admin';
+        role.textContent = 'ADMIN';
+        header.appendChild(role);
     }
+    const time = document.createElement('div');
+    time.className = 'message-time';
+    const timestamp = messageData.timestamp ? new Date(messageData.timestamp) : new Date();
+    time.textContent = formatTime(timestamp);
+    header.appendChild(time);
+    content.appendChild(header);
     
     const text = document.createElement('div');
     text.className = 'message-text';
@@ -443,7 +500,7 @@ function addMessage(messageData, save = true) {
         editBtn.style.padding = '0 6px';
         editBtn.onclick = (e) => {
             e.stopPropagation();
-            showEditMessageInput(message, messageData);
+            showEditMessageInput(message, messageData, text);
         };
         actions.appendChild(editBtn);
         content.appendChild(actions);
@@ -457,13 +514,7 @@ function addMessage(messageData, save = true) {
     }
 
     message.appendChild(content);
-    
-    // Добавляем сообщение в контейнер или группу
-    if (shouldGroup && groupContainer) {
-        groupContainer.appendChild(message);
-    } else {
-        messagesContainer.appendChild(message);
-    }
+    messagesContainer.appendChild(message);
     
     // Рендерим emoji через Twemoji
     if (window.twemoji) {
@@ -472,9 +523,66 @@ function addMessage(messageData, save = true) {
     
     scrollToBottom();
 
-    // Функция редактирования
-    function showEditMessageInput(messageElem, msgData) {
-        text.style.display = 'none';
+    // Функция редактирования для группированного текста
+    function showEditMessageInputForText(textElem, msgData) {
+        const originalText = textElem.textContent || textElem.innerText;
+        textElem.style.display = 'none';
+        
+        const parentWrapper = textElem.parentElement;
+        const actionsElem = parentWrapper.querySelector('.message-actions');
+        if (actionsElem) actionsElem.style.display = 'none';
+        
+        const editInput = document.createElement('input');
+        editInput.type = 'text';
+        editInput.value = msgData.text.replace(/<[^>]+>/g, '');
+        editInput.style.fontSize = '13px';
+        editInput.style.width = '90%';
+        editInput.style.marginTop = '4px';
+        editInput.style.borderRadius = '6px';
+        editInput.style.border = '1px solid #ccc';
+        editInput.style.padding = '4px 8px';
+        parentWrapper.insertBefore(editInput, textElem);
+        
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Сохранить';
+        saveBtn.style.fontSize = '11px';
+        saveBtn.style.marginLeft = '6px';
+        saveBtn.style.background = 'var(--btn-bg)';
+        saveBtn.style.color = 'var(--btn-color)';
+        saveBtn.style.border = 'none';
+        saveBtn.style.borderRadius = '6px';
+        saveBtn.style.cursor = 'pointer';
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Отмена';
+        cancelBtn.style.fontSize = '11px';
+        cancelBtn.style.marginLeft = '6px';
+        cancelBtn.style.background = 'none';
+        cancelBtn.style.color = '#999';
+        cancelBtn.style.border = 'none';
+        cancelBtn.style.cursor = 'pointer';
+        
+        parentWrapper.insertBefore(saveBtn, textElem);
+        parentWrapper.insertBefore(cancelBtn, textElem);
+        
+        saveBtn.onclick = async () => {
+            const newText = editInput.value.trim();
+            if (!newText) return alert('Текст не может быть пустым');
+            await editMessageApi(msgData.id, newText);
+        };
+        
+        cancelBtn.onclick = () => {
+            editInput.remove();
+            saveBtn.remove();
+            cancelBtn.remove();
+            textElem.style.display = '';
+            if (actionsElem) actionsElem.style.display = 'none';
+        };
+    }
+
+    // Функция редактирования для обычного сообщения
+    function showEditMessageInput(messageElem, msgData, textElem) {
+        textElem.style.display = 'none';
         const actionsElem = content.querySelector('.message-actions');
         if (actionsElem) actionsElem.style.display = 'none';
         
@@ -521,7 +629,7 @@ function addMessage(messageData, save = true) {
             editInput.remove();
             saveBtn.remove();
             cancelBtn.remove();
-            text.style.display = '';
+            textElem.style.display = '';
             if (actionsElem) actionsElem.style.display = 'none';
         };
     }
