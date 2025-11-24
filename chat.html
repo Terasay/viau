@@ -5,20 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIAU - Игровой чат</title>
     <link rel="stylesheet" href="/css/chat.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Анимированный фон -->
+    <div class="background-animation">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
     <div class="chat-container">
         <!-- Заголовок чата -->
         <div class="chat-header">
             <div class="header-left">
-                <h1>Игровой чат</h1>
-                <span class="online-count" id="onlineCount">0 онлайн</span>
+                <div class="header-logo">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="header-info">
+                    <h1>Игровой чат</h1>
+                    <span class="online-count" id="onlineCount">
+                        <i class="fas fa-circle"></i>
+                        0 онлайн
+                    </span>
+                </div>
             </div>
             <div class="header-right">
-                <span class="user-info" id="userInfo"></span>
-                <button class="btn-theme" id="themeBtn">Тема</button>
-                <button class="btn-main" id="mainBtn">Главная</button>
-                <button class="btn-logout" id="logoutBtn">Выход</button>
+                <div class="user-badge" id="userInfo">
+                    <i class="fas fa-user"></i>
+                    <span></span>
+                </div>
+                <button class="btn-icon" id="themeBtn" title="Переключить тему">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="btn-icon" id="mainBtn" title="На главную">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button class="btn-danger" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Выход</span>
+                </button>
             </div>
         </div>
 
@@ -26,7 +52,10 @@
         <div class="chat-main">
             <!-- Список пользователей онлайн -->
             <div class="users-sidebar">
-                <h3>Пользователи онлайн</h3>
+                <div class="sidebar-header">
+                    <i class="fas fa-users"></i>
+                    <h3>Пользователи</h3>
+                </div>
                 <div class="users-list" id="usersList">
                     <!-- Список пользователей будет добавляться динамически -->
                 </div>
@@ -41,6 +70,9 @@
                 <!-- Форма ввода сообщения -->
                 <div class="message-input-area">
                     <div class="input-wrapper">
+                        <button class="btn-attach" id="attachBtn" title="Прикрепить файл">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
                         <input 
                             type="text" 
                             id="messageInput" 
@@ -49,19 +81,24 @@
                             autocomplete="off"
                         >
                         <input type="file" id="fileInput" style="display:none" accept="image/*,.pdf,.doc,.docx,.txt,.xlsx,.ppt,.pptx">
-                        <button class="btn-attach" id="attachBtn" title="Прикрепить файл">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M17.657 7.757l-7.071 7.071a4 4 0 0 0 5.657 5.657l6.364-6.364a6 6 0 0 0-8.485-8.485l-9.192 9.192a8 8 0 0 0 11.314 11.314" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
+                        
                         <button class="btn-send" id="sendBtn">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
+                            <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
-                    <div class="char-counter" id="charCounter">0 / 500</div>
+                    <div class="input-footer">
+                        <div class="char-counter" id="charCounter">0 / 500</div>
+                        <div class="input-hints">
+                            <span class="hint-item">
+                                <i class="fas fa-keyboard"></i>
+                                Enter - отправить
+                            </span>
+                            <span class="hint-item">
+                                <i class="fas fa-smile"></i>
+                                :emoji: для смайлов
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -69,15 +106,22 @@
 
     <!-- Модальное окно для входа -->
     <div class="modal" id="loginModal">
+        <div class="modal-overlay"></div>
         <div class="modal-content">
-            <h2>Войдите, чтобы начать чат</h2>
+            <div class="modal-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2>Требуется авторизация</h2>
             <p>Для доступа к игровому чату необходимо войти в систему</p>
-            <button class="btn-primary" onclick="window.location.href='/'">Перейти к входу</button>
+            <button class="btn-primary" onclick="window.location.href='/'">
+                <i class="fas fa-sign-in-alt"></i>
+                Перейти к входу
+            </button>
         </div>
     </div>
 
     <script src="/js/chat.js"></script>
-    <!-- Twemoji CDN (jsdelivr) -->
+    <!-- Twemoji CDN -->
     <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js"></script>
     <!-- Emoji Picker Element -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
