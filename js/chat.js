@@ -34,48 +34,54 @@ const attachBtn = document.getElementById('attachBtn');
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
-        // --- Emoji alias map (базовые, можно расширить) ---
-        const emojiAliasMap = {
-            ':smile:': '😄', ':laughing:': '😆', ':blush:': '😊', ':heart:': '❤️', ':thumbsup:': '👍',
-            ':sob:': '😭', ':joy:': '😂', ':wink:': '😉', ':sunglasses:': '😎', ':thinking:': '🤔',
-            ':fire:': '🔥', ':star:': '⭐', ':100:': '💯', ':clap:': '👏', ':ok_hand:': '👌',
-            ':grin:': '😁', ':cry:': '😢', ':angry:': '😠', ':kiss:': '😘', ':wave:': '👋',
-            ':pray:': '🙏', ':see_no_evil:': '🙈', ':tada:': '🎉', ':poop:': '💩', ':cat:': '🐱',
-            ':dog:': '🐶', ':upside_down:': '🙃', ':eyes:': '👀', ':zzz:': '💤', ':skull:': '💀',
-            ':monkey:': '🐵', ':apple:': '🍎', ':peach:': '🍑', ':eggplant:': '🍆', ':rocket:': '🚀',
-            ':unicorn:': '🦄', ':muscle:': '💪', ':broken_heart:': '💔', ':confetti_ball:': '🎊', ':crown:': '👑',
-            ':checkered_flag:': '🏁', ':soccer:': '⚽', ':basketball:': '🏀', ':football:': '🏈', ':tennis:': '🎾',
-            ':ping_pong:': '🏓', ':medal:': '🏅', ':trophy:': '🏆', ':gem:': '💎', ':moneybag:': '💰',
-            ':robot:': '🤖', ':alien:': '👽', ':ghost:': '👻', ':clown:': '🤡', ':nerd:': '🤓',
-            ':star_struck:': '🤩', ':partying_face:': '🥳', ':exploding_head:': '🤯', ':shushing_face:': '🤫', ':facepalm:': '🤦',
-            ':shrug:': '🤷', ':man_shrugging:': '🤷‍♂️', ':woman_shrugging:': '🤷‍♀️', ':man_dancing:': '🕺', ':dancer:': '💃',
-            ':man_facepalming:': '🤦‍♂️', ':woman_facepalming:': '🤦‍♀️', ':v:': '✌️', ':peace:': '✌️', ':wave:': '👋',
-            ':smirk:': '😏', ':neutral_face:': '😐', ':expressionless:': '😑', ':no_mouth:': '😶', ':grinning:': '😀',
-            ':relieved:': '😌', ':sleeping:': '😴', ':mask:': '😷', ':scream:': '😱', ':confused:': '😕',
-            ':yum:': '😋', ':stuck_out_tongue:': '😛', ':money_mouth:': '🤑', ':hugs:': '🤗', ':thinking_face:': '🤔'
-        };
+    // --- Emoji alias map (базовые, можно расширить) ---
+    const emojiAliasMap = {
+        ':smile:': '😄', ':laughing:': '😆', ':blush:': '😊', ':heart:': '❤️', ':thumbsup:': '👍',
+        ':sob:': '😭', ':joy:': '😂', ':wink:': '😉', ':sunglasses:': '😎', ':thinking:': '🤔',
+        ':fire:': '🔥', ':star:': '⭐', ':100:': '💯', ':clap:': '👏', ':ok_hand:': '👌',
+        ':grin:': '😁', ':cry:': '😢', ':angry:': '😠', ':kiss:': '😘', ':wave:': '👋',
+        ':pray:': '🙏', ':see_no_evil:': '🙈', ':tada:': '🎉', ':poop:': '💩', ':cat:': '🐱',
+        ':dog:': '🐶', ':upside_down:': '🙃', ':eyes:': '👀', ':zzz:': '💤', ':skull:': '💀',
+        ':monkey:': '🐵', ':apple:': '🍎', ':peach:': '🍑', ':eggplant:': '🍆', ':rocket:': '🚀',
+        ':unicorn:': '🦄', ':muscle:': '💪', ':broken_heart:': '💔', ':confetti_ball:': '🎊', ':crown:': '👑',
+        ':checkered_flag:': '🏁', ':soccer:': '⚽', ':basketball:': '🏀', ':football:': '🏈', ':tennis:': '🎾',
+        ':ping_pong:': '🏓', ':medal:': '🏅', ':trophy:': '🏆', ':gem:': '💎', ':moneybag:': '💰',
+        ':robot:': '🤖', ':alien:': '👽', ':ghost:': '👻', ':clown:': '🤡', ':nerd:': '🤓',
+        ':star_struck:': '🤩', ':partying_face:': '🥳', ':exploding_head:': '🤯', ':shushing_face:': '🤫', ':facepalm:': '🤦',
+        ':shrug:': '🤷', ':man_shrugging:': '🤷‍♂️', ':woman_shrugging:': '🤷‍♀️', ':man_dancing:': '🕺', ':dancer:': '💃',
+        ':man_facepalming:': '🤦‍♂️', ':woman_facepalming:': '🤦‍♀️', ':v:': '✌️', ':peace:': '✌️',
+        ':smirk:': '😏', ':neutral_face:': '😐', ':expressionless:': '😑', ':no_mouth:': '😶', ':grinning:': '😀',
+        ':relieved:': '😌', ':sleeping:': '😴', ':mask:': '😷', ':scream:': '😱', ':confused:': '😕',
+        ':yum:': '😋', ':stuck_out_tongue:': '😛', ':money_mouth:': '🤑', ':hugs:': '🤗', ':thinking_face:': '🤔'
+    };
 
-        // --- Автозамена :alias: на emoji ---
-        function replaceEmojiAliases(text) {
-            return text.replace(/:([a-zA-Z0-9_]+):/g, (match) => emojiAliasMap[match] || match);
+    // --- Автозамена :alias: на emoji ---
+    function replaceEmojiAliases(text) {
+        return text.replace(/:([a-zA-Z0-9_]+):/g, (match) => emojiAliasMap[match] || match);
+    }
+
+    // При вводе — автозамена alias на emoji и рендер через Twemoji
+    messageInput.addEventListener('input', (e) => {
+        const cursor = messageInput.selectionStart;
+        const newText = replaceEmojiAliases(messageInput.value);
+        if (newText !== messageInput.value) {
+            messageInput.value = newText;
+            messageInput.selectionStart = messageInput.selectionEnd = cursor;
         }
+        // Парсим Twemoji для поля ввода
+        if (window.twemoji) {
+            const parent = messageInput.parentElement;
+            twemoji.parse(parent);
+        }
+    });
 
-        // При вводе — автозамена alias на emoji
-        messageInput.addEventListener('input', (e) => {
-            const cursor = messageInput.selectionStart;
-            const newText = replaceEmojiAliases(messageInput.value);
-            if (newText !== messageInput.value) {
-                messageInput.value = newText;
-                messageInput.selectionStart = messageInput.selectionEnd = cursor;
-            }
-        });
+    // При отправке — автозамена alias на emoji (на всякий случай)
+    const origSendMessage = sendMessage;
+    window.sendMessage = function() {
+        messageInput.value = replaceEmojiAliases(messageInput.value);
+        origSendMessage();
+    };
 
-        // При отправке — автозамена alias на emoji (на всякий случай)
-        const origSendMessage = sendMessage;
-        window.sendMessage = function() {
-            messageInput.value = replaceEmojiAliases(messageInput.value);
-            origSendMessage();
-        };
     await checkAuth();
     setupEventListeners();
     setupImageModal();
@@ -112,31 +118,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     emojiPicker.style.bottom = '60px';
     emojiPicker.style.left = '0';
 
-        emojiBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            // Показываем emoji-picker
-            emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
-            if (emojiPicker.style.display === 'block') {
-                // Сброс позиции
-                emojiPicker.style.left = '0px';
-                emojiPicker.style.right = '';
-                // Динамическое позиционирование
-                setTimeout(() => {
-                    const pickerRect = emojiPicker.getBoundingClientRect();
-                    const wrapperRect = inputWrapper.getBoundingClientRect();
-                    const windowWidth = window.innerWidth;
-                    // Если выходит за правый край окна
-                    if (pickerRect.right > windowWidth) {
-                        // Смещаем влево на разницу
-                        let shift = pickerRect.right - windowWidth + 8; // 8px отступ
-                        let left = parseInt(emojiPicker.style.left || '0', 10) - shift;
-                        // Не даём уйти за левый край
-                        if (wrapperRect.left + left < 0) left = -wrapperRect.left + 8;
-                        emojiPicker.style.left = left + 'px';
-                    }
-                }, 0);
-            }
-        });
+    emojiBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Показываем emoji-picker
+        emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
+        if (emojiPicker.style.display === 'block') {
+            // Сброс позиции
+            emojiPicker.style.left = '0px';
+            emojiPicker.style.right = '';
+            // Динамическое позиционирование
+            setTimeout(() => {
+                const pickerRect = emojiPicker.getBoundingClientRect();
+                const wrapperRect = inputWrapper.getBoundingClientRect();
+                const windowWidth = window.innerWidth;
+                // Если выходит за правый край окна
+                if (pickerRect.right > windowWidth) {
+                    // Смещаем влево на разницу
+                    let shift = pickerRect.right - windowWidth + 8; // 8px отступ
+                    let left = parseInt(emojiPicker.style.left || '0', 10) - shift;
+                    // Не даём уйти за левый край
+                    if (wrapperRect.left + left < 0) left = -wrapperRect.left + 8;
+                    emojiPicker.style.left = left + 'px';
+                }
+            }, 0);
+        }
+    });
+
     // Вставка emoji в поле ввода
     emojiPicker.addEventListener('emoji-click', (event) => {
         const emoji = event.detail.unicode;
@@ -146,7 +153,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const end = input.selectionEnd;
             const value = input.value;
             input.value = value.slice(0, start) + emoji + value.slice(end);
-    
+            input.focus();
+            input.selectionStart = input.selectionEnd = start + emoji.length;
+        }
+        emojiPicker.style.display = 'none';
+    });
+
     // --- Emoji Preview Block ---
     const emojiPreview = document.createElement('div');
     emojiPreview.id = 'emojiPreview';
@@ -172,11 +184,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     emojiPreview.innerHTML = '';
     emojiPicker.appendChild(emojiPreview);
 
-            input.focus();
-            input.selectionStart = input.selectionEnd = start + emoji.length;
-        }
-        emojiPicker.style.display = 'none';
-    });
     // Закрытие picker при клике вне
     document.addEventListener('click', (e) => {
         if (emojiPicker.style.display === 'block' && !emojiPicker.contains(e.target) && e.target !== emojiBtn) {
@@ -228,13 +235,13 @@ async function checkAuth() {
 }
 
 function updateCharCounter() {
-	const length = messageInput.value.length;
-	charCounter.textContent = `${length} / 500`;
-	if (length >= 500) {
-		charCounter.style.color = '#ff6b6b';
-	} else {
-		charCounter.style.color = '#999';
-	}
+    const length = messageInput.value.length;
+    charCounter.textContent = `${length} / 500`;
+    if (length >= 500) {
+        charCounter.style.color = '#ff6b6b';
+    } else {
+        charCounter.style.color = '#999';
+    }
 }
 
 // Инициализация чата
@@ -247,14 +254,8 @@ function initChat() {
     setupWebSocket();
 }
 
-// Симуляция чата (замените на реальный WebSocket)
-function simulateChat() {
-    // Симуляция больше не используется
-}
-
 // Загрузка истории чата
 function loadChatHistory() {
-    // Загрузка истории чата с сервера
     fetch('/chat/messages', {
         method: 'GET'
     })
@@ -265,20 +266,11 @@ function loadChatHistory() {
         data.messages.forEach(msg => {
             addMessage(msg, false);
         });
-        // После загрузки истории — парсим emoji
-        if (window.twemoji) {
-            twemoji.parse(messagesContainer);
-        }
         scrollToBottom();
     })
     .catch(e => {
         console.error('Ошибка загрузки истории:', e);
     });
-}
-
-// Сохранение истории чата
-function saveChatHistory() {
-    // История сохраняется на сервере, ничего не делаем
 }
 
 // Обновление списка пользователей онлайн
@@ -309,34 +301,64 @@ function updateOnlineUsers(users) {
 
 // Добавление сообщения
 function addMessage(messageData, save = true) {
+    // Проверяем, нужно ли группировать с предыдущим сообщением
+    const lastMessage = messagesContainer.lastElementChild;
+    let shouldGroup = false;
+    
+    if (lastMessage && lastMessage.classList.contains('message')) {
+        const lastUsername = lastMessage.dataset.username;
+        const lastTimestamp = parseInt(lastMessage.dataset.timestamp || '0');
+        const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
+        const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60; // разница в минутах
+        
+        if (lastUsername === messageData.username && timeDiff < 15) {
+            shouldGroup = true;
+        }
+    }
+    
     const message = document.createElement('div');
     message.className = 'message';
+    if (shouldGroup) {
+        message.classList.add('grouped');
+    }
     if (messageData.username === currentUser.username) {
         message.classList.add('own');
     }
     message.dataset.id = messageData.id;
-    const avatar = document.createElement('div');
-    avatar.className = 'message-avatar';
-    avatar.textContent = messageData.username[0].toUpperCase();
+    message.dataset.username = messageData.username;
+    message.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
+    
+    if (!shouldGroup) {
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = messageData.username[0].toUpperCase();
+        message.appendChild(avatar);
+    }
+    
     const content = document.createElement('div');
     content.className = 'message-content';
-    const header = document.createElement('div');
-    header.className = 'message-header';
-    const username = document.createElement('div');
-    username.className = 'message-username';
-    username.textContent = messageData.username;
-    header.appendChild(username);
-    if (messageData.role === 'admin') {
-        const role = document.createElement('div');
-        role.className = 'message-role admin';
-        role.textContent = 'ADMIN';
-        header.appendChild(role);
+    
+    if (!shouldGroup) {
+        const header = document.createElement('div');
+        header.className = 'message-header';
+        const username = document.createElement('div');
+        username.className = 'message-username';
+        username.textContent = messageData.username;
+        header.appendChild(username);
+        if (messageData.role === 'admin') {
+            const role = document.createElement('div');
+            role.className = 'message-role admin';
+            role.textContent = 'ADMIN';
+            header.appendChild(role);
+        }
+        const time = document.createElement('div');
+        time.className = 'message-time';
+        const timestamp = messageData.timestamp ? new Date(messageData.timestamp) : new Date();
+        time.textContent = formatTime(timestamp);
+        header.appendChild(time);
+        content.appendChild(header);
     }
-    const time = document.createElement('div');
-    time.className = 'message-time';
-    const timestamp = messageData.timestamp ? new Date(messageData.timestamp) : new Date();
-    time.textContent = formatTime(timestamp);
-    header.appendChild(time);
+    
     const text = document.createElement('div');
     text.className = 'message-text';
     if (/<img|<a/.test(messageData.text)) {
@@ -351,7 +373,6 @@ function addMessage(messageData, save = true) {
     } else {
         text.textContent = messageData.text;
     }
-    content.appendChild(header);
     content.appendChild(text);
 
     // Кнопки редактирования и удаления
@@ -407,27 +428,22 @@ function addMessage(messageData, save = true) {
         });
     }
 
-    message.appendChild(avatar);
     message.appendChild(content);
     messagesContainer.appendChild(message);
+    
     // Рендерим emoji через Twemoji
     if (window.twemoji) {
         twemoji.parse(message);
     }
-    // Также парсим все сообщения (на случай, если emoji вставлены через picker)
-    if (window.twemoji) {
-        twemoji.parse(messagesContainer);
-    }
+    
     scrollToBottom();
 
-    // ---
+    // Функция редактирования
     function showEditMessageInput(messageElem, msgData) {
-        // Скрыть текст
         text.style.display = 'none';
-        // Скрыть действия
         const actionsElem = content.querySelector('.message-actions');
         if (actionsElem) actionsElem.style.display = 'none';
-        // Создать поле ввода
+        
         const editInput = document.createElement('input');
         editInput.type = 'text';
         editInput.value = msgData.text.replace(/<[^>]+>/g, '');
@@ -438,7 +454,7 @@ function addMessage(messageData, save = true) {
         editInput.style.border = '1px solid #ccc';
         editInput.style.padding = '4px 8px';
         content.appendChild(editInput);
-        // Кнопки сохранить/отмена
+        
         const saveBtn = document.createElement('button');
         saveBtn.textContent = 'Сохранить';
         saveBtn.style.fontSize = '11px';
@@ -448,6 +464,7 @@ function addMessage(messageData, save = true) {
         saveBtn.style.border = 'none';
         saveBtn.style.borderRadius = '6px';
         saveBtn.style.cursor = 'pointer';
+        
         const cancelBtn = document.createElement('button');
         cancelBtn.textContent = 'Отмена';
         cancelBtn.style.fontSize = '11px';
@@ -456,13 +473,16 @@ function addMessage(messageData, save = true) {
         cancelBtn.style.color = '#999';
         cancelBtn.style.border = 'none';
         cancelBtn.style.cursor = 'pointer';
+        
         content.appendChild(saveBtn);
         content.appendChild(cancelBtn);
+        
         saveBtn.onclick = async () => {
             const newText = editInput.value.trim();
             if (!newText) return alert('Текст не может быть пустым');
             await editMessageApi(msgData.id, newText);
         };
+        
         cancelBtn.onclick = () => {
             editInput.remove();
             saveBtn.remove();
@@ -473,11 +493,6 @@ function addMessage(messageData, save = true) {
     }
 }
 
-// Добавление системного сообщения
-function addSystemMessage(text, save = true) {
-    // В новой версии системные сообщения не используются
-}
-
 // --- WebSocket ---
 function setupWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -485,7 +500,6 @@ function setupWebSocket() {
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-        // При открытии сразу отправляем токен для авторизации
         const token = localStorage.getItem('token');
         ws.send(JSON.stringify({ token }));
     };
@@ -495,8 +509,6 @@ function setupWebSocket() {
             const data = JSON.parse(event.data);
             if (data.type === 'message' && data.message) {
                 addMessage(data.message, false);
-                // После добавления сообщения обновить историю
-                loadChatHistory();
             } else if (data.type === 'online_users' && Array.isArray(data.users)) {
                 updateOnlineUsers(data.users);
             } else if (data.error) {
@@ -508,7 +520,6 @@ function setupWebSocket() {
     };
 
     ws.onclose = () => {
-        // Попробовать переподключиться через 2 секунды
         setTimeout(setupWebSocket, 2000);
     };
 }
@@ -559,7 +570,7 @@ async function editMessageApi(id, text) {
     }
 }
 
-// --- Переопределение sendMessage для WebSocket ---
+// Отправка сообщения
 function sendMessage() {
     const text = messageInput.value.trim();
     if (!text && selectedFiles.length === 0) return;
@@ -584,8 +595,6 @@ function sendMessage() {
 
 // Форматирование времени
 function formatTime(date) {
-    // date - объект Date
-    // Формат: ДД.ММ.ГГГГ ЧЧ:ММ
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
@@ -622,24 +631,21 @@ function logout() {
 
 // Настройка обработчиков событий
 function setupEventListeners() {
-    // Отправка сообщения
     sendBtn.addEventListener('click', sendMessage);
     messageInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             sendMessage();
         }
     });
-    // Счетчик символов
     messageInput.addEventListener('input', updateCharCounter);
-    // Выход
     logoutBtn.addEventListener('click', logout);
-    // Переход на главную
+    
     if (mainBtn) {
         mainBtn.addEventListener('click', () => {
             window.location.href = '/index.html';
         });
     }
-    // Переключение темы
+    
     if (themeBtn) {
         themeBtn.addEventListener('click', () => {
             document.body.classList.toggle('dark-theme');
@@ -654,14 +660,14 @@ function setupEventListeners() {
             document.body.classList.add('dark-theme');
         }
     }
-    // Кнопка прикрепления файла
+    
     if (attachBtn && fileInput) {
         attachBtn.addEventListener('click', () => {
             fileInput.click();
         });
         fileInput.addEventListener('change', handleFileSelect);
     }
-    // Вставка файла через Ctrl+V
+    
     messageInput.addEventListener('paste', handlePasteFile);
 }
 
@@ -672,8 +678,8 @@ function handleFileSelect(e) {
     });
     fileInput.value = '';
 }
+
 function addFileToPreview(file) {
-    // Проверка на дубликаты
     if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) return;
     selectedFiles.push(file);
     renderFilePreview();
@@ -695,7 +701,7 @@ function renderFilePreview() {
         preview.style.maxWidth = '120px';
         preview.style.maxHeight = '120px';
         preview.style.overflow = 'hidden';
-        // Кнопка удаления
+        
         const removeBtn = document.createElement('button');
         removeBtn.textContent = '×';
         removeBtn.style.position = 'absolute';
@@ -713,6 +719,7 @@ function renderFilePreview() {
             renderFilePreview();
         };
         preview.appendChild(removeBtn);
+        
         if (file.type.startsWith('image/')) {
             const img = document.createElement('img');
             img.style.maxWidth = '100px';
@@ -726,6 +733,7 @@ function renderFilePreview() {
             icon.style.fontSize = '40px';
             preview.appendChild(icon);
         }
+        
         const name = document.createElement('div');
         name.textContent = file.name;
         name.style.fontSize = '12px';
@@ -739,6 +747,7 @@ function clearFilePreview() {
     selectedFiles = [];
     renderFilePreview();
 }
+
 function uploadAllFiles(files, text, token) {
     let uploaded = [];
     let errors = [];
@@ -767,7 +776,6 @@ function uploadAllFiles(files, text, token) {
         .finally(() => {
             count--;
             if (count === 0) {
-                // Все файлы обработаны
                 let msgText = text;
                 uploaded.forEach(f => {
                     if (f.type.startsWith('image/')) {
@@ -802,51 +810,8 @@ function handlePasteFile(e) {
     }
 }
 
-function uploadFile(file) {
-    const token = localStorage.getItem('token');
-    const formData = new FormData();
-    formData.append('file', file);
-    fetch('/chat/upload', {
-        method: 'POST',
-        headers: {
-            'Authorization': token
-        },
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success && data.url) {
-            // Отправить ссылку на файл как сообщение
-            sendFileMessage(data.url, file.type);
-        } else {
-            alert(data.error || 'Ошибка загрузки файла');
-        }
-    })
-    .catch(() => {
-        alert('Ошибка загрузки файла');
-    });
-}
-
-function sendFileMessage(url, fileType) {
-    const token = localStorage.getItem('token');
-    let text = '';
-    if (fileType.startsWith('image/')) {
-        text = `<img src="${url}" alt="image" style="max-width:300px;max-height:300px;">`;
-    } else {
-        text = `<a href="${url}" target="_blank">Документ</a>`;
-    }
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ token, text }));
-    } else {
-        alert('Нет соединения с сервером');
-    }
-}
-
-// Экспорт для использования в других модулях (если нужно)
-
 // --- Модальное окно для просмотра изображений ---
 function setupImageModal() {
-    // Создаём элементы модального окна, если их нет
     if (document.getElementById('imageModal')) return;
     imageModal = document.createElement('div');
     imageModal.id = 'imageModal';
