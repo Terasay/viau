@@ -32,50 +32,61 @@ const charCounter = document.getElementById('charCounter');
 const fileInput = document.getElementById('fileInput');
 const attachBtn = document.getElementById('attachBtn');
 
+// Последнее сообщение для группировки
+let lastMessageData = null;
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
-        // --- Emoji alias map (базовые, можно расширить) ---
-        const emojiAliasMap = {
-            ':smile:': '😄', ':laughing:': '😆', ':blush:': '😊', ':heart:': '❤️', ':thumbsup:': '👍',
-            ':sob:': '😭', ':joy:': '😂', ':wink:': '😉', ':sunglasses:': '😎', ':thinking:': '🤔',
-            ':fire:': '🔥', ':star:': '⭐', ':100:': '💯', ':clap:': '👏', ':ok_hand:': '👌',
-            ':grin:': '😁', ':cry:': '😢', ':angry:': '😠', ':kiss:': '😘', ':wave:': '👋',
-            ':pray:': '🙏', ':see_no_evil:': '🙈', ':tada:': '🎉', ':poop:': '💩', ':cat:': '🐱',
-            ':dog:': '🐶', ':upside_down:': '🙃', ':eyes:': '👀', ':zzz:': '💤', ':skull:': '💀',
-            ':monkey:': '🐵', ':apple:': '🍎', ':peach:': '🍑', ':eggplant:': '🍆', ':rocket:': '🚀',
-            ':unicorn:': '🦄', ':muscle:': '💪', ':broken_heart:': '💔', ':confetti_ball:': '🎊', ':crown:': '👑',
-            ':checkered_flag:': '🏁', ':soccer:': '⚽', ':basketball:': '🏀', ':football:': '🏈', ':tennis:': '🎾',
-            ':ping_pong:': '🏓', ':medal:': '🏅', ':trophy:': '🏆', ':gem:': '💎', ':moneybag:': '💰',
-            ':robot:': '🤖', ':alien:': '👽', ':ghost:': '👻', ':clown:': '🤡', ':nerd:': '🤓',
-            ':star_struck:': '🤩', ':partying_face:': '🥳', ':exploding_head:': '🤯', ':shushing_face:': '🤫', ':facepalm:': '🤦',
-            ':shrug:': '🤷', ':man_shrugging:': '🤷‍♂️', ':woman_shrugging:': '🤷‍♀️', ':man_dancing:': '🕺', ':dancer:': '💃',
-            ':man_facepalming:': '🤦‍♂️', ':woman_facepalming:': '🤦‍♀️', ':v:': '✌️', ':peace:': '✌️', ':wave:': '👋',
-            ':smirk:': '😏', ':neutral_face:': '😐', ':expressionless:': '😑', ':no_mouth:': '😶', ':grinning:': '😀',
-            ':relieved:': '😌', ':sleeping:': '😴', ':mask:': '😷', ':scream:': '😱', ':confused:': '😕',
-            ':yum:': '😋', ':stuck_out_tongue:': '😛', ':money_mouth:': '🤑', ':hugs:': '🤗', ':thinking_face:': '🤔'
-        };
+    // --- Emoji alias map (базовые, можно расширить) ---
+    const emojiAliasMap = {
+        ':smile:': '😄', ':laughing:': '😆', ':blush:': '😊', ':heart:': '❤️', ':thumbsup:': '👍',
+        ':sob:': '😭', ':joy:': '😂', ':wink:': '😉', ':sunglasses:': '😎', ':thinking:': '🤔',
+        ':fire:': '🔥', ':star:': '⭐', ':100:': '💯', ':clap:': '👏', ':ok_hand:': '👌',
+        ':grin:': '😁', ':cry:': '😢', ':angry:': '😠', ':kiss:': '😘', ':wave:': '👋',
+        ':pray:': '🙏', ':see_no_evil:': '🙈', ':tada:': '🎉', ':poop:': '💩', ':cat:': '🐱',
+        ':dog:': '🐶', ':upside_down:': '🙃', ':eyes:': '👀', ':zzz:': '💤', ':skull:': '💀',
+        ':monkey:': '🐵', ':apple:': '🍎', ':peach:': '🍑', ':eggplant:': '🍆', ':rocket:': '🚀',
+        ':unicorn:': '🦄', ':muscle:': '💪', ':broken_heart:': '💔', ':confetti_ball:': '🎊', ':crown:': '👑',
+        ':checkered_flag:': '🏁', ':soccer:': '⚽', ':basketball:': '🏀', ':football:': '🏈', ':tennis:': '🎾',
+        ':ping_pong:': '🏓', ':medal:': '🏅', ':trophy:': '🏆', ':gem:': '💎', ':moneybag:': '💰',
+        ':robot:': '🤖', ':alien:': '👽', ':ghost:': '👻', ':clown:': '🤡', ':nerd:': '🤓',
+        ':star_struck:': '🤩', ':partying_face:': '🥳', ':exploding_head:': '🤯', ':shushing_face:': '🤫', ':facepalm:': '🤦',
+        ':shrug:': '🤷', ':man_shrugging:': '🤷‍♂️', ':woman_shrugging:': '🤷‍♀️', ':man_dancing:': '🕺', ':dancer:': '💃',
+        ':man_facepalming:': '🤦‍♂️', ':woman_facepalming:': '🤦‍♀️', ':v:': '✌️', ':peace:': '✌️', ':wave:': '👋',
+        ':smirk:': '😏', ':neutral_face:': '😐', ':expressionless:': '😑', ':no_mouth:': '😶', ':grinning:': '😀',
+        ':relieved:': '😌', ':sleeping:': '😴', ':mask:': '😷', ':scream:': '😱', ':confused:': '😕',
+        ':yum:': '😋', ':stuck_out_tongue:': '😛', ':money_mouth:': '🤑', ':hugs:': '🤗', ':thinking_face:': '🤔'
+    };
 
-        // --- Автозамена :alias: на emoji ---
-        function replaceEmojiAliases(text) {
-            return text.replace(/:([a-zA-Z0-9_]+):/g, (match) => emojiAliasMap[match] || match);
+    // --- Автозамена :alias: на emoji ---
+    function replaceEmojiAliases(text) {
+        return text.replace(/:([a-zA-Z0-9_]+):/g, (match) => emojiAliasMap[match] || match);
+    }
+
+    // При вводе — автозамена alias на emoji и применяем twemoji сразу
+    messageInput.addEventListener('input', (e) => {
+        const cursor = messageInput.selectionStart;
+        const newText = replaceEmojiAliases(messageInput.value);
+        if (newText !== messageInput.value) {
+            messageInput.value = newText;
+            messageInput.selectionStart = messageInput.selectionEnd = cursor;
         }
+        // Применяем twemoji к полю ввода для красивого отображения
+        if (window.twemoji) {
+            // Создаем временный элемент для парсинга
+            const temp = document.createElement('div');
+            temp.textContent = messageInput.value;
+            twemoji.parse(temp);
+        }
+    });
 
-        // При вводе — автозамена alias на emoji
-        messageInput.addEventListener('input', (e) => {
-            const cursor = messageInput.selectionStart;
-            const newText = replaceEmojiAliases(messageInput.value);
-            if (newText !== messageInput.value) {
-                messageInput.value = newText;
-                messageInput.selectionStart = messageInput.selectionEnd = cursor;
-            }
-        });
+    // При отправке — автозамена alias на emoji (на всякий случай)
+    const origSendMessage = sendMessage;
+    window.sendMessage = function() {
+        messageInput.value = replaceEmojiAliases(messageInput.value);
+        origSendMessage();
+    };
 
-        // При отправке — автозамена alias на emoji (на всякий случай)
-        const origSendMessage = sendMessage;
-        window.sendMessage = function() {
-            messageInput.value = replaceEmojiAliases(messageInput.value);
-            origSendMessage();
-        };
     await checkAuth();
     setupEventListeners();
     setupImageModal();
@@ -104,7 +115,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     emojiBtn.className = 'btn-emoji';
     emojiBtn.type = 'button';
     emojiBtn.title = 'Эмодзи';
-    emojiBtn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zm0-4a6 6 0 0 0 6-6H6a6 6 0 0 0 6 6zm-3-7a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm6 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    emojiBtn.innerHTML = '<i class="fas fa-smile"></i>';
+    
     // Вставляем кнопку перед sendBtn
     const inputWrapper = document.querySelector('.input-wrapper');
     inputWrapper.insertBefore(emojiBtn, inputWrapper.querySelector('#sendBtn'));
@@ -112,31 +124,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     emojiPicker.style.bottom = '60px';
     emojiPicker.style.left = '0';
 
-        emojiBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            // Показываем emoji-picker
-            emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
-            if (emojiPicker.style.display === 'block') {
-                // Сброс позиции
-                emojiPicker.style.left = '0px';
-                emojiPicker.style.right = '';
-                // Динамическое позиционирование
-                setTimeout(() => {
-                    const pickerRect = emojiPicker.getBoundingClientRect();
-                    const wrapperRect = inputWrapper.getBoundingClientRect();
-                    const windowWidth = window.innerWidth;
-                    // Если выходит за правый край окна
-                    if (pickerRect.right > windowWidth) {
-                        // Смещаем влево на разницу
-                        let shift = pickerRect.right - windowWidth + 8; // 8px отступ
-                        let left = parseInt(emojiPicker.style.left || '0', 10) - shift;
-                        // Не даём уйти за левый край
-                        if (wrapperRect.left + left < 0) left = -wrapperRect.left + 8;
-                        emojiPicker.style.left = left + 'px';
-                    }
-                }, 0);
-            }
-        });
+    emojiBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
+        if (emojiPicker.style.display === 'block') {
+            emojiPicker.style.left = '0px';
+            emojiPicker.style.right = '';
+            setTimeout(() => {
+                const pickerRect = emojiPicker.getBoundingClientRect();
+                const wrapperRect = inputWrapper.getBoundingClientRect();
+                const windowWidth = window.innerWidth;
+                if (pickerRect.right > windowWidth) {
+                    let shift = pickerRect.right - windowWidth + 8;
+                    let left = parseInt(emojiPicker.style.left || '0', 10) - shift;
+                    if (wrapperRect.left + left < 0) left = -wrapperRect.left + 8;
+                    emojiPicker.style.left = left + 'px';
+                }
+            }, 0);
+        }
+    });
+
     // Вставка emoji в поле ввода
     emojiPicker.addEventListener('emoji-click', (event) => {
         const emoji = event.detail.unicode;
@@ -146,37 +153,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const end = input.selectionEnd;
             const value = input.value;
             input.value = value.slice(0, start) + emoji + value.slice(end);
-    
-    // --- Emoji Preview Block ---
-    const emojiPreview = document.createElement('div');
-    emojiPreview.id = 'emojiPreview';
-    emojiPreview.style.display = 'none';
-    emojiPreview.style.position = 'absolute';
-    emojiPreview.style.left = '0';
-    emojiPreview.style.bottom = 'calc(100% + 10px)';
-    emojiPreview.style.width = '220px';
-    emojiPreview.style.minHeight = '60px';
-    emojiPreview.style.background = 'var(--picker-bg, #fff)';
-    emojiPreview.style.borderRadius = '14px';
-    emojiPreview.style.boxShadow = '0 2px 16px rgba(0,0,0,0.13)';
-    emojiPreview.style.padding = '12px 10px 10px 10px';
-    emojiPreview.style.fontSize = '32px';
-    emojiPreview.style.textAlign = 'center';
-    emojiPreview.style.color = 'var(--picker-color, #222)';
-    emojiPreview.style.pointerEvents = 'none';
-    emojiPreview.style.transition = 'opacity 0.15s';
-    emojiPreview.style.opacity = '0.98';
-    emojiPreview.style.userSelect = 'none';
-    emojiPreview.style.fontFamily = 'inherit';
-    emojiPreview.style.lineHeight = '1.1';
-    emojiPreview.innerHTML = '';
-    emojiPicker.appendChild(emojiPreview);
-
             input.focus();
             input.selectionStart = input.selectionEnd = start + emoji.length;
+            
+            // Обновляем счетчик символов
+            updateCharCounter();
         }
         emojiPicker.style.display = 'none';
     });
+
     // Закрытие picker при клике вне
     document.addEventListener('click', (e) => {
         if (emojiPicker.style.display === 'block' && !emojiPicker.contains(e.target) && e.target !== emojiBtn) {
@@ -228,18 +213,21 @@ async function checkAuth() {
 }
 
 function updateCharCounter() {
-	const length = messageInput.value.length;
-	charCounter.textContent = `${length} / 500`;
-	if (length >= 500) {
-		charCounter.style.color = '#ff6b6b';
-	} else {
-		charCounter.style.color = '#999';
-	}
+    const length = messageInput.value.length;
+    charCounter.textContent = `${length} / 500`;
+    if (length >= 500) {
+        charCounter.style.color = 'var(--danger)';
+    } else {
+        charCounter.style.color = 'var(--text-tertiary)';
+    }
 }
 
 // Инициализация чата
 function initChat() {
-    userInfo.textContent = `${currentUser.username}${currentUser.role === 'admin' ? ' (админ)' : ''}`;
+    const userInfoSpan = userInfo.querySelector('span');
+    if (userInfoSpan) {
+        userInfoSpan.textContent = currentUser.username + (currentUser.role === 'admin' ? ' (админ)' : '');
+    }
     if (currentUser.muted) {
         showMutedNotice();
     }
@@ -247,14 +235,8 @@ function initChat() {
     setupWebSocket();
 }
 
-// Симуляция чата (замените на реальный WebSocket)
-function simulateChat() {
-    // Симуляция больше не используется
-}
-
 // Загрузка истории чата
 function loadChatHistory() {
-    // Загрузка истории чата с сервера
     fetch('/chat/messages', {
         method: 'GET'
     })
@@ -262,6 +244,7 @@ function loadChatHistory() {
     .then(data => {
         messages = [];
         messagesContainer.innerHTML = '';
+        lastMessageData = null; // Сбрасываем группировку
         data.messages.forEach(msg => {
             addMessage(msg, false);
         });
@@ -276,15 +259,19 @@ function loadChatHistory() {
     });
 }
 
-// Сохранение истории чата
-function saveChatHistory() {
-    // История сохраняется на сервере, ничего не делаем
-}
-
 // Обновление списка пользователей онлайн
 function updateOnlineUsers(users) {
     onlineUsers = users || [];
-    onlineCount.textContent = `${onlineUsers.length} онлайн`;
+    const onlineCountElement = document.querySelector('.online-count');
+    if (onlineCountElement) {
+        const countText = onlineCountElement.querySelector('i').nextSibling;
+        if (countText) {
+            countText.textContent = ` ${onlineUsers.length} онлайн`;
+        } else {
+            onlineCountElement.innerHTML = `<i class="fas fa-circle"></i> ${onlineUsers.length} онлайн`;
+        }
+    }
+    
     usersList.innerHTML = '';
     onlineUsers.forEach(user => {
         const userItem = document.createElement('div');
@@ -307,36 +294,79 @@ function updateOnlineUsers(users) {
     });
 }
 
+// Функция для проверки, нужно ли группировать сообщения
+function shouldGroupMessage(newMessageData) {
+    if (!lastMessageData) return false;
+    
+    // Проверяем, что от одного пользователя
+    if (lastMessageData.username !== newMessageData.username) return false;
+    
+    // Проверяем разницу во времени (15 минут = 900000 мс)
+    const lastTime = new Date(lastMessageData.timestamp);
+    const newTime = new Date(newMessageData.timestamp);
+    const timeDiff = Math.abs(newTime - lastTime);
+    
+    if (timeDiff > 900000) return false; // 15 минут
+    
+    return true;
+}
+
 // Добавление сообщения
 function addMessage(messageData, save = true) {
+    const isGrouped = shouldGroupMessage(messageData);
+    
     const message = document.createElement('div');
     message.className = 'message';
     if (messageData.username === currentUser.username) {
         message.classList.add('own');
     }
+    
+    // Добавляем класс для группированных сообщений
+    if (isGrouped) {
+        message.classList.add('grouped');
+    }
+    
     message.dataset.id = messageData.id;
-    const avatar = document.createElement('div');
-    avatar.className = 'message-avatar';
-    avatar.textContent = messageData.username[0].toUpperCase();
+    
+    // Аватар показываем только если не группированное
+    if (!isGrouped) {
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = messageData.username[0].toUpperCase();
+        message.appendChild(avatar);
+    } else {
+        // Для группированных сообщений добавляем пустой div для отступа
+        const spacer = document.createElement('div');
+        spacer.style.width = '40px';
+        spacer.style.flexShrink = '0';
+        message.appendChild(spacer);
+    }
+    
     const content = document.createElement('div');
     content.className = 'message-content';
-    const header = document.createElement('div');
-    header.className = 'message-header';
-    const username = document.createElement('div');
-    username.className = 'message-username';
-    username.textContent = messageData.username;
-    header.appendChild(username);
-    if (messageData.role === 'admin') {
-        const role = document.createElement('div');
-        role.className = 'message-role admin';
-        role.textContent = 'ADMIN';
-        header.appendChild(role);
+    
+    // Заголовок показываем только если не группированное
+    if (!isGrouped) {
+        const header = document.createElement('div');
+        header.className = 'message-header';
+        const username = document.createElement('div');
+        username.className = 'message-username';
+        username.textContent = messageData.username;
+        header.appendChild(username);
+        if (messageData.role === 'admin') {
+            const role = document.createElement('div');
+            role.className = 'message-role admin';
+            role.textContent = 'ADMIN';
+            header.appendChild(role);
+        }
+        const time = document.createElement('div');
+        time.className = 'message-time';
+        const timestamp = messageData.timestamp ? new Date(messageData.timestamp) : new Date();
+        time.textContent = formatTime(timestamp);
+        header.appendChild(time);
+        content.appendChild(header);
     }
-    const time = document.createElement('div');
-    time.className = 'message-time';
-    const timestamp = messageData.timestamp ? new Date(messageData.timestamp) : new Date();
-    time.textContent = formatTime(timestamp);
-    header.appendChild(time);
+    
     const text = document.createElement('div');
     text.className = 'message-text';
     if (/<img|<a/.test(messageData.text)) {
@@ -351,7 +381,6 @@ function addMessage(messageData, save = true) {
     } else {
         text.textContent = messageData.text;
     }
-    content.appendChild(header);
     content.appendChild(text);
 
     // Кнопки редактирования и удаления
@@ -359,22 +388,11 @@ function addMessage(messageData, save = true) {
     if (canEditOrDelete && messageData.id) {
         const actions = document.createElement('div');
         actions.className = 'message-actions';
-        actions.style.display = 'none';
-        actions.style.marginTop = '2px';
-        actions.style.fontSize = '11px';
-        actions.style.gap = '8px';
-        actions.style.alignItems = 'center';
-        actions.style.opacity = '0.8';
+        
         // Кнопка удалить
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Удалить';
         deleteBtn.className = 'delete-btn';
-        deleteBtn.style.color = '#ff6b6b';
-        deleteBtn.style.background = 'none';
-        deleteBtn.style.border = 'none';
-        deleteBtn.style.cursor = 'pointer';
-        deleteBtn.style.fontSize = '11px';
-        deleteBtn.style.padding = '0 6px';
         deleteBtn.onclick = async (e) => {
             e.stopPropagation();
             if (confirm('Удалить сообщение?')) {
@@ -382,100 +400,70 @@ function addMessage(messageData, save = true) {
             }
         };
         actions.appendChild(deleteBtn);
+        
         // Кнопка редактировать
         const editBtn = document.createElement('button');
         editBtn.textContent = 'Редактировать';
         editBtn.className = 'edit-btn';
-        editBtn.style.color = '';
-        editBtn.style.background = 'none';
-        editBtn.style.border = 'none';
-        editBtn.style.cursor = 'pointer';
-        editBtn.style.fontSize = '11px';
-        editBtn.style.padding = '0 6px';
         editBtn.onclick = (e) => {
             e.stopPropagation();
-            showEditMessageInput(message, messageData);
+            showEditMessageInput(message, messageData, text, actions);
         };
         actions.appendChild(editBtn);
         content.appendChild(actions);
-        // Показывать действия при наведении
-        message.addEventListener('mouseenter', () => {
-            actions.style.display = 'flex';
-        });
-        message.addEventListener('mouseleave', () => {
-            actions.style.display = 'none';
-        });
     }
 
-    message.appendChild(avatar);
     message.appendChild(content);
     messagesContainer.appendChild(message);
+    
     // Рендерим emoji через Twemoji
     if (window.twemoji) {
         twemoji.parse(message);
     }
-    // Также парсим все сообщения (на случай, если emoji вставлены через picker)
-    if (window.twemoji) {
-        twemoji.parse(messagesContainer);
-    }
+    
     scrollToBottom();
-
-    // ---
-    function showEditMessageInput(messageElem, msgData) {
-        // Скрыть текст
-        text.style.display = 'none';
-        // Скрыть действия
-        const actionsElem = content.querySelector('.message-actions');
-        if (actionsElem) actionsElem.style.display = 'none';
-        // Создать поле ввода
-        const editInput = document.createElement('input');
-        editInput.type = 'text';
-        editInput.value = msgData.text.replace(/<[^>]+>/g, '');
-        editInput.style.fontSize = '13px';
-        editInput.style.width = '90%';
-        editInput.style.marginTop = '4px';
-        editInput.style.borderRadius = '6px';
-        editInput.style.border = '1px solid #ccc';
-        editInput.style.padding = '4px 8px';
-        content.appendChild(editInput);
-        // Кнопки сохранить/отмена
-        const saveBtn = document.createElement('button');
-        saveBtn.textContent = 'Сохранить';
-        saveBtn.style.fontSize = '11px';
-        saveBtn.style.marginLeft = '6px';
-        saveBtn.style.background = 'var(--btn-bg)';
-        saveBtn.style.color = 'var(--btn-color)';
-        saveBtn.style.border = 'none';
-        saveBtn.style.borderRadius = '6px';
-        saveBtn.style.cursor = 'pointer';
-        const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = 'Отмена';
-        cancelBtn.style.fontSize = '11px';
-        cancelBtn.style.marginLeft = '6px';
-        cancelBtn.style.background = 'none';
-        cancelBtn.style.color = '#999';
-        cancelBtn.style.border = 'none';
-        cancelBtn.style.cursor = 'pointer';
-        content.appendChild(saveBtn);
-        content.appendChild(cancelBtn);
-        saveBtn.onclick = async () => {
-            const newText = editInput.value.trim();
-            if (!newText) return alert('Текст не может быть пустым');
-            await editMessageApi(msgData.id, newText);
-        };
-        cancelBtn.onclick = () => {
-            editInput.remove();
-            saveBtn.remove();
-            cancelBtn.remove();
-            text.style.display = '';
-            if (actionsElem) actionsElem.style.display = 'none';
-        };
-    }
+    
+    // Обновляем последнее сообщение для группировки
+    lastMessageData = messageData;
 }
 
-// Добавление системного сообщения
-function addSystemMessage(text, save = true) {
-    // В новой версии системные сообщения не используются
+// Функция для редактирования сообщения
+function showEditMessageInput(messageElem, msgData, textElem, actionsElem) {
+    textElem.style.display = 'none';
+    if (actionsElem) actionsElem.style.display = 'none';
+    
+    const content = messageElem.querySelector('.message-content');
+    const editInput = document.createElement('input');
+    editInput.type = 'text';
+    editInput.value = msgData.text.replace(/<[^>]+>/g, '');
+    editInput.className = 'edit-input';
+    content.appendChild(editInput);
+    
+    const btnContainer = document.createElement('div');
+    btnContainer.className = 'edit-buttons';
+    
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Сохранить';
+    saveBtn.className = 'save-btn';
+    saveBtn.onclick = async () => {
+        const newText = editInput.value.trim();
+        if (!newText) return alert('Текст не может быть пустым');
+        await editMessageApi(msgData.id, newText);
+    };
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Отмена';
+    cancelBtn.className = 'cancel-btn';
+    cancelBtn.onclick = () => {
+        editInput.remove();
+        btnContainer.remove();
+        textElem.style.display = '';
+        if (actionsElem) actionsElem.style.display = 'none';
+    };
+    
+    btnContainer.appendChild(saveBtn);
+    btnContainer.appendChild(cancelBtn);
+    content.appendChild(btnContainer);
 }
 
 // --- WebSocket ---
@@ -485,7 +473,6 @@ function setupWebSocket() {
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-        // При открытии сразу отправляем токен для авторизации
         const token = localStorage.getItem('token');
         ws.send(JSON.stringify({ token }));
     };
@@ -495,7 +482,6 @@ function setupWebSocket() {
             const data = JSON.parse(event.data);
             if (data.type === 'message' && data.message) {
                 addMessage(data.message, false);
-                // После добавления сообщения обновить историю
                 loadChatHistory();
             } else if (data.type === 'online_users' && Array.isArray(data.users)) {
                 updateOnlineUsers(data.users);
@@ -508,7 +494,6 @@ function setupWebSocket() {
     };
 
     ws.onclose = () => {
-        // Попробовать переподключиться через 2 секунды
         setTimeout(setupWebSocket, 2000);
     };
 }
@@ -584,8 +569,6 @@ function sendMessage() {
 
 // Форматирование времени
 function formatTime(date) {
-    // date - объект Date
-    // Формат: ДД.ММ.ГГГГ ЧЧ:ММ
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
@@ -622,49 +605,52 @@ function logout() {
 
 // Настройка обработчиков событий
 function setupEventListeners() {
-    // Отправка сообщения
     sendBtn.addEventListener('click', sendMessage);
     messageInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             sendMessage();
         }
     });
-    // Счетчик символов
     messageInput.addEventListener('input', updateCharCounter);
-    // Выход
     logoutBtn.addEventListener('click', logout);
-    // Переход на главную
+    
     if (mainBtn) {
         mainBtn.addEventListener('click', () => {
-            window.location.href = '/index.html';
+            window.location.href = '/';
         });
     }
-    // Переключение темы
+    
     if (themeBtn) {
         themeBtn.addEventListener('click', () => {
             document.body.classList.toggle('dark-theme');
+            const icon = themeBtn.querySelector('i');
             if (document.body.classList.contains('dark-theme')) {
                 localStorage.setItem('theme', 'dark');
+                icon.className = 'fas fa-sun';
             } else {
                 localStorage.setItem('theme', 'light');
+                icon.className = 'fas fa-moon';
             }
         });
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
             document.body.classList.add('dark-theme');
+            const icon = themeBtn.querySelector('i');
+            if (icon) icon.className = 'fas fa-sun';
         }
     }
-    // Кнопка прикрепления файла
+    
     if (attachBtn && fileInput) {
         attachBtn.addEventListener('click', () => {
             fileInput.click();
         });
         fileInput.addEventListener('change', handleFileSelect);
     }
-    // Вставка файла через Ctrl+V
+    
     messageInput.addEventListener('paste', handlePasteFile);
 }
 
+// Остальные функции для работы с файлами остаются без изменений
 function handleFileSelect(e) {
     const files = Array.from(e.target.files);
     files.forEach(file => {
@@ -672,8 +658,8 @@ function handleFileSelect(e) {
     });
     fileInput.value = '';
 }
+
 function addFileToPreview(file) {
-    // Проверка на дубликаты
     if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) return;
     selectedFiles.push(file);
     renderFilePreview();
@@ -688,48 +674,52 @@ function renderFilePreview() {
         preview.style.display = 'flex';
         preview.style.flexDirection = 'column';
         preview.style.alignItems = 'center';
-        preview.style.border = '1px solid #ccc';
-        preview.style.borderRadius = '8px';
-        preview.style.padding = '6px';
-        preview.style.background = '#f9f9f9';
+        preview.style.border = '1px solid var(--border)';
+        preview.style.borderRadius = 'var(--radius)';
+        preview.style.padding = '8px';
+        preview.style.background = 'var(--bg-tertiary)';
         preview.style.maxWidth = '120px';
-        preview.style.maxHeight = '120px';
-        preview.style.overflow = 'hidden';
-        // Кнопка удаления
+        
         const removeBtn = document.createElement('button');
-        removeBtn.textContent = '×';
+        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
         removeBtn.style.position = 'absolute';
-        removeBtn.style.top = '2px';
-        removeBtn.style.right = '2px';
-        removeBtn.style.background = '#ff6b6b';
+        removeBtn.style.top = '4px';
+        removeBtn.style.right = '4px';
+        removeBtn.style.background = 'var(--danger)';
         removeBtn.style.color = '#fff';
         removeBtn.style.border = 'none';
         removeBtn.style.borderRadius = '50%';
-        removeBtn.style.width = '22px';
-        removeBtn.style.height = '22px';
+        removeBtn.style.width = '24px';
+        removeBtn.style.height = '24px';
         removeBtn.style.cursor = 'pointer';
+        removeBtn.style.display = 'flex';
+        removeBtn.style.alignItems = 'center';
+        removeBtn.style.justifyContent = 'center';
         removeBtn.onclick = () => {
             selectedFiles.splice(idx, 1);
             renderFilePreview();
         };
         preview.appendChild(removeBtn);
+        
         if (file.type.startsWith('image/')) {
             const img = document.createElement('img');
             img.style.maxWidth = '100px';
             img.style.maxHeight = '100px';
-            img.style.borderRadius = '6px';
+            img.style.borderRadius = 'var(--radius)';
             img.src = URL.createObjectURL(file);
             preview.appendChild(img);
         } else {
             const icon = document.createElement('div');
-            icon.textContent = '📄';
-            icon.style.fontSize = '40px';
+            icon.innerHTML = '<i class="fas fa-file" style="font-size: 40px;"></i>';
             preview.appendChild(icon);
         }
+        
         const name = document.createElement('div');
         name.textContent = file.name;
-        name.style.fontSize = '12px';
+        name.style.fontSize = '11px';
         name.style.wordBreak = 'break-all';
+        name.style.marginTop = '4px';
+        name.style.textAlign = 'center';
         preview.appendChild(name);
         filePreviewContainer.appendChild(preview);
     });
@@ -739,6 +729,7 @@ function clearFilePreview() {
     selectedFiles = [];
     renderFilePreview();
 }
+
 function uploadAllFiles(files, text, token) {
     let uploaded = [];
     let errors = [];
@@ -765,158 +756,98 @@ function uploadAllFiles(files, text, token) {
             errors.push('Ошибка загрузки файла');
         })
         .finally(() => {
-            count--;
-            if (count === 0) {
-                // Все файлы обработаны
-                let msgText = text;
-                uploaded.forEach(f => {
-                    if (f.type.startsWith('image/')) {
-                        msgText += `<img src="${f.url}" alt="image" style="max-width:300px;max-height:300px;">`;
-                    } else {
-                        msgText += `<a href="${f.url}" target="_blank">Документ</a>`;
-                    }
-                });
-                if (msgText) {
-                    ws.send(JSON.stringify({ token, text: msgText }));
+        count--;
+        if (count === 0) {
+            let msgText = text;
+            uploaded.forEach(f => {
+                if (f.type.startsWith('image/')) {
+                    msgText += `<img src="${f.url}" alt="image" style="max-width:300px;max-height:300px;">`;
+                } else {
+                    msgText += `<a href="${f.url}" target="_blank">Документ</a>`;
                 }
-                if (errors.length > 0) {
-                    alert(errors.join('\n'));
-                }
+            });
+            if (msgText) {
+                ws.send(JSON.stringify({ token, text: msgText }));
             }
-        });
+            if (errors.length > 0) {
+                alert(errors.join('\n'));
+            }
+        }
     });
+});
 }
-
 function handlePasteFile(e) {
-    const items = e.clipboardData.items;
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (item.kind === 'file') {
-            const file = item.getAsFile();
-            if (file) {
-                addFileToPreview(file);
-                e.preventDefault();
-                break;
-            }
-        }
-    }
+const items = e.clipboardData.items;
+for (let i = 0; i < items.length; i++) {
+const item = items[i];
+if (item.kind === 'file') {
+const file = item.getAsFile();
+if (file) {
+addFileToPreview(file);
+e.preventDefault();
+break;
 }
-
-function uploadFile(file) {
-    const token = localStorage.getItem('token');
-    const formData = new FormData();
-    formData.append('file', file);
-    fetch('/chat/upload', {
-        method: 'POST',
-        headers: {
-            'Authorization': token
-        },
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success && data.url) {
-            // Отправить ссылку на файл как сообщение
-            sendFileMessage(data.url, file.type);
-        } else {
-            alert(data.error || 'Ошибка загрузки файла');
-        }
-    })
-    .catch(() => {
-        alert('Ошибка загрузки файла');
-    });
 }
-
-function sendFileMessage(url, fileType) {
-    const token = localStorage.getItem('token');
-    let text = '';
-    if (fileType.startsWith('image/')) {
-        text = `<img src="${url}" alt="image" style="max-width:300px;max-height:300px;">`;
-    } else {
-        text = `<a href="${url}" target="_blank">Документ</a>`;
-    }
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ token, text }));
-    } else {
-        alert('Нет соединения с сервером');
-    }
 }
-
-// Экспорт для использования в других модулях (если нужно)
-
+}
 // --- Модальное окно для просмотра изображений ---
 function setupImageModal() {
-    // Создаём элементы модального окна, если их нет
-    if (document.getElementById('imageModal')) return;
-    imageModal = document.createElement('div');
-    imageModal.id = 'imageModal';
-    imageModal.style.position = 'fixed';
-    imageModal.style.top = '0';
-    imageModal.style.left = '0';
-    imageModal.style.width = '100vw';
-    imageModal.style.height = '100vh';
-    imageModal.style.background = 'rgba(0,0,0,0.85)';
-    imageModal.style.display = 'none';
-    imageModal.style.alignItems = 'center';
-    imageModal.style.justifyContent = 'center';
-    imageModal.style.zIndex = '9999';
-    imageModal.innerHTML = `
-        <div style="position:relative;max-width:90vw;max-height:90vh;display:flex;flex-direction:column;align-items:center;">
-            <img id="modalImg" src="" style="max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 0 40px #000;transition:transform 0.2s;" />
-            <div style="margin-top:15px;display:flex;gap:10px;">
-                <button id="modalZoomIn" style="padding:8px 16px;border-radius:8px;border:none;background:#667eea;color:#fff;font-size:18px;cursor:pointer;">+</button>
-                <button id="modalZoomOut" style="padding:8px 16px;border-radius:8px;border:none;background:#667eea;color:#fff;font-size:18px;cursor:pointer;">-</button>
-                <button id="modalZoomReset" style="padding:8px 16px;border-radius:8px;border:none;background:#764ba2;color:#fff;font-size:16px;cursor:pointer;">Сброс</button>
-                <button id="modalClose" style="padding:8px 16px;border-radius:8px;border:none;background:#ff6b6b;color:#fff;font-size:16px;cursor:pointer;">Закрыть</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(imageModal);
-    modalImg = document.getElementById('modalImg');
-    modalClose = document.getElementById('modalClose');
-    modalZoomIn = document.getElementById('modalZoomIn');
-    modalZoomOut = document.getElementById('modalZoomOut');
-    modalZoomReset = document.getElementById('modalZoomReset');
-
-    modalClose.addEventListener('click', closeImageModal);
-    modalZoomIn.addEventListener('click', () => zoomImage(1.2));
-    modalZoomOut.addEventListener('click', () => zoomImage(0.8));
-    modalZoomReset.addEventListener('click', () => zoomImage(1, true));
-    imageModal.addEventListener('click', (e) => {
-        if (e.target === imageModal) closeImageModal();
-    });
-    modalImg.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        if (e.deltaY < 0) zoomImage(1.1);
-        else zoomImage(0.9);
-    });
-    document.addEventListener('keydown', (e) => {
-        if (imageModal.style.display === 'flex' && (e.key === 'Escape' || e.key === 'Esc')) {
-            closeImageModal();
-        }
-    });
-}
-
-function openImageModal(src) {
-    if (!imageModal) setupImageModal();
-    modalImg.src = src;
-    imageModal.style.display = 'flex';
-    currentScale = 1;
-    modalImg.style.transform = 'scale(1)';
-}
-
-function closeImageModal() {
-    imageModal.style.display = 'none';
-    modalImg.src = '';
-}
-
-function zoomImage(factor, reset = false) {
-    if (reset) {
-        currentScale = 1;
-    } else {
-        currentScale *= factor;
-        if (currentScale < 0.2) currentScale = 0.2;
-        if (currentScale > 5) currentScale = 5;
+if (document.getElementById('imageModal')) return;
+imageModal = document.createElement('div');
+imageModal.id = 'imageModal';
+imageModal.style.position = 'fixed';
+imageModal.style.top = '0';
+imageModal.style.left = '0';
+imageModal.style.width = '100vw';
+imageModal.style.height = '100vh';
+imageModal.style.background = 'rgba(0,0,0,0.9)';
+imageModal.style.display = 'none';
+imageModal.style.alignItems = 'center';
+imageModal.style.justifyContent = 'center';
+imageModal.style.zIndex = '9999';
+imageModal.innerHTML =         <div style="position:relative;max-width:90vw;max-height:90vh;display:flex;flex-direction:column;align-items:center;">             <img id="modalImg" src="" style="max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 0 40px #000;transition:transform 0.2s;" />             <div style="margin-top:20px;display:flex;gap:12px;">                 <button id="modalZoomIn" style="padding:10px 18px;border-radius:var(--radius-full);border:none;background:var(--primary);color:#fff;font-size:18px;cursor:pointer;"><i class="fas fa-plus"></i></button>                 <button id="modalZoomOut" style="padding:10px 18px;border-radius:var(--radius-full);border:none;background:var(--primary);color:#fff;font-size:18px;cursor:pointer;"><i class="fas fa-minus"></i></button>                 <button id="modalZoomReset" style="padding:10px 18px;border-radius:var(--radius-full);border:none;background:var(--secondary);color:#fff;font-size:14px;cursor:pointer;">Сброс</button>                 <button id="modalClose" style="padding:10px 18px;border-radius:var(--radius-full);border:none;background:var(--danger);color:#fff;font-size:14px;cursor:pointer;"><i class="fas fa-times"></i> Закрыть</button>             </div>         </div>    ;
+document.body.appendChild(imageModal);
+modalImg = document.getElementById('modalImg');
+modalClose = document.getElementById('modalClose');
+modalZoomIn = document.getElementById('modalZoomIn');
+modalZoomOut = document.getElementById('modalZoomOut');
+modalZoomReset = document.getElementById('modalZoomReset');
+modalClose.addEventListener('click', closeImageModal);
+modalZoomIn.addEventListener('click', () => zoomImage(1.2));
+modalZoomOut.addEventListener('click', () => zoomImage(0.8));
+modalZoomReset.addEventListener('click', () => zoomImage(1, true));
+imageModal.addEventListener('click', (e) => {
+    if (e.target === imageModal) closeImageModal();
+});
+modalImg.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (e.deltaY < 0) zoomImage(1.1);
+    else zoomImage(0.9);
+});
+document.addEventListener('keydown', (e) => {
+    if (imageModal.style.display === 'flex' && (e.key === 'Escape' || e.key === 'Esc')) {
+        closeImageModal();
     }
-    modalImg.style.transform = `scale(${currentScale})`;
+});
+}
+function openImageModal(src) {
+if (!imageModal) setupImageModal();
+modalImg.src = src;
+imageModal.style.display = 'flex';
+currentScale = 1;
+modalImg.style.transform = 'scale(1)';
+}
+function closeImageModal() {
+imageModal.style.display = 'none';
+modalImg.src = '';
+}
+function zoomImage(factor, reset = false) {
+if (reset) {
+currentScale = 1;
+} else {
+currentScale *= factor;
+if (currentScale < 0.2) currentScale = 0.2;
+if (currentScale > 5) currentScale = 5;
+}
+modalImg.style.transform = `scale(${currentScale})`;
 }

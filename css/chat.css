@@ -776,6 +776,66 @@ emoji-picker {
     font-size: 20px;
 }
 
+.message.grouped {
+    margin-top: 4px;
+}
+
+.message.grouped .message-text {
+    border-radius: 12px;
+}
+
+.message.own.grouped .message-text {
+    border-radius: 12px;
+}
+
+/* Стили для редактирования */
+.edit-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-top: 8px;
+    outline: none;
+}
+
+.edit-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.save-btn,
+.cancel-btn {
+    padding: 6px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.save-btn {
+    background: var(--primary);
+    color: white;
+}
+
+.save-btn:hover {
+    background: var(--primary-dark);
+}
+
+.cancel-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.cancel-btn:hover {
+    background: var(--border);
+}
+
 @media (max-width: 1024px) {
     .users-sidebar {
         width: 240px;
