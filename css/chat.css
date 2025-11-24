@@ -65,7 +65,6 @@ body {
     transition: all 0.3s ease;
 }
 
-/* Анимированный фон */
 .background-animation {
     position: fixed;
     top: 0;
@@ -114,7 +113,6 @@ body {
     }
 }
 
-/* Контейнер чата */
 .chat-container {
     display: flex;
     flex-direction: column;
@@ -127,7 +125,6 @@ body {
     box-shadow: var(--shadow-xl);
 }
 
-/* Заголовок */
 .chat-header {
     display: flex;
     justify-content: space-between;
@@ -215,7 +212,6 @@ body.dark-theme .chat-header {
     color: var(--primary);
 }
 
-/* Кнопки */
 .btn-icon {
     width: 44px;
     height: 44px;
@@ -257,14 +253,12 @@ body.dark-theme .chat-header {
     box-shadow: var(--shadow-lg);
 }
 
-/* Основная область */
 .chat-main {
     display: flex;
     flex: 1;
     overflow: hidden;
 }
 
-/* Боковая панель */
 .users-sidebar {
     width: 280px;
     background: var(--bg-tertiary);
@@ -350,7 +344,6 @@ body.dark-theme .chat-header {
     letter-spacing: 0.5px;
 }
 
-/* Область сообщений */
 .messages-area {
     flex: 1;
     display: flex;
@@ -367,7 +360,6 @@ body.dark-theme .chat-header {
     gap: 16px;
 }
 
-/* Сообщения */
 .message {
     display: flex;
     gap: 12px;
@@ -516,7 +508,6 @@ body.dark-theme .chat-header {
     color: white;
 }
 
-/* Область ввода */
 .message-input-area {
     padding: 20px;
     background: var(--bg-secondary);
@@ -624,7 +615,6 @@ body.dark-theme .chat-header {
     font-size: 12px;
 }
 
-/* Модальное окно */
 .modal {
     display: none;
     position: fixed;
@@ -721,7 +711,6 @@ body.dark-theme .chat-header {
     box-shadow: var(--shadow-lg);
 }
 
-/* Emoji Picker */
 emoji-picker {
     --background: var(--bg-secondary);
     --border-radius: 16px;
@@ -749,7 +738,6 @@ emoji-picker {
     color: var(--primary);
 }
 
-/* Скроллбар */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -768,7 +756,6 @@ emoji-picker {
     background: var(--primary-dark);
 }
 
-/* Уведомление о мьюте */
 .muted-notice {
     padding: 16px;
     background: rgba(245, 158, 11, 0.1);
@@ -789,7 +776,6 @@ emoji-picker {
     font-size: 20px;
 }
 
-/* Адаптивность */
 @media (max-width: 1024px) {
     .users-sidebar {
         width: 240px;
