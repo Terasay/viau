@@ -783,15 +783,18 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
         return JSONResponse({'success': False, 'error': 'Размер файла не должен превышать 5 МБ'}, status_code=400)
     
     try:
+        user_id = user[10]  # user[10] = id
+        avatar_filename = user[9]  # user[9] = avatar
+        
         # Удаляем старый аватар если есть
-        if user[10]:  # user[10] = avatar
-            old_avatar_path = os.path.join(AVATARS_DIR, user[10])
+        if avatar_filename:
+            old_avatar_path = os.path.join(AVATARS_DIR, avatar_filename)
             if os.path.exists(old_avatar_path):
                 os.remove(old_avatar_path)
         
         # Генерируем имя файла: avatar_userid.расширение
         file_extension = Path(file.filename).suffix
-        filename = f"avatar_{user[0]}{file_extension}"
+        filename = f"avatar_{user_id}{file_extension}"
         file_path = os.path.join(AVATARS_DIR, filename)
         
         # Сохраняем файл
@@ -801,7 +804,7 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
         # Обновляем базу данных
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()
-        c.execute('UPDATE users SET avatar=? WHERE id=?', (filename, user[0]))
+        c.execute('UPDATE users SET avatar=? WHERE id=?', (filename, user_id))
         conn.commit()
         conn.close()
         
@@ -815,7 +818,6 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
         return JSONResponse({'success': False, 'error': 'Ошибка загрузки аватара'}, status_code=500)
 
 
-# Добавьте эндпоинт для удаления аватара:
 @app.post('/avatar/delete')
 async def delete_avatar(request: Request):
     token = request.headers.get('Authorization')
@@ -828,16 +830,19 @@ async def delete_avatar(request: Request):
         return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
     
     try:
+        user_id = user[10]  # user[10] = id
+        avatar_filename = user[9]  # user[9] = avatar
+        
         # Удаляем файл аватара
-        if user[10]:  # user[10] = avatar
-            avatar_path = os.path.join(AVATARS_DIR, user[10])
+        if avatar_filename:
+            avatar_path = os.path.join(AVATARS_DIR, avatar_filename)
             if os.path.exists(avatar_path):
                 os.remove(avatar_path)
         
         # Обновляем базу данных
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()
-        c.execute('UPDATE users SET avatar=NULL WHERE id=?', (user[0],))
+        c.execute('UPDATE users SET avatar=NULL WHERE id=?', (user_id,))
         conn.commit()
         conn.close()
         
