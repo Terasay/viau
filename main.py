@@ -40,6 +40,10 @@ app.add_middleware(
 app.mount('/js', StaticFiles(directory='js'), name='js')
 app.mount('/css', StaticFiles(directory='css'), name='css')
 
+AVATARS_DIR = 'avatars'
+if not os.path.exists(AVATARS_DIR):
+    os.makedirs(AVATARS_DIR)
+
 MAPS_DIR = 'maps'
 if not os.path.exists(MAPS_DIR):
     os.makedirs(MAPS_DIR)
@@ -90,6 +94,7 @@ async def chat_upload(request: Request, file: UploadFile = File(...)):
 # Статические файлы для загруженных файлов
 
 app.mount('/uploads', StaticFiles(directory=UPLOAD_DIR), name='uploads')
+app.mount('/avatars', StaticFiles(directory=AVATARS_DIR), name='avatars')
 
 @app.post('/reset')
 async def reset(request: Request):
@@ -133,36 +138,44 @@ JWT_SECRET = 'supersecretkey'
 JWT_ALGORITHM = 'HS256'
 
 def init_db():
-	conn = sqlite3.connect(DB_FILE)
-	c = conn.cursor()
-	c.execute('''CREATE TABLE IF NOT EXISTS users (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		username TEXT UNIQUE NOT NULL,
-		password TEXT NOT NULL,
-		email TEXT UNIQUE NOT NULL,
-		country TEXT,
-		role TEXT DEFAULT 'user',
-		banned INTEGER DEFAULT 0,
-		muted INTEGER DEFAULT 0,
-		ban_until TEXT,
-		mute_until TEXT
-	)''')
-	c.execute('''CREATE TABLE IF NOT EXISTS messages (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		username TEXT NOT NULL,
-		role TEXT NOT NULL,
-		text TEXT NOT NULL,
-		timestamp TEXT NOT NULL
-	)''')
-	c.execute('''CREATE TABLE IF NOT EXISTS maps (
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        country TEXT,
+        role TEXT DEFAULT 'user',
+        banned INTEGER DEFAULT 0,
+        muted INTEGER DEFAULT 0,
+        ban_until TEXT,
+        mute_until TEXT,
+        avatar TEXT
+    )''')
+    
+    # Проверяем, существует ли колонка avatar, если нет - добавляем
+    c.execute("PRAGMA table_info(users)")
+    columns = [column[1] for column in c.fetchall()]
+    if 'avatar' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN avatar TEXT')
+    
+    c.execute('''CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        role TEXT NOT NULL,
+        text TEXT NOT NULL,
+        timestamp TEXT NOT NULL
+    )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS maps (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         filename TEXT NOT NULL,
         uploaded_by TEXT NOT NULL,
         uploaded_at TEXT NOT NULL
     )''')
-	conn.commit()
-	conn.close()
+    conn.commit()
+    conn.close()
 
 app.mount('/maps_files', StaticFiles(directory=MAPS_DIR), name='maps_files')
 
@@ -505,7 +518,7 @@ async def websocket_endpoint(websocket: WebSocket):
 def get_user_by_username(username):
 	conn = sqlite3.connect(DB_FILE)
 	c = conn.cursor()
-	c.execute('SELECT username, password, email, country, role, banned, muted, ban_until, mute_until FROM users WHERE username=?', (username,))
+	c.execute('SELECT username, password, email, country, role, banned, muted, ban_until, mute_until, avatar, id FROM users WHERE username=?', (username,))
 	user = c.fetchone()
 	conn.close()
 	return user
@@ -513,7 +526,7 @@ def get_user_by_username(username):
 def get_user_by_email(email):
 	conn = sqlite3.connect(DB_FILE)
 	c = conn.cursor()
-	c.execute('SELECT username, password, email, country, role, banned, muted, ban_until, mute_until FROM users WHERE email=?', (email,))
+	c.execute('SELECT username, password, email, country, role, banned, muted, ban_until, mute_until, avatar, id  FROM users WHERE email=?', (email,))
 	user = c.fetchone()
 	conn.close()
 	return user
@@ -749,23 +762,119 @@ async def verify(request: Request):
 		})
 	return JSONResponse({'success': False, 'error': 'Неверный код'})
 
+@app.post('/avatar/upload')
+async def upload_avatar(request: Request, file: UploadFile = File(...)):
+    token = request.headers.get('Authorization')
+    payload = decode_jwt(token)
+    if not payload:
+        return JSONResponse({'success': False, 'error': 'Unauthorized'}, status_code=401)
+    
+    user = get_user_by_username(payload['username'])
+    if not user:
+        return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
+    
+    # Проверка типа файла
+    if not file.content_type.startswith('image/'):
+        return JSONResponse({'success': False, 'error': 'Только изображения разрешены'}, status_code=400)
+    
+    # Проверка размера (5 МБ)
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        return JSONResponse({'success': False, 'error': 'Размер файла не должен превышать 5 МБ'}, status_code=400)
+    
+    try:
+        # Удаляем старый аватар если есть
+        if user[10]:  # user[10] = avatar
+            old_avatar_path = os.path.join(AVATARS_DIR, user[10])
+            if os.path.exists(old_avatar_path):
+                os.remove(old_avatar_path)
+        
+        # Генерируем имя файла: avatar_userid.расширение
+        file_extension = Path(file.filename).suffix
+        filename = f"avatar_{user[0]}{file_extension}"
+        file_path = os.path.join(AVATARS_DIR, filename)
+        
+        # Сохраняем файл
+        with open(file_path, 'wb') as f:
+            f.write(content)
+        
+        # Обновляем базу данных
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute('UPDATE users SET avatar=? WHERE id=?', (filename, user[0]))
+        conn.commit()
+        conn.close()
+        
+        return JSONResponse({
+            'success': True,
+            'avatar_url': f'/avatars/{filename}'
+        })
+    
+    except Exception as e:
+        print(f"Ошибка загрузки аватара: {e}")
+        return JSONResponse({'success': False, 'error': 'Ошибка загрузки аватара'}, status_code=500)
+
+
+# Добавьте эндпоинт для удаления аватара:
+@app.post('/avatar/delete')
+async def delete_avatar(request: Request):
+    token = request.headers.get('Authorization')
+    payload = decode_jwt(token)
+    if not payload:
+        return JSONResponse({'success': False, 'error': 'Unauthorized'}, status_code=401)
+    
+    user = get_user_by_username(payload['username'])
+    if not user:
+        return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
+    
+    try:
+        # Удаляем файл аватара
+        if user[10]:  # user[10] = avatar
+            avatar_path = os.path.join(AVATARS_DIR, user[10])
+            if os.path.exists(avatar_path):
+                os.remove(avatar_path)
+        
+        # Обновляем базу данных
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute('UPDATE users SET avatar=NULL WHERE id=?', (user[0],))
+        conn.commit()
+        conn.close()
+        
+        return JSONResponse({'success': True})
+    
+    except Exception as e:
+        print(f"Ошибка удаления аватара: {e}")
+        return JSONResponse({'success': False, 'error': 'Ошибка удаления аватара'}, status_code=500)
+
+
 @app.get('/me')
 async def me(request: Request):
-	token = request.headers.get('Authorization')
-	payload = decode_jwt(token)
-	if payload:
-		user = get_user_by_username(payload['username'])
-		return JSONResponse({
-			'logged_in': True,
-			'username': payload['username'],
-			'role': user[4],  # строка 'admin' или 'user'
-			'country': user[3],
-			'muted': bool(user[6]),  # muted
-			'banned': bool(user[5]),  # banned
-			'ban_until': user[7],
-			'mute_until': user[8]
-		})
-	return JSONResponse({'logged_in': False})
+    token = request.headers.get('Authorization')
+    payload = decode_jwt(token)
+    if payload:
+        user = get_user_by_username(payload['username'])
+        if not user:
+            return JSONResponse({'logged_in': False})
+        
+        avatar_url = None
+        if len(user) > 9 and user[9]:
+            avatar_url = f'/avatars/{user[9]}'
+        
+        return JSONResponse({
+            'logged_in': True,
+            'id': user[10] if len(user) > 10 else None,
+            'username': user[1],
+            'email': user[2],
+            'role': user[4],
+            'country': user[3],
+            'muted': bool(user[6]),
+            'banned': bool(user[5]),
+            'ban_until': user[7],
+            'mute_until': user[8],
+            'avatar': avatar_url
+        })
+    return JSONResponse({'logged_in': False})
 
 @app.get('/')
 async def index():
@@ -782,18 +891,19 @@ async def admin_users(request: Request):
 		return JSONResponse({'detail': 'Forbidden'}, status_code=403)
 	conn = sqlite3.connect(DB_FILE)
 	c = conn.cursor()
-	c.execute('SELECT id, username, email, country, role, banned, muted, ban_until, mute_until FROM users')
+	c.execute('SELECT username, password, email, country, role, banned, muted, ban_until, mute_until, avatar, id FROM users')
 	users = [
 		{
-			'id': row[0],
-			'username': row[1],
+			'id': row[10],
+			'username': row[0],
 			'email': row[2],
 			'country': row[3],
 			'role': row[4],
 			'banned': bool(row[5]),
 			'muted': bool(row[6]),
 			'ban_until': row[7],
-			'mute_until': row[8]
+			'mute_until': row[8],
+			'avatar': f'/avatars/{row[9]}' if row[9] else None
 		}
 		for row in c.fetchall()
 	]

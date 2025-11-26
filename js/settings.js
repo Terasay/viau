@@ -1,6 +1,5 @@
 // Состояние приложения
 let currentUser = null;
-let currentAvatar = null;
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
@@ -79,7 +78,9 @@ async function loadUserData() {
         if (data.logged_in) {
             currentUser = data;
             displayUserData(data);
-            loadAvatar();
+            if (data.avatar) {
+                displayAvatar(data.avatar);
+            }
         } else {
             window.location.href = '/';
         }
@@ -93,9 +94,14 @@ async function loadUserData() {
 function displayUserData(user) {
     document.getElementById('usernameValue').textContent = user.username;
     document.getElementById('emailValue').textContent = user.email || 'Не указан';
-    document.getElementById('userIdValue').textContent = '#' + (user.id || generateUserId(user.username));
-    document.getElementById('createdAtValue').textContent = formatDate(user.created_at);
+    document.getElementById('userIdValue').textContent = '#' + user.id;
     document.getElementById('countryValue').textContent = user.country || 'Не указана';
+    
+    // Вместо даты создания показываем статус мута
+    const mutedInfo = user.muted ? 
+        (user.mute_until ? `Замучен до ${formatDate(user.mute_until)}` : 'Замучен') : 
+        'Нет';
+    document.getElementById('createdAtValue').textContent = mutedInfo;
     
     const roleValue = document.getElementById('roleValue');
     roleValue.textContent = user.role === 'admin' ? 'Администратор' : 'Пользователь';
@@ -108,31 +114,18 @@ function displayUserData(user) {
     document.getElementById('avatarInitials').textContent = initials;
 }
 
-// Генерация ID пользователя на основе username
-function generateUserId(username) {
-    let hash = 0;
-    for (let i = 0; i < username.length; i++) {
-        hash = ((hash << 5) - hash) + username.charCodeAt(i);
-        hash = hash & hash;
-    }
-    return Math.abs(hash).toString().substring(0, 8);
-}
-
 // Форматирование даты
 function formatDate(dateString) {
     if (!dateString) {
-        const now = new Date();
-        return now.toLocaleDateString('ru-RU', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        });
+        return 'Не указана';
     }
     const date = new Date(dateString);
     return date.toLocaleDateString('ru-RU', {
         day: '2-digit',
         month: 'long',
-        year: 'numeric'
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
     });
 }
 
@@ -149,15 +142,6 @@ function switchSection(sectionName) {
         section.classList.remove('active');
     });
     document.getElementById(`${sectionName}-section`).classList.add('active');
-}
-
-// Загрузка аватара
-function loadAvatar() {
-    const savedAvatar = localStorage.getItem(`avatar_${currentUser.username}`);
-    if (savedAvatar) {
-        currentAvatar = savedAvatar;
-        displayAvatar(savedAvatar);
-    }
 }
 
 // Отображение аватара
@@ -201,34 +185,71 @@ async function handleAvatarUpload(e) {
     }
 
     try {
-        // Конвертация в Base64
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const avatarUrl = event.target.result;
-            currentAvatar = avatarUrl;
-            
-            // Сохранение в localStorage
-            localStorage.setItem(`avatar_${currentUser.username}`, avatarUrl);
-            
-            // Отображение
-            displayAvatar(avatarUrl);
+        const token = localStorage.getItem('token');
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/avatar/upload', {
+            method: 'POST',
+            headers: {
+                'Authorization': token
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            displayAvatar(data.avatar_url);
             showToast('Аватар успешно загружен', 'success');
-        };
-        reader.readAsDataURL(file);
+            
+            // Обновляем данные пользователя
+            if (currentUser) {
+                currentUser.avatar = data.avatar_url;
+            }
+        } else {
+            showToast(data.error || 'Ошибка загрузки аватара', 'error');
+        }
     } catch (error) {
         console.error('Ошибка загрузки аватара:', error);
         showToast('Ошибка загрузки аватара', 'error');
     }
+    
+    // Сбрасываем input для возможности загрузки того же файла
+    e.target.value = '';
 }
 
 // Удаление аватара
-function handleRemoveAvatar() {
-    if (!currentAvatar) return;
+async function handleRemoveAvatar() {
+    if (!currentUser || !currentUser.avatar) return;
 
-    localStorage.removeItem(`avatar_${currentUser.username}`);
-    currentAvatar = null;
-    hideAvatar();
-    showToast('Аватар удалён', 'success');
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/avatar/delete', {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            hideAvatar();
+            showToast('Аватар удалён', 'success');
+            
+            // Обновляем данные пользователя
+            if (currentUser) {
+                currentUser.avatar = null;
+            }
+        } else {
+            showToast(data.error || 'Ошибка удаления аватара', 'error');
+        }
+    } catch (error) {
+        console.error('Ошибка удаления аватара:', error);
+        showToast('Ошибка удаления аватара', 'error');
+    }
 }
 
 // Обработка смены пароля
@@ -261,11 +282,6 @@ async function handleChangePassword(e) {
     }
 
     try {
-        // Здесь должен быть запрос к вашему бэкенду для смены пароля
-        // Пока что симулируем успешную смену
-        
-        // Пример запроса (раскомментировать когда добавите эндпоинт):
-        /*
         const token = localStorage.getItem('token');
         const response = await fetch('/change-password', {
             method: 'POST',
@@ -284,17 +300,11 @@ async function handleChangePassword(e) {
         if (data.success) {
             showToast('Пароль успешно изменён', 'success');
             e.target.reset();
+            document.getElementById('passwordStrength').className = 'password-strength';
+            document.querySelector('.strength-text').textContent = 'Введите пароль';
         } else {
             showToast(data.error || 'Ошибка смены пароля', 'error');
         }
-        */
-
-        // Временная симуляция
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        showToast('Пароль успешно изменён', 'success');
-        e.target.reset();
-        document.getElementById('passwordStrength').className = 'password-strength';
-        document.querySelector('.strength-text').textContent = 'Введите пароль';
 
     } catch (error) {
         console.error('Ошибка смены пароля:', error);
