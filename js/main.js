@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	let pendingEmail = null;
 	let sessionToken = null;
-	const THEME_KEY = 'theme-mode';
+	const THEME_KEY = 'theme';
 
 	const savedTheme = localStorage.getItem(THEME_KEY);
 	const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
