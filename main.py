@@ -275,12 +275,22 @@ class UserService:
         if not user:
             return True, None
         
-        if user['lockout_until']:
-            lockout_time = datetime.fromisoformat(user['lockout_until'].replace('Z', ''))
-            if datetime.utcnow() < lockout_time:
-                return False, f"Аккаунт заблокирован до {user['lockout_until']}"
-            else:
-                # Сброс блокировки
+        # ✅ Безопасная проверка наличия поля
+        lockout_until = user['lockout_until'] if 'lockout_until' in user.keys() else None
+        
+        if lockout_until:
+            try:
+                lockout_time = datetime.fromisoformat(lockout_until.replace('Z', ''))
+                if datetime.utcnow() < lockout_time:
+                    return False, f"Аккаунт заблокирован до {lockout_until}"
+                else:
+                    # Сброс блокировки
+                    with get_db() as conn:
+                        c = conn.cursor()
+                        c.execute('UPDATE users SET login_attempts=0, lockout_until=NULL WHERE username=?', (username,))
+                        conn.commit()
+            except (ValueError, TypeError):
+                # Некорректная дата - сбрасываем блокировку
                 with get_db() as conn:
                     c = conn.cursor()
                     c.execute('UPDATE users SET login_attempts=0, lockout_until=NULL WHERE username=?', (username,))
