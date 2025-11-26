@@ -864,7 +864,7 @@ async def me(request: Request):
         return JSONResponse({
             'logged_in': True,
             'id': user[10] if len(user) > 10 else None,
-            'username': user[1],
+            'username': user[0],
             'email': user[2],
             'role': user[4],
             'country': user[3],
