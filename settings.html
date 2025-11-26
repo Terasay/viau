@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки - VIAU</title>
+    <link rel="stylesheet" href="/css/settings.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-animation">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="settings-container">
+        <!-- Header -->
+        <header class="settings-header">
+            <div class="header-left">
+                <a href="/" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div class="header-info">
+                    <h1>Настройки</h1>
+                    <p>Управление вашим аккаунтом</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn-icon" id="themeToggle" title="Сменить тему">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="settings-main">
+            <!-- Sidebar Navigation -->
+            <aside class="settings-sidebar">
+                <nav class="settings-nav">
+                    <a href="#profile" class="nav-item active" data-section="profile">
+                        <i class="fas fa-user"></i>
+                        <span>Профиль</span>
+                    </a>
+                    <a href="#security" class="nav-item" data-section="security">
+                        <i class="fas fa-lock"></i>
+                        <span>Безопасность</span>
+                    </a>
+                    <a href="#appearance" class="nav-item" data-section="appearance">
+                        <i class="fas fa-palette"></i>
+                        <span>Внешний вид</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Content Area -->
+            <main class="settings-content">
+                <!-- Profile Section -->
+                <section class="settings-section active" id="profile-section">
+                    <div class="section-header">
+                        <h2>Профиль</h2>
+                        <p>Управление информацией о вашем аккаунте</p>
+                    </div>
+
+                    <!-- Avatar Card -->
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <h3>Аватар</h3>
+                        </div>
+                        <div class="card-body avatar-section">
+                            <div class="avatar-preview">
+                                <div class="avatar-circle" id="avatarPreview">
+                                    <span id="avatarInitials">U</span>
+                                    <img id="avatarImage" style="display: none;" alt="Avatar">
+                                </div>
+                                <button class="avatar-remove" id="removeAvatar" style="display: none;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="avatar-actions">
+                                <label for="avatarUpload" class="btn-primary">
+                                    <i class="fas fa-upload"></i>
+                                    Загрузить фото
+                                </label>
+                                <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+                                <p class="help-text">JPG, PNG или GIF. Максимум 5 МБ.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Info Card -->
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <h3>Информация об аккаунте</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <label>
+                                        <i class="fas fa-user"></i>
+                                        Имя пользователя
+                                    </label>
+                                    <div class="info-value" id="usernameValue">Загрузка...</div>
+                                </div>
+                                <div class="info-item">
+                                    <label>
+                                        <i class="fas fa-envelope"></i>
+                                        Email
+                                    </label>
+                                    <div class="info-value" id="emailValue">Загрузка...</div>
+                                </div>
+                                <div class="info-item">
+                                    <label>
+                                        <i class="fas fa-id-card"></i>
+                                        ID аккаунта
+                                    </label>
+                                    <div class="info-value" id="userIdValue">Загрузка...</div>
+                                </div>
+                                <div class="info-item">
+                                    <label>
+                                        <i class="fas fa-calendar"></i>
+                                        Дата создания
+                                    </label>
+                                    <div class="info-value" id="createdAtValue">Загрузка...</div>
+                                </div>
+                                <div class="info-item">
+                                    <label>
+                                        <i class="fas fa-shield-alt"></i>
+                                        Роль
+                                    </label>
+                                    <div class="info-value">
+                                        <span class="role-badge" id="roleValue">user</span>
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <label>
+                                        <i class="fas fa-globe"></i>
+                                        Страна
+                                    </label>
+                                    <div class="info-value" id="countryValue">Не указана</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Security Section -->
+                <section class="settings-section" id="security-section">
+                    <div class="section-header">
+                        <h2>Безопасность</h2>
+                        <p>Настройки безопасности вашего аккаунта</p>
+                    </div>
+
+                    <!-- Change Password Card -->
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <h3>Смена пароля</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="changePasswordForm">
+                                <div class="form-group">
+                                    <label for="currentPassword">
+                                        <i class="fas fa-lock"></i>
+                                        Текущий пароль
+                                    </label>
+                                    <div class="password-input-wrapper">
+                                        <input 
+                                            type="password" 
+                                            id="currentPassword" 
+                                            class="form-input"
+                                            placeholder="Введите текущий пароль"
+                                            required
+                                        >
+                                        <button type="button" class="password-toggle" data-target="currentPassword">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="newPassword">
+                                        <i class="fas fa-key"></i>
+                                        Новый пароль
+                                    </label>
+                                    <div class="password-input-wrapper">
+                                        <input 
+                                            type="password" 
+                                            id="newPassword" 
+                                            class="form-input"
+                                            placeholder="Введите новый пароль"
+                                            required
+                                        >
+                                        <button type="button" class="password-toggle" data-target="newPassword">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="password-strength" id="passwordStrength">
+                                        <div class="strength-bar">
+                                            <div class="strength-fill"></div>
+                                        </div>
+                                        <span class="strength-text">Введите пароль</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="confirmPassword">
+                                        <i class="fas fa-check-circle"></i>
+                                        Подтвердите новый пароль
+                                    </label>
+                                    <div class="password-input-wrapper">
+                                        <input 
+                                            type="password" 
+                                            id="confirmPassword" 
+                                            class="form-input"
+                                            placeholder="Повторите новый пароль"
+                                            required
+                                        >
+                                        <button type="button" class="password-toggle" data-target="confirmPassword">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-primary btn-full">
+                                    <i class="fas fa-save"></i>
+                                    Сменить пароль
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Appearance Section -->
+                <section class="settings-section" id="appearance-section">
+                    <div class="section-header">
+                        <h2>Внешний вид</h2>
+                        <p>Настройка темы и отображения</p>
+                    </div>
+
+                    <!-- Theme Card -->
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <h3>Тема оформления</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="theme-selector">
+                                <div class="theme-option" data-theme="light">
+                                    <div class="theme-preview light-preview">
+                                        <i class="fas fa-sun"></i>
+                                    </div>
+                                    <span>Светлая</span>
+                                </div>
+                                <div class="theme-option" data-theme="dark">
+                                    <div class="theme-preview dark-preview">
+                                        <i class="fas fa-moon"></i>
+                                    </div>
+                                    <span>Тёмная</span>
+                                </div>
+                                <div class="theme-option" data-theme="auto">
+                                    <div class="theme-preview auto-preview">
+                                        <i class="fas fa-circle-half-stroke"></i>
+                                    </div>
+                                    <span>Авто</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="toast">
+        <div class="toast-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="toast-content">
+            <div class="toast-title">Успешно</div>
+            <div class="toast-message">Изменения сохранены</div>
+        </div>
+    </div>
+
+    <script src="/js/settings.js"></script>
+</body>
+</html>

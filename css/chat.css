@@ -780,12 +780,10 @@ emoji-picker {
     margin-top: 6px;
 }
 
-/* Убираем лишние стили для message-group, он больше не нужен */
 .message-group {
     display: none;
 }
 
-/* Стили для grouped классов тоже не нужны */
 .message.grouped {
     display: none;
 }

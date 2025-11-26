@@ -357,7 +357,6 @@ async def delete_map(request: Request):
     
     return JSONResponse({'success': True})
 
-# Эндпоинт для отправки сообщения
 @app.post('/chat/send')
 async def send_chat_message(request: Request):
 	data = await request.json()
@@ -384,14 +383,33 @@ async def send_chat_message(request: Request):
 	conn.close()
 	return JSONResponse({'success': True})
 
-# --- WebSocket для чата ---
 import asyncio
 
+@app.post('/change-password')
+async def change_password(request: Request):
+    data = await request.json()
+    token = request.headers.get('Authorization')
+    payload = decode_jwt(token)
+    if not payload:
+        return JSONResponse({'success': False, 'error': 'Unauthorized'}, status_code=401)
+    
+    user = get_user_by_username(payload['username'])
+    if not user:
+        return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
+    
+    current_password = data.get('current_password')
+    new_password = data.get('new_password')
+    
+    if user[1] != current_password:
+        return JSONResponse({'success': False, 'error': 'Неверный текущий пароль'})
+    
+    update_user_password(user[2], new_password)  # user[2] = email
+    return JSONResponse({'success': True})
 
 class ConnectionManager:
 	def __init__(self):
 		self.active_connections: list[WebSocket] = []
-		self.online_users: dict[str, dict] = {}  # username -> {username, role}
+		self.online_users: dict[str, dict] = {}
 		self.websocket_to_username: dict[WebSocket, str] = {}
 
 	async def connect(self, websocket: WebSocket, username: str, role: str):
@@ -405,10 +423,8 @@ class ConnectionManager:
 		if websocket in self.active_connections:
 			self.active_connections.remove(websocket)
 		if username_to_remove:
-			# Проверяем, есть ли ещё соединения с этим username
 			if username_to_remove not in self.websocket_to_username.values():
 				self.online_users.pop(username_to_remove, None)
-		# После любого disconnect обновить онлайн
 		import asyncio
 		asyncio.create_task(self.broadcast_online_users())
 
@@ -432,7 +448,6 @@ manager = ConnectionManager()
 
 @app.websocket("/ws/chat")
 async def websocket_endpoint(websocket: WebSocket):
-	# Сначала принимаем соединение
 	await websocket.accept()
 	try:
 		data = await websocket.receive_json()
