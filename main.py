@@ -1,5 +1,5 @@
 from fastapi import UploadFile, File, FastAPI, Request, WebSocket, WebSocketDisconnect, Depends, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
