@@ -19,6 +19,7 @@ from email.mime.text import MIMEText
 import secrets
 import jwt
 from datetime import datetime, timedelta
+import bcrypt
 
 
 load_dotenv()
@@ -67,6 +68,16 @@ class LimitUploadSizeMiddleware(BaseHTTPMiddleware):
 
 # Установить лимит 100 МБ (можно изменить)
 app.add_middleware(LimitUploadSizeMiddleware, max_upload_size=100 * 1024 * 1024)
+
+def hash_password(password: str) -> str:
+    """Хеширует пароль с помощью bcrypt"""
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Проверяет соответствие пароля хешу"""
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 
 # --- Эндпоинт для загрузки файлов (изображения/документы) ---
@@ -413,7 +424,7 @@ async def change_password(request: Request):
     current_password = data.get('current_password')
     new_password = data.get('new_password')
     
-    if user[1] != current_password:
+    if not verify_password(current_password, user[1]):  # Проверяем через bcrypt
         return JSONResponse({'success': False, 'error': 'Неверный текущий пароль'})
     
     update_user_password(user[2], new_password)  # user[2] = email
@@ -534,19 +545,21 @@ def get_user_by_email(email):
 def create_user(username, password, email):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
+    hashed_password = hash_password(password)  # Хешируем пароль
     c.execute('''
         INSERT INTO users (username, password, email, country, role, banned, muted)
         VALUES (?, ?, ?, NULL, 'user', 0, 0)
-    ''', (username, password, email))
+    ''', (username, hashed_password, email))
     conn.commit()
     conn.close()
 
 def update_user_password(email, new_password):
-	conn = sqlite3.connect(DB_FILE)
-	c = conn.cursor()
-	c.execute('UPDATE users SET password=? WHERE email=?', (new_password, email))
-	conn.commit()
-	conn.close()
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    hashed_password = hash_password(new_password)  # Хешируем новый пароль
+    c.execute('UPDATE users SET password=? WHERE email=?', (hashed_password, email))
+    conn.commit()
+    conn.close()
 
 # Эндпоинт для удаления сообщения
 @app.post('/chat/delete_message')
@@ -653,6 +666,33 @@ def send_verification_code(email, code):
 		print(f"Ошибка Gmail API: {e}")
 		raise
 
+def migrate_plain_passwords():
+    """Мигрирует все незахешированные пароли в bcrypt"""
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('SELECT id, username, password FROM users')
+    users = c.fetchall()
+    
+    migrated_count = 0
+    for user in users:
+        user_id, username, password = user
+        # Проверяем, является ли пароль уже bcrypt-хешем
+        # bcrypt хеши начинаются с $2b$ или $2a$ и имеют длину 60 символов
+        if not password.startswith('$2b$') and not password.startswith('$2a$'):
+            # Это plain text пароль, хешируем его
+            hashed = hash_password(password)
+            c.execute('UPDATE users SET password=? WHERE id=?', (hashed, user_id))
+            migrated_count += 1
+            print(f"Мигрирован пароль для пользователя: {username}")
+    
+    conn.commit()
+    conn.close()
+    
+    if migrated_count > 0:
+        print(f"Всего мигрировано паролей: {migrated_count}")
+    else:
+        print("Все пароли уже захешированы")
+
 def send_reset_code(email, code):
 	creds = Credentials(
 		None,
@@ -676,50 +716,51 @@ def send_reset_code(email, code):
 
 @app.on_event('startup')
 def startup():
-	init_db()
+    init_db()
+    migrate_plain_passwords()  
 
 @app.post('/login')
 async def login(request: Request):
-	data = await request.json()
-	user = get_user_by_username(data['username'])
-	if user and user[1] == data['password']:
-		banned = bool(user[5])
-		ban_until = user[7]
-		now = datetime.utcnow()
-		# Проверка временного бана
-		if banned:
-			if ban_until:
-				try:
-					ban_dt = datetime.fromisoformat(ban_until.replace('Z', ''))
-				except Exception:
-					ban_dt = None
-				if ban_dt and now >= ban_dt:
-					# Срок бана истек, снимаем бан
-					conn = sqlite3.connect(DB_FILE)
-					c = conn.cursor()
-					c.execute('UPDATE users SET banned=0, ban_until=NULL WHERE username=?', (user[0],))
-					conn.commit()
-					conn.close()
-					# Получаем свежие данные пользователя
-					user = get_user_by_username(data['username'])
-					banned = bool(user[5])
-			# После обновления, если бан всё ещё есть — отказ
-			if banned:
-				if ban_until:
-					return JSONResponse({'success': False, 'error': f'Аккаунт забанен до {ban_until}'})
-				else:
-					return JSONResponse({'success': False, 'error': 'Аккаунт забанен'})
-		# Если бан снят, разрешаем вход
-		token = create_jwt(user[0], user[4])
-		return JSONResponse({
-			'success': True,
-			'username': user[0],
-			'token': token,
-			'role': user[4],
-			'country': user[3],
-			'muted': bool(user[6])
-		})
-	return JSONResponse({'success': False, 'error': 'Неверный логин или пароль'})
+    data = await request.json()
+    user = get_user_by_username(data['username'])
+    if user and verify_password(data['password'], user[1]):  # Проверяем пароль через bcrypt
+        banned = bool(user[5])
+        ban_until = user[7]
+        now = datetime.utcnow()
+        # Проверка временного бана
+        if banned:
+            if ban_until:
+                try:
+                    ban_dt = datetime.fromisoformat(ban_until.replace('Z', ''))
+                except Exception:
+                    ban_dt = None
+                if ban_dt and now >= ban_dt:
+                    # Срок бана истек, снимаем бан
+                    conn = sqlite3.connect(DB_FILE)
+                    c = conn.cursor()
+                    c.execute('UPDATE users SET banned=0, ban_until=NULL WHERE username=?', (user[0],))
+                    conn.commit()
+                    conn.close()
+                    # Получаем свежие данные пользователя
+                    user = get_user_by_username(data['username'])
+                    banned = bool(user[5])
+            # После обновления, если бан всё ещё есть — отказ
+            if banned:
+                if ban_until:
+                    return JSONResponse({'success': False, 'error': f'Аккаунт забанен до {ban_until}'})
+                else:
+                    return JSONResponse({'success': False, 'error': 'Аккаунт забанен'})
+        # Если бан снят, разрешаем вход
+        token = create_jwt(user[0], user[4])
+        return JSONResponse({
+            'success': True,
+            'username': user[0],
+            'token': token,
+            'role': user[4],
+            'country': user[3],
+            'muted': bool(user[6])
+        })
+    return JSONResponse({'success': False, 'error': 'Неверный логин или пароль'})
 
 @app.post('/register')
 async def register(request: Request):
