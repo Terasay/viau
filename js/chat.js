@@ -311,8 +311,30 @@ function updateOnlineUsers(users) {
         const userItem = document.createElement('div');
         userItem.className = 'user-item';
         const avatar = document.createElement('div');
-        avatar.className = 'message-avatar';    
-        avatar.textContent = user.username[0].toUpperCase();
+        avatar.className = 'message-avatar';
+        // Попытка загрузить аватарку пользователя
+        (async () => {
+            let avatarUrl = null;
+            if (userAvatarsCache[user.username]) {
+                avatarUrl = userAvatarsCache[user.username];
+            } else {
+                try {
+                    const res = await fetch(`/user/${encodeURIComponent(user.username)}/avatar`);
+                    const data = await res.json();
+                    if (data.success && data.avatar) {
+                        avatarUrl = data.avatar;
+                    }
+                    userAvatarsCache[user.username] = avatarUrl;
+                } catch (e) {
+                    avatarUrl = null;
+                }
+            }
+            if (avatarUrl) {
+                avatar.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
+            } else {
+                avatar.textContent = user.username[0].toUpperCase();
+            }
+        })();
         const name = document.createElement('div');
         name.className = 'user-name';
         name.textContent = user.username;
