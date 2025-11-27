@@ -448,7 +448,29 @@ function addMessage(messageData, save = true) {
     
     const avatar = document.createElement('div');
     avatar.className = 'message-avatar';
-    avatar.textContent = messageData.username[0].toUpperCase();
+    // Попытка загрузить аватарку пользователя
+    (async () => {
+        let avatarUrl = null;
+        if (userAvatarsCache[messageData.username]) {
+            avatarUrl = userAvatarsCache[messageData.username];
+        } else {
+            try {
+                const res = await fetch(`/user/${encodeURIComponent(messageData.username)}/avatar`);
+                const data = await res.json();
+                if (data.success && data.avatar) {
+                    avatarUrl = data.avatar;
+                }
+                userAvatarsCache[messageData.username] = avatarUrl;
+            } catch (e) {
+                avatarUrl = null;
+            }
+        }
+        if (avatarUrl) {
+            avatar.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
+        } else {
+            avatar.textContent = messageData.username[0].toUpperCase();
+        }
+    })();
     message.appendChild(avatar);
     
     const content = document.createElement('div');
