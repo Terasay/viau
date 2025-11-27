@@ -891,6 +891,20 @@ function setupEventListeners() {
     }
     
     messageInput.addEventListener('paste', handlePasteFile);
+
+    // Открытие модального окна настроек
+    if (settingsBtn && settingsModal) {
+        settingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('active');
+        });
+        // Закрытие по клику вне модального окна или по overlay
+        const overlay = settingsModal.querySelector('.modal-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                settingsModal.classList.remove('active');
+            });
+        }
+    }
 }
 
 function handleFileSelect(e) {
