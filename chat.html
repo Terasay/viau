@@ -33,6 +33,9 @@
                     <i class="fas fa-user"></i>
                     <span></span>
                 </div>
+                <button class="btn-icon" id="settingsBtn" title="Настройки">
+                    <i class="fas fa-gear"></i>
+                </button>
                 <button class="btn-icon" id="themeBtn" title="Переключить тему">
                     <i class="fas fa-moon"></i>
                 </button>
@@ -43,6 +46,27 @@
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Выход</span>
                 </button>
+                <!-- Модальное окно настроек -->
+                <div class="modal" id="settingsModal">
+                    <div class="modal-overlay"></div>
+                    <div class="modal-content" style="max-width:420px;">
+                        <div class="modal-icon">
+                            <i class="fas fa-gear"></i>
+                        </div>
+                        <h2>Настройки чата</h2>
+                        <div style="text-align:left; margin-bottom:18px;">
+                            <label for="emojiSizeRange" style="font-weight:600;display:block;margin-bottom:6px;">Размер эмодзи: <span id="emojiSizeValue">24</span>px</label>
+                            <input type="range" min="16" max="64" value="24" id="emojiSizeRange" style="width:100%;">
+                        </div>
+                        <div style="text-align:left; margin-bottom:18px;">
+                            <label for="textSizeRange" style="font-weight:600;display:block;margin-bottom:6px;">Размер текста: <span id="textSizeValue">15</span>px</label>
+                            <input type="range" min="12" max="32" value="15" id="textSizeRange" style="width:100%;">
+                        </div>
+                        <button class="btn-primary" id="closeSettingsBtn" style="margin-top:10px;">
+                            <i class="fas fa-check"></i> Сохранить
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
