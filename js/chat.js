@@ -3,6 +3,7 @@ let currentUser = null;
 let messages = [];
 let onlineUsers = [];
 let ws = null;
+let userAvatarsCache = {};
 
 // Для предпросмотра файлов
 let selectedFiles = [];
@@ -234,6 +235,34 @@ async function checkAuth() {
     }
 }
 
+async function getUserAvatar(username) {
+    if (userAvatarsCache[username]) {
+        return userAvatarsCache[username];
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/admin/users', {
+            headers: {
+                'Authorization': token
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const user = data.users.find(u => u.username === username);
+            if (user && user.avatar) {
+                userAvatarsCache[username] = user.avatar;
+                return user.avatar;
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки аватарки:', error);
+    }
+    
+    return null;
+}
+
 function updateCharCounter() {
     const length = messageInput.value.length;
     charCounter.textContent = `${length} / 500`;
@@ -282,7 +311,7 @@ function updateOnlineUsers(users) {
         const userItem = document.createElement('div');
         userItem.className = 'user-item';
         const avatar = document.createElement('div');
-        avatar.className = 'user-avatar';
+        avatar.className = 'message-avatar';    
         avatar.textContent = user.username[0].toUpperCase();
         const name = document.createElement('div');
         name.className = 'user-name';

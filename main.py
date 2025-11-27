@@ -762,6 +762,21 @@ async def login(request: Request):
         })
     return JSONResponse({'success': False, 'error': 'Неверный логин или пароль'})
 
+@app.get('/user/{username}/avatar')
+async def get_user_avatar(username: str):
+    user = get_user_by_username(username)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
+    
+    avatar_url = None
+    if len(user) > 9 and user[9]:
+        avatar_url = f'/avatars/{user[9]}'
+    
+    return JSONResponse({
+        'success': True,
+        'avatar': avatar_url
+    })
+
 @app.post('/register')
 async def register(request: Request):
 	data = await request.json()
