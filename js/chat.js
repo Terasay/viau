@@ -853,6 +853,82 @@ function logout() {
 
 // Настройка обработчиков событий
 function setupEventListeners() {
+        // --- Настройки чата: обработка ползунков ---
+        const textSizeSlider = document.getElementById('textSizeSlider');
+        const textSizeValue = document.getElementById('textSizeValue');
+        const emojiSizeSlider = document.getElementById('emojiSizeSlider');
+        const emojiSizeValue = document.getElementById('emojiSizeValue');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const resetSettingsBtn = document.getElementById('resetSettingsBtn');
+
+        // Функция применения настроек к чату
+        function applyChatSettings() {
+            // Размер текста сообщений
+            document.querySelectorAll('.message-text').forEach(el => {
+                el.style.fontSize = chatSettings.textSize + 'px';
+            });
+            // Размер эмодзи (Twemoji)
+            document.querySelectorAll('.message-text img.emoji, .message-text img.twemoji').forEach(el => {
+                el.style.width = chatSettings.emojiSize + 'px';
+                el.style.height = chatSettings.emojiSize + 'px';
+            });
+        }
+
+        // Синхронизация значений ползунков и отображения
+        function syncSettingsUI() {
+            if (textSizeSlider && textSizeValue) {
+                textSizeSlider.value = chatSettings.textSize;
+                textSizeValue.textContent = chatSettings.textSize + 'px';
+            }
+            if (emojiSizeSlider && emojiSizeValue) {
+                emojiSizeSlider.value = chatSettings.emojiSize;
+                emojiSizeValue.textContent = chatSettings.emojiSize + 'px';
+            }
+        }
+
+        // Обработчики ползунков
+        if (textSizeSlider && textSizeValue) {
+            textSizeSlider.addEventListener('input', (e) => {
+                chatSettings.textSize = parseInt(e.target.value, 10);
+                textSizeValue.textContent = chatSettings.textSize + 'px';
+                applyChatSettings();
+            });
+        }
+        if (emojiSizeSlider && emojiSizeValue) {
+            emojiSizeSlider.addEventListener('input', (e) => {
+                chatSettings.emojiSize = parseInt(e.target.value, 10);
+                emojiSizeValue.textContent = chatSettings.emojiSize + 'px';
+                applyChatSettings();
+            });
+        }
+
+        // Сброс настроек
+        if (resetSettingsBtn) {
+            resetSettingsBtn.addEventListener('click', () => {
+                chatSettings.textSize = 15;
+                chatSettings.emojiSize = 20;
+                syncSettingsUI();
+                applyChatSettings();
+            });
+        }
+
+        // Сохранение настроек (можно добавить сохранение в localStorage)
+        if (saveSettingsBtn) {
+            saveSettingsBtn.addEventListener('click', () => {
+                // Можно добавить сохранение в localStorage, если нужно
+                settingsModal.classList.remove('active');
+            });
+        }
+
+        // При открытии настроек — синхронизировать UI
+        if (settingsBtn && settingsModal) {
+            settingsBtn.addEventListener('click', () => {
+                syncSettingsUI();
+            });
+        }
+
+        // Применять настройки при загрузке
+        applyChatSettings();
     sendBtn.addEventListener('click', sendMessage);
     messageInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
