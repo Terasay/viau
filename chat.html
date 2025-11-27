@@ -46,27 +46,6 @@
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Выход</span>
                 </button>
-                <!-- Модальное окно настроек (вне header) -->
-                <div class="modal" id="settingsModal">
-                    <div class="modal-overlay"></div>
-                    <div class="modal-content" style="max-width:420px;">
-                        <div class="modal-icon">
-                            <i class="fas fa-gear"></i>
-                        </div>
-                        <h2>Настройки чата</h2>
-                        <div style="text-align:left; margin-bottom:18px;">
-                            <label for="emojiSizeRange" style="font-weight:600;display:block;margin-bottom:6px;">Размер эмодзи: <span id="emojiSizeValue">24</span>px</label>
-                            <input type="range" min="16" max="64" value="24" id="emojiSizeRange" style="width:100%;">
-                        </div>
-                        <div style="text-align:left; margin-bottom:18px;">
-                            <label for="textSizeRange" style="font-weight:600;display:block;margin-bottom:6px;">Размер текста: <span id="textSizeValue">15</span>px</label>
-                            <input type="range" min="12" max="32" value="15" id="textSizeRange" style="width:100%;">
-                        </div>
-                        <button class="btn-primary" id="closeSettingsBtn" style="margin-top:10px;">
-                            <i class="fas fa-check"></i> Сохранить
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -119,6 +98,64 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="loginModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2>Требуется авторизация</h2>
+            <p>Для доступа к игровому чату необходимо войти в систему</p>
+            <button class="btn-primary" onclick="window.location.href='/'">
+                <i class="fas fa-sign-in-alt"></i>
+                Перейти к входу
+            </button>
+        </div>
+    </div>
+
+    <div class="modal settings-modal" id="settingsModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-cog"></i>
+            </div>
+            <h2>Настройки чата</h2>
+            
+            <div class="settings-group">
+                <h3><i class="fas fa-font"></i> Размер текста</h3>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>Размер сообщений</span>
+                        <span class="setting-value" id="textSizeValue">15px</span>
+                    </div>
+                    <input type="range" class="setting-slider" id="textSizeSlider" min="12" max="20" value="15" step="1">
+                    <div class="setting-description">Измените размер текста в сообщениях чата</div>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h3><i class="fas fa-smile"></i> Размер эмодзи</h3>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>Размер эмодзи</span>
+                        <span class="setting-value" id="emojiSizeValue">20px</span>
+                    </div>
+                    <input type="range" class="setting-slider" id="emojiSizeSlider" min="16" max="32" value="20" step="2">
+                    <div class="setting-description">Настройте размер отображаемых эмодзи</div>
+                </div>
+            </div>
+
+            <div class="settings-actions">
+                <button class="btn-secondary" id="resetSettingsBtn">
+                    <i class="fas fa-undo"></i> Сбросить
+                </button>
+                <button class="btn-primary" id="saveSettingsBtn">
+                    <i class="fas fa-check"></i> Сохранить
+                </button>
             </div>
         </div>
     </div>

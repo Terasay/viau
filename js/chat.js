@@ -18,6 +18,11 @@ let modalZoomOut = null;
 let modalZoomReset = null;
 let currentScale = 1;
 
+// Настройки
+let chatSettings = {
+    textSize: 15,
+    emojiSize: 20
+};
 // Элементы DOM
 const messagesContainer = document.getElementById('messagesContainer');
 const messageInput = document.getElementById('messageInput');
@@ -32,80 +37,11 @@ const themeBtn = document.getElementById('themeBtn');
 const charCounter = document.getElementById('charCounter');
 const fileInput = document.getElementById('fileInput');
 const attachBtn = document.getElementById('attachBtn');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsModal = document.getElementById('settingsModal');
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
-        // --- Настройки чата ---
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsModal = document.getElementById('settingsModal');
-        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-        const emojiSizeRange = document.getElementById('emojiSizeRange');
-        const emojiSizeValue = document.getElementById('emojiSizeValue');
-        const textSizeRange = document.getElementById('textSizeRange');
-        const textSizeValue = document.getElementById('textSizeValue');
-
-        // Применить настройки из localStorage
-        function applyChatSettings() {
-            const emojiSize = parseInt(localStorage.getItem('emojiSize') || '24', 10);
-            const textSize = parseInt(localStorage.getItem('textSize') || '15', 10);
-            // Размер эмодзи в сообщениях
-            const styleId = 'chat-emoji-size-style';
-            let styleTag = document.getElementById(styleId);
-            if (!styleTag) {
-                styleTag = document.createElement('style');
-                styleTag.id = styleId;
-                document.head.appendChild(styleTag);
-            }
-            styleTag.textContent = `.message-text img.emoji, .message-text .twemoji, .twemoji-emoji { width: ${emojiSize}px !important; height: ${emojiSize}px !important; vertical-align: middle; }`;
-            // Размер текста
-            const msgArea = document.querySelector('.messages-area');
-            if (msgArea) msgArea.style.fontSize = textSize + 'px';
-            // Обновить значения в модалке
-            if (emojiSizeValue) emojiSizeValue.textContent = emojiSize;
-            if (emojiSizeRange) emojiSizeRange.value = emojiSize;
-            if (textSizeValue) textSizeValue.textContent = textSize;
-            if (textSizeRange) textSizeRange.value = textSize;
-        }
-
-        // Открытие модального окна настроек
-        if (settingsBtn && settingsModal) {
-            settingsBtn.addEventListener('click', () => {
-                settingsModal.classList.add('active');
-                applyChatSettings();
-            });
-        }
-        // Закрытие модального окна настроек
-        if (closeSettingsBtn && settingsModal) {
-            closeSettingsBtn.addEventListener('click', () => {
-                settingsModal.classList.remove('active');
-            });
-        }
-        // Клик вне модального окна — закрыть
-        if (settingsModal) {
-            settingsModal.querySelector('.modal-overlay').addEventListener('click', () => {
-                settingsModal.classList.remove('active');
-            });
-        }
-        // Изменение размера эмодзи
-        if (emojiSizeRange) {
-            emojiSizeRange.addEventListener('input', (e) => {
-                const val = parseInt(e.target.value, 10);
-                emojiSizeValue.textContent = val;
-                localStorage.setItem('emojiSize', val);
-                applyChatSettings();
-            });
-        }
-        // Изменение размера текста
-        if (textSizeRange) {
-            textSizeRange.addEventListener('input', (e) => {
-                const val = parseInt(e.target.value, 10);
-                textSizeValue.textContent = val;
-                localStorage.setItem('textSize', val);
-                applyChatSettings();
-            });
-        }
-        // Применить настройки при загрузке
-        applyChatSettings();
     // --- Emoji alias map (базовые, можно расширить) ---
     const emojiAliasMap = {
         ':smile:': '😄', ':laughing:': '😆', ':blush:': '😊', ':heart:': '❤️', ':thumbsup:': '👍',
@@ -592,14 +528,9 @@ function addMessage(messageData, save = true) {
     text.className = 'message-text';
     if (/<img|<a/.test(messageData.text)) {
         text.innerHTML = messageData.text;
-        // Добавить класс emoji для всех emoji-изображений (twemoji)
         const imgs = text.querySelectorAll('img');
         imgs.forEach(img => {
             img.style.cursor = 'pointer';
-            // Если это emoji (twemoji), добавить класс
-            if (img.className.includes('twemoji') || /twemoji/.test(img.src)) {
-                img.classList.add('emoji');
-            }
             img.addEventListener('click', () => {
                 openImageModal(img.src);
             });
