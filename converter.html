@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Конвертер - VIAU</title>
+	<link rel="stylesheet" href="/css/style.css">
+	<link rel="stylesheet" href="/css/converter.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+	<div class="background-animation">
+		<div class="blob blob-1"></div>
+		<div class="blob blob-2"></div>
+		<div class="blob blob-3"></div>
+	</div>
+
+	<nav class="navbar">
+		<div class="nav-brand">
+			<i class="fas fa-globe"></i>
+			<span>VIAU</span>
+		</div>
+		<div class="nav-actions">
+			<button class="theme-toggle" id="theme-toggle">
+				<i class="fas fa-moon"></i>
+			</button>
+			<a href="/" class="btn-back">
+				<i class="fas fa-arrow-left"></i>
+				Назад
+			</a>
+		</div>
+	</nav>
+
+	<div class="converter-container">
+		<div class="converter-header">
+			<h1 class="converter-title">
+				<i class="fas fa-exchange-alt"></i>
+				Конвертер валют и ресурсов
+			</h1>
+			<p class="converter-subtitle">Быстрая конвертация между различными валютами и ресурсами</p>
+		</div>
+
+		<div class="converter-tabs">
+			<button class="converter-tab active" data-tab="currency">
+				<i class="fas fa-dollar-sign"></i>
+				Валюты
+			</button>
+			<button class="converter-tab" data-tab="resources">
+				<i class="fas fa-coins"></i>
+				Ресурсы
+			</button>
+		</div>
+
+		<div class="converter-content">
+			<!-- Валюты -->
+			<div class="converter-panel active" id="currency-panel">
+				<div class="converter-card">
+					<div class="converter-grid">
+						<div class="converter-input-section">
+							<label class="converter-label">
+								<i class="fas fa-money-bill-wave"></i>
+								У вас есть
+							</label>
+							<div class="converter-input-group">
+								<input type="number" id="currency-amount-from" class="converter-input" placeholder="0.00" value="1" min="0" step="0.01">
+								<select id="currency-from" class="converter-select">
+									<option value="USD">USD - Доллар США</option>
+									<option value="EUR">EUR - Евро</option>
+									<option value="RUB">RUB - Российский рубль</option>
+									<option value="GBP">GBP - Фунт стерлингов</option>
+									<option value="JPY">JPY - Японская иена</option>
+									<option value="CNY">CNY - Китайский юань</option>
+									<option value="KZT">KZT - Казахстанский тенге</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="converter-swap">
+							<button class="swap-btn" id="currency-swap">
+								<i class="fas fa-exchange-alt"></i>
+							</button>
+						</div>
+
+						<div class="converter-input-section">
+							<label class="converter-label">
+								<i class="fas fa-hand-holding-usd"></i>
+								Получите
+							</label>
+							<div class="converter-input-group">
+								<input type="number" id="currency-amount-to" class="converter-input" placeholder="0.00" readonly>
+								<select id="currency-to" class="converter-select">
+									<option value="EUR">EUR - Евро</option>
+									<option value="USD">USD - Доллар США</option>
+									<option value="RUB">RUB - Российский рубль</option>
+									<option value="GBP">GBP - Фунт стерлингов</option>
+									<option value="JPY">JPY - Японская иена</option>
+									<option value="CNY">CNY - Китайский юань</option>
+									<option value="KZT">KZT - Казахстанский тенге</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<div class="converter-rate-info" id="currency-rate-info">
+						<i class="fas fa-info-circle"></i>
+						<span>1 USD = 0.92 EUR</span>
+					</div>
+
+					<button class="converter-btn" id="currency-convert-btn">
+						<i class="fas fa-calculator"></i>
+						Конвертировать
+					</button>
+				</div>
+
+				<div class="rates-table-card">
+					<h3 class="rates-title">
+						<i class="fas fa-chart-line"></i>
+						Актуальные курсы валют
+					</h3>
+					<div class="rates-table" id="currency-rates-table">
+						<div class="rates-loading">
+							<div class="loading-spinner"></div>
+							<p>Загрузка курсов...</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Ресурсы -->
+			<div class="converter-panel" id="resources-panel">
+				<div class="converter-card">
+					<div class="converter-grid">
+						<div class="converter-input-section">
+							<label class="converter-label">
+								<i class="fas fa-box"></i>
+								У вас есть
+							</label>
+							<div class="converter-input-group">
+								<input type="number" id="resource-amount-from" class="converter-input" placeholder="0" value="1" min="0" step="1">
+								<select id="resource-from" class="converter-select">
+									<option value="gold">Золото</option>
+									<option value="silver">Серебро</option>
+									<option value="bronze">Бронза</option>
+									<option value="iron">Железо</option>
+									<option value="wood">Дерево</option>
+									<option value="stone">Камень</option>
+									<option value="crystal">Кристаллы</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="converter-swap">
+							<button class="swap-btn" id="resource-swap">
+								<i class="fas fa-exchange-alt"></i>
+							</button>
+						</div>
+
+						<div class="converter-input-section">
+							<label class="converter-label">
+								<i class="fas fa-cubes"></i>
+								Получите
+							</label>
+							<div class="converter-input-group">
+								<input type="number" id="resource-amount-to" class="converter-input" placeholder="0" readonly>
+								<select id="resource-to" class="converter-select">
+									<option value="silver">Серебро</option>
+									<option value="gold">Золото</option>
+									<option value="bronze">Бронза</option>
+									<option value="iron">Железо</option>
+									<option value="wood">Дерево</option>
+									<option value="stone">Камень</option>
+									<option value="crystal">Кристаллы</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<div class="converter-rate-info" id="resource-rate-info">
+						<i class="fas fa-info-circle"></i>
+						<span>1 Золото = 10 Серебро</span>
+					</div>
+
+					<button class="converter-btn" id="resource-convert-btn">
+						<i class="fas fa-calculator"></i>
+						Конвертировать
+					</button>
+				</div>
+
+				<div class="rates-table-card">
+					<h3 class="rates-title">
+						<i class="fas fa-list"></i>
+						Курсы обмена ресурсов
+					</h3>
+					<div class="rates-table" id="resource-rates-table">
+						<div class="rates-loading">
+							<div class="loading-spinner"></div>
+							<p>Загрузка курсов...</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="converter-history-card">
+			<h3 class="history-title">
+				<i class="fas fa-history"></i>
+				История конвертаций
+				<button class="clear-history-btn" id="clear-history-btn">
+					<i class="fas fa-trash"></i>
+					Очистить
+				</button>
+			</h3>
+			<div class="history-list" id="history-list">
+				<div class="history-empty">
+					<i class="fas fa-clock"></i>
+					<p>История конвертаций пуста</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="/js/converter.js"></script>
+</body>
+</html>

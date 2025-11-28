@@ -21,6 +21,8 @@ import jwt
 from datetime import datetime, timedelta
 import bcrypt
 
+from routers import converter
+
 
 load_dotenv()
 GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID')
@@ -40,6 +42,8 @@ app.add_middleware(
 )
 app.mount('/js', StaticFiles(directory='js'), name='js')
 app.mount('/css', StaticFiles(directory='css'), name='css')
+app.include_router(converter.router)
+
 
 AVATARS_DIR = 'avatars'
 if not os.path.exists(AVATARS_DIR):
