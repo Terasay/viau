@@ -14,7 +14,21 @@
             <p>У вас нет доступа к этой странице.</p>
         </div>
         <div id="admin-content" style="display:none">
-            <section class="terminal">
+            <!-- Навигация по разделам -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-section="users">
+                    <i class="fas fa-users"></i> Пользователи
+                </button>
+                <button class="admin-tab" data-section="currencies">
+                    <i class="fas fa-dollar-sign"></i> Валюты
+                </button>
+                <button class="admin-tab" data-section="resources">
+                    <i class="fas fa-coins"></i> Ресурсы
+                </button>
+            </div>
+
+            <!-- Раздел пользователей -->
+            <section id="users-section" class="terminal admin-section active">
                 <h2>Пользователи</h2>
                 <pre id="users-list" class="terminal-output">Загрузка...</pre>
                 <div id="user-actions" style="margin-top:24px">
@@ -34,10 +48,135 @@
                     </form>
                     <div id="action-result" style="margin-top:8px;color:#00ffc6"></div>
                 </div>
-                <button id="admin-exit-btn" style="margin-top:24px;padding:10px 24px;font-size:1em;border-radius:8px;background:#00ffc6;color:#181818;border:none;cursor:pointer;">На главную</button>
             </section>
-            <!-- Здесь можно добавить другие админ-функции -->
+
+            <!-- Раздел валют -->
+            <section id="currencies-section" class="terminal admin-section" style="display:none">
+                <h2>Управление валютами</h2>
+                
+                <div class="converter-admin-grid">
+                    <div class="converter-admin-panel">
+                        <h3>Текущие валюты</h3>
+                        <div id="currencies-list" class="items-list">
+                            <div class="loading-msg">Загрузка...</div>
+                        </div>
+                    </div>
+
+                    <div class="converter-admin-panel">
+                        <h3>Добавить валюту</h3>
+                        <form id="add-currency-form" class="admin-form">
+                            <label>
+                                Код (3 буквы):
+                                <input type="text" id="currency-code-add" maxlength="3" pattern="[A-Z]{3}" required placeholder="USD">
+                            </label>
+                            <label>
+                                Название:
+                                <input type="text" id="currency-name-add" required placeholder="Доллар США">
+                            </label>
+                            <label>
+                                Курс к USD:
+                                <input type="number" id="currency-rate-add" step="0.0001" min="0" required placeholder="1.0">
+                            </label>
+                            <button type="submit">Добавить</button>
+                            <div id="add-currency-result" class="form-result"></div>
+                        </form>
+
+                        <h3 style="margin-top:32px">Редактировать валюту</h3>
+                        <form id="edit-currency-form" class="admin-form">
+                            <label>
+                                Код валюты:
+                                <input type="text" id="currency-code-edit" maxlength="3" pattern="[A-Z]{3}" required placeholder="EUR">
+                            </label>
+                            <label>
+                                Новое название (опционально):
+                                <input type="text" id="currency-name-edit" placeholder="Евро">
+                            </label>
+                            <label>
+                                Новый курс (опционально):
+                                <input type="number" id="currency-rate-edit" step="0.0001" min="0" placeholder="0.92">
+                            </label>
+                            <button type="submit">Обновить</button>
+                            <div id="edit-currency-result" class="form-result"></div>
+                        </form>
+
+                        <h3 style="margin-top:32px">Удалить валюту</h3>
+                        <form id="delete-currency-form" class="admin-form">
+                            <label>
+                                Код валюты:
+                                <input type="text" id="currency-code-delete" maxlength="3" pattern="[A-Z]{3}" required placeholder="GBP">
+                            </label>
+                            <button type="submit" class="btn-danger">Удалить</button>
+                            <div id="delete-currency-result" class="form-result"></div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Раздел ресурсов -->
+            <section id="resources-section" class="terminal admin-section" style="display:none">
+                <h2>Управление ресурсами</h2>
+                
+                <div class="converter-admin-grid">
+                    <div class="converter-admin-panel">
+                        <h3>Текущие ресурсы</h3>
+                        <div id="resources-list" class="items-list">
+                            <div class="loading-msg">Загрузка...</div>
+                        </div>
+                    </div>
+
+                    <div class="converter-admin-panel">
+                        <h3>Добавить ресурс</h3>
+                        <form id="add-resource-form" class="admin-form">
+                            <label>
+                                Код (латиница):
+                                <input type="text" id="resource-code-add" pattern="[a-z]+" required placeholder="diamond">
+                            </label>
+                            <label>
+                                Название:
+                                <input type="text" id="resource-name-add" required placeholder="Алмазы">
+                            </label>
+                            <label>
+                                Курс к золоту:
+                                <input type="number" id="resource-rate-add" step="1" min="1" required placeholder="2">
+                            </label>
+                            <button type="submit">Добавить</button>
+                            <div id="add-resource-result" class="form-result"></div>
+                        </form>
+
+                        <h3 style="margin-top:32px">Редактировать ресурс</h3>
+                        <form id="edit-resource-form" class="admin-form">
+                            <label>
+                                Код ресурса:
+                                <input type="text" id="resource-code-edit" pattern="[a-z]+" required placeholder="silver">
+                            </label>
+                            <label>
+                                Новое название (опционально):
+                                <input type="text" id="resource-name-edit" placeholder="Серебро">
+                            </label>
+                            <label>
+                                Новый курс (опционально):
+                                <input type="number" id="resource-rate-edit" step="1" min="1" placeholder="10">
+                            </label>
+                            <button type="submit">Обновить</button>
+                            <div id="edit-resource-result" class="form-result"></div>
+                        </form>
+
+                        <h3 style="margin-top:32px">Удалить ресурс</h3>
+                        <form id="delete-resource-form" class="admin-form">
+                            <label>
+                                Код ресурса:
+                                <input type="text" id="resource-code-delete" pattern="[a-z]+" required placeholder="bronze">
+                            </label>
+                            <button type="submit" class="btn-danger">Удалить</button>
+                            <div id="delete-resource-result" class="form-result"></div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <button id="admin-exit-btn" style="margin-top:24px;padding:10px 24px;font-size:1em;border-radius:8px;background:#00ffc6;color:#181818;border:none;cursor:pointer;">На главную</button>
         </div>
     </div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </body>
 </html>

@@ -4,6 +4,24 @@ from pydantic import BaseModel
 
 router = APIRouter(prefix="/converter", tags=["converter"])
 
+def verify_admin(token):
+    """Проверка прав администратора"""
+    try:
+        from main import decode_jwt, get_user_by_username
+        
+        payload = decode_jwt(token)
+        if not payload:
+            return False
+        
+        user = get_user_by_username(payload['username'])
+        if not user or user[4] != 'admin':
+            return False
+        
+        return True
+    except Exception as e:
+        print(f"Ошибка проверки прав: {e}")
+        return False
+
 # Курсы валют (относительно USD)
 CURRENCY_RATES = {
     "USD": 1.0,

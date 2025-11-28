@@ -66,6 +66,8 @@ const clearHistoryBtn = document.getElementById('clear-history-btn');
 // Данные валют и ресурсов
 let currencyRates = {};
 let resourceRates = {};
+let currencyData = {};
+let resourceData = {};
 
 // Загрузка курсов валют
 async function loadCurrencyRates() {
@@ -75,12 +77,60 @@ async function loadCurrencyRates() {
 		
 		if (data.success) {
 			currencyRates = data.rates;
+			
+			// Загружаем полные данные для названий
+			const fullDataResp = await fetch('/converter/admin/all-data', {
+				headers: { 'Authorization': localStorage.getItem('token') || '' }
+			});
+			
+			if (fullDataResp.ok) {
+				const fullData = await fullDataResp.json();
+				if (fullData.success) {
+					currencyData = fullData.data.currencies;
+				}
+			}
+			
+			populateCurrencySelects();
 			displayCurrencyRates();
 			updateCurrencyConversion();
 		}
 	} catch (error) {
 		console.error('Ошибка загрузки курсов валют:', error);
 		currencyRatesTable.innerHTML = '<div class="error">Ошибка загрузки курсов</div>';
+	}
+}
+
+// Заполнение селектов валют
+function populateCurrencySelects() {
+	const codes = Object.keys(currencyRates).sort();
+	
+	// Сохраняем выбранные значения
+	const selectedFrom = currencyFrom.value || 'USD';
+	const selectedTo = currencyTo.value || 'EUR';
+	
+	currencyFrom.innerHTML = '';
+	currencyTo.innerHTML = '';
+	
+	codes.forEach(code => {
+		const name = currencyData[code]?.name || code;
+		
+		const optionFrom = document.createElement('option');
+		optionFrom.value = code;
+		optionFrom.textContent = `${code} - ${name}`;
+		currencyFrom.appendChild(optionFrom);
+		
+		const optionTo = document.createElement('option');
+		optionTo.value = code;
+		optionTo.textContent = `${code} - ${name}`;
+		currencyTo.appendChild(optionTo);
+	});
+	
+	// Восстанавливаем выбранные значения
+	if (codes.includes(selectedFrom)) {
+		currencyFrom.value = selectedFrom;
+	}
+	if (codes.includes(selectedTo)) {
+		currencyTo.value = selectedTo;
 	}
 }
 
@@ -91,12 +141,13 @@ function displayCurrencyRates() {
 	
 	for (const [currency, rate] of Object.entries(currencyRates)) {
 		if (currency !== baseCurrency) {
+			const name = currencyData[currency]?.name || currency;
 			html += `
 				<div class="rate-item">
 					<div class="rate-from-to">
 						<span>1 ${baseCurrency}</span>
 						<i class="fas fa-arrow-right rate-arrow"></i>
-						<span>${currency}</span>
+						<span>${currency} (${name})</span>
 					</div>
 					<div class="rate-value">${rate.toFixed(4)}</div>
 				</div>
@@ -115,12 +166,60 @@ async function loadResourceRates() {
 		
 		if (data.success) {
 			resourceRates = data.rates;
+			
+			// Загружаем полные данные для названий
+			const fullDataResp = await fetch('/converter/admin/all-data', {
+				headers: { 'Authorization': localStorage.getItem('token') || '' }
+			});
+			
+			if (fullDataResp.ok) {
+				const fullData = await fullDataResp.json();
+				if (fullData.success) {
+					resourceData = fullData.data.resources;
+				}
+			}
+			
+			populateResourceSelects();
 			displayResourceRates();
 			updateResourceConversion();
 		}
 	} catch (error) {
 		console.error('Ошибка загрузки курсов ресурсов:', error);
 		resourceRatesTable.innerHTML = '<div class="error">Ошибка загрузки курсов</div>';
+	}
+}
+
+// Заполнение селектов ресурсов
+function populateResourceSelects() {
+	const codes = Object.keys(resourceRates).sort();
+	
+	// Сохраняем выбранные значения
+	const selectedFrom = resourceFrom.value || 'gold';
+	const selectedTo = resourceTo.value || 'silver';
+	
+	resourceFrom.innerHTML = '';
+	resourceTo.innerHTML = '';
+	
+	codes.forEach(code => {
+		const name = resourceData[code]?.name || code;
+		
+		const optionFrom = document.createElement('option');
+		optionFrom.value = code;
+		optionFrom.textContent = name;
+		resourceFrom.appendChild(optionFrom);
+		
+		const optionTo = document.createElement('option');
+		optionTo.value = code;
+		optionTo.textContent = name;
+		resourceTo.appendChild(optionTo);
+	});
+	
+	// Восстанавливаем выбранные значения
+	if (codes.includes(selectedFrom)) {
+		resourceFrom.value = selectedFrom;
+	}
+	if (codes.includes(selectedTo)) {
+		resourceTo.value = selectedTo;
 	}
 }
 
@@ -131,11 +230,13 @@ function displayResourceRates() {
 	
 	for (const [resource, rate] of Object.entries(resourceRates)) {
 		if (resource !== baseResource) {
-			const resourceName = getResourceName(resource);
+			const baseName = resourceData[baseResource]?.name || baseResource;
+			const resourceName = resourceData[resource]?.name || resource;
+			
 			html += `
 				<div class="rate-item">
 					<div class="rate-from-to">
-						<span>1 ${getResourceName(baseResource)}</span>
+						<span>1 ${baseName}</span>
 						<i class="fas fa-arrow-right rate-arrow"></i>
 						<span>${resourceName}</span>
 					</div>
@@ -148,18 +249,9 @@ function displayResourceRates() {
 	resourceRatesTable.innerHTML = html;
 }
 
-// Получение названия ресурса на русском
+// Получение названия ресурса
 function getResourceName(resource) {
-	const names = {
-		gold: 'Золото',
-		silver: 'Серебро',
-		bronze: 'Бронза',
-		iron: 'Железо',
-		wood: 'Дерево',
-		stone: 'Камень',
-		crystal: 'Кристаллы'
-	};
-	return names[resource] || resource;
+	return resourceData[resource]?.name || resource;
 }
 
 // Конвертация валют

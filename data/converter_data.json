@@ -1,0 +1,54 @@
+{
+  "currencies": {
+    "HOM": {
+      "name": "Хомас",
+      "rate": 1.0
+    },
+    "UZB": {
+      "name": "Узбек",
+      "rate": 0.92
+    },
+    "TRD": {
+      "name": "Трудовий",
+      "rate": 91.5
+    },
+    "JOP": {
+      "name": "Жопий",
+      "rate": 0.79
+    },
+    "MON": {
+      "name": "Рубль",
+      "rate": 149.5
+    }
+  },
+  "resources": {
+    "gold": {
+      "name": "Золото",
+      "rate": 1
+    },
+    "silver": {
+      "name": "Серебро",
+      "rate": 10
+    },
+    "bronze": {
+      "name": "Бронза",
+      "rate": 20
+    },
+    "iron": {
+      "name": "Железо",
+      "rate": 50
+    },
+    "wood": {
+      "name": "Дерево",
+      "rate": 100
+    },
+    "stone": {
+      "name": "Камень",
+      "rate": 80
+    },
+    "crystal": {
+      "name": "Драгоценные камни",
+      "rate": 5
+    }
+  }
+}
