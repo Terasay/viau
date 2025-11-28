@@ -945,6 +945,13 @@ async def me(request: Request):
 async def index():
 	return FileResponse('index.html')
 
+@app.get('/converter')
+async def converter_page():
+    return FileResponse('converter.html')
+
+@app.get('/admin')
+async def admin_page():
+    return FileResponse('admin.html')
 
 # Эндпоинт для получения всех пользователей (только для админа)
 @app.get('/admin/users')
