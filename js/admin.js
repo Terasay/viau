@@ -33,11 +33,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         tab.addEventListener('click', async () => {
             const sectionName = tab.dataset.section;
             
+            // Убираем active класс со всех вкладок
             adminTabs.forEach(t => t.classList.remove('active'));
-            adminSections.forEach(s => s.classList.remove('active'));
             
+            // Скрываем все секции (убираем active И ставим display:none)
+            adminSections.forEach(s => {
+                s.classList.remove('active');
+                s.style.display = 'none';
+            });
+            
+            // Показываем нужную секцию
             tab.classList.add('active');
-            document.getElementById(`${sectionName}-section`).classList.add('active');
+            const activeSection = document.getElementById(`${sectionName}-section`);
+            activeSection.classList.add('active');
+            activeSection.style.display = 'block';
 
             // Загружаем данные при переключении
             if (sectionName === 'users') {
