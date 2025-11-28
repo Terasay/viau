@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const adminSections = document.querySelectorAll('.admin-section');
 
     adminTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
+        tab.addEventListener('click', async () => {
             const sectionName = tab.dataset.section;
             
             adminTabs.forEach(t => t.classList.remove('active'));
@@ -41,11 +41,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Загружаем данные при переключении
             if (sectionName === 'users') {
-                loadUsers();
+                await loadUsers();
             } else if (sectionName === 'currencies') {
-                loadCurrencies();
+                await loadCurrencies();
             } else if (sectionName === 'resources') {
-                loadResources();
+                await loadResources();
             }
         });
     });
