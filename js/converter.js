@@ -1,8 +1,6 @@
-// Переключение темы
 const themeToggle = document.getElementById('theme-toggle');
 const body = document.body;
 
-// Загрузка сохраненной темы
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme === 'dark') {
 	body.classList.add('dark-mode');
@@ -16,7 +14,6 @@ themeToggle.addEventListener('click', () => {
 	localStorage.setItem('theme', isDark ? 'dark' : 'light');
 });
 
-// Переключение вкладок
 const converterTabs = document.querySelectorAll('.converter-tab');
 const converterPanels = document.querySelectorAll('.converter-panel');
 
@@ -30,7 +27,6 @@ converterTabs.forEach(tab => {
 		tab.classList.add('active');
 		document.getElementById(`${targetTab}-panel`).classList.add('active');
 		
-		// Загружаем данные при переключении
 		if (targetTab === 'currency') {
 			loadCurrencyRates();
 		} else {
@@ -39,7 +35,6 @@ converterTabs.forEach(tab => {
 	});
 });
 
-// Валюты
 const currencyAmountFrom = document.getElementById('currency-amount-from');
 const currencyAmountTo = document.getElementById('currency-amount-to');
 const currencyFrom = document.getElementById('currency-from');
@@ -49,7 +44,6 @@ const currencyConvertBtn = document.getElementById('currency-convert-btn');
 const currencyRateInfo = document.getElementById('currency-rate-info');
 const currencyRatesTable = document.getElementById('currency-rates-table');
 
-// Ресурсы
 const resourceAmountFrom = document.getElementById('resource-amount-from');
 const resourceAmountTo = document.getElementById('resource-amount-to');
 const resourceFrom = document.getElementById('resource-from');
@@ -59,17 +53,14 @@ const resourceConvertBtn = document.getElementById('resource-convert-btn');
 const resourceRateInfo = document.getElementById('resource-rate-info');
 const resourceRatesTable = document.getElementById('resource-rates-table');
 
-// История
 const historyList = document.getElementById('history-list');
 const clearHistoryBtn = document.getElementById('clear-history-btn');
 
-// Данные валют и ресурсов
 let currencyRates = {};
 let resourceRates = {};
 let currencyData = {};
 let resourceData = {};
 
-// Загрузка курсов валют
 async function loadCurrencyRates() {
 	try {
 		const response = await fetch('/converter/currency-rates');
@@ -78,7 +69,6 @@ async function loadCurrencyRates() {
 		if (data.success) {
 			currencyRates = data.rates;
 			
-			// Загружаем полные данные для названий
 			const fullDataResp = await fetch('/converter/admin/all-data', {
 				headers: { 'Authorization': localStorage.getItem('token') || '' }
 			});
@@ -100,11 +90,9 @@ async function loadCurrencyRates() {
 	}
 }
 
-// Заполнение селектов валют
 function populateCurrencySelects() {
 	const codes = Object.keys(currencyRates).sort();
 	
-	// Сохраняем выбранные значения
 	const selectedFrom = currencyFrom.value || 'USD';
 	const selectedTo = currencyTo.value || 'EUR';
 	
@@ -125,7 +113,6 @@ function populateCurrencySelects() {
 		currencyTo.appendChild(optionTo);
 	});
 	
-	// Восстанавливаем выбранные значения
 	if (codes.includes(selectedFrom)) {
 		currencyFrom.value = selectedFrom;
 	}
@@ -134,7 +121,6 @@ function populateCurrencySelects() {
 	}
 }
 
-// Отображение курсов валют
 function displayCurrencyRates() {
 	const baseCurrency = 'USD';
 	let html = '';
@@ -158,7 +144,6 @@ function displayCurrencyRates() {
 	currencyRatesTable.innerHTML = html;
 }
 
-// Загрузка курсов ресурсов
 async function loadResourceRates() {
 	try {
 		const response = await fetch('/converter/resource-rates');
@@ -167,7 +152,6 @@ async function loadResourceRates() {
 		if (data.success) {
 			resourceRates = data.rates;
 			
-			// Загружаем полные данные для названий
 			const fullDataResp = await fetch('/converter/admin/all-data', {
 				headers: { 'Authorization': localStorage.getItem('token') || '' }
 			});
@@ -189,11 +173,9 @@ async function loadResourceRates() {
 	}
 }
 
-// Заполнение селектов ресурсов
 function populateResourceSelects() {
 	const codes = Object.keys(resourceRates).sort();
 	
-	// Сохраняем выбранные значения
 	const selectedFrom = resourceFrom.value || 'gold';
 	const selectedTo = resourceTo.value || 'silver';
 	
@@ -214,7 +196,6 @@ function populateResourceSelects() {
 		resourceTo.appendChild(optionTo);
 	});
 	
-	// Восстанавливаем выбранные значения
 	if (codes.includes(selectedFrom)) {
 		resourceFrom.value = selectedFrom;
 	}
@@ -223,7 +204,6 @@ function populateResourceSelects() {
 	}
 }
 
-// Отображение курсов ресурсов
 function displayResourceRates() {
 	const baseResource = 'gold';
 	let html = '';
@@ -249,12 +229,10 @@ function displayResourceRates() {
 	resourceRatesTable.innerHTML = html;
 }
 
-// Получение названия ресурса
 function getResourceName(resource) {
 	return resourceData[resource]?.name || resource;
 }
 
-// Конвертация валют
 async function convertCurrency() {
 	const amount = parseFloat(currencyAmountFrom.value);
 	const from = currencyFrom.value;
@@ -287,7 +265,6 @@ async function convertCurrency() {
 	}
 }
 
-// Конвертация ресурсов
 async function convertResource() {
 	const amount = parseInt(resourceAmountFrom.value);
 	const from = resourceFrom.value;
@@ -320,7 +297,6 @@ async function convertResource() {
 	}
 }
 
-// Обновление информации о курсе валют
 function updateCurrencyRateInfo(from, to, rate) {
 	currencyRateInfo.innerHTML = `
 		<i class="fas fa-info-circle"></i>
@@ -328,7 +304,6 @@ function updateCurrencyRateInfo(from, to, rate) {
 	`;
 }
 
-// Обновление информации о курсе ресурсов
 function updateResourceRateInfo(from, to, rate) {
 	resourceRateInfo.innerHTML = `
 		<i class="fas fa-info-circle"></i>
@@ -336,7 +311,6 @@ function updateResourceRateInfo(from, to, rate) {
 	`;
 }
 
-// Автоматическое обновление при изменении полей валют
 currencyAmountFrom.addEventListener('input', updateCurrencyConversion);
 currencyFrom.addEventListener('change', updateCurrencyConversion);
 currencyTo.addEventListener('change', updateCurrencyConversion);
@@ -371,7 +345,6 @@ async function updateCurrencyConversion() {
 	}
 }
 
-// Автоматическое обновление при изменении полей ресурсов
 resourceAmountFrom.addEventListener('input', updateResourceConversion);
 resourceFrom.addEventListener('change', updateResourceConversion);
 resourceTo.addEventListener('change', updateResourceConversion);
@@ -406,7 +379,6 @@ async function updateResourceConversion() {
 	}
 }
 
-// Обмен валют местами
 currencySwapBtn.addEventListener('click', () => {
 	const tempValue = currencyFrom.value;
 	currencyFrom.value = currencyTo.value;
@@ -418,7 +390,6 @@ currencySwapBtn.addEventListener('click', () => {
 	updateCurrencyConversion();
 });
 
-// Обмен ресурсов местами
 resourceSwapBtn.addEventListener('click', () => {
 	const tempValue = resourceFrom.value;
 	resourceFrom.value = resourceTo.value;
@@ -430,11 +401,9 @@ resourceSwapBtn.addEventListener('click', () => {
 	updateResourceConversion();
 });
 
-// Кнопки конвертации
 currencyConvertBtn.addEventListener('click', convertCurrency);
 resourceConvertBtn.addEventListener('click', convertResource);
 
-// Добавление в историю
 function addToHistory(type, amountFrom, currencyFrom, amountTo, currencyTo) {
 	const history = getHistory();
 	
@@ -449,7 +418,6 @@ function addToHistory(type, amountFrom, currencyFrom, amountTo, currencyTo) {
 	
 	history.unshift(item);
 	
-	// Ограничиваем историю 20 записями
 	if (history.length > 20) {
 		history.pop();
 	}
@@ -458,18 +426,15 @@ function addToHistory(type, amountFrom, currencyFrom, amountTo, currencyTo) {
 	displayHistory();
 }
 
-// Получение истории из localStorage
 function getHistory() {
 	const history = localStorage.getItem('converterHistory');
 	return history ? JSON.parse(history) : [];
 }
 
-// Сохранение истории в localStorage
 function saveHistory(history) {
 	localStorage.setItem('converterHistory', JSON.stringify(history));
 }
 
-// Отображение истории
 function displayHistory() {
 	const history = getHistory();
 	
@@ -510,7 +475,6 @@ function displayHistory() {
 	historyList.innerHTML = html;
 }
 
-// Очистка истории
 clearHistoryBtn.addEventListener('click', () => {
 	if (confirm('Вы уверены, что хотите очистить историю конвертаций?')) {
 		localStorage.removeItem('converterHistory');
@@ -518,6 +482,5 @@ clearHistoryBtn.addEventListener('click', () => {
 	}
 });
 
-// Инициализация
 loadCurrencyRates();
 displayHistory();
