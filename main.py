@@ -192,13 +192,7 @@ def init_db():
     )''')
     conn.commit()
     conn.close()
-
-
-
-@app.get('/maps/list')
-
 	
-
 @app.get('/chat/messages')
 async def get_chat_messages():
 	conn = sqlite3.connect(DB_FILE)
