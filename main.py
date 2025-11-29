@@ -43,10 +43,7 @@ app.add_middleware(
 )
 app.mount('/js', StaticFiles(directory='js'), name='js')
 app.mount('/css', StaticFiles(directory='css'), name='css')
-
 app.include_router(converter.router)
-app.include_router(maps.router)
-app.mount('/maps_files', StaticFiles(directory=MAPS_DIR), name='maps_files')
 
 
 
