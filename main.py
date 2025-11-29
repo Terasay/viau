@@ -53,6 +53,11 @@ if not os.path.exists(AVATARS_DIR):
     os.makedirs(AVATARS_DIR)
 
 MAPS_DIR = 'maps'
+if not os.path.exists(MAPS_DIR):
+    os.makedirs(MAPS_DIR)
+
+# Добавьте эту строку:
+app.mount('/maps_files', StaticFiles(directory=MAPS_DIR), name='maps_files')
 
 
 # --- Middleware для увеличения лимита размера загружаемых файлов ---
