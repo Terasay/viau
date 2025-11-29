@@ -195,9 +195,6 @@ def init_db():
 
 
 
-@app.get('/maps/list')
-
-	
 
 @app.get('/chat/messages')
 async def get_chat_messages():
@@ -218,14 +215,6 @@ async def get_chat_messages():
 		for row in reversed(rows)
 	]
 	return JSONResponse({'messages': messages})
-
-@app.post('/maps/upload')
-
-
-@app.post('/maps/edit')
-
-
-@app.post('/maps/delete')
 
 
 @app.post('/chat/send')
