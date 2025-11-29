@@ -192,7 +192,13 @@ def init_db():
     )''')
     conn.commit()
     conn.close()
+
+
+
+@app.get('/maps/list')
+
 	
+
 @app.get('/chat/messages')
 async def get_chat_messages():
 	conn = sqlite3.connect(DB_FILE)
@@ -212,6 +218,15 @@ async def get_chat_messages():
 		for row in reversed(rows)
 	]
 	return JSONResponse({'messages': messages})
+
+@app.post('/maps/upload')
+
+
+@app.post('/maps/edit')
+
+
+@app.post('/maps/delete')
+
 
 @app.post('/chat/send')
 async def send_chat_message(request: Request):
