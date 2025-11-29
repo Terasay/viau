@@ -7,6 +7,10 @@ const ctx = canvas ? canvas.getContext('2d') : null;
 const zoomInfo = document.getElementById('zoomInfo');
 const zoomInput = document.getElementById('zoomInput');
 const quadLevelSelect = document.getElementById('quadLevelSelect');
+const fileInput = document.getElementById('mapFileInput');
+if (fileInput) {
+    fileInput.addEventListener('change', handleFilePreview);
+}
 
 let manualQuadLevel = null;
 let mapImage = null;
@@ -132,11 +136,52 @@ function openUploadModal() {
     document.getElementById('uploadModal').style.display = 'flex';
 }
 
+function handleFilePreview(event) {
+    const file = event.target.files[0];
+    const previewContainer = document.getElementById('filePreview');
+    const fileDisplay = document.querySelector('.file-input-display span');
+    
+    if (file) {
+        fileDisplay.textContent = file.name;
+        fileDisplay.style.color = '#4facfe';
+        
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewContainer.innerHTML = `
+                    <div class="preview-info">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Файл выбран: <strong>${file.name}</strong></span>
+                        <span class="file-size">${fileSizeMB} МБ</span>
+                    </div>
+                    <img src="${e.target.result}" alt="Предпросмотр" class="preview-image">
+                `;
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    } else {
+        fileDisplay.textContent = 'Выберите файл...';
+        fileDisplay.style.color = '#b8c5d6';
+        previewContainer.style.display = 'none';
+    }
+}
+
 function closeUploadModal() {
     document.getElementById('uploadModal').style.display = 'none';
     document.getElementById('mapNameInput').value = '';
     document.getElementById('mapFileInput').value = '';
     document.getElementById('uploadStatus').textContent = '';
+    
+    const previewContainer = document.getElementById('filePreview');
+    const fileDisplay = document.querySelector('.file-input-display span');
+    if (previewContainer) previewContainer.style.display = 'none';
+    if (fileDisplay) {
+        fileDisplay.textContent = 'Выберите файл...';
+        fileDisplay.style.color = '#b8c5d6';
+    }
 }
 
 async function submitUploadMap() {
