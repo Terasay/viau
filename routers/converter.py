@@ -69,6 +69,18 @@ def verify_admin(token):
         return False
 
 
+# ==================== ПУБЛИЧНЫЕ ЭНДПОИНТЫ ====================
+
+@router.get('/data')
+async def get_converter_data():
+    """Получить все данные конвертера (публичный эндпоинт)"""
+    data = load_data()
+    return JSONResponse({
+        'success': True,
+        'data': data
+    })
+
+
 @router.get('/currency-rates')
 async def get_currency_rates():
     """Получить все курсы валют"""

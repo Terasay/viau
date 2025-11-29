@@ -69,9 +69,8 @@ async function loadCurrencyRates() {
 		if (data.success) {
 			currencyRates = data.rates;
 			
-			const fullDataResp = await fetch('/converter/admin/all-data', {
-				headers: { 'Authorization': localStorage.getItem('token') || '' }
-			});
+			// Загружаем полные данные с названиями из публичного эндпоинта
+			const fullDataResp = await fetch('/converter/data');
 			
 			if (fullDataResp.ok) {
 				const fullData = await fullDataResp.json();
@@ -93,8 +92,8 @@ async function loadCurrencyRates() {
 function populateCurrencySelects() {
 	const codes = Object.keys(currencyRates).sort();
 	
-	const selectedFrom = currencyFrom.value || 'USD';
-	const selectedTo = currencyTo.value || 'EUR';
+	const selectedFrom = currencyFrom.value || Object.keys(currencyRates)[0];
+	const selectedTo = currencyTo.value || Object.keys(currencyRates)[1];
 	
 	currencyFrom.innerHTML = '';
 	currencyTo.innerHTML = '';
@@ -122,11 +121,13 @@ function populateCurrencySelects() {
 }
 
 function displayCurrencyRates() {
-	const baseCurrency = 'USD';
+	// Используем первую валюту как базовую
+	const baseCurrency = Object.keys(currencyRates)[0];
 	let html = '';
 	
 	for (const [currency, rate] of Object.entries(currencyRates)) {
 		if (currency !== baseCurrency) {
+			const baseName = currencyData[baseCurrency]?.name || baseCurrency;
 			const name = currencyData[currency]?.name || currency;
 			html += `
 				<div class="rate-item">
@@ -152,9 +153,8 @@ async function loadResourceRates() {
 		if (data.success) {
 			resourceRates = data.rates;
 			
-			const fullDataResp = await fetch('/converter/admin/all-data', {
-				headers: { 'Authorization': localStorage.getItem('token') || '' }
-			});
+			// Загружаем полные данные с названиями из публичного эндпоинта
+			const fullDataResp = await fetch('/converter/data');
 			
 			if (fullDataResp.ok) {
 				const fullData = await fullDataResp.json();
@@ -233,6 +233,10 @@ function getResourceName(resource) {
 	return resourceData[resource]?.name || resource;
 }
 
+function getCurrencyName(currency) {
+	return currencyData[currency]?.name || currency;
+}
+
 async function convertCurrency() {
 	const amount = parseFloat(currencyAmountFrom.value);
 	const from = currencyFrom.value;
@@ -257,7 +261,7 @@ async function convertCurrency() {
 		if (data.success) {
 			currencyAmountTo.value = data.result.toFixed(2);
 			updateCurrencyRateInfo(from, to, data.rate);
-			addToHistory('currency', amount, from, data.result, to);
+			addToHistory('currency', amount, `${from} (${getCurrencyName(from)})`, data.result, `${to} (${getCurrencyName(to)})`);
 		}
 	} catch (error) {
 		console.error('Ошибка конвертации:', error);
