@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (oldAdminCard) oldAdminCard.remove();
 			if (adminFlag) {
 				const adminCard = document.createElement('a');
-				adminCard.href = 'admin.html';
+				adminCard.href = '/admin';
 				adminCard.className = 'feature-card admin-panel';
 				adminCard.innerHTML = `
 					<div class="feature-icon"><i class="fas fa-user-shield"></i></div>
