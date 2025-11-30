@@ -2,6 +2,17 @@ let currentUser = null;
 let maps = [];
 let currentMapId = null;
 
+let gridSettings = {
+    visible: true,
+    mainColor: '#e74c3c',
+    level1Color: '#3498db',
+    level2Color: '#2ecc71',
+    level3Color: '#9b59b6',
+    level4Color: '#e67e22',
+    mainLineWidth: 2,
+    subLineWidth: 1
+};
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas ? canvas.getContext('2d') : null;
 const zoomInfo = document.getElementById('zoomInfo');
@@ -32,6 +43,7 @@ async function init() {
         }
         await loadMaps();
     }
+    loadSettings();
     setupEventListeners();
 }
 
@@ -472,8 +484,10 @@ function draw() {
         ctx.strokeRect(offsetX, offsetY, mapWidth, mapHeight);
     }
     
-    const level = getQuadLevel();
-    drawQuadTree(offsetX, offsetY, mapWidth, mapHeight, level);
+    if (gridSettings.visible) {
+        const level = getQuadLevel();
+        drawQuadTree(offsetX, offsetY, mapWidth, mapHeight, level);
+    }
     
     if (zoomInfo) {
         let levelText = manualQuadLevel !== null ? `Ручной: ${level}` : `Авто: ${level}`;
@@ -508,13 +522,13 @@ function drawQuadTree(x, y, width, height, maxLevel) {
             
             const letter = letters[index];
             
-            ctx.strokeStyle = '#e74c3c';
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = gridSettings.mainColor;
+            ctx.lineWidth = gridSettings.mainLineWidth;
             ctx.strokeRect(qx, qy, quadWidth, quadHeight);
             
             if (maxLevel === 0 && quadWidth > 40) {
                 const fontSize = Math.max(12, Math.min(32, quadWidth / 8));
-                ctx.fillStyle = '#e74c3c';
+                ctx.fillStyle = gridSettings.mainColor;
                 ctx.font = `bold ${fontSize}px Arial`;
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'top';
@@ -537,7 +551,12 @@ function drawSubQuadrants(x, y, width, height, prefix, currentLevel, maxLevel) {
     
     if (subWidth < 10 || subHeight < 10) return;
     
-    const colors = ['#3498db', '#2ecc71', '#9b59b6', '#e67e22'];
+    const colors = [
+        gridSettings.level1Color,
+        gridSettings.level2Color,
+        gridSettings.level3Color,
+        gridSettings.level4Color
+    ];
     const color = colors[Math.min(currentLevel - 1, colors.length - 1)];
     
     for (let i = 0; i < subGrid; i++) {
@@ -552,7 +571,7 @@ function drawSubQuadrants(x, y, width, height, prefix, currentLevel, maxLevel) {
             const label = `${prefix}${num}`;
             
             ctx.strokeStyle = color;
-            ctx.lineWidth = 1;
+            ctx.lineWidth = gridSettings.subLineWidth;
             ctx.strokeRect(sx, sy, subWidth, subHeight);
             
             if (currentLevel === maxLevel && subWidth > 30) {
@@ -569,6 +588,91 @@ function drawSubQuadrants(x, y, width, height, prefix, currentLevel, maxLevel) {
             }
         }
     }
+}
+
+function loadSettings() {
+    const saved = localStorage.getItem('mapGridSettings');
+    if (saved) {
+        try {
+            gridSettings = JSON.parse(saved);
+            applySettings();
+        } catch (e) {
+            console.error('Ошибка загрузки настроек:', e);
+        }
+    }
+}
+
+function saveSettings() {
+    localStorage.setItem('mapGridSettings', JSON.stringify(gridSettings));
+}
+
+function applySettings() {
+    document.getElementById('toggleGrid').checked = gridSettings.visible;
+    document.getElementById('mainGridColor').value = gridSettings.mainColor;
+    document.getElementById('level1Color').value = gridSettings.level1Color;
+    document.getElementById('level2Color').value = gridSettings.level2Color;
+    document.getElementById('level3Color').value = gridSettings.level3Color;
+    document.getElementById('level4Color').value = gridSettings.level4Color;
+    document.getElementById('mainLineWidth').value = gridSettings.mainLineWidth;
+    document.getElementById('subLineWidth').value = gridSettings.subLineWidth;
+    document.getElementById('mainLineWidthValue').textContent = gridSettings.mainLineWidth + 'px';
+    document.getElementById('subLineWidthValue').textContent = gridSettings.subLineWidth + 'px';
+    
+    if (canvas) draw();
+}
+
+function toggleSettings() {
+    const panel = document.getElementById('settingsPanel');
+    if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        panel.classList.add('settings-panel-open');
+    } else {
+        panel.style.display = 'none';
+        panel.classList.remove('settings-panel-open');
+    }
+}
+
+function updateGridVisibility() {
+    gridSettings.visible = document.getElementById('toggleGrid').checked;
+    saveSettings();
+    draw();
+}
+
+function updateGridColors() {
+    gridSettings.mainColor = document.getElementById('mainGridColor').value;
+    gridSettings.level1Color = document.getElementById('level1Color').value;
+    gridSettings.level2Color = document.getElementById('level2Color').value;
+    gridSettings.level3Color = document.getElementById('level3Color').value;
+    gridSettings.level4Color = document.getElementById('level4Color').value;
+    saveSettings();
+    draw();
+}
+
+function updateLineWidth(type, value) {
+    if (type === 'main') {
+        gridSettings.mainLineWidth = parseFloat(value);
+        document.getElementById('mainLineWidthValue').textContent = value + 'px';
+    } else {
+        gridSettings.subLineWidth = parseFloat(value);
+        document.getElementById('subLineWidthValue').textContent = value + 'px';
+    }
+    saveSettings();
+    draw();
+}
+
+function resetSettings() {
+    gridSettings = {
+        visible: true,
+        mainColor: '#e74c3c',
+        level1Color: '#3498db',
+        level2Color: '#2ecc71',
+        level3Color: '#9b59b6',
+        level4Color: '#e67e22',
+        mainLineWidth: 2,
+        subLineWidth: 1
+    };
+    saveSettings();
+    applySettings();
 }
 
 init();
