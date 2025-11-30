@@ -484,8 +484,10 @@ function draw() {
         ctx.strokeRect(offsetX, offsetY, mapWidth, mapHeight);
     }
     
+    // ИСПРАВЛЕНО: level объявляется ДО проверки видимости
+    const level = getQuadLevel();
+    
     if (gridSettings.visible) {
-        const level = getQuadLevel();
         drawQuadTree(offsetX, offsetY, mapWidth, mapHeight, level);
     }
     
@@ -607,23 +609,34 @@ function saveSettings() {
 }
 
 function applySettings() {
-    document.getElementById('toggleGrid').checked = gridSettings.visible;
-    document.getElementById('mainGridColor').value = gridSettings.mainColor;
-    document.getElementById('level1Color').value = gridSettings.level1Color;
-    document.getElementById('level2Color').value = gridSettings.level2Color;
-    document.getElementById('level3Color').value = gridSettings.level3Color;
-    document.getElementById('level4Color').value = gridSettings.level4Color;
-    document.getElementById('mainLineWidth').value = gridSettings.mainLineWidth;
-    document.getElementById('subLineWidth').value = gridSettings.subLineWidth;
-    document.getElementById('mainLineWidthValue').textContent = gridSettings.mainLineWidth + 'px';
-    document.getElementById('subLineWidthValue').textContent = gridSettings.subLineWidth + 'px';
+    const toggleGrid = document.getElementById('toggleGrid');
+    const mainGridColor = document.getElementById('mainGridColor');
+    const level1Color = document.getElementById('level1Color');
+    const level2Color = document.getElementById('level2Color');
+    const level3Color = document.getElementById('level3Color');
+    const level4Color = document.getElementById('level4Color');
+    const mainLineWidth = document.getElementById('mainLineWidth');
+    const subLineWidth = document.getElementById('subLineWidth');
+    const mainLineWidthValue = document.getElementById('mainLineWidthValue');
+    const subLineWidthValue = document.getElementById('subLineWidthValue');
+    
+    if (toggleGrid) toggleGrid.checked = gridSettings.visible;
+    if (mainGridColor) mainGridColor.value = gridSettings.mainColor;
+    if (level1Color) level1Color.value = gridSettings.level1Color;
+    if (level2Color) level2Color.value = gridSettings.level2Color;
+    if (level3Color) level3Color.value = gridSettings.level3Color;
+    if (level4Color) level4Color.value = gridSettings.level4Color;
+    if (mainLineWidth) mainLineWidth.value = gridSettings.mainLineWidth;
+    if (subLineWidth) subLineWidth.value = gridSettings.subLineWidth;
+    if (mainLineWidthValue) mainLineWidthValue.textContent = gridSettings.mainLineWidth + 'px';
+    if (subLineWidthValue) subLineWidthValue.textContent = gridSettings.subLineWidth + 'px';
     
     if (canvas) draw();
 }
 
 function toggleSettings() {
     const panel = document.getElementById('settingsPanel');
-    if (panel.style.display === 'none') {
+    if (panel.style.display === 'none' || panel.style.display === '') {
         panel.style.display = 'block';
         panel.classList.add('settings-panel-open');
     } else {
