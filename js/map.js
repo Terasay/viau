@@ -484,7 +484,6 @@ function draw() {
         ctx.strokeRect(offsetX, offsetY, mapWidth, mapHeight);
     }
     
-    // ИСПРАВЛЕНО: level объявляется ДО проверки видимости
     const level = getQuadLevel();
     
     if (gridSettings.visible) {
@@ -508,6 +507,10 @@ function drawQuadTree(x, y, width, height, maxLevel) {
     
     const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S'];
     
+    ctx.strokeStyle = gridSettings.mainColor;
+    ctx.lineWidth = gridSettings.mainLineWidth;
+    ctx.strokeRect(x, y, width, height);
+    
     let index = 0;
     for (let i = 0; i < gridSize; i++) {
         for (let j = 0; j < gridSize; j++) {
@@ -526,7 +529,19 @@ function drawQuadTree(x, y, width, height, maxLevel) {
             
             ctx.strokeStyle = gridSettings.mainColor;
             ctx.lineWidth = gridSettings.mainLineWidth;
-            ctx.strokeRect(qx, qy, quadWidth, quadHeight);
+            ctx.beginPath();
+            
+            if (j < gridSize - 1) {
+                ctx.moveTo(qx + quadWidth, qy);
+                ctx.lineTo(qx + quadWidth, qy + quadHeight);
+            }
+            
+            if (i < gridSize - 1) {
+                ctx.moveTo(qx, qy + quadHeight);
+                ctx.lineTo(qx + quadWidth, qy + quadHeight);
+            }
+            
+            ctx.stroke();
             
             if (maxLevel === 0 && quadWidth > 40) {
                 const fontSize = Math.max(12, Math.min(32, quadWidth / 8));
@@ -574,7 +589,19 @@ function drawSubQuadrants(x, y, width, height, prefix, currentLevel, maxLevel) {
             
             ctx.strokeStyle = color;
             ctx.lineWidth = gridSettings.subLineWidth;
-            ctx.strokeRect(sx, sy, subWidth, subHeight);
+            ctx.beginPath();
+            
+            if (j < subGrid - 1) {
+                ctx.moveTo(sx + subWidth, sy);
+                ctx.lineTo(sx + subWidth, sy + subHeight);
+            }
+            
+            if (i < subGrid - 1) {
+                ctx.moveTo(sx, sy + subHeight);
+                ctx.lineTo(sx + subWidth, sy + subHeight);
+            }
+            
+            ctx.stroke();
             
             if (currentLevel === maxLevel && subWidth > 30) {
                 const fontSize = Math.max(7, Math.min(16, subWidth / 5));
