@@ -29,32 +29,25 @@ function setupEventListeners() {
         });
     });
 
-    // Загрузка аватара
     const avatarUpload = document.getElementById('avatarUpload');
     avatarUpload.addEventListener('change', handleAvatarUpload);
 
-    // Удаление аватара
     const removeAvatar = document.getElementById('removeAvatar');
     removeAvatar.addEventListener('click', handleRemoveAvatar);
 
-    // Форма смены пароля
     const changePasswordForm = document.getElementById('changePasswordForm');
     changePasswordForm.addEventListener('submit', handleChangePassword);
 
-    // Проверка силы пароля
     const newPasswordInput = document.getElementById('newPassword');
     newPasswordInput.addEventListener('input', checkPasswordStrength);
 
-    // Переключение видимости пароля
     document.querySelectorAll('.password-toggle').forEach(btn => {
         btn.addEventListener('click', togglePasswordVisibility);
     });
 
-    // Переключение темы
     const themeToggle = document.getElementById('themeToggle');
     themeToggle.addEventListener('click', toggleTheme);
 
-    // Выбор темы
     document.querySelectorAll('.theme-option').forEach(option => {
         option.addEventListener('click', () => {
             const theme = option.dataset.theme;
@@ -63,7 +56,6 @@ function setupEventListeners() {
     });
 }
 
-// Загрузка данных пользователя
 async function loadUserData() {
     try {
         const token = localStorage.getItem('token');
@@ -90,14 +82,12 @@ async function loadUserData() {
     }
 }
 
-// Отображение данных пользователя
 function displayUserData(user) {
     document.getElementById('usernameValue').textContent = user.username;
     document.getElementById('emailValue').textContent = user.email || 'Не указан';
     document.getElementById('userIdValue').textContent = '#' + user.id;
     document.getElementById('countryValue').textContent = user.country || 'Не указана';
     
-    // Вместо даты создания показываем статус мута
     const mutedInfo = user.muted ? 
         (user.mute_until ? `Замучен до ${formatDate(user.mute_until)}` : 'Замучен') : 
         'Нет';
@@ -109,12 +99,10 @@ function displayUserData(user) {
         roleValue.classList.add('admin');
     }
 
-    // Установка инициалов для аватара
     const initials = user.username.substring(0, 2).toUpperCase();
     document.getElementById('avatarInitials').textContent = initials;
 }
 
-// Форматирование даты
 function formatDate(dateString) {
     if (!dateString) {
         return 'Не указана';
@@ -129,22 +117,18 @@ function formatDate(dateString) {
     });
 }
 
-// Переключение между разделами
 function switchSection(sectionName) {
-    // Обновление активного пункта навигации
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
     });
     document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
 
-    // Переключение секций
     document.querySelectorAll('.settings-section').forEach(section => {
         section.classList.remove('active');
     });
     document.getElementById(`${sectionName}-section`).classList.add('active');
 }
 
-// Отображение аватара
 function displayAvatar(avatarUrl) {
     const avatarImage = document.getElementById('avatarImage');
     const avatarInitials = document.getElementById('avatarInitials');
@@ -156,7 +140,6 @@ function displayAvatar(avatarUrl) {
     removeButton.style.display = 'flex';
 }
 
-// Скрытие аватара
 function hideAvatar() {
     const avatarImage = document.getElementById('avatarImage');
     const avatarInitials = document.getElementById('avatarInitials');
@@ -167,18 +150,15 @@ function hideAvatar() {
     removeButton.style.display = 'none';
 }
 
-// Обработка загрузки аватара
 async function handleAvatarUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Проверка типа файла
     if (!file.type.startsWith('image/')) {
         showToast('Пожалуйста, выберите изображение', 'error');
         return;
     }
 
-    // Проверка размера файла (5 МБ)
     if (file.size > 5 * 1024 * 1024) {
         showToast('Размер файла не должен превышать 5 МБ', 'error');
         return;
@@ -215,11 +195,9 @@ async function handleAvatarUpload(e) {
         showToast('Ошибка загрузки аватара', 'error');
     }
     
-    // Сбрасываем input для возможности загрузки того же файла
     e.target.value = '';
 }
 
-// Удаление аватара
 async function handleRemoveAvatar() {
     if (!currentUser || !currentUser.avatar) return;
 
@@ -239,7 +217,6 @@ async function handleRemoveAvatar() {
             hideAvatar();
             showToast('Аватар удалён', 'success');
             
-            // Обновляем данные пользователя
             if (currentUser) {
                 currentUser.avatar = null;
             }
@@ -252,7 +229,6 @@ async function handleRemoveAvatar() {
     }
 }
 
-// Обработка смены пароля
 async function handleChangePassword(e) {
     e.preventDefault();
 
@@ -260,7 +236,6 @@ async function handleChangePassword(e) {
     const newPassword = document.getElementById('newPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
 
-    // Валидация
     if (!currentPassword || !newPassword || !confirmPassword) {
         showToast('Заполните все поля', 'error');
         return;
@@ -312,7 +287,6 @@ async function handleChangePassword(e) {
     }
 }
 
-// Проверка силы пароля
 function checkPasswordStrength(e) {
     const password = e.target.value;
     const strengthElement = document.getElementById('passwordStrength');
@@ -326,14 +300,12 @@ function checkPasswordStrength(e) {
 
     let strength = 0;
     
-    // Проверки
     if (password.length >= 8) strength++;
     if (password.length >= 12) strength++;
     if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
     if (/\d/.test(password)) strength++;
     if (/[^a-zA-Z0-9]/.test(password)) strength++;
 
-    // Установка класса и текста
     if (strength <= 2) {
         strengthElement.className = 'password-strength weak';
         strengthText.textContent = 'Слабый пароль';
@@ -346,7 +318,6 @@ function checkPasswordStrength(e) {
     }
 }
 
-// Переключение видимости пароля
 function togglePasswordVisibility(e) {
     const button = e.currentTarget;
     const targetId = button.dataset.target;
@@ -364,12 +335,10 @@ function togglePasswordVisibility(e) {
     }
 }
 
-// Загрузка темы
 function loadTheme() {
     const savedTheme = localStorage.getItem('theme') || 'light';
     applyTheme(savedTheme);
     
-    // Установка активной опции темы
     document.querySelectorAll('.theme-option').forEach(option => {
         option.classList.remove('active');
         if (option.dataset.theme === savedTheme) {
@@ -378,7 +347,6 @@ function loadTheme() {
     });
 }
 
-// Применение темы
 function applyTheme(theme) {
     if (theme === 'dark') {
         document.body.classList.add('dark-theme');
@@ -398,12 +366,10 @@ function applyTheme(theme) {
     }
 }
 
-// Установка темы
 function setTheme(theme) {
     localStorage.setItem('theme', theme);
     applyTheme(theme);
     
-    // Обновление активной опции
     document.querySelectorAll('.theme-option').forEach(option => {
         option.classList.remove('active');
         if (option.dataset.theme === theme) {
@@ -414,21 +380,18 @@ function setTheme(theme) {
     showToast('Тема успешно изменена', 'success');
 }
 
-// Переключение темы (кнопка в хедере)
 function toggleTheme() {
     const currentTheme = localStorage.getItem('theme') || 'light';
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
 }
 
-// Показ уведомления
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const icon = toast.querySelector('.toast-icon i');
     const title = toast.querySelector('.toast-title');
     const messageElement = toast.querySelector('.toast-message');
 
-    // Установка типа
     toast.className = 'toast';
     if (type === 'error') {
         toast.classList.add('error');
@@ -445,16 +408,13 @@ function showToast(message, type = 'success') {
 
     messageElement.textContent = message;
 
-    // Показ
     toast.classList.add('show');
 
-    // Скрытие через 3 секунды
     setTimeout(() => {
         toast.classList.remove('show');
     }, 3000);
 }
 
-// Слушатель изменения системной темы
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
     const theme = localStorage.getItem('theme');
     if (theme === 'auto') {

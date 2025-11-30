@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     adminContent.style.display = 'block';
 
-    // Переключение вкладок
     const adminTabs = document.querySelectorAll('.admin-tab');
     const adminSections = document.querySelectorAll('.admin-section');
 
@@ -33,22 +32,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         tab.addEventListener('click', async () => {
             const sectionName = tab.dataset.section;
             
-            // Убираем active класс со всех вкладок
             adminTabs.forEach(t => t.classList.remove('active'));
             
-            // Скрываем все секции (убираем active И ставим display:none)
             adminSections.forEach(s => {
                 s.classList.remove('active');
                 s.style.display = 'none';
             });
             
-            // Показываем нужную секцию
             tab.classList.add('active');
             const activeSection = document.getElementById(`${sectionName}-section`);
             activeSection.classList.add('active');
             activeSection.style.display = 'block';
 
-            // Загружаем данные при переключении
             if (sectionName === 'users') {
                 await loadUsers();
             } else if (sectionName === 'currencies') {
@@ -59,7 +54,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // ===== ПОЛЬЗОВАТЕЛИ =====
     const usersList = document.getElementById('users-list');
 
     async function loadUsers() {
@@ -112,7 +106,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // ===== ВАЛЮТЫ =====
     const currenciesList = document.getElementById('currencies-list');
 
     async function loadCurrencies() {
@@ -158,7 +151,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         currenciesList.innerHTML = html;
     }
 
-    // Добавление валюты
     const addCurrencyForm = document.getElementById('add-currency-form');
     const addCurrencyResult = document.getElementById('add-currency-result');
 
@@ -195,7 +187,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Редактирование валюты
     const editCurrencyForm = document.getElementById('edit-currency-form');
     const editCurrencyResult = document.getElementById('edit-currency-result');
 
@@ -236,7 +227,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Удаление валюты
     const deleteCurrencyForm = document.getElementById('delete-currency-form');
     const deleteCurrencyResult = document.getElementById('delete-currency-result');
 
@@ -275,7 +265,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // ===== РЕСУРСЫ =====
     const resourcesList = document.getElementById('resources-list');
 
     async function loadResources() {
@@ -358,7 +347,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Редактирование ресурса
     const editResourceForm = document.getElementById('edit-resource-form');
     const editResourceResult = document.getElementById('edit-resource-result');
 
@@ -399,7 +387,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Удаление ресурса
     const deleteResourceForm = document.getElementById('delete-resource-form');
     const deleteResourceResult = document.getElementById('delete-resource-result');
 

@@ -121,7 +121,6 @@ function populateCurrencySelects() {
 }
 
 function displayCurrencyRates() {
-	// Используем первую валюту как базовую
 	const baseCurrency = Object.keys(currencyRates)[0];
 	let html = '';
 	
@@ -153,7 +152,6 @@ async function loadResourceRates() {
 		if (data.success) {
 			resourceRates = data.rates;
 			
-			// Загружаем полные данные с названиями из публичного эндпоинта
 			const fullDataResp = await fetch('/api/converter/data');
 			
 			if (fullDataResp.ok) {
