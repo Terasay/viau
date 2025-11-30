@@ -6,7 +6,7 @@ import uuid
 from pathlib import Path
 from datetime import datetime
 
-router = APIRouter(prefix='/maps', tags=['maps'])
+router = APIRouter(prefix='/api/maps', tags=['maps'])
 
 MAPS_DIR = 'maps'
 DB_FILE = 'users.db'

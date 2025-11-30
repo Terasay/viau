@@ -5,7 +5,7 @@ import uuid
 import os
 from datetime import datetime
 
-router = APIRouter(prefix='/chat', tags=['chat'])
+router = APIRouter(prefix='/api/chat', tags=['chat'])  # Было: prefix='/chat'
 
 DB_FILE = 'users.db'
 UPLOAD_DIR = 'uploads'

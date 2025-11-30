@@ -4,7 +4,7 @@ from pydantic import BaseModel
 import json
 import os
 
-router = APIRouter(prefix="/converter", tags=["converter"])
+router = APIRouter(prefix='/api/converter', tags=['converter'])
 
 # Путь к файлу с данными
 DATA_FILE = 'data/converter_data.json'
