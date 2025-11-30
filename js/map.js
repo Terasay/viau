@@ -73,7 +73,7 @@ async function checkAuth() {
 async function loadMaps() {
     const token = localStorage.getItem('token');
     try {
-        const response = await fetch('/maps/list', {
+        const response = await fetch('/api/maps/list', {
             headers: { 'Authorization': token }
         });
         const data = await response.json();
@@ -218,7 +218,7 @@ async function submitUploadMap() {
     const token = localStorage.getItem('token');
     
     try {
-        const response = await fetch('/maps/upload', {
+        const response = await fetch('/api/maps/upload', {
             method: 'POST',
             headers: { 'Authorization': token },
             body: formData
@@ -270,7 +270,7 @@ async function submitEditMap() {
     const token = localStorage.getItem('token');
     
     try {
-        const response = await fetch('/maps/edit', {
+        const response = await fetch('/api/maps/edit', {
             method: 'POST',
             headers: {
                 'Authorization': token,
@@ -303,7 +303,7 @@ async function deleteMap(mapId) {
     const token = localStorage.getItem('token');
     
     try {
-        const response = await fetch('/maps/delete', {
+        const response = await fetch('/api/maps/delete', {
             method: 'POST',
             headers: {
                 'Authorization': token,

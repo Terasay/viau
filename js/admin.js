@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadCurrencies() {
         try {
-            const resp = await fetch('/converter/admin/all-data', {
+            const resp = await fetch('/api/converter/admin/all-data', {
                 headers: { 'Authorization': token }
             });
             
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const rate = parseFloat(document.getElementById('currency-rate-add').value);
 
         try {
-            const resp = await fetch('/converter/admin/currency/add', {
+            const resp = await fetch('/api/converter/admin/currency/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (rate) body.rate = parseFloat(rate);
 
         try {
-            const resp = await fetch('/converter/admin/currency/update', {
+            const resp = await fetch('/api/converter/admin/currency/update', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const resp = await fetch('/converter/admin/currency/delete', {
+            const resp = await fetch('/api/converter/admin/currency/delete', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadResources() {
         try {
-            const resp = await fetch('/converter/admin/all-data', {
+            const resp = await fetch('/api/converter/admin/all-data', {
                 headers: { 'Authorization': token }
             });
             
@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const rate = parseInt(document.getElementById('resource-rate-add').value);
 
         try {
-            const resp = await fetch('/converter/admin/resource/add', {
+            const resp = await fetch('/api/converter/admin/resource/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -373,7 +373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (rate) body.rate = parseInt(rate);
 
         try {
-            const resp = await fetch('/converter/admin/resource/update', {
+            const resp = await fetch('/api/converter/admin/resource/update', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const resp = await fetch('/converter/admin/resource/delete', {
+            const resp = await fetch('/api/converter/admin/resource/delete', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

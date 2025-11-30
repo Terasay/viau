@@ -292,7 +292,7 @@ function initChat() {
 
 // Загрузка истории чата
 function loadChatHistory() {
-    fetch('/chat/messages', {
+    fetch('/api/chat/messages', {
         method: 'GET'
     })
     .then(res => res.json())
@@ -750,7 +750,7 @@ function setupWebSocket() {
 async function deleteMessageApi(id) {
     const token = localStorage.getItem('token');
     try {
-        const res = await fetch('/chat/delete_message', {
+        const res = await fetch('/api/chat/edit_message', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1067,7 +1067,7 @@ function uploadAllFiles(files, text, token) {
     files.forEach(file => {
         const formData = new FormData();
         formData.append('file', file);
-        fetch('/chat/upload', {
+        fetch('/api/chat/upload', {
             method: 'POST',
             headers: {
                 'Authorization': token

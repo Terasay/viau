@@ -63,14 +63,14 @@ let resourceData = {};
 
 async function loadCurrencyRates() {
 	try {
-		const response = await fetch('/converter/currency-rates');
+		const response = await fetch('/api/converter/currency-rates');
 		const data = await response.json();
 		
 		if (data.success) {
 			currencyRates = data.rates;
 			
 			// Загружаем полные данные с названиями из публичного эндпоинта
-			const fullDataResp = await fetch('/converter/data');
+			const fullDataResp = await fetch('/api/converter/data');
 			
 			if (fullDataResp.ok) {
 				const fullData = await fullDataResp.json();
@@ -147,14 +147,14 @@ function displayCurrencyRates() {
 
 async function loadResourceRates() {
 	try {
-		const response = await fetch('/converter/resource-rates');
+		const response = await fetch('/api/converter/resource-rates');
 		const data = await response.json();
 		
 		if (data.success) {
 			resourceRates = data.rates;
 			
 			// Загружаем полные данные с названиями из публичного эндпоинта
-			const fullDataResp = await fetch('/converter/data');
+			const fullDataResp = await fetch('/api/converter/data');
 			
 			if (fullDataResp.ok) {
 				const fullData = await fullDataResp.json();
@@ -248,7 +248,7 @@ async function convertCurrency() {
 	}
 	
 	try {
-		const response = await fetch('/converter/convert-currency', {
+		const response = await fetch('/api/converter/convert-currency', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -280,7 +280,7 @@ async function convertResource() {
 	}
 	
 	try {
-		const response = await fetch('/converter/convert-resource', {
+		const response = await fetch('/api/converter/convert-resource', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -330,7 +330,7 @@ async function updateCurrencyConversion() {
 	}
 	
 	try {
-		const response = await fetch('/converter/convert-currency', {
+		const response = await fetch('/api/converter/convert-currency', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -364,7 +364,7 @@ async function updateResourceConversion() {
 	}
 	
 	try {
-		const response = await fetch('/converter/convert-resource', {
+		const response = await fetch('/api/converter/convert-resource', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
