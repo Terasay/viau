@@ -667,27 +667,3 @@ async def admin_set_status(request: Request):
 	conn.commit()
 	conn.close()
 	return JSONResponse({'success': True})
-
-@app.get('/')
-async def index():
-	return FileResponse('index.html')
-
-@app.get('/converter')
-async def converter_page():
-    return FileResponse('converter.html')
-
-@app.get('/admin')
-async def admin_page():
-    return FileResponse('admin.html')
-
-@app.get('/chat')
-async def chat_page():
-    return FileResponse('chat.html')
-
-@app.get('/settings')
-async def settings_page():
-    return FileResponse('settings.html')
-
-@app.get('/map')
-async def map_page():
-	return FileResponse('map.html')
