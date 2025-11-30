@@ -21,7 +21,7 @@ import jwt
 from datetime import datetime, timedelta
 import bcrypt
 
-from routers import converter, maps
+from routers import converter, maps, chat
 
 
 
@@ -45,7 +45,7 @@ app.mount('/js', StaticFiles(directory='js'), name='js')
 app.mount('/css', StaticFiles(directory='css'), name='css')
 app.include_router(converter.router)
 app.include_router(maps.router)
-
+app.include_router(chat.router) 
 
 
 AVATARS_DIR = 'avatars'
@@ -56,11 +56,9 @@ MAPS_DIR = 'maps'
 if not os.path.exists(MAPS_DIR):
     os.makedirs(MAPS_DIR)
 
-# Добавьте эту строку:
 app.mount('/maps_files', StaticFiles(directory=MAPS_DIR), name='maps_files')
 
 
-# --- Middleware для увеличения лимита размера загружаемых файлов ---
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request as StarletteRequest
 
@@ -70,14 +68,13 @@ class LimitUploadSizeMiddleware(BaseHTTPMiddleware):
 		self.max_upload_size = max_upload_size
 
 	async def dispatch(self, request: StarletteRequest, call_next):
-		# Проверяем только POST/PUT/PATCH
+
 		if request.method in ("POST", "PUT", "PATCH"):
 			content_length = request.headers.get("content-length")
 			if content_length and int(content_length) > self.max_upload_size:
 				return JSONResponse({"success": False, "error": "File too large"}, status_code=413)
 		return await call_next(request)
 
-# Установить лимит 100 МБ (можно изменить)
 app.add_middleware(LimitUploadSizeMiddleware, max_upload_size=100 * 1024 * 1024)
 
 def hash_password(password: str) -> str:
@@ -91,29 +88,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 
-# --- Эндпоинт для загрузки файлов (изображения/документы) ---
 UPLOAD_DIR = 'uploads'
 if not os.path.exists(UPLOAD_DIR):
 	os.makedirs(UPLOAD_DIR)
-
-@app.post('/chat/upload')
-async def chat_upload(request: Request, file: UploadFile = File(...)):
-	token = request.headers.get('Authorization')
-	payload = decode_jwt(token)
-	if not payload:
-		return JSONResponse({'success': False, 'error': 'Unauthorized'}, status_code=401)
-	filename = str(uuid.uuid4()) + '_' + file.filename
-	file_path = os.path.join(UPLOAD_DIR, filename)
-	try:
-		with open(file_path, 'wb') as f:
-			content = await file.read()
-			f.write(content)
-		# Формируем ссылку для клиента
-		url = f'/uploads/{filename}'
-		return JSONResponse({'success': True, 'url': url})
-	except Exception as e:
-		return JSONResponse({'success': False, 'error': 'Ошибка сохранения файла'})
-# Статические файлы для загруженных файлов
 
 app.mount('/uploads', StaticFiles(directory=UPLOAD_DIR), name='uploads')
 app.mount('/avatars', StaticFiles(directory=AVATARS_DIR), name='avatars')
@@ -176,7 +153,6 @@ def init_db():
         avatar TEXT
     )''')
     
-    # Проверяем, существует ли колонка avatar, если нет - добавляем
     c.execute("PRAGMA table_info(users)")
     columns = [column[1] for column in c.fetchall()]
     if 'avatar' not in columns:
@@ -198,52 +174,6 @@ def init_db():
     )''')
     conn.commit()
     conn.close()
-	
-@app.get('/chat/messages')
-async def get_chat_messages():
-	conn = sqlite3.connect(DB_FILE)
-	c = conn.cursor()
-	c.execute('SELECT id, username, role, text, timestamp FROM messages ORDER BY id DESC LIMIT 50')
-	rows = c.fetchall()
-	conn.close()
-	# Возвращаем в обратном порядке (от старых к новым)
-	messages = [
-		{
-			'id': row[0],
-			'username': row[1],
-			'role': row[2],
-			'text': row[3],
-			'timestamp': row[4]
-		}
-		for row in reversed(rows)
-	]
-	return JSONResponse({'messages': messages})
-
-@app.post('/chat/send')
-async def send_chat_message(request: Request):
-	data = await request.json()
-	token = request.headers.get('Authorization')
-	payload = decode_jwt(token)
-	if not payload:
-		return JSONResponse({'success': False, 'error': 'Unauthorized'}, status_code=401)
-	user = get_user_by_username(payload['username'])
-	if not user:
-		return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
-	if user[5]:
-		return JSONResponse({'success': False, 'error': 'User banned'}, status_code=403)
-	if user[6]:
-		return JSONResponse({'success': False, 'error': 'User muted'}, status_code=403)
-	text = data.get('text', '').strip()
-	if not text:
-		return JSONResponse({'success': False, 'error': 'Empty message'}, status_code=400)
-	timestamp = datetime.utcnow().isoformat() + 'Z'
-	conn = sqlite3.connect(DB_FILE)
-	c = conn.cursor()
-	c.execute('INSERT INTO messages (username, role, text, timestamp) VALUES (?, ?, ?, ?)',
-			  (user[0], user[4], text, timestamp))
-	conn.commit()
-	conn.close()
-	return JSONResponse({'success': True})
 
 import asyncio
 
@@ -262,10 +192,10 @@ async def change_password(request: Request):
     current_password = data.get('current_password')
     new_password = data.get('new_password')
     
-    if not verify_password(current_password, user[1]):  # Проверяем через bcrypt
+    if not verify_password(current_password, user[1]):
         return JSONResponse({'success': False, 'error': 'Неверный текущий пароль'})
     
-    update_user_password(user[2], new_password)  # user[2] = email
+    update_user_password(user[2], new_password)
     return JSONResponse({'success': True})
 
 class ConnectionManager:
@@ -332,7 +262,6 @@ async def websocket_endpoint(websocket: WebSocket):
 		while True:
 			data = await websocket.receive_json()
 			text = data.get("text", "").strip()
-			# Повторно проверяем mute/ban
 			user = get_user_by_username(payload["username"])
 			if not user:
 				await websocket.send_json({"error": "User not found"})
@@ -347,7 +276,6 @@ async def websocket_endpoint(websocket: WebSocket):
 				await websocket.send_json({"error": "Empty message"})
 				continue
 			timestamp = datetime.utcnow().isoformat() + 'Z'
-			# Сохраняем сообщение в БД
 			conn = sqlite3.connect(DB_FILE)
 			c = conn.cursor()
 			c.execute('INSERT INTO messages (username, role, text, timestamp) VALUES (?, ?, ?, ?)',
@@ -383,7 +311,7 @@ def get_user_by_email(email):
 def create_user(username, password, email):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    hashed_password = hash_password(password)  # Хешируем пароль
+    hashed_password = hash_password(password)
     c.execute('''
         INSERT INTO users (username, password, email, country, role, banned, muted)
         VALUES (?, ?, ?, NULL, 'user', 0, 0)
@@ -394,74 +322,13 @@ def create_user(username, password, email):
 def update_user_password(email, new_password):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    hashed_password = hash_password(new_password)  # Хешируем новый пароль
+    hashed_password = hash_password(new_password)
     c.execute('UPDATE users SET password=? WHERE email=?', (hashed_password, email))
     conn.commit()
     conn.close()
 
-# Эндпоинт для удаления сообщения
-@app.post('/chat/delete_message')
-async def delete_message(request: Request):
-	data = await request.json()
-	token = request.headers.get('Authorization')
-	payload = decode_jwt(token)
-	if not payload:
-		return JSONResponse({'success': False, 'error': 'Unauthorized'}, status_code=401)
-	user = get_user_by_username(payload['username'])
-	if not user:
-		return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
-	message_id = data.get('id')
-	if not message_id:
-		return JSONResponse({'success': False, 'error': 'Message id required'}, status_code=400)
-	conn = sqlite3.connect(DB_FILE)
-	c = conn.cursor()
-	c.execute('SELECT username FROM messages WHERE id=?', (message_id,))
-	row = c.fetchone()
-	if not row:
-		conn.close()
-		return JSONResponse({'success': False, 'error': 'Message not found'}, status_code=404)
-	# Только автор или админ может удалить
-	if row[0] != user[0] and user[4] != 'admin':
-		conn.close()
-		return JSONResponse({'success': False, 'error': 'Forbidden'}, status_code=403)
-	c.execute('DELETE FROM messages WHERE id=?', (message_id,))
-	conn.commit()
-	conn.close()
-	return JSONResponse({'success': True})
-
-# Эндпоинт для редактирования сообщения
-@app.post('/chat/edit_message')
-async def edit_message(request: Request):
-	data = await request.json()
-	token = request.headers.get('Authorization')
-	payload = decode_jwt(token)
-	if not payload:
-		return JSONResponse({'success': False, 'error': 'Unauthorized'}, status_code=401)
-	user = get_user_by_username(payload['username'])
-	if not user:
-		return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
-	message_id = data.get('id')
-	new_text = data.get('text', '').strip()
-	if not message_id or not new_text:
-		return JSONResponse({'success': False, 'error': 'Message id and text required'}, status_code=400)
-	conn = sqlite3.connect(DB_FILE)
-	c = conn.cursor()
-	c.execute('SELECT username FROM messages WHERE id=?', (message_id,))
-	row = c.fetchone()
-	if not row:
-		conn.close()
-		return JSONResponse({'success': False, 'error': 'Message not found'}, status_code=404)
-	# Только автор или админ может редактировать
-	if row[0] != user[0] and user[4] != 'admin':
-		conn.close()
-		return JSONResponse({'success': False, 'error': 'Forbidden'}, status_code=403)
-	c.execute('UPDATE messages SET text=? WHERE id=?', (new_text, message_id))
-	conn.commit()
-	conn.close()
-	return JSONResponse({'success': True})
-
 def create_jwt(username, role):
-	# Преобразуем роль к строке
+
 	role_str = str(role)
 	if role_str == '1':
 		role_str = 'admin'
@@ -514,10 +381,7 @@ def migrate_plain_passwords():
     migrated_count = 0
     for user in users:
         user_id, username, password = user
-        # Проверяем, является ли пароль уже bcrypt-хешем
-        # bcrypt хеши начинаются с $2b$ или $2a$ и имеют длину 60 символов
         if not password.startswith('$2b$') and not password.startswith('$2a$'):
-            # Это plain text пароль, хешируем его
             hashed = hash_password(password)
             c.execute('UPDATE users SET password=? WHERE id=?', (hashed, user_id))
             migrated_count += 1
@@ -561,11 +425,10 @@ def startup():
 async def login(request: Request):
     data = await request.json()
     user = get_user_by_username(data['username'])
-    if user and verify_password(data['password'], user[1]):  # Проверяем пароль через bcrypt
+    if user and verify_password(data['password'], user[1]):
         banned = bool(user[5])
         ban_until = user[7]
         now = datetime.utcnow()
-        # Проверка временного бана
         if banned:
             if ban_until:
                 try:
@@ -573,22 +436,18 @@ async def login(request: Request):
                 except Exception:
                     ban_dt = None
                 if ban_dt and now >= ban_dt:
-                    # Срок бана истек, снимаем бан
                     conn = sqlite3.connect(DB_FILE)
                     c = conn.cursor()
                     c.execute('UPDATE users SET banned=0, ban_until=NULL WHERE username=?', (user[0],))
                     conn.commit()
                     conn.close()
-                    # Получаем свежие данные пользователя
                     user = get_user_by_username(data['username'])
                     banned = bool(user[5])
-            # После обновления, если бан всё ещё есть — отказ
             if banned:
                 if ban_until:
                     return JSONResponse({'success': False, 'error': f'Аккаунт забанен до {ban_until}'})
                 else:
                     return JSONResponse({'success': False, 'error': 'Аккаунт забанен'})
-        # Если бан снят, разрешаем вход
         token = create_jwt(user[0], user[4])
         return JSONResponse({
             'success': True,
@@ -667,35 +526,29 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
     if not user:
         return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
     
-    # Проверка типа файла
     if not file.content_type.startswith('image/'):
         return JSONResponse({'success': False, 'error': 'Только изображения разрешены'}, status_code=400)
     
-    # Проверка размера (5 МБ)
     content = await file.read()
     if len(content) > 5 * 1024 * 1024:
         return JSONResponse({'success': False, 'error': 'Размер файла не должен превышать 5 МБ'}, status_code=400)
     
     try:
-        user_id = user[10]  # user[10] = id
-        avatar_filename = user[9]  # user[9] = avatar
+        user_id = user[10]
+        avatar_filename = user[9]
         
-        # Удаляем старый аватар если есть
         if avatar_filename:
             old_avatar_path = os.path.join(AVATARS_DIR, avatar_filename)
             if os.path.exists(old_avatar_path):
                 os.remove(old_avatar_path)
         
-        # Генерируем имя файла: avatar_userid.расширение
         file_extension = Path(file.filename).suffix
         filename = f"avatar_{user_id}{file_extension}"
         file_path = os.path.join(AVATARS_DIR, filename)
         
-        # Сохраняем файл
         with open(file_path, 'wb') as f:
             f.write(content)
         
-        # Обновляем базу данных
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()
         c.execute('UPDATE users SET avatar=? WHERE id=?', (filename, user_id))
@@ -724,16 +577,14 @@ async def delete_avatar(request: Request):
         return JSONResponse({'success': False, 'error': 'User not found'}, status_code=404)
     
     try:
-        user_id = user[10]  # user[10] = id
-        avatar_filename = user[9]  # user[9] = avatar
+        user_id = user[10]
+        avatar_filename = user[9]
         
-        # Удаляем файл аватара
         if avatar_filename:
             avatar_path = os.path.join(AVATARS_DIR, avatar_filename)
             if os.path.exists(avatar_path):
                 os.remove(avatar_path)
         
-        # Обновляем базу данных
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()
         c.execute('UPDATE users SET avatar=NULL WHERE id=?', (user_id,))
@@ -787,7 +638,6 @@ async def converter_page():
 async def admin_page():
     return FileResponse('admin.html')
 
-# Эндпоинт для получения всех пользователей (только для админа)
 @app.get('/admin/users')
 async def admin_users(request: Request):
 	token = request.headers.get('Authorization')
@@ -816,7 +666,6 @@ async def admin_users(request: Request):
 	conn.close()
 	return JSONResponse({'users': users})
 
-# Эндпоинт для изменения статуса бан/мут пользователя
 @app.post('/admin/set_status')
 async def admin_set_status(request: Request):
 	token = request.headers.get('Authorization')
@@ -826,9 +675,9 @@ async def admin_set_status(request: Request):
 		return JSONResponse({'detail': 'Forbidden'}, status_code=403)
 	data = await request.json()
 	user_id = data.get('id')
-	action = data.get('action')  # 'ban' или 'mute'
-	value = data.get('value')    # True/False
-	until = data.get('until')    # строка даты или None
+	action = data.get('action')
+	value = data.get('value')
+	until = data.get('until')
 	if action not in ('ban', 'mute'):
 		return JSONResponse({'success': False, 'error': 'Некорректное действие'})
 	conn = sqlite3.connect(DB_FILE)
