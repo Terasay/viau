@@ -43,6 +43,7 @@ app.add_middleware(
 )
 app.mount('/js', StaticFiles(directory='js'), name='js')
 app.mount('/css', StaticFiles(directory='css'), name='css')
+app.mount("/", StaticFiles(directory=".", html=True), name="static")
 app.include_router(converter.router)
 app.include_router(maps.router)
 app.include_router(chat.router) 
