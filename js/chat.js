@@ -58,6 +58,46 @@ function saveSettings() {
     applyChatSettings();
 }
 
+function applyChatSettings() {
+    const style = document.createElement('style');
+    style.id = 'dynamic-chat-settings';
+    const existing = document.getElementById('dynamic-chat-settings');
+    if (existing) existing.remove();
+    
+    style.textContent = `
+        .message-text {
+            font-size: ${chatSettings.textSize}px !important;
+        }
+        .message-text img.emoji,
+        .message-text img.twemoji {
+            width: ${chatSettings.emojiSize}px !important;
+            height: ${chatSettings.emojiSize}px !important;
+        }
+        .message-text img:not(.emoji):not(.twemoji) {
+            max-width: ${chatSettings.imageSize}px !important;
+            max-height: ${chatSettings.imageSize}px !important;
+        }
+        .message {
+            margin-bottom: ${chatSettings.messageSpacing}px !important;
+        }
+        ${chatSettings.compactMode ? `
+            .message-header {
+                display: none !important;
+            }
+            .message-avatar {
+                width: 28px !important;
+                height: 28px !important;
+                font-size: 12px !important;
+            }
+            .message-text {
+                padding: 4px 8px !important;
+            }
+        ` : ''}
+    `;
+    
+    document.head.appendChild(style);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     loadSettings();
     applyChatSettings();
@@ -850,46 +890,6 @@ function setupEventListeners() {
         const compactModeToggle = document.getElementById('compactModeToggle');
         const saveSettingsBtn = document.getElementById('saveSettingsBtn');
         const resetSettingsBtn = document.getElementById('resetSettingsBtn');
-
-        function applyChatSettings() {
-            const style = document.createElement('style');
-            style.id = 'dynamic-chat-settings';
-            const existing = document.getElementById('dynamic-chat-settings');
-            if (existing) existing.remove();
-            
-            style.textContent = `
-                .message-text {
-                    font-size: ${chatSettings.textSize}px !important;
-                }
-                .message-text img.emoji,
-                .message-text img.twemoji {
-                    width: ${chatSettings.emojiSize}px !important;
-                    height: ${chatSettings.emojiSize}px !important;
-                }
-                .message-text img:not(.emoji):not(.twemoji) {
-                    max-width: ${chatSettings.imageSize}px !important;
-                    max-height: ${chatSettings.imageSize}px !important;
-                }
-                .message {
-                    margin-bottom: ${chatSettings.messageSpacing}px !important;
-                }
-                ${chatSettings.compactMode ? `
-                    .message-header {
-                        display: none !important;
-                    }
-                    .message-avatar {
-                        width: 28px !important;
-                        height: 28px !important;
-                        font-size: 12px !important;
-                    }
-                    .message-text {
-                        padding: 4px 8px !important;
-                    }
-                ` : ''}
-            `;
-            
-            document.head.appendChild(style);
-        }
 
         function syncSettingsUI() {
             if (textSizeSlider && textSizeValue) {
