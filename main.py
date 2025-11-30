@@ -23,15 +23,11 @@ import bcrypt
 
 from routers import converter, maps, chat
 
-
-
 load_dotenv()
 GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID')
 GMAIL_CLIENT_SECRET = os.getenv('GMAIL_CLIENT_SECRET')
 GMAIL_REFRESH_TOKEN = os.getenv('GMAIL_REFRESH_TOKEN')
 GMAIL_SENDER = os.getenv('GMAIL_SENDER')
-
-
 
 app = FastAPI()
 app.add_middleware(
@@ -41,13 +37,13 @@ app.add_middleware(
 	allow_methods=["*"],
 	allow_headers=["*"],
 )
+
 app.mount('/js', StaticFiles(directory='js'), name='js')
 app.mount('/css', StaticFiles(directory='css'), name='css')
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
+
 app.include_router(converter.router)
 app.include_router(maps.router)
 app.include_router(chat.router) 
-
 
 AVATARS_DIR = 'avatars'
 if not os.path.exists(AVATARS_DIR):
@@ -59,7 +55,6 @@ if not os.path.exists(MAPS_DIR):
 
 app.mount('/maps_files', StaticFiles(directory=MAPS_DIR), name='maps_files')
 
-
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request as StarletteRequest
 
@@ -69,7 +64,6 @@ class LimitUploadSizeMiddleware(BaseHTTPMiddleware):
 		self.max_upload_size = max_upload_size
 
 	async def dispatch(self, request: StarletteRequest, call_next):
-
 		if request.method in ("POST", "PUT", "PATCH"):
 			content_length = request.headers.get("content-length")
 			if content_length and int(content_length) > self.max_upload_size:
@@ -87,7 +81,6 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Проверяет соответствие пароля хешу"""
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
-
 
 UPLOAD_DIR = 'uploads'
 if not os.path.exists(UPLOAD_DIR):
@@ -236,7 +229,6 @@ class ConnectionManager:
 			except Exception:
 				pass
 
-
 manager = ConnectionManager()
 
 @app.websocket("/ws/chat")
@@ -329,7 +321,6 @@ def update_user_password(email, new_password):
     conn.close()
 
 def create_jwt(username, role):
-
 	role_str = str(role)
 	if role_str == '1':
 		role_str = 'admin'
@@ -565,7 +556,6 @@ async def upload_avatar(request: Request, file: UploadFile = File(...)):
         print(f"Ошибка загрузки аватара: {e}")
         return JSONResponse({'success': False, 'error': 'Ошибка загрузки аватара'}, status_code=500)
 
-
 @app.post('/avatar/delete')
 async def delete_avatar(request: Request):
     token = request.headers.get('Authorization')
@@ -598,7 +588,6 @@ async def delete_avatar(request: Request):
         print(f"Ошибка удаления аватара: {e}")
         return JSONResponse({'success': False, 'error': 'Ошибка удаления аватара'}, status_code=500)
 
-
 @app.get('/me')
 async def me(request: Request):
     token = request.headers.get('Authorization')
@@ -626,30 +615,6 @@ async def me(request: Request):
             'avatar': avatar_url
         })
     return JSONResponse({'logged_in': False})
-
-@app.get('/')
-async def index():
-	return FileResponse('index.html')
-
-@app.get('/converter')
-async def converter_page():
-    return FileResponse('converter.html')
-
-@app.get('/admin')
-async def admin_page():
-    return FileResponse('admin.html')
-
-@app.get('/chat')
-async def chat_page():
-    return FileResponse('chat.html')
-
-@app.get('/settings')
-async def settings_page():
-    return FileResponse('settings.html')
-
-@app.get('/map')
-async def map_page():
-	return FileResponse('map.html')
 
 @app.get('/admin/users')
 async def admin_users(request: Request):
@@ -702,3 +667,27 @@ async def admin_set_status(request: Request):
 	conn.commit()
 	conn.close()
 	return JSONResponse({'success': True})
+
+@app.get('/')
+async def index():
+	return FileResponse('index.html')
+
+@app.get('/converter')
+async def converter_page():
+    return FileResponse('converter.html')
+
+@app.get('/admin')
+async def admin_page():
+    return FileResponse('admin.html')
+
+@app.get('/chat')
+async def chat_page():
+    return FileResponse('chat.html')
+
+@app.get('/settings')
+async def settings_page():
+    return FileResponse('settings.html')
+
+@app.get('/map')
+async def map_page():
+	return FileResponse('map.html')

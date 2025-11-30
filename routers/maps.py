@@ -11,8 +11,6 @@ router = APIRouter(prefix='/maps', tags=['maps'])
 MAPS_DIR = 'maps'
 DB_FILE = 'users.db'
 
-# Импортируем функцию decode_jwt из главного файла
-# Или можно создать отдельный файл utils.py для общих функций
 def decode_jwt(token):
     import jwt
     JWT_SECRET = 'supersecretkey'
@@ -81,22 +79,18 @@ async def upload_map(request: Request):
     if not file:
         return JSONResponse({'success': False, 'error': 'File is required'}, status_code=400)
     
-    # Проверить тип файла
     if not file.content_type.startswith('image/'):
         return JSONResponse({'success': False, 'error': 'Only image files are allowed'}, status_code=400)
     
-    # Генерировать уникальное имя файла
     file_extension = Path(file.filename).suffix
     unique_filename = f"{uuid.uuid4()}{file_extension}"
     file_path = os.path.join(MAPS_DIR, unique_filename)
     
     try:
-        # Сохранить файл
         with open(file_path, 'wb') as f:
             content = await file.read()
             f.write(content)
         
-        # Сохранить в базу данных
         timestamp = datetime.utcnow().isoformat() + 'Z'
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()
@@ -119,7 +113,6 @@ async def upload_map(request: Request):
             }
         })
     except Exception as e:
-        # Удалить файл если возникла ошибка
         if os.path.exists(file_path):
             os.remove(file_path)
         return JSONResponse({'success': False, 'error': f'Upload failed: {str(e)}'}, status_code=500)
@@ -145,13 +138,11 @@ async def edit_map(request: Request):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     
-    # Проверить существование карты
     c.execute('SELECT id FROM maps WHERE id=?', (map_id,))
     if not c.fetchone():
         conn.close()
         return JSONResponse({'success': False, 'error': 'Map not found'}, status_code=404)
     
-    # Обновить название
     c.execute('UPDATE maps SET name=? WHERE id=?', (new_name, map_id))
     conn.commit()
     conn.close()
@@ -178,7 +169,6 @@ async def delete_map(request: Request):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     
-    # Получить имя файла
     c.execute('SELECT filename FROM maps WHERE id=?', (map_id,))
     row = c.fetchone()
     
@@ -188,12 +178,10 @@ async def delete_map(request: Request):
     
     filename = row[0]
     
-    # Удалить из базы данных
     c.execute('DELETE FROM maps WHERE id=?', (map_id,))
     conn.commit()
     conn.close()
     
-    # Удалить файл
     file_path = os.path.join(MAPS_DIR, filename)
     try:
         if os.path.exists(file_path):
