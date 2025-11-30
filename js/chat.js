@@ -40,7 +40,9 @@ const attachBtn = document.getElementById('attachBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
 
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
+    // --- Emoji alias map (базовые, можно расширить) ---
     const emojiAliasMap = {
         ':smile:': '😄', ':laughing:': '😆', ':blush:': '😊', ':heart:': '❤️', ':thumbsup:': '👍',
         ':sob:': '😭', ':joy:': '😂', ':wink:': '😉', ':sunglasses:': '😎', ':thinking:': '🤔',
@@ -61,10 +63,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         ':yum:': '😋', ':stuck_out_tongue:': '😛', ':money_mouth:': '🤑', ':hugs:': '🤗', ':thinking_face:': '🤔'
     };
 
+    // --- Автозамена :alias: на emoji ---
     function replaceEmojiAliases(text) {
         return text.replace(/:([a-zA-Z0-9_]+):/g, (match) => emojiAliasMap[match] || match);
     }
 
+    // При вводе — автозамена alias на emoji и рендер через Twemoji
     messageInput.addEventListener('input', (e) => {
         const cursor = messageInput.selectionStart;
         const newText = replaceEmojiAliases(messageInput.value);
@@ -72,12 +76,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             messageInput.value = newText;
             messageInput.selectionStart = messageInput.selectionEnd = cursor;
         }
+        // Парсим Twemoji для поля ввода
         if (window.twemoji) {
             const parent = messageInput.parentElement;
             twemoji.parse(parent);
         }
     });
 
+    // При отправке — автозамена alias на emoji (на всякий случай)
     const origSendMessage = sendMessage;
     window.sendMessage = function() {
         messageInput.value = replaceEmojiAliases(messageInput.value);
@@ -88,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     setupImageModal();
 
+    // Создаём контейнер для предпросмотра файлов
     filePreviewContainer = document.createElement('div');
     filePreviewContainer.id = 'filePreviewContainer';
     filePreviewContainer.style.display = 'flex';
@@ -96,6 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     filePreviewContainer.style.margin = '10px 0';
     messagesContainer.parentNode.insertBefore(filePreviewContainer, messagesContainer);
 
+    // --- Emoji Picker ---
     const emojiPicker = document.createElement('emoji-picker');
     emojiPicker.style.position = 'absolute';
     emojiPicker.style.bottom = '70px';
@@ -104,13 +112,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     emojiPicker.style.display = 'none';
     document.body.appendChild(emojiPicker);
 
+    // Кнопка для открытия emoji picker
     const emojiBtn = document.createElement('button');
     emojiBtn.id = 'emojiBtn';
     emojiBtn.className = 'btn-emoji';
     emojiBtn.type = 'button';
     emojiBtn.title = 'Эмодзи';
     emojiBtn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zm0-4a6 6 0 0 0 6-6H6a6 6 0 0 0 6 6zm-3-7a1 1 0 1 1 2 0 1 1 0 0 1-2 0zm6 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-
+    // Вставляем кнопку перед sendBtn
     const inputWrapper = document.querySelector('.input-wrapper');
     inputWrapper.insertBefore(emojiBtn, inputWrapper.querySelector('#sendBtn'));
     inputWrapper.style.position = 'relative';
@@ -119,23 +128,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     emojiBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-
+        // Показываем emoji-picker
         emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'block' : 'none';
         if (emojiPicker.style.display === 'block') {
-
+            // Сброс позиции
             emojiPicker.style.left = '0px';
             emojiPicker.style.right = '';
-
+            // Динамическое позиционирование
             setTimeout(() => {
                 const pickerRect = emojiPicker.getBoundingClientRect();
                 const wrapperRect = inputWrapper.getBoundingClientRect();
                 const windowWidth = window.innerWidth;
-
+                // Если выходит за правый край окна
                 if (pickerRect.right > windowWidth) {
-
-                    let shift = pickerRect.right - windowWidth + 8;
+                    // Смещаем влево на разницу
+                    let shift = pickerRect.right - windowWidth + 8; // 8px отступ
                     let left = parseInt(emojiPicker.style.left || '0', 10) - shift;
-
+                    // Не даём уйти за левый край
                     if (wrapperRect.left + left < 0) left = -wrapperRect.left + 8;
                     emojiPicker.style.left = left + 'px';
                 }
@@ -143,7 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-
+    // Вставка emoji в поле ввода
     emojiPicker.addEventListener('emoji-click', (event) => {
         const emoji = event.detail.unicode;
         const input = document.getElementById('messageInput');
@@ -158,6 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         emojiPicker.style.display = 'none';
     });
 
+    // --- Emoji Preview Block ---
     const emojiPreview = document.createElement('div');
     emojiPreview.id = 'emojiPreview';
     emojiPreview.style.display = 'none';
@@ -182,7 +192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     emojiPreview.innerHTML = '';
     emojiPicker.appendChild(emojiPreview);
 
-
+    // Закрытие picker при клике вне
     document.addEventListener('click', (e) => {
         if (emojiPicker.style.display === 'block' && !emojiPicker.contains(e.target) && e.target !== emojiBtn) {
             emojiPicker.style.display = 'none';
@@ -190,7 +200,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
-
+// Проверка авторизации
 async function checkAuth() {
     const token = localStorage.getItem('token');
     
@@ -270,7 +280,7 @@ function updateCharCounter() {
     }
 }
 
-
+// Инициализация чата
 function initChat() {
     userInfo.textContent = `${currentUser.username}${currentUser.role === 'admin' ? ' (админ)' : ''}`;
     if (currentUser.muted) {
@@ -280,7 +290,7 @@ function initChat() {
     setupWebSocket();
 }
 
-
+// Загрузка истории чата
 function loadChatHistory() {
     fetch('/chat/messages', {
         method: 'GET'
@@ -299,7 +309,7 @@ function loadChatHistory() {
     });
 }
 
-
+// Обновление списка пользователей онлайн
 function updateOnlineUsers(users) {
     onlineUsers = users || [];
     onlineCount.textContent = `${onlineUsers.length} онлайн`;
@@ -309,7 +319,7 @@ function updateOnlineUsers(users) {
         userItem.className = 'user-item';
         const avatar = document.createElement('div');
         avatar.className = 'message-avatar';
-
+        // Попытка загрузить аватарку пользователя
         (async () => {
             let avatarUrl = null;
             if (userAvatarsCache[user.username]) {
@@ -347,9 +357,9 @@ function updateOnlineUsers(users) {
     });
 }
 
-
+// Добавление сообщения
 function addMessage(messageData, save = true) {
-
+    // Проверяем, нужно ли группировать с предыдущим сообщением
     const lastMessage = messagesContainer.lastElementChild;
     let shouldGroup = false;
     
@@ -357,11 +367,11 @@ function addMessage(messageData, save = true) {
         const lastUsername = lastMessage.dataset.username;
         const lastTimestamp = parseInt(lastMessage.dataset.timestamp || '0');
         const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
-        const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60;
+        const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60; // разница в минутах
         
         if (lastUsername === messageData.username && timeDiff < 15) {
             shouldGroup = true;
-
+            // Добавляем новый текстовый блок в существующий message-content
             const lastContent = lastMessage.querySelector('.message-content');
             if (lastContent) {
                 const text = document.createElement('div');
@@ -379,6 +389,7 @@ function addMessage(messageData, save = true) {
                     text.textContent = messageData.text;
                 }
                 
+                // Добавляем кнопки редактирования и удаления для нового текста
                 const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
                 if (canEditOrDelete && messageData.id) {
                     text.dataset.messageId = messageData.id;
@@ -440,8 +451,10 @@ function addMessage(messageData, save = true) {
                     lastContent.appendChild(text);
                 }
                 
+                // Обновляем timestamp последнего сообщения
                 lastMessage.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
                 
+                // Рендерим emoji через Twemoji
                 if (window.twemoji) {
                     twemoji.parse(text);
                 }
@@ -452,6 +465,7 @@ function addMessage(messageData, save = true) {
         }
     }
     
+    // Создаем новое сообщение (если не группируется)
     const message = document.createElement('div');
     message.className = 'message';
     if (messageData.username === currentUser.username) {
@@ -463,6 +477,7 @@ function addMessage(messageData, save = true) {
     
     const avatar = document.createElement('div');
     avatar.className = 'message-avatar';
+    // Попытка загрузить аватарку пользователя
     (async () => {
         let avatarUrl = null;
         if (userAvatarsCache[messageData.username]) {
@@ -525,6 +540,7 @@ function addMessage(messageData, save = true) {
     }
     content.appendChild(text);
 
+    // Кнопки редактирования и удаления
     const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
     if (canEditOrDelete && messageData.id) {
         const actions = document.createElement('div');
@@ -580,12 +596,14 @@ function addMessage(messageData, save = true) {
     message.appendChild(content);
     messagesContainer.appendChild(message);
     
+    // Рендерим emoji через Twemoji
     if (window.twemoji) {
         twemoji.parse(message);
     }
     
     scrollToBottom();
 
+    // Функция редактирования для группированного текста
     function showEditMessageInputForText(textElem, msgData) {
         const originalText = textElem.textContent || textElem.innerText;
         textElem.style.display = 'none';
@@ -642,6 +660,7 @@ function addMessage(messageData, save = true) {
         };
     }
 
+    // Функция редактирования для обычного сообщения
     function showEditMessageInput(messageElem, msgData, textElem) {
         textElem.style.display = 'none';
         const actionsElem = content.querySelector('.message-actions');
@@ -696,6 +715,7 @@ function addMessage(messageData, save = true) {
     }
 }
 
+// --- WebSocket ---
 function setupWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const wsUrl = `${protocol}://${window.location.host}/ws/chat`;
@@ -726,6 +746,7 @@ function setupWebSocket() {
     };
 }
 
+// API для удаления сообщения
 async function deleteMessageApi(id) {
     const token = localStorage.getItem('token');
     try {
@@ -748,6 +769,7 @@ async function deleteMessageApi(id) {
     }
 }
 
+// API для редактирования сообщения
 async function editMessageApi(id, text) {
     const token = localStorage.getItem('token');
     try {
@@ -770,6 +792,7 @@ async function editMessageApi(id, text) {
     }
 }
 
+// Отправка сообщения
 function sendMessage() {
     const text = messageInput.value.trim();
     if (!text && selectedFiles.length === 0) return;
@@ -792,6 +815,7 @@ function sendMessage() {
     }
 }
 
+// Форматирование времени
 function formatTime(date) {
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -801,10 +825,12 @@ function formatTime(date) {
     return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
 
+// Прокрутка вниз
 function scrollToBottom() {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
+// Показ уведомления о мьюте
 function showMutedNotice() {
     const notice = document.createElement('div');
     notice.className = 'muted-notice';
@@ -814,16 +840,20 @@ function showMutedNotice() {
     sendBtn.disabled = true;
 }
 
+// Показ модального окна входа
 function showLoginModal() {
     loginModal.classList.add('active');
 }
 
+// Выход из системы
 function logout() {
     localStorage.removeItem('token');
     window.location.href = '/';
 }
 
+// Настройка обработчиков событий
 function setupEventListeners() {
+        // --- Настройки чата: обработка ползунков ---
         const textSizeSlider = document.getElementById('textSizeSlider');
         const textSizeValue = document.getElementById('textSizeValue');
         const emojiSizeSlider = document.getElementById('emojiSizeSlider');
@@ -831,16 +861,20 @@ function setupEventListeners() {
         const saveSettingsBtn = document.getElementById('saveSettingsBtn');
         const resetSettingsBtn = document.getElementById('resetSettingsBtn');
 
+        // Функция применения настроек к чату
         function applyChatSettings() {
+            // Размер текста сообщений
             document.querySelectorAll('.message-text').forEach(el => {
                 el.style.fontSize = chatSettings.textSize + 'px';
             });
+            // Размер эмодзи (Twemoji)
             document.querySelectorAll('.message-text img.emoji, .message-text img.twemoji').forEach(el => {
                 el.style.width = chatSettings.emojiSize + 'px';
                 el.style.height = chatSettings.emojiSize + 'px';
             });
         }
 
+        // Синхронизация значений ползунков и отображения
         function syncSettingsUI() {
             if (textSizeSlider && textSizeValue) {
                 textSizeSlider.value = chatSettings.textSize;
@@ -852,6 +886,7 @@ function setupEventListeners() {
             }
         }
 
+        // Обработчики ползунков
         if (textSizeSlider && textSizeValue) {
             textSizeSlider.addEventListener('input', (e) => {
                 chatSettings.textSize = parseInt(e.target.value, 10);
