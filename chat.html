@@ -132,7 +132,7 @@
                         <span>Размер сообщений</span>
                         <span class="setting-value" id="textSizeValue">15px</span>
                     </div>
-                    <input type="range" class="setting-slider" id="textSizeSlider" min="12" max="20" value="15" step="1">
+                    <input type="range" class="setting-slider" id="textSizeSlider" min="12" max="24" value="15" step="1">
                     <div class="setting-description">Измените размер текста в сообщениях чата</div>
                 </div>
             </div>
@@ -144,8 +144,46 @@
                         <span>Размер эмодзи</span>
                         <span class="setting-value" id="emojiSizeValue">20px</span>
                     </div>
-                    <input type="range" class="setting-slider" id="emojiSizeSlider" min="16" max="32" value="20" step="2">
+                    <input type="range" class="setting-slider" id="emojiSizeSlider" min="16" max="48" value="20" step="2">
                     <div class="setting-description">Настройте размер отображаемых эмодзи</div>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h3><i class="fas fa-image"></i> Размер изображений</h3>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>Максимальный размер</span>
+                        <span class="setting-value" id="imageSizeValue">300px</span>
+                    </div>
+                    <input type="range" class="setting-slider" id="imageSizeSlider" min="150" max="600" value="300" step="50">
+                    <div class="setting-description">Максимальный размер изображений в чате</div>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h3><i class="fas fa-arrows-alt-v"></i> Отступы между сообщениями</h3>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>Расстояние</span>
+                        <span class="setting-value" id="messageSpacingValue">16px</span>
+                    </div>
+                    <input type="range" class="setting-slider" id="messageSpacingSlider" min="4" max="32" value="16" step="2">
+                    <div class="setting-description">Настройте интервал между сообщениями</div>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h3><i class="fas fa-compress"></i> Компактный режим</h3>
+                <div class="setting-item">
+                    <div class="setting-label">
+                        <span>Компактный вид</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="compactModeToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-description">Скрыть заголовки сообщений и уменьшить аватары</div>
                 </div>
             </div>
 
@@ -154,7 +192,7 @@
                     <i class="fas fa-undo"></i> Сбросить
                 </button>
                 <button class="btn-primary" id="saveSettingsBtn">
-                    <i class="fas fa-check"></i> Сохранить
+                    <i class="fas fa-save"></i> Сохранить
                 </button>
             </div>
         </div>

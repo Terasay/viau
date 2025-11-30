@@ -20,7 +20,10 @@ let currentScale = 1;
 
 let chatSettings = {
     textSize: 15,
-    emojiSize: 20
+    emojiSize: 20,
+    imageSize: 300,
+    messageSpacing: 16,
+    compactMode: false
 };
 
 const messagesContainer = document.getElementById('messagesContainer');
@@ -39,8 +42,25 @@ const attachBtn = document.getElementById('attachBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
 
+function loadSettings() {
+    const saved = localStorage.getItem('chatSettings');
+    if (saved) {
+        try {
+            chatSettings = JSON.parse(saved);
+        } catch (e) {
+            console.error('Ошибка загрузки настроек:', e);
+        }
+    }
+}
+
+function saveSettings() {
+    localStorage.setItem('chatSettings', JSON.stringify(chatSettings));
+    applyChatSettings();
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
+    loadSettings();
+    applyChatSettings();
 
     const emojiAliasMap = {
         ':smile:': '😄', ':laughing:': '😆', ':blush:': '😊', ':heart:': '❤️', ':thumbsup:': '👍',
@@ -823,17 +843,52 @@ function setupEventListeners() {
         const textSizeValue = document.getElementById('textSizeValue');
         const emojiSizeSlider = document.getElementById('emojiSizeSlider');
         const emojiSizeValue = document.getElementById('emojiSizeValue');
+        const imageSizeSlider = document.getElementById('imageSizeSlider');
+        const imageSizeValue = document.getElementById('imageSizeValue');
+        const messageSpacingSlider = document.getElementById('messageSpacingSlider');
+        const messageSpacingValue = document.getElementById('messageSpacingValue');
+        const compactModeToggle = document.getElementById('compactModeToggle');
         const saveSettingsBtn = document.getElementById('saveSettingsBtn');
         const resetSettingsBtn = document.getElementById('resetSettingsBtn');
 
         function applyChatSettings() {
-            document.querySelectorAll('.message-text').forEach(el => {
-                el.style.fontSize = chatSettings.textSize + 'px';
-            });
-            document.querySelectorAll('.message-text img.emoji, .message-text img.twemoji').forEach(el => {
-                el.style.width = chatSettings.emojiSize + 'px';
-                el.style.height = chatSettings.emojiSize + 'px';
-            });
+            const style = document.createElement('style');
+            style.id = 'dynamic-chat-settings';
+            const existing = document.getElementById('dynamic-chat-settings');
+            if (existing) existing.remove();
+            
+            style.textContent = `
+                .message-text {
+                    font-size: ${chatSettings.textSize}px !important;
+                }
+                .message-text img.emoji,
+                .message-text img.twemoji {
+                    width: ${chatSettings.emojiSize}px !important;
+                    height: ${chatSettings.emojiSize}px !important;
+                }
+                .message-text img:not(.emoji):not(.twemoji) {
+                    max-width: ${chatSettings.imageSize}px !important;
+                    max-height: ${chatSettings.imageSize}px !important;
+                }
+                .message {
+                    margin-bottom: ${chatSettings.messageSpacing}px !important;
+                }
+                ${chatSettings.compactMode ? `
+                    .message-header {
+                        display: none !important;
+                    }
+                    .message-avatar {
+                        width: 28px !important;
+                        height: 28px !important;
+                        font-size: 12px !important;
+                    }
+                    .message-text {
+                        padding: 4px 8px !important;
+                    }
+                ` : ''}
+            `;
+            
+            document.head.appendChild(style);
         }
 
         function syncSettingsUI() {
@@ -844,6 +899,17 @@ function setupEventListeners() {
             if (emojiSizeSlider && emojiSizeValue) {
                 emojiSizeSlider.value = chatSettings.emojiSize;
                 emojiSizeValue.textContent = chatSettings.emojiSize + 'px';
+            }
+            if (imageSizeSlider && imageSizeValue) {
+                imageSizeSlider.value = chatSettings.imageSize;
+                imageSizeValue.textContent = chatSettings.imageSize + 'px';
+            }
+            if (messageSpacingSlider && messageSpacingValue) {
+                messageSpacingSlider.value = chatSettings.messageSpacing;
+                messageSpacingValue.textContent = chatSettings.messageSpacing + 'px';
+            }
+            if (compactModeToggle) {
+                compactModeToggle.checked = chatSettings.compactMode;
             }
         }
 
@@ -861,19 +927,45 @@ function setupEventListeners() {
                 applyChatSettings();
             });
         }
-
-        if (resetSettingsBtn) {
-            resetSettingsBtn.addEventListener('click', () => {
-                chatSettings.textSize = 15;
-                chatSettings.emojiSize = 20;
-                syncSettingsUI();
+        if (imageSizeSlider && imageSizeValue) {
+            imageSizeSlider.addEventListener('input', (e) => {
+                chatSettings.imageSize = parseInt(e.target.value, 10);
+                imageSizeValue.textContent = chatSettings.imageSize + 'px';
+                applyChatSettings();
+            });
+        }
+        if (messageSpacingSlider && messageSpacingValue) {
+            messageSpacingSlider.addEventListener('input', (e) => {
+                chatSettings.messageSpacing = parseInt(e.target.value, 10);
+                messageSpacingValue.textContent = chatSettings.messageSpacing + 'px';
+                applyChatSettings();
+            });
+        }
+        if (compactModeToggle) {
+            compactModeToggle.addEventListener('change', (e) => {
+                chatSettings.compactMode = e.target.checked;
                 applyChatSettings();
             });
         }
 
+        if (resetSettingsBtn) {
+            resetSettingsBtn.addEventListener('click', () => {
+                chatSettings = {
+                    textSize: 15,
+                    emojiSize: 20,
+                    imageSize: 300,
+                    messageSpacing: 16,
+                    compactMode: false
+                };
+                syncSettingsUI();
+                applyChatSettings();
+            });
+        }
         if (saveSettingsBtn) {
             saveSettingsBtn.addEventListener('click', () => {
+                saveSettings();
                 settingsModal.classList.remove('active');
+                alert('Настройки сохранены!');
             });
         }
 
