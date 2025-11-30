@@ -638,6 +638,18 @@ async def converter_page():
 async def admin_page():
     return FileResponse('admin.html')
 
+@app.get('/chat')
+async def chat_page():
+    return FileResponse('chat.html')
+
+@app.get('/settings')
+async def settings_page():
+    return FileResponse('settings.html')
+
+@app.get('/map')
+async def map_page():
+	return FileResponse('map.html')
+
 @app.get('/admin/users')
 async def admin_users(request: Request):
 	token = request.headers.get('Authorization')
