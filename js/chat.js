@@ -297,9 +297,19 @@ async function checkAuth() {
 }
 
 async function getUserAvatar(username) {
-    if (userAvatarsCache[username]) {
-        return userAvatarsCache[username];
+    const cached = userAvatarsCache[username];
+    if (cached !== undefined && cached !== 'loading') {
+        return cached;
     }
+    
+    // Если загрузка уже идет, ждем немного и проверяем снова
+    if (cached === 'loading') {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        return getUserAvatar(username); // Рекурсивно проверяем
+    }
+    
+    // Начинаем загрузку
+    userAvatarsCache[username] = 'loading';
     
     try {
         const token = localStorage.getItem('token');
@@ -321,6 +331,7 @@ async function getUserAvatar(username) {
         console.error('Ошибка загрузки аватарки:', error);
     }
     
+    userAvatarsCache[username] = null;
     return null;
 }
 
@@ -403,9 +414,12 @@ function updateOnlineUsers(users) {
         avatar.className = 'message-avatar';
         (async () => {
             let avatarUrl = null;
-            if (userAvatarsCache[user.username]) {
-                avatarUrl = userAvatarsCache[user.username];
-            } else {
+            const cached = userAvatarsCache[user.username];
+            if (cached !== undefined && cached !== 'loading') {
+                avatarUrl = cached;
+            } else if (cached !== 'loading') {
+                // Только если еще не загружаем
+                userAvatarsCache[user.username] = 'loading';
                 try {
                     const res = await fetch(`/user/${encodeURIComponent(user.username)}/avatar`);
                     const data = await res.json();
@@ -415,6 +429,7 @@ function updateOnlineUsers(users) {
                     userAvatarsCache[user.username] = avatarUrl;
                 } catch (e) {
                     avatarUrl = null;
+                    userAvatarsCache[user.username] = null;
                 }
             }
             if (avatarUrl) {
@@ -482,13 +497,16 @@ function addMessage(messageData, save = true, prepend = false) {
     // Для НЕ группированных сообщений загружаем аватар
     if (!shouldGroup) {
         // Синхронно проверяем кеш
-        if (userAvatarsCache[messageData.username] !== undefined) {
+        if (userAvatarsCache[messageData.username] !== undefined && userAvatarsCache[messageData.username] !== 'loading') {
             const avatarUrl = userAvatarsCache[messageData.username];
             if (avatarUrl) {
                 avatar.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
             } else {
                 avatar.textContent = messageData.username[0].toUpperCase();
             }
+        } else if (userAvatarsCache[messageData.username] === 'loading') {
+            // Если загрузка уже идет - ставим инициал и ждем
+            avatar.textContent = messageData.username[0].toUpperCase();
         } else {
             // Если нет в кеше - ставим инициал и загружаем асинхронно ОДИН РАЗ
             avatar.textContent = messageData.username[0].toUpperCase();
@@ -504,9 +522,15 @@ function addMessage(messageData, save = true, prepend = false) {
                     const avatarUrl = (data.success && data.avatar) ? data.avatar : null;
                     userAvatarsCache[messageData.username] = avatarUrl;
                     
-                    if (avatarUrl && avatar.textContent === messageData.username[0].toUpperCase()) {
-                        avatar.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
-                    }
+                    // Обновляем ВСЕ аватары этого пользователя на странице
+                    document.querySelectorAll('.message-avatar').forEach(av => {
+                        if (av.textContent === messageData.username[0].toUpperCase() && 
+                            av.parentElement.querySelector('.message-username')?.textContent === messageData.username) {
+                            if (avatarUrl) {
+                                av.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
+                            }
+                        }
+                    });
                 } catch (e) {
                     userAvatarsCache[messageData.username] = null;
                 }
