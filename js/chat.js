@@ -452,10 +452,12 @@ function addMessage(messageData, save = true, prepend = false) {
             
             if (lastUsername === messageData.username && timeDiff < 15) {
                 shouldGroup = true;
-                const lastContent = lastMessage.querySelector('.message-content');
+                const lastContent = lastMessage.querySelector('.message-content');  // ← Правильное место объявления
                 if (lastContent) {
                     const text = document.createElement('div');
                     text.className = 'message-text grouped-text';
+                    text.dataset.messageId = messageData.id;
+                    
                     if (/<img|<a/.test(messageData.text)) {
                         text.innerHTML = messageData.text;
                         const imgs = text.querySelectorAll('img');
@@ -469,23 +471,42 @@ function addMessage(messageData, save = true, prepend = false) {
                         text.textContent = messageData.text;
                     }
                     
-                    lastContent.appendChild(text);
+                    lastContent.appendChild(text);  // ← Теперь lastContent доступна
                     
                     const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
                     if (canEditOrDelete && messageData.id) {
                         const actions = document.createElement('div');
+                        actions.className = 'message-actions';
 
                         const reactionBtn = document.createElement('button');
                         reactionBtn.innerHTML = '<i class="far fa-smile"></i>';
                         reactionBtn.title = 'Добавить реакцию';
                         reactionBtn.onclick = (e) => {
                             e.stopPropagation();
-                            showReactionPicker(message, messageData);
+                            showReactionPicker(lastMessage, messageData);  // ← Используем lastMessage
                         };
                         actions.appendChild(reactionBtn);
 
-
+                        const replyBtn = document.createElement('button');
+                        replyBtn.innerHTML = '<i class="fas fa-reply"></i>';
+                        replyBtn.title = 'Ответить';
+                        replyBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            setReplyTo(messageData);
+                        };
+                        actions.appendChild(replyBtn);
                         
+                        if (messageData.username === currentUser.username) {
+                            const editBtn = document.createElement('button');
+                            editBtn.innerHTML = '<i class="fas fa-pen"></i>';
+                            editBtn.title = 'Редактировать';
+                            editBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                showEditMessageInputForText(text, messageData);
+                            };
+                            actions.appendChild(editBtn);
+                        }
+
                         const deleteBtn = document.createElement('button');
                         deleteBtn.className = 'danger';
                         deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
@@ -498,44 +519,28 @@ function addMessage(messageData, save = true, prepend = false) {
                         };
                         actions.appendChild(deleteBtn);
 
-
-
-                        const replyBtn = document.createElement('button');
-                        replyBtn.innerHTML = '<i class="fas fa-reply"></i>';
-                        replyBtn.title = 'Ответить';
-                        replyBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            setReplyTo(messageData);
-                        };
-                        actions.appendChild(replyBtn);
-
-
-                        
-                        if (messageData.username === currentUser.username) {
-                            const editBtn = document.createElement('button');
-                            editBtn.innerHTML = '<i class="fas fa-pen"></i>';
-                            editBtn.title = 'Редактировать';
-                            editBtn.onclick = (e) => {
-                                e.stopPropagation();
-                                showEditMessageInput(message, messageData, text);
-                            };
-                            actions.appendChild(editBtn);
-                        }
-
                         const moreBtn = document.createElement('button');
                         moreBtn.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
                         moreBtn.title = 'Ещё';
                         moreBtn.onclick = (e) => {
                             e.stopPropagation();
-                            showContextMenu(e, message, messageData);
+                            showContextMenu(e, text, messageData);
                         };
                         actions.appendChild(moreBtn);
                         
-                        content.appendChild(actions);
-
-                        message.addEventListener('contextmenu', (e) => {
+                        text.style.position = 'relative';
+                        text.appendChild(actions);
+                        
+                        text.addEventListener('mouseenter', () => {
+                            actions.style.display = 'flex';
+                        });
+                        text.addEventListener('mouseleave', () => {
+                            actions.style.display = 'none';
+                        });
+                        
+                        text.addEventListener('contextmenu', (e) => {
                             e.preventDefault();
-                            showContextMenu(e, message, messageData);
+                            showContextMenu(e, text, messageData);
                         });
                     }
                     
