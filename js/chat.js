@@ -439,6 +439,7 @@ function updateOnlineUsers(users) {
 }
 
 function addMessage(messageData, save = true, prepend = false) {
+    console.log('addMessage called with:', messageData);
     // При prepend не проверяем группировку - просто добавляем сообщение
     if (!prepend) {
         const lastMessage = messagesContainer.lastElementChild;
@@ -488,7 +489,6 @@ function addMessage(messageData, save = true, prepend = false) {
                     }
                     
                     groupedMessage.appendChild(text);
-                    lastContent.appendChild(groupedMessage);
                     
                     const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
                     if (canEditOrDelete && messageData.id) {
@@ -561,6 +561,8 @@ function addMessage(messageData, save = true, prepend = false) {
                             showContextMenu(e, groupedMessage, messageData);
                         });
                     }
+                    
+                    lastContent.appendChild(groupedMessage);
                     
                     lastMessage.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
                     
@@ -874,7 +876,9 @@ function setupWebSocket() {
     ws.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
+            console.log('WebSocket message received:', data);
             if (data.type === 'message' && data.message) {
+                console.log('Adding message:', data.message);
                 addMessage(data.message, false);
             } else if (data.type === 'online_users' && Array.isArray(data.users)) {
                 updateOnlineUsers(data.users);
@@ -959,6 +963,7 @@ function sendMessage() {
         if (selectedFiles.length > 0) {
             uploadAllFiles(selectedFiles, text, token);
         } else {
+            console.log('Sending message via WebSocket:', messagePayload);
             ws.send(JSON.stringify(messagePayload));
         }
         
@@ -1438,9 +1443,31 @@ function showContextMenu(e, messageElement, messageData) {
         </div>
     `;
     
-    contextMenu.style.left = e.clientX + 'px';
-    contextMenu.style.top = e.clientY + 'px';
+    // Сначала покажем меню для измерения размеров
     contextMenu.style.display = 'block';
+    contextMenu.style.left = '0';
+    contextMenu.style.top = '0';
+    
+    const menuWidth = contextMenu.offsetWidth;
+    const menuHeight = contextMenu.offsetHeight;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    let left = e.clientX;
+    let top = e.clientY;
+    
+    // Проверяем, не вылезет ли меню за правую границу
+    if (left + menuWidth > windowWidth) {
+        left = windowWidth - menuWidth - 10;
+    }
+    
+    // Проверяем, не вылезет ли меню за нижнюю границу
+    if (top + menuHeight > windowHeight) {
+        top = windowHeight - menuHeight - 10;
+    }
+    
+    contextMenu.style.left = left + 'px';
+    contextMenu.style.top = top + 'px';
     
     contextMenu.querySelectorAll('.context-menu-item').forEach(item => {
         item.onclick = async () => {

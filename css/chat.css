@@ -1234,16 +1234,17 @@ emoji-picker {
 .grouped-message-item {
     position: relative;
     margin-top: 4px;
-    padding: 4px 0;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: background 0.15s ease;
 }
 
 .grouped-message-item:hover {
-    background: rgba(0, 0, 0, 0.02);
-    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.03);
 }
 
 body.dark-theme .grouped-message-item:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .message-group {
