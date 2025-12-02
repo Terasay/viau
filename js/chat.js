@@ -302,13 +302,11 @@ async function getUserAvatar(username) {
         return cached;
     }
     
-    // Если загрузка уже идет, ждем немного и проверяем снова
     if (cached === 'loading') {
         await new Promise(resolve => setTimeout(resolve, 100));
-        return getUserAvatar(username); // Рекурсивно проверяем
+        return getUserAvatar(username);
     }
     
-    // Начинаем загрузку
     userAvatarsCache[username] = 'loading';
     
     try {
@@ -412,20 +410,17 @@ function updateOnlineUsers(users) {
         userItem.className = 'user-item';
         const avatar = document.createElement('div');
         avatar.className = 'message-avatar';
-        avatar.dataset.username = user.username; // Для идентификации
+        avatar.dataset.username = user.username;
         
-        // Сначала ставим инициал
         avatar.textContent = user.username[0].toUpperCase();
         
-        // Проверяем кеш и загружаем если нужно
         const cached = userAvatarsCache[user.username];
         if (cached !== undefined && cached !== 'loading') {
-            // Есть в кеше - используем сразу
+
             if (cached) {
                 avatar.innerHTML = `<img src="${cached}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
             }
         } else if (cached === undefined) {
-            // Не в кеше и не загружается - начинаем загрузку
             userAvatarsCache[user.username] = 'loading';
             (async () => {
                 try {
@@ -434,7 +429,6 @@ function updateOnlineUsers(users) {
                     const avatarUrl = (data.success && data.avatar) ? data.avatar : null;
                     userAvatarsCache[user.username] = avatarUrl;
                     
-                    // Обновляем ВСЕ аватары этого пользователя (в списке онлайн и сообщениях)
                     if (avatarUrl) {
                         document.querySelectorAll('.message-avatar').forEach(av => {
                             if (av.dataset.username === user.username || 
@@ -449,7 +443,6 @@ function updateOnlineUsers(users) {
                 }
             })();
         }
-        // Если cached === 'loading', просто оставляем инициал - обновится когда загрузится
         
         const name = document.createElement('div');
         name.className = 'user-name';
@@ -467,11 +460,9 @@ function updateOnlineUsers(users) {
 }
 
 function addMessage(messageData, save = true, prepend = false) {
-    // Проверяем группировку только при append (новые сообщения)
     let shouldGroup = false;
     
     if (!prepend) {
-        // При append (новое сообщение) проверяем последнее
         const lastMessage = messagesContainer.lastElementChild;
         
         if (lastMessage && lastMessage.classList.contains('message')) {
@@ -485,9 +476,7 @@ function addMessage(messageData, save = true, prepend = false) {
             }
         }
     }
-    // При prepend (загрузка истории) НЕ группируем - группировка будет при следующей загрузке
-    
-    // Создаем сообщение
+
     const message = document.createElement('div');
     message.className = 'message';
     
@@ -503,13 +492,11 @@ function addMessage(messageData, save = true, prepend = false) {
     message.dataset.username = messageData.username;
     message.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
     
-    // Создаем аватар ТОЛЬКО для НЕ группированных сообщений
     if (!shouldGroup) {
         const avatar = document.createElement('div');
         avatar.className = 'message-avatar';
-        avatar.dataset.username = messageData.username; // Для идентификации при обновлении
+        avatar.dataset.username = messageData.username;
         
-        // Синхронно проверяем кеш
         if (userAvatarsCache[messageData.username] !== undefined && userAvatarsCache[messageData.username] !== 'loading') {
             const avatarUrl = userAvatarsCache[messageData.username];
             if (avatarUrl) {
@@ -518,16 +505,12 @@ function addMessage(messageData, save = true, prepend = false) {
                 avatar.textContent = messageData.username[0].toUpperCase();
             }
         } else if (userAvatarsCache[messageData.username] === 'loading') {
-            // Если загрузка уже идет - ставим инициал и ждем
             avatar.textContent = messageData.username[0].toUpperCase();
         } else {
-            // Если нет в кеше - ставим инициал и загружаем асинхронно ОДИН РАЗ
             avatar.textContent = messageData.username[0].toUpperCase();
             
-            // Отмечаем что загрузка началась
             userAvatarsCache[messageData.username] = 'loading';
             
-            // Загружаем аватар асинхронно
             (async () => {
                 try {
                     const res = await fetch(`/user/${encodeURIComponent(messageData.username)}/avatar`);
@@ -535,7 +518,6 @@ function addMessage(messageData, save = true, prepend = false) {
                     const avatarUrl = (data.success && data.avatar) ? data.avatar : null;
                     userAvatarsCache[messageData.username] = avatarUrl;
                     
-                    // Обновляем ВСЕ аватары этого пользователя на странице
                     if (avatarUrl) {
                         document.querySelectorAll('.message-avatar').forEach(av => {
                             if (av.dataset.username === messageData.username) {
@@ -555,7 +537,6 @@ function addMessage(messageData, save = true, prepend = false) {
     const content = document.createElement('div');
     content.className = 'message-content';
     
-    // Заголовок только для НЕ группированных сообщений
     if (!shouldGroup) {
         const header = document.createElement('div');
         header.className = 'message-header';
@@ -577,7 +558,6 @@ function addMessage(messageData, save = true, prepend = false) {
         content.appendChild(header);
     }
     
-    // Добавляем блок ответа, если есть
     if (messageData.replyTo) {
         const replyBlock = document.createElement('div');
         replyBlock.className = 'message-reply';
@@ -691,7 +671,6 @@ function addMessage(messageData, save = true, prepend = false) {
     }
 }
 
-// Вспомогательная функция для редактирования текста в сгруппированном сообщении
 function showEditMessageInput(messageElem, msgData, textElem) {
     textElem.style.display = 'none';
     const content = messageElem.querySelector('.message-content');
@@ -836,7 +815,6 @@ function sendMessage() {
     if (ws && ws.readyState === WebSocket.OPEN) {
         let messagePayload = { token, text };
         
-        // Добавляем информацию об ответе как объект
         if (replyToMessage) {
             messagePayload.replyTo = {
                 id: replyToMessage.id,
@@ -856,7 +834,6 @@ function sendMessage() {
         updateCharCounter();
         clearFilePreview();
         
-        // Сбрасываем ответ
         replyToMessage = null;
         replyPreview.classList.remove('active');
     } else {
@@ -1295,7 +1272,6 @@ replyPreview.querySelector('.reply-close').addEventListener('click', () => {
     replyPreview.classList.remove('active');
 });
 
-// Функция установки ответа
 function setReplyTo(messageData) {
     replyToMessage = messageData;
     replyPreview.querySelector('.reply-username').textContent = messageData.username;
@@ -1304,7 +1280,6 @@ function setReplyTo(messageData) {
     messageInput.focus();
 }
 
-// Контекстное меню
 const contextMenu = document.createElement('div');
 contextMenu.className = 'context-menu';
 document.body.appendChild(contextMenu);
@@ -1328,7 +1303,6 @@ function showContextMenu(e, messageElement, messageData) {
         </div>
     `;
     
-    // Сначала покажем меню для измерения размеров
     contextMenu.style.display = 'block';
     contextMenu.style.left = '0';
     contextMenu.style.top = '0';
@@ -1341,12 +1315,10 @@ function showContextMenu(e, messageElement, messageData) {
     let left = e.clientX;
     let top = e.clientY;
     
-    // Проверяем, не вылезет ли меню за правую границу
     if (left + menuWidth > windowWidth) {
         left = windowWidth - menuWidth - 10;
     }
     
-    // Проверяем, не вылезет ли меню за нижнюю границу
     if (top + menuHeight > windowHeight) {
         top = windowHeight - menuHeight - 10;
     }
@@ -1378,7 +1350,6 @@ document.addEventListener('click', () => {
     contextMenu.style.display = 'none';
 });
 
-// Пикер реакций
 const reactionPicker = document.createElement('div');
 reactionPicker.className = 'reaction-picker';
 const popularEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '🔥', '⭐', '✅', '❌'];
@@ -1410,7 +1381,6 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Добавление реакции (пока локально, без сервера)
 function addReaction(messageId, emoji) {
     const messageEl = document.querySelector(`[data-id="${messageId}"]`);
     if (!messageEl) return;
@@ -1422,7 +1392,6 @@ function addReaction(messageId, emoji) {
         messageEl.querySelector('.message-content').appendChild(reactionsContainer);
     }
     
-    // Проверяем, есть ли уже такая реакция
     let reactionEl = Array.from(reactionsContainer.children).find(
         r => r.querySelector('.reaction-emoji').textContent === emoji
     );

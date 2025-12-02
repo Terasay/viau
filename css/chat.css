@@ -1221,23 +1221,22 @@ emoji-picker {
     position: relative;
 }
 
-/* Сгруппированные сообщения - независимые элементы */
 .message.grouped {
     margin-top: 2px;
     margin-bottom: 2px;
 }
 
 .message.grouped .message-header {
-    display: none; /* Скрываем заголовок у группированных */
+    display: none;
 }
 
 .message.grouped .message-content {
-    margin-left: 48px; /* Отступ слева чтобы выравнять с обычными сообщениями */
+    margin-left: 48px;
 }
 
 .message.grouped.own .message-content {
     margin-left: 0;
-    margin-right: 48px; /* Отступ справа для своих сообщений */
+    margin-right: 48px;
 }
 
 .toggle-switch {

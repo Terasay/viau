@@ -5,7 +5,7 @@ import uuid
 import os
 from datetime import datetime
 
-router = APIRouter(prefix='/api/chat', tags=['chat'])  # Было: prefix='/chat'
+router = APIRouter(prefix='/api/chat', tags=['chat'])
 
 DB_FILE = 'users.db'
 UPLOAD_DIR = 'uploads'
@@ -86,7 +86,6 @@ async def get_chat_messages(before: int = None, limit: int = 50):
     messages = []
     for row in reversed(rows):
         try:
-            # Пытаемся распарсить как JSON
             text_data = json.loads(row[3])
             if isinstance(text_data, dict):
                 message = {
@@ -99,7 +98,6 @@ async def get_chat_messages(before: int = None, limit: int = 50):
                 if 'replyTo' in text_data and text_data['replyTo']:
                     message['replyTo'] = text_data['replyTo']
             else:
-                # JSON не объект, используем как текст
                 message = {
                     'id': row[0],
                     'username': row[1],
@@ -108,7 +106,7 @@ async def get_chat_messages(before: int = None, limit: int = 50):
                     'timestamp': row[4]
                 }
         except (json.JSONDecodeError, TypeError, ValueError):
-            # Если не JSON, то обычный текст
+
             message = {
                 'id': row[0],
                 'username': row[1],
@@ -140,7 +138,6 @@ async def send_chat_message(request: Request):
     if not text:
         return JSONResponse({'success': False, 'error': 'Empty message'}, status_code=400)
     
-    # Поддержка ответов
     reply_to = data.get('replyTo')
     message_data = {
         'text': text,
