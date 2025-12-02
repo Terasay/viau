@@ -491,6 +491,7 @@ body.dark-theme .chat-header {
 .messages-container {
     flex: 1;
     overflow-y: auto;
+    scroll-behavior: smooth;
     padding: 24px;
     display: flex;
     flex-direction: column;
@@ -501,16 +502,295 @@ body.dark-theme .chat-header {
     display: flex;
     gap: 12px;
     animation: slideIn 0.3s ease;
+    transition: all 0.2s ease;
     padding: 4px 0;
     margin-bottom: 16px;
 }
 
 .message:hover {
     background: rgba(0, 0, 0, 0.02);
+    transform: translateX(2px);
 }
 
 body.dark-theme .message:hover {
     background: rgba(255, 255, 255, 0.02);
+}
+
+.message-actions {
+    display: none;
+    position: absolute;
+    top: -12px;
+    right: 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    padding: 4px;
+    gap: 2px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 10;
+}
+
+.message:hover .message-actions {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.message.scrolling .message-actions {
+    display: none !important;
+}
+
+.message-actions button {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    padding: 0;
+}
+
+.message-actions button:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    transform: scale(1.1);
+}
+
+.message-actions button.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.context-menu {
+    position: fixed;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-xl);
+    padding: 6px;
+    min-width: 180px;
+    z-index: 9999;
+    display: none;
+    animation: contextMenuAppear 0.15s ease;
+}
+
+@keyframes contextMenuAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.context-menu-item {
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-primary);
+    transition: all 0.1s ease;
+}
+
+.context-menu-item:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.context-menu-item.danger:hover {
+    background: var(--danger);
+}
+
+.context-menu-item i {
+    width: 16px;
+    font-size: 14px;
+}
+
+.context-menu-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+}
+
+.reply-preview {
+    background: var(--bg-tertiary);
+    border-left: 3px solid var(--primary);
+    padding: 8px 12px;
+    margin: 8px 20px 0 20px;
+    border-radius: 6px;
+    display: none;
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reply-preview.active {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reply-info {
+    flex: 1;
+}
+
+.reply-username {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 2px;
+}
+
+.reply-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 400px;
+}
+
+.reply-close {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.reply-close:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.message-reply {
+    background: var(--bg-tertiary);
+    border-left: 3px solid var(--primary);
+    padding: 6px 10px;
+    margin-bottom: 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.message-reply:hover {
+    background: var(--bg-primary);
+}
+
+.message-reply-username {
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 2px;
+}
+
+.message-reply-text {
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.message-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.reaction {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.reaction:hover {
+    background: var(--bg-primary);
+    transform: scale(1.05);
+}
+
+.reaction.active {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--primary);
+}
+
+.reaction-emoji {
+    font-size: 16px;
+}
+
+.reaction-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.reaction-picker {
+    position: absolute;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-xl);
+    padding: 8px;
+    display: none;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-width: 250px;
+    z-index: 999;
+    animation: contextMenuAppear 0.15s ease;
+}
+
+.reaction-picker.active {
+    display: flex;
+}
+
+.reaction-picker-emoji {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+.reaction-picker-emoji:hover {
+    background: var(--bg-tertiary);
+    transform: scale(1.2);
 }
 
 @keyframes slideIn {
@@ -540,6 +820,7 @@ body.dark-theme .message:hover {
 
 .message-content {
     flex: 1;
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 6px;

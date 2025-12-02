@@ -471,25 +471,47 @@ function addMessage(messageData, save = true, prepend = false) {
                     
                     const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
                     if (canEditOrDelete && messageData.id) {
-                        text.dataset.messageId = messageData.id;
+                        // Создаем панель действий
                         const actions = document.createElement('div');
                         actions.className = 'message-actions';
-                        actions.style.display = 'none';
-                        actions.style.marginTop = '2px';
-                        actions.style.fontSize = '11px';
-                        actions.style.gap = '8px';
-                        actions.style.alignItems = 'center';
-                        actions.style.opacity = '0.8';
                         
+                        // Кнопка реакции
+                        const reactionBtn = document.createElement('button');
+                        reactionBtn.innerHTML = '<i class="far fa-smile"></i>';
+                        reactionBtn.title = 'Добавить реакцию';
+                        reactionBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            showReactionPicker(message, messageData);
+                        };
+                        actions.appendChild(reactionBtn);
+                        
+                        // Кнопка ответа
+                        const replyBtn = document.createElement('button');
+                        replyBtn.innerHTML = '<i class="fas fa-reply"></i>';
+                        replyBtn.title = 'Ответить';
+                        replyBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            setReplyTo(messageData);
+                        };
+                        actions.appendChild(replyBtn);
+                        
+                        // Кнопка редактирования (только для своих)
+                        if (messageData.username === currentUser.username) {
+                            const editBtn = document.createElement('button');
+                            editBtn.innerHTML = '<i class="fas fa-pen"></i>';
+                            editBtn.title = 'Редактировать';
+                            editBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                showEditMessageInput(message, messageData, text);
+                            };
+                            actions.appendChild(editBtn);
+                        }
+                        
+                        // Кнопка удаления
                         const deleteBtn = document.createElement('button');
-                        deleteBtn.textContent = 'Удалить';
-                        deleteBtn.className = 'delete-btn';
-                        deleteBtn.style.color = '#ff6b6b';
-                        deleteBtn.style.background = 'none';
-                        deleteBtn.style.border = 'none';
-                        deleteBtn.style.cursor = 'pointer';
-                        deleteBtn.style.fontSize = '11px';
-                        deleteBtn.style.padding = '0 6px';
+                        deleteBtn.className = 'danger';
+                        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                        deleteBtn.title = 'Удалить';
                         deleteBtn.onclick = async (e) => {
                             e.stopPropagation();
                             if (confirm('Удалить сообщение?')) {
@@ -498,36 +520,17 @@ function addMessage(messageData, save = true, prepend = false) {
                         };
                         actions.appendChild(deleteBtn);
                         
-                        const editBtn = document.createElement('button');
-                        editBtn.textContent = 'Редактировать';
-                        editBtn.className = 'edit-btn';
-                        editBtn.style.color = '';
-                        editBtn.style.background = 'none';
-                        editBtn.style.border = 'none';
-                        editBtn.style.cursor = 'pointer';
-                        editBtn.style.fontSize = '11px';
-                        editBtn.style.padding = '0 6px';
-                        editBtn.onclick = (e) => {
+                        // Кнопка доп. меню
+                        const moreBtn = document.createElement('button');
+                        moreBtn.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
+                        moreBtn.title = 'Ещё';
+                        moreBtn.onclick = (e) => {
                             e.stopPropagation();
-                            showEditMessageInputForText(text, messageData);
+                            showContextMenu(e, message, messageData);
                         };
-                        actions.appendChild(editBtn);
+                        actions.appendChild(moreBtn);
                         
-                        const textWrapper = document.createElement('div');
-                        textWrapper.style.position = 'relative';
-                        textWrapper.appendChild(text);
-                        textWrapper.appendChild(actions);
-                        
-                        textWrapper.addEventListener('mouseenter', () => {
-                            actions.style.display = 'flex';
-                        });
-                        textWrapper.addEventListener('mouseleave', () => {
-                            actions.style.display = 'none';
-                        });
-                        
-                        lastContent.appendChild(textWrapper);
-                    } else {
-                        lastContent.appendChild(text);
+                        content.appendChild(actions);
                     }
                     
                     lastMessage.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
@@ -875,16 +878,32 @@ function sendMessage() {
         alert('Вы не можете отправлять сообщения, так как вы замучены');
         return;
     }
+    
     const token = localStorage.getItem('token');
     if (ws && ws.readyState === WebSocket.OPEN) {
-        if (selectedFiles.length > 0) {
-            uploadAllFiles(selectedFiles, text, token);
-        } else {
-            ws.send(JSON.stringify({ token, text }));
+        let messageText = text;
+        
+        // Добавляем информацию об ответе
+        if (replyToMessage) {
+            messageText = `<div class="message-reply" data-reply-to="${replyToMessage.id}">
+                <div class="message-reply-username">${replyToMessage.username}</div>
+                <div class="message-reply-text">${replyToMessage.text.replace(/<[^>]+>/g, '').substring(0, 100)}</div>
+            </div>${messageText}`;
         }
+        
+        if (selectedFiles.length > 0) {
+            uploadAllFiles(selectedFiles, messageText, token);
+        } else {
+            ws.send(JSON.stringify({ token, text: messageText }));
+        }
+        
         messageInput.value = '';
         updateCharCounter();
         clearFilePreview();
+        
+        // Сбрасываем ответ
+        replyToMessage = null;
+        replyPreview.classList.remove('active');
     } else {
         alert('Нет соединения с сервером');
     }
@@ -1290,4 +1309,159 @@ function zoomImage(factor, reset = false) {
         if (currentScale > 5) currentScale = 5;
     }
     modalImg.style.transform = `scale(${currentScale})`;
+}
+
+let scrollTimeout;
+messagesContainer.addEventListener('scroll', () => {
+    const messages = messagesContainer.querySelectorAll('.message');
+    messages.forEach(msg => msg.classList.add('scrolling'));
+    
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+        messages.forEach(msg => msg.classList.remove('scrolling'));
+    }, 150);
+});
+
+let replyToMessage = null;
+const replyPreview = document.createElement('div');
+replyPreview.className = 'reply-preview';
+replyPreview.innerHTML = `
+    <div class="reply-info">
+        <div class="reply-username"></div>
+        <div class="reply-text"></div>
+    </div>
+    <button class="reply-close">×</button>
+`;
+const inputArea = document.querySelector('.message-input-area');
+inputArea.insertBefore(replyPreview, inputArea.firstChild);
+
+replyPreview.querySelector('.reply-close').addEventListener('click', () => {
+    replyToMessage = null;
+    replyPreview.classList.remove('active');
+});
+
+// Функция установки ответа
+function setReplyTo(messageData) {
+    replyToMessage = messageData;
+    replyPreview.querySelector('.reply-username').textContent = messageData.username;
+    replyPreview.querySelector('.reply-text').textContent = messageData.text.replace(/<[^>]+>/g, '');
+    replyPreview.classList.add('active');
+    messageInput.focus();
+}
+
+// Контекстное меню
+const contextMenu = document.createElement('div');
+contextMenu.className = 'context-menu';
+document.body.appendChild(contextMenu);
+
+function showContextMenu(e, messageElement, messageData) {
+    e.preventDefault();
+    
+    contextMenu.innerHTML = `
+        <div class="context-menu-item" data-action="copy">
+            <i class="fas fa-copy"></i>
+            <span>Копировать текст</span>
+        </div>
+        <div class="context-menu-item" data-action="copyId">
+            <i class="fas fa-hashtag"></i>
+            <span>Копировать ID</span>
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item danger" data-action="delete">
+            <i class="fas fa-trash"></i>
+            <span>Удалить сообщение</span>
+        </div>
+    `;
+    
+    contextMenu.style.left = e.clientX + 'px';
+    contextMenu.style.top = e.clientY + 'px';
+    contextMenu.style.display = 'block';
+    
+    contextMenu.querySelectorAll('.context-menu-item').forEach(item => {
+        item.onclick = async () => {
+            const action = item.dataset.action;
+            
+            if (action === 'copy') {
+                const text = messageData.text.replace(/<[^>]+>/g, '');
+                navigator.clipboard.writeText(text);
+            } else if (action === 'copyId') {
+                navigator.clipboard.writeText(messageData.id);
+            } else if (action === 'delete') {
+                if (confirm('Удалить сообщение?')) {
+                    await deleteMessageApi(messageData.id);
+                }
+            }
+            
+            contextMenu.style.display = 'none';
+        };
+    });
+}
+
+document.addEventListener('click', () => {
+    contextMenu.style.display = 'none';
+});
+
+// Пикер реакций
+const reactionPicker = document.createElement('div');
+reactionPicker.className = 'reaction-picker';
+const popularEmojis = ['👍', '❤️', '😂', '😮', '😢', '😡', '🔥', '⭐', '✅', '❌'];
+popularEmojis.forEach(emoji => {
+    const emojiEl = document.createElement('div');
+    emojiEl.className = 'reaction-picker-emoji';
+    emojiEl.textContent = emoji;
+    reactionPicker.appendChild(emojiEl);
+});
+document.body.appendChild(reactionPicker);
+
+function showReactionPicker(messageElement, messageData) {
+    const rect = messageElement.getBoundingClientRect();
+    reactionPicker.style.left = rect.left + 'px';
+    reactionPicker.style.top = (rect.top - 50) + 'px';
+    reactionPicker.classList.add('active');
+    
+    reactionPicker.querySelectorAll('.reaction-picker-emoji').forEach(emojiEl => {
+        emojiEl.onclick = () => {
+            addReaction(messageData.id, emojiEl.textContent);
+            reactionPicker.classList.remove('active');
+        };
+    });
+}
+
+document.addEventListener('click', (e) => {
+    if (!reactionPicker.contains(e.target)) {
+        reactionPicker.classList.remove('active');
+    }
+});
+
+// Добавление реакции (пока локально, без сервера)
+function addReaction(messageId, emoji) {
+    const messageEl = document.querySelector(`[data-id="${messageId}"]`);
+    if (!messageEl) return;
+    
+    let reactionsContainer = messageEl.querySelector('.message-reactions');
+    if (!reactionsContainer) {
+        reactionsContainer = document.createElement('div');
+        reactionsContainer.className = 'message-reactions';
+        messageEl.querySelector('.message-content').appendChild(reactionsContainer);
+    }
+    
+    // Проверяем, есть ли уже такая реакция
+    let reactionEl = Array.from(reactionsContainer.children).find(
+        r => r.querySelector('.reaction-emoji').textContent === emoji
+    );
+    
+    if (reactionEl) {
+        const countEl = reactionEl.querySelector('.reaction-count');
+        const count = parseInt(countEl.textContent) + 1;
+        countEl.textContent = count;
+        reactionEl.classList.add('active');
+    } else {
+        reactionEl = document.createElement('div');
+        reactionEl.className = 'reaction active';
+        reactionEl.innerHTML = `
+            <span class="reaction-emoji">${emoji}</span>
+            <span class="reaction-count">1</span>
+        `;
+        reactionsContainer.appendChild(reactionEl);
+    }
 }
