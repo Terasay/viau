@@ -2,10 +2,32 @@ let currentUser = null;
 let hasApplication = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
+    initTheme();
     await checkAuth();
     setupEventListeners();
     setupCharCounters();
 });
+
+function initTheme() {
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.querySelector('#themeToggle i').className = 'fas fa-sun';
+    }
+}
+
+function toggleTheme() {
+    const isDark = document.body.classList.toggle('dark-mode');
+    const themeIcon = document.querySelector('#themeToggle i');
+    
+    if (isDark) {
+        themeIcon.className = 'fas fa-sun';
+        localStorage.setItem('theme', 'dark');
+    } else {
+        themeIcon.className = 'fas fa-moon';
+        localStorage.setItem('theme', 'light');
+    }
+}
 
 async function checkAuth() {
     const token = localStorage.getItem('token');
@@ -147,6 +169,9 @@ function setupEventListeners() {
     document.getElementById('backBtn').addEventListener('click', () => {
         window.location.href = '/';
     });
+    
+    // Переключатель темы
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
     
     // Кнопка отправки формы
     document.getElementById('submitBtn').addEventListener('click', handleSubmit);

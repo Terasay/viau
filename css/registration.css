@@ -47,6 +47,28 @@ body.dark-theme {
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
 }
 
+body.dark-mode {
+    --primary: #818cf8;
+    --primary-dark: #6366f1;
+    --secondary: #a78bfa;
+    --success: #34d399;
+    --danger: #f87171;
+    
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #64748b;
+    
+    --border: #334155;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -135,6 +157,10 @@ body.dark-theme .registration-header {
     background: rgba(15, 23, 42, 0.8);
 }
 
+body.dark-mode .registration-header {
+    background: rgba(15, 23, 42, 0.8);
+}
+
 @keyframes slideDown {
     from {
         opacity: 0;
@@ -216,6 +242,28 @@ body.dark-theme .registration-header {
 .user-info i {
     color: var(--primary);
     font-size: 16px;
+}
+
+.theme-toggle {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    background: var(--bg-tertiary);
+    border: none;
+    color: var(--text-primary);
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
 }
 
 .registration-content {
