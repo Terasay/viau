@@ -27,7 +27,13 @@ async function checkAuth() {
         }
         
         const data = await response.json();
-        currentUser = data.user;
+        
+        if (!data.logged_in) {
+            showLoginModal();
+            return;
+        }
+        
+        currentUser = data;
         
         // Обновляем информацию о пользователе
         document.querySelector('#userInfo span').textContent = currentUser.username;
