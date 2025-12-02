@@ -469,49 +469,29 @@ function addMessage(messageData, save = true, prepend = false) {
                         text.textContent = messageData.text;
                     }
                     
+                    lastContent.appendChild(text);
+                    
                     const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
                     if (canEditOrDelete && messageData.id) {
-                        // Создаем панель действий
+                        // Создаем панель действий для сгруппированного сообщения
                         const actions = document.createElement('div');
                         actions.className = 'message-actions';
+                        actions.style.display = 'none';
+                        actions.style.marginTop = '2px';
+                        actions.style.fontSize = '11px';
+                        actions.style.gap = '8px';
+                        actions.style.alignItems = 'center';
+                        actions.style.opacity = '0.8';
                         
-                        // Кнопка реакции
-                        const reactionBtn = document.createElement('button');
-                        reactionBtn.innerHTML = '<i class="far fa-smile"></i>';
-                        reactionBtn.title = 'Добавить реакцию';
-                        reactionBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            showReactionPicker(message, messageData);
-                        };
-                        actions.appendChild(reactionBtn);
-                        
-                        // Кнопка ответа
-                        const replyBtn = document.createElement('button');
-                        replyBtn.innerHTML = '<i class="fas fa-reply"></i>';
-                        replyBtn.title = 'Ответить';
-                        replyBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            setReplyTo(messageData);
-                        };
-                        actions.appendChild(replyBtn);
-                        
-                        // Кнопка редактирования (только для своих)
-                        if (messageData.username === currentUser.username) {
-                            const editBtn = document.createElement('button');
-                            editBtn.innerHTML = '<i class="fas fa-pen"></i>';
-                            editBtn.title = 'Редактировать';
-                            editBtn.onclick = (e) => {
-                                e.stopPropagation();
-                                showEditMessageInput(message, messageData, text);
-                            };
-                            actions.appendChild(editBtn);
-                        }
-                        
-                        // Кнопка удаления
                         const deleteBtn = document.createElement('button');
-                        deleteBtn.className = 'danger';
-                        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                        deleteBtn.title = 'Удалить';
+                        deleteBtn.textContent = 'Удалить';
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.style.color = '#ff6b6b';
+                        deleteBtn.style.background = 'none';
+                        deleteBtn.style.border = 'none';
+                        deleteBtn.style.cursor = 'pointer';
+                        deleteBtn.style.fontSize = '11px';
+                        deleteBtn.style.padding = '0 6px';
                         deleteBtn.onclick = async (e) => {
                             e.stopPropagation();
                             if (confirm('Удалить сообщение?')) {
@@ -520,17 +500,31 @@ function addMessage(messageData, save = true, prepend = false) {
                         };
                         actions.appendChild(deleteBtn);
                         
-                        // Кнопка доп. меню
-                        const moreBtn = document.createElement('button');
-                        moreBtn.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
-                        moreBtn.title = 'Ещё';
-                        moreBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            showContextMenu(e, message, messageData);
-                        };
-                        actions.appendChild(moreBtn);
+                        if (messageData.username === currentUser.username) {
+                            const editBtn = document.createElement('button');
+                            editBtn.textContent = 'Редактировать';
+                            editBtn.className = 'edit-btn';
+                            editBtn.style.color = '';
+                            editBtn.style.background = 'none';
+                            editBtn.style.border = 'none';
+                            editBtn.style.cursor = 'pointer';
+                            editBtn.style.fontSize = '11px';
+                            editBtn.style.padding = '0 6px';
+                            editBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                showEditMessageInputForText(text, messageData);
+                            };
+                            actions.appendChild(editBtn);
+                        }
                         
-                        content.appendChild(actions);
+                        lastContent.appendChild(actions);
+                        
+                        lastMessage.addEventListener('mouseenter', () => {
+                            actions.style.display = 'flex';
+                        });
+                        lastMessage.addEventListener('mouseleave', () => {
+                            actions.style.display = 'none';
+                        });
                     }
                     
                     lastMessage.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
@@ -648,20 +642,23 @@ function addMessage(messageData, save = true, prepend = false) {
         };
         actions.appendChild(deleteBtn);
         
-        const editBtn = document.createElement('button');
-        editBtn.textContent = 'Редактировать';
-        editBtn.className = 'edit-btn';
-        editBtn.style.color = '';
-        editBtn.style.background = 'none';
-        editBtn.style.border = 'none';
-        editBtn.style.cursor = 'pointer';
-        editBtn.style.fontSize = '11px';
-        editBtn.style.padding = '0 6px';
-        editBtn.onclick = (e) => {
-            e.stopPropagation();
-            showEditMessageInput(message, messageData, text);
-        };
-        actions.appendChild(editBtn);
+        if (messageData.username === currentUser.username) {
+            const editBtn = document.createElement('button');
+            editBtn.textContent = 'Редактировать';
+            editBtn.className = 'edit-btn';
+            editBtn.style.color = '';
+            editBtn.style.background = 'none';
+            editBtn.style.border = 'none';
+            editBtn.style.cursor = 'pointer';
+            editBtn.style.fontSize = '11px';
+            editBtn.style.padding = '0 6px';
+            editBtn.onclick = (e) => {
+                e.stopPropagation();
+                showEditMessageInput(message, messageData, text);
+            };
+            actions.appendChild(editBtn);
+        }
+        
         content.appendChild(actions);
         
         message.addEventListener('mouseenter', () => {
@@ -686,7 +683,7 @@ function addMessage(messageData, save = true, prepend = false) {
         twemoji.parse(message);
     }
 
-    // Вложенные функции остаются без изменений
+    // Вспомогательная функция для редактирования текста в сгруппированном сообщении
     function showEditMessageInputForText(textElem, msgData) {
         const originalText = textElem.textContent || textElem.innerText;
         textElem.style.display = 'none';
