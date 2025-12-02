@@ -268,19 +268,36 @@ async def websocket_endpoint(websocket: WebSocket):
 			if not text:
 				await websocket.send_json({"error": "Empty message"})
 				continue
+			
+			# Поддержка ответов
+			reply_to = data.get("replyTo")
+			message_data = {
+				'text': text,
+				'replyTo': reply_to
+			}
+			
+			import json
+			message_json = json.dumps(message_data, ensure_ascii=False)
+			
 			timestamp = datetime.utcnow().isoformat() + 'Z'
 			conn = sqlite3.connect(DB_FILE)
 			c = conn.cursor()
 			c.execute('INSERT INTO messages (username, role, text, timestamp) VALUES (?, ?, ?, ?)',
-					  (user[0], user[4], text, timestamp))
+					  (user[0], user[4], message_json, timestamp))
+			message_id = c.lastrowid
 			conn.commit()
 			conn.close()
+			
 			msg = {
+				"id": message_id,
 				"username": user[0],
 				"role": user[4],
 				"text": text,
 				"timestamp": timestamp
 			}
+			if reply_to:
+				msg["replyTo"] = reply_to
+			
 			await manager.broadcast({"type": "message", "message": msg})
 	except WebSocketDisconnect:
 		manager.disconnect(websocket)

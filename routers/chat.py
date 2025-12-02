@@ -82,16 +82,32 @@ async def get_chat_messages(before: int = None, limit: int = 50):
     rows = c.fetchall()
     conn.close()
     
-    messages = [
-        {
-            'id': row[0],
-            'username': row[1],
-            'role': row[2],
-            'text': row[3],
-            'timestamp': row[4]
-        }
-        for row in reversed(rows)
-    ]
+    import json
+    messages = []
+    for row in reversed(rows):
+        try:
+            # Пытаемся распарсить как JSON
+            text_data = json.loads(row[3])
+            message = {
+                'id': row[0],
+                'username': row[1],
+                'role': row[2],
+                'text': text_data.get('text', row[3]),
+                'timestamp': row[4]
+            }
+            if 'replyTo' in text_data and text_data['replyTo']:
+                message['replyTo'] = text_data['replyTo']
+        except (json.JSONDecodeError, TypeError):
+            # Если не JSON, то обычный текст
+            message = {
+                'id': row[0],
+                'username': row[1],
+                'role': row[2],
+                'text': row[3],
+                'timestamp': row[4]
+            }
+        messages.append(message)
+    
     return JSONResponse({'messages': messages})
 
 @router.post('/send')
@@ -114,11 +130,21 @@ async def send_chat_message(request: Request):
     if not text:
         return JSONResponse({'success': False, 'error': 'Empty message'}, status_code=400)
     
+    # Поддержка ответов
+    reply_to = data.get('replyTo')
+    message_data = {
+        'text': text,
+        'replyTo': reply_to
+    }
+    
+    import json
+    message_json = json.dumps(message_data, ensure_ascii=False)
+    
     timestamp = datetime.utcnow().isoformat() + 'Z'
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute('INSERT INTO messages (username, role, text, timestamp) VALUES (?, ?, ?, ?)',
-              (user[0], user[4], text, timestamp))
+              (user[0], user[4], message_json, timestamp))
     conn.commit()
     conn.close()
     

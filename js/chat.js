@@ -452,9 +452,27 @@ function addMessage(messageData, save = true, prepend = false) {
             if (lastUsername === messageData.username && timeDiff < 15) {
                 const lastContent = lastMessage.querySelector('.message-content');
                 if (lastContent) {
+                    // Создаем контейнер для группированного сообщения
+                    const groupedMessage = document.createElement('div');
+                    groupedMessage.className = 'grouped-message-item';
+                    groupedMessage.dataset.messageId = messageData.id;
+                    groupedMessage.style.position = 'relative';
+                    groupedMessage.style.marginTop = '4px';
+                    
+                    // Добавляем блок ответа, если есть
+                    if (messageData.replyTo) {
+                        const replyBlock = document.createElement('div');
+                        replyBlock.className = 'message-reply';
+                        replyBlock.dataset.replyTo = messageData.replyTo.id;
+                        replyBlock.innerHTML = `
+                            <div class="message-reply-username">${messageData.replyTo.username}</div>
+                            <div class="message-reply-text">${messageData.replyTo.text}</div>
+                        `;
+                        groupedMessage.appendChild(replyBlock);
+                    }
+                    
                     const text = document.createElement('div');
                     text.className = 'message-text grouped-text';
-                    text.dataset.messageId = messageData.id;
                     
                     if (/<img|<a/.test(messageData.text)) {
                         text.innerHTML = messageData.text;
@@ -469,19 +487,21 @@ function addMessage(messageData, save = true, prepend = false) {
                         text.textContent = messageData.text;
                     }
                     
-                    lastContent.appendChild(text);
+                    groupedMessage.appendChild(text);
+                    lastContent.appendChild(groupedMessage);
                     
                     const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
                     if (canEditOrDelete && messageData.id) {
                         const actions = document.createElement('div');
                         actions.className = 'message-actions';
+                        actions.style.display = 'none';
 
                         const reactionBtn = document.createElement('button');
                         reactionBtn.innerHTML = '<i class="far fa-smile"></i>';
                         reactionBtn.title = 'Добавить реакцию';
                         reactionBtn.onclick = (e) => {
                             e.stopPropagation();
-                            showReactionPicker(lastMessage, messageData);
+                            showReactionPicker(groupedMessage, messageData);
                         };
                         actions.appendChild(reactionBtn);
 
@@ -513,6 +533,7 @@ function addMessage(messageData, save = true, prepend = false) {
                             e.stopPropagation();
                             if (confirm('Удалить сообщение?')) {
                                 await deleteMessageApi(messageData.id);
+                                groupedMessage.remove();
                             }
                         };
                         actions.appendChild(deleteBtn);
@@ -522,23 +543,22 @@ function addMessage(messageData, save = true, prepend = false) {
                         moreBtn.title = 'Ещё';
                         moreBtn.onclick = (e) => {
                             e.stopPropagation();
-                            showContextMenu(e, text, messageData);
+                            showContextMenu(e, groupedMessage, messageData);
                         };
                         actions.appendChild(moreBtn);
                         
-                        text.style.position = 'relative';
-                        text.appendChild(actions);
+                        groupedMessage.appendChild(actions);
                         
-                        text.addEventListener('mouseenter', () => {
+                        groupedMessage.addEventListener('mouseenter', () => {
                             actions.style.display = 'flex';
                         });
-                        text.addEventListener('mouseleave', () => {
+                        groupedMessage.addEventListener('mouseleave', () => {
                             actions.style.display = 'none';
                         });
                         
-                        text.addEventListener('contextmenu', (e) => {
+                        groupedMessage.addEventListener('contextmenu', (e) => {
                             e.preventDefault();
-                            showContextMenu(e, text, messageData);
+                            showContextMenu(e, groupedMessage, messageData);
                         });
                     }
                     
@@ -613,8 +633,20 @@ function addMessage(messageData, save = true, prepend = false) {
     header.appendChild(time);
     content.appendChild(header);
     
+    // Добавляем блок ответа, если есть
+    if (messageData.replyTo) {
+        const replyBlock = document.createElement('div');
+        replyBlock.className = 'message-reply';
+        replyBlock.dataset.replyTo = messageData.replyTo.id;
+        replyBlock.innerHTML = `
+            <div class="message-reply-username">${messageData.replyTo.username}</div>
+            <div class="message-reply-text">${messageData.replyTo.text}</div>
+        `;
+        content.appendChild(replyBlock);
+    }
+    
     const text = document.createElement('div');
-    text.className = 'message-text grouped-text';
+    text.className = 'message-text';
     text.dataset.messageId = messageData.id;
     if (/<img|<a/.test(messageData.text)) {
         text.innerHTML = messageData.text;
@@ -913,20 +945,21 @@ function sendMessage() {
     
     const token = localStorage.getItem('token');
     if (ws && ws.readyState === WebSocket.OPEN) {
-        let messageText = text;
+        let messagePayload = { token, text };
         
-        // Добавляем информацию об ответе
+        // Добавляем информацию об ответе как объект
         if (replyToMessage) {
-            messageText = `<div class="message-reply" data-reply-to="${replyToMessage.id}">
-                <div class="message-reply-username">${replyToMessage.username}</div>
-                <div class="message-reply-text">${replyToMessage.text.replace(/<[^>]+>/g, '').substring(0, 100)}</div>
-            </div>${messageText}`;
+            messagePayload.replyTo = {
+                id: replyToMessage.id,
+                username: replyToMessage.username,
+                text: replyToMessage.text.replace(/<[^>]+>/g, '').substring(0, 100)
+            };
         }
         
         if (selectedFiles.length > 0) {
-            uploadAllFiles(selectedFiles, messageText, token);
+            uploadAllFiles(selectedFiles, text, token);
         } else {
-            ws.send(JSON.stringify({ token, text: messageText }));
+            ws.send(JSON.stringify(messagePayload));
         }
         
         messageInput.value = '';

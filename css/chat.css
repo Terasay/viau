@@ -520,7 +520,7 @@ body.dark-theme .message:hover {
     display: none;
     position: absolute;
     top: -12px;
-    right: 16px;
+    right: 60px;
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -533,7 +533,22 @@ body.dark-theme .message:hover {
     z-index: 10;
 }
 
-.message:hover .message-actions {
+.message.own .message-actions {
+    right: auto;
+    left: 60px;
+}
+
+.grouped-message-item .message-actions {
+    right: 60px;
+}
+
+.message.own .grouped-message-item .message-actions {
+    right: auto;
+    left: 60px;
+}
+
+.message:hover .message-actions,
+.grouped-message-item:hover .message-actions {
     display: flex;
     opacity: 1;
     transform: translateY(0);
@@ -1214,6 +1229,21 @@ emoji-picker {
 .message-text.grouped-text {
     margin-top: 6px;
     position: relative;
+}
+
+.grouped-message-item {
+    position: relative;
+    margin-top: 4px;
+    padding: 4px 0;
+}
+
+.grouped-message-item:hover {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+}
+
+body.dark-theme .grouped-message-item:hover {
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .message-group {
