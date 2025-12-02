@@ -412,32 +412,45 @@ function updateOnlineUsers(users) {
         userItem.className = 'user-item';
         const avatar = document.createElement('div');
         avatar.className = 'message-avatar';
-        (async () => {
-            let avatarUrl = null;
-            const cached = userAvatarsCache[user.username];
-            if (cached !== undefined && cached !== 'loading') {
-                avatarUrl = cached;
-            } else if (cached !== 'loading') {
-                // Только если еще не загружаем
-                userAvatarsCache[user.username] = 'loading';
+        avatar.dataset.username = user.username; // Для идентификации
+        
+        // Сначала ставим инициал
+        avatar.textContent = user.username[0].toUpperCase();
+        
+        // Проверяем кеш и загружаем если нужно
+        const cached = userAvatarsCache[user.username];
+        if (cached !== undefined && cached !== 'loading') {
+            // Есть в кеше - используем сразу
+            if (cached) {
+                avatar.innerHTML = `<img src="${cached}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
+            }
+        } else if (cached === undefined) {
+            // Не в кеше и не загружается - начинаем загрузку
+            userAvatarsCache[user.username] = 'loading';
+            (async () => {
                 try {
                     const res = await fetch(`/user/${encodeURIComponent(user.username)}/avatar`);
                     const data = await res.json();
-                    if (data.success && data.avatar) {
-                        avatarUrl = data.avatar;
-                    }
+                    const avatarUrl = (data.success && data.avatar) ? data.avatar : null;
                     userAvatarsCache[user.username] = avatarUrl;
+                    
+                    // Обновляем ВСЕ аватары этого пользователя (в списке онлайн и сообщениях)
+                    if (avatarUrl) {
+                        document.querySelectorAll('.message-avatar').forEach(av => {
+                            if (av.dataset.username === user.username || 
+                                (av.textContent === user.username[0].toUpperCase() && 
+                                 av.parentElement.querySelector('.message-username')?.textContent === user.username)) {
+                                av.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
+                            }
+                        });
+                    }
                 } catch (e) {
-                    avatarUrl = null;
                     userAvatarsCache[user.username] = null;
                 }
-            }
-            if (avatarUrl) {
-                avatar.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
-            } else {
-                avatar.textContent = user.username[0].toUpperCase();
-            }
-        })();
+            })();
+        }
+        // Если cached === 'loading', просто оставляем инициал - обновится когда загрузится
+        
         const name = document.createElement('div');
         name.className = 'user-name';
         name.textContent = user.username;
