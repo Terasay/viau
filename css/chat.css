@@ -1257,14 +1257,6 @@ emoji-picker {
     right: auto;
 }
 
-.message-group {
-    display: none;
-}
-
-.message.grouped {
-    display: none;
-}
-
 .toggle-switch {
     position: relative;
     display: inline-block;
