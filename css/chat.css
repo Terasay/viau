@@ -1224,6 +1224,7 @@ emoji-picker {
 /* Сгруппированные сообщения - независимые элементы */
 .message.grouped {
     margin-top: 4px;
+    margin-bottom: 4px;
 }
 
 .message.grouped .message-header {
@@ -1232,12 +1233,14 @@ emoji-picker {
 
 .message.grouped .message-avatar {
     width: 35px; /* Минимальная ширина для отступа */
-    height: 1px; /* Невидимая высота */
+    min-width: 35px;
+    height: auto;
     flex-shrink: 0;
 }
 
-.message.grouped .message-avatar img {
-    display: none; /* Скрываем аватар */
+.message.grouped .message-avatar::before {
+    content: '';
+    display: block;
 }
 
 /* Позиционирование меню для группированных сообщений */

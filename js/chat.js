@@ -439,202 +439,103 @@ function updateOnlineUsers(users) {
 }
 
 function addMessage(messageData, save = true, prepend = false) {
-    console.log('addMessage called with:', messageData);
-    // При prepend не проверяем группировку - просто добавляем сообщение
-    if (!prepend) {
-        const lastMessage = messagesContainer.lastElementChild;
+    // Проверяем группировку независимо от prepend
+    let shouldGroup = false;
+    let referenceMessage = null;
+    
+    if (prepend) {
+        // При prepend проверяем первое сообщение в контейнере
+        referenceMessage = messagesContainer.firstElementChild;
+    } else {
+        // При append проверяем последнее сообщение
+        referenceMessage = messagesContainer.lastElementChild;
+    }
+    
+    if (referenceMessage && referenceMessage.classList.contains('message')) {
+        const refUsername = referenceMessage.dataset.username;
+        const refTimestamp = parseInt(referenceMessage.dataset.timestamp || '0');
+        const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
+        const timeDiff = Math.abs((currentTimestamp - refTimestamp) / 1000 / 60);
         
-        if (lastMessage && lastMessage.classList.contains('message')) {
-            const lastUsername = lastMessage.dataset.username;
-            const lastTimestamp = parseInt(lastMessage.dataset.timestamp || '0');
-            const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
-            const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60;
-            
-            // Если сообщение от того же пользователя и прошло менее 15 минут - группируем
-            if (lastUsername === messageData.username && timeDiff < 15) {
-                // Создаем новое сгруппированное сообщение (отдельный элемент)
-                const message = document.createElement('div');
-                message.className = 'message grouped';
-                if (messageData.username === currentUser.username) {
-                    message.classList.add('own');
-                }
-                message.dataset.id = messageData.id;
-                message.dataset.username = messageData.username;
-                message.dataset.timestamp = currentTimestamp;
-                
-                // Пустая аватарка для отступа
-                const avatar = document.createElement('div');
-                avatar.className = 'message-avatar';
-                message.appendChild(avatar);
-                
-                const content = document.createElement('div');
-                content.className = 'message-content';
-                
-                // Добавляем блок ответа, если есть
-                if (messageData.replyTo) {
-                    const replyBlock = document.createElement('div');
-                    replyBlock.className = 'message-reply';
-                    replyBlock.dataset.replyTo = messageData.replyTo.id;
-                    replyBlock.innerHTML = `
-                        <div class="message-reply-username">${messageData.replyTo.username}</div>
-                        <div class="message-reply-text">${messageData.replyTo.text}</div>
-                    `;
-                    content.appendChild(replyBlock);
-                }
-                
-                const text = document.createElement('div');
-                text.className = 'message-text';
-                text.dataset.messageId = messageData.id;
-                
-                if (/<img|<a/.test(messageData.text)) {
-                    text.innerHTML = messageData.text;
-                    const imgs = text.querySelectorAll('img');
-                    imgs.forEach(img => {
-                        img.style.cursor = 'pointer';
-                        img.addEventListener('click', () => {
-                            openImageModal(img.src);
-                        });
-                    });
-                } else {
-                    text.textContent = messageData.text;
-                }
-                
-                content.appendChild(text);
-                
-                const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
-                if (canEditOrDelete && messageData.id) {
-                    const actions = document.createElement('div');
-                    actions.className = 'message-actions';
-
-                    const reactionBtn = document.createElement('button');
-                    reactionBtn.innerHTML = '<i class="far fa-smile"></i>';
-                    reactionBtn.title = 'Добавить реакцию';
-                    reactionBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        showReactionPicker(message, messageData);
-                    };
-                    actions.appendChild(reactionBtn);
-
-                    const replyBtn = document.createElement('button');
-                    replyBtn.innerHTML = '<i class="fas fa-reply"></i>';
-                    replyBtn.title = 'Ответить';
-                    replyBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        setReplyTo(messageData);
-                    };
-                    actions.appendChild(replyBtn);
-                    
-                    if (messageData.username === currentUser.username) {
-                        const editBtn = document.createElement('button');
-                        editBtn.innerHTML = '<i class="fas fa-pen"></i>';
-                        editBtn.title = 'Редактировать';
-                        editBtn.onclick = (e) => {
-                            e.stopPropagation();
-                            showEditMessageInput(message, messageData, text);
-                        };
-                        actions.appendChild(editBtn);
-                    }
-
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'danger';
-                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                    deleteBtn.title = 'Удалить';
-                    deleteBtn.onclick = async (e) => {
-                        e.stopPropagation();
-                        if (confirm('Удалить сообщение?')) {
-                            await deleteMessageApi(messageData.id);
-                            message.remove();
-                        }
-                    };
-                    actions.appendChild(deleteBtn);
-
-                    const moreBtn = document.createElement('button');
-                    moreBtn.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
-                    moreBtn.title = 'Ещё';
-                    moreBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        showContextMenu(e, message, messageData);
-                    };
-                    actions.appendChild(moreBtn);
-                    
-                    content.appendChild(actions);
-                    
-                    message.addEventListener('contextmenu', (e) => {
-                        e.preventDefault();
-                        showContextMenu(e, message, messageData);
-                    });
-                }
-                
-                message.appendChild(content);
-                messagesContainer.appendChild(message);
-                
-                if (window.twemoji) {
-                    twemoji.parse(message);
-                }
-                
-                scrollToBottom();
-                return;
-            }
+        // Если сообщение от того же пользователя и прошло менее 15 минут - группируем
+        if (refUsername === messageData.username && timeDiff < 15) {
+            shouldGroup = true;
         }
     }
     
-    // Создаем новое сообщение
+    // Создаем сообщение
     const message = document.createElement('div');
     message.className = 'message';
+    
+    if (shouldGroup) {
+        message.classList.add('grouped');
+    }
+    
     if (messageData.username === currentUser.username) {
         message.classList.add('own');
     }
+    
     message.dataset.id = messageData.id;
     message.dataset.username = messageData.username;
     message.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
     
+    // Создаем аватар
     const avatar = document.createElement('div');
     avatar.className = 'message-avatar';
-    (async () => {
-        let avatarUrl = null;
-        if (userAvatarsCache[messageData.username]) {
-            avatarUrl = userAvatarsCache[messageData.username];
-        } else {
-            try {
-                const res = await fetch(`/user/${encodeURIComponent(messageData.username)}/avatar`);
-                const data = await res.json();
-                if (data.success && data.avatar) {
-                    avatarUrl = data.avatar;
+    
+    // Для НЕ группированных сообщений загружаем аватар
+    if (!shouldGroup) {
+        (async () => {
+            let avatarUrl = null;
+            if (userAvatarsCache[messageData.username]) {
+                avatarUrl = userAvatarsCache[messageData.username];
+            } else {
+                try {
+                    const res = await fetch(`/user/${encodeURIComponent(messageData.username)}/avatar`);
+                    const data = await res.json();
+                    if (data.success && data.avatar) {
+                        avatarUrl = data.avatar;
+                    }
+                    userAvatarsCache[messageData.username] = avatarUrl;
+                } catch (e) {
+                    avatarUrl = null;
                 }
-                userAvatarsCache[messageData.username] = avatarUrl;
-            } catch (e) {
-                avatarUrl = null;
             }
-        }
-        if (avatarUrl) {
-            avatar.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
-        } else {
-            avatar.textContent = messageData.username[0].toUpperCase();
-        }
-    })();
+            if (avatarUrl) {
+                avatar.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
+            } else {
+                avatar.textContent = messageData.username[0].toUpperCase();
+            }
+        })();
+    }
+    // Для группированных аватар остается пустым div
+    
     message.appendChild(avatar);
     
     const content = document.createElement('div');
     content.className = 'message-content';
     
-    const header = document.createElement('div');
-    header.className = 'message-header';
-    const username = document.createElement('div');
-    username.className = 'message-username';
-    username.textContent = messageData.username;
-    header.appendChild(username);
-    if (messageData.role === 'admin') {
-        const role = document.createElement('div');
-        role.className = 'message-role admin';
-        role.textContent = 'ADMIN';
-        header.appendChild(role);
+    // Заголовок только для НЕ группированных сообщений
+    if (!shouldGroup) {
+        const header = document.createElement('div');
+        header.className = 'message-header';
+        const username = document.createElement('div');
+        username.className = 'message-username';
+        username.textContent = messageData.username;
+        header.appendChild(username);
+        if (messageData.role === 'admin') {
+            const role = document.createElement('div');
+            role.className = 'message-role admin';
+            role.textContent = 'ADMIN';
+            header.appendChild(role);
+        }
+        const time = document.createElement('div');
+        time.className = 'message-time';
+        const timestamp = messageData.timestamp ? new Date(messageData.timestamp) : new Date();
+        time.textContent = formatTime(timestamp);
+        header.appendChild(time);
+        content.appendChild(header);
     }
-    const time = document.createElement('div');
-    time.className = 'message-time';
-    const timestamp = messageData.timestamp ? new Date(messageData.timestamp) : new Date();
-    time.textContent = formatTime(timestamp);
-    header.appendChild(time);
-    content.appendChild(header);
     
     // Добавляем блок ответа, если есть
     if (messageData.replyTo) {
@@ -707,6 +608,7 @@ function addMessage(messageData, save = true, prepend = false) {
             e.stopPropagation();
             if (confirm('Удалить сообщение?')) {
                 await deleteMessageApi(messageData.id);
+                message.remove();
             }
         };
         actions.appendChild(deleteBtn);
