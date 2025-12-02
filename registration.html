@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIAU - Регистрация игрока</title>
+    <link rel="stylesheet" href="/css/registration.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-animation">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="registration-container">
+        <div class="registration-header">
+            <button class="btn-back" id="backBtn" title="На главную">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="header-content">
+                <div class="header-icon">
+                    <i class="fas fa-file-signature"></i>
+                </div>
+                <div>
+                    <h1>Регистрация игрока</h1>
+                    <p>Заполните анкету для получения статуса игрока</p>
+                </div>
+            </div>
+            <div class="user-info" id="userInfo">
+                <i class="fas fa-user"></i>
+                <span></span>
+            </div>
+        </div>
+
+        <div class="registration-content">
+            <!-- Статус заявки (если уже подана) -->
+            <div class="application-status" id="applicationStatus" style="display: none;">
+                <div class="status-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="status-content">
+                    <h3>Ваша заявка на рассмотрении</h3>
+                    <p>Администрация рассматривает вашу заявку. Вы получите уведомление о результате.</p>
+                    <div class="status-actions">
+                        <button class="btn-secondary" id="editApplicationBtn">
+                            <i class="fas fa-edit"></i>
+                            Редактировать заявку
+                        </button>
+                        <button class="btn-danger" id="cancelApplicationBtn">
+                            <i class="fas fa-trash"></i>
+                            Отозвать заявку
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Форма заявки -->
+            <div class="application-form" id="applicationForm">
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-user"></i>
+                        <h2>Личная информация</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="characterName">
+                            Игровое имя персонажа
+                            <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="characterName" 
+                            placeholder="Введите имя вашего персонажа"
+                            maxlength="50"
+                            required
+                        >
+                        <div class="form-hint">Имя, которое будет отображаться в игре</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="country">
+                            Выбор страны
+                            <span class="required">*</span>
+                        </label>
+                        <select id="country" required>
+                            <option value="">Выберите страну</option>
+                            <option value="russia">Россия</option>
+                            <option value="usa">США</option>
+                            <option value="china">Китай</option>
+                            <option value="uk">Великобритания</option>
+                            <option value="france">Франция</option>
+                            <option value="germany">Германия</option>
+                            <option value="japan">Япония</option>
+                            <option value="other">Другая</option>
+                        </select>
+                        <div class="form-hint">Страна, за которую вы будете играть</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">
+                            Возраст
+                            <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            id="age" 
+                            placeholder="Введите ваш возраст"
+                            min="13"
+                            max="100"
+                            required
+                        >
+                        <div class="form-hint">Минимальный возраст - 13 лет</div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-gamepad"></i>
+                        <h2>Игровой опыт</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="experience">
+                            Опыт в подобных играх
+                            <span class="required">*</span>
+                        </label>
+                        <select id="experience" required>
+                            <option value="">Выберите уровень опыта</option>
+                            <option value="beginner">Новичок</option>
+                            <option value="intermediate">Средний уровень</option>
+                            <option value="advanced">Опытный игрок</option>
+                            <option value="expert">Эксперт</option>
+                        </select>
+                        <div class="form-hint">Ваш уровень игрового опыта</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="playtime">
+                            Доступное время для игры (часов в неделю)
+                            <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            id="playtime" 
+                            placeholder="Например: 10"
+                            min="1"
+                            max="168"
+                            required
+                        >
+                        <div class="form-hint">Сколько часов в неделю вы готовы уделять игре</div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-comment"></i>
+                        <h2>О себе</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="motivation">
+                            Почему вы хотите стать игроком?
+                            <span class="required">*</span>
+                        </label>
+                        <textarea 
+                            id="motivation" 
+                            placeholder="Расскажите, что вас мотивирует..."
+                            maxlength="500"
+                            rows="4"
+                            required
+                        ></textarea>
+                        <div class="char-counter">
+                            <span id="motivationCounter">0</span> / 500
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills">
+                            Ваши навыки и сильные стороны
+                        </label>
+                        <textarea 
+                            id="skills" 
+                            placeholder="Опишите свои игровые навыки..."
+                            maxlength="500"
+                            rows="4"
+                        ></textarea>
+                        <div class="char-counter">
+                            <span id="skillsCounter">0</span> / 500
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="additionalInfo">
+                            Дополнительная информация
+                        </label>
+                        <textarea 
+                            id="additionalInfo" 
+                            placeholder="Любая дополнительная информация..."
+                            maxlength="500"
+                            rows="4"
+                        ></textarea>
+                        <div class="char-counter">
+                            <span id="additionalCounter">0</span> / 500
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="rulesAccept" required>
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-text">
+                                Я ознакомлен с правилами игры и обязуюсь их соблюдать
+                                <span class="required">*</span>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="fairPlay" required>
+                            <span class="checkbox-custom"></span>
+                            <span class="checkbox-text">
+                                Я обязуюсь играть честно и не использовать читы
+                                <span class="required">*</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="resetBtn">
+                        <i class="fas fa-undo"></i>
+                        Очистить форму
+                    </button>
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        <i class="fas fa-paper-plane"></i>
+                        Подать заявку
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно успеха -->
+    <div class="modal" id="successModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content success">
+            <div class="modal-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Заявка отправлена!</h2>
+            <p>Ваша заявка успешно отправлена на рассмотрение администрации.</p>
+            <p class="modal-hint">Обычно рассмотрение занимает 1-3 дня.</p>
+            <button class="btn-primary" onclick="window.location.href='/'">
+                <i class="fas fa-home"></i>
+                На главную
+            </button>
+        </div>
+    </div>
+
+    <!-- Модальное окно авторизации -->
+    <div class="modal" id="loginModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2>Требуется авторизация</h2>
+            <p>Для подачи заявки необходимо войти в систему</p>
+            <button class="btn-primary" onclick="window.location.href='/'">
+                <i class="fas fa-sign-in-alt"></i>
+                Перейти к входу
+            </button>
+        </div>
+    </div>
+
+    <script src="/js/registration.js"></script>
+</body>
+</html>

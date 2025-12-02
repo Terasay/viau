@@ -21,7 +21,7 @@ import jwt
 from datetime import datetime, timedelta
 import bcrypt
 
-from routers import converter, maps, chat
+from routers import converter, maps, chat, registration
 
 load_dotenv()
 GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID')
@@ -44,6 +44,7 @@ app.mount('/css', StaticFiles(directory='css'), name='css')
 app.include_router(converter.router)
 app.include_router(maps.router)
 app.include_router(chat.router) 
+app.include_router(registration.router)
 
 AVATARS_DIR = 'avatars'
 if not os.path.exists(AVATARS_DIR):
@@ -358,6 +359,28 @@ def decode_jwt(token):
 		return None
 	except jwt.InvalidTokenError:
 		return None
+
+async def get_current_user(request: Request):
+	"""Получает текущего пользователя из токена"""
+	token = request.headers.get('Authorization')
+	if not token:
+		return None
+	
+	payload = decode_jwt(token)
+	if not payload:
+		return None
+	
+	user = get_user_by_username(payload['username'])
+	if not user:
+		return None
+	
+	return {
+		'id': user[10] if len(user) > 10 else user[0],
+		'username': user[0],
+		'email': user[2],
+		'role': user[4],
+		'country': user[3]
+	}
 
 def send_verification_code(email, code):
 	creds = Credentials(
@@ -684,3 +707,6 @@ async def admin_set_status(request: Request):
 	conn.commit()
 	conn.close()
 	return JSONResponse({'success': True})
+@app.get('/registration')
+async def registration_page():
+	return FileResponse('registration.html')
