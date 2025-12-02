@@ -439,15 +439,16 @@ function updateOnlineUsers(users) {
 }
 
 function addMessage(messageData, save = true, prepend = false) {
-    // Проверяем группировку независимо от prepend
+    // Проверяем группировку
     let shouldGroup = false;
     let referenceMessage = null;
     
     if (prepend) {
-        // При prepend проверяем первое сообщение в контейнере
+        // При prepend (загрузка старых) проверяем следующее сообщение (которое уже есть)
+        // Но только если мы НЕ первое сообщение в истории
         referenceMessage = messagesContainer.firstElementChild;
     } else {
-        // При append проверяем последнее сообщение
+        // При append (новое сообщение) проверяем последнее
         referenceMessage = messagesContainer.lastElementChild;
     }
     
@@ -455,11 +456,29 @@ function addMessage(messageData, save = true, prepend = false) {
         const refUsername = referenceMessage.dataset.username;
         const refTimestamp = parseInt(referenceMessage.dataset.timestamp || '0');
         const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
+        
+        // При prepend - текущее сообщение СТАРШЕ референсного, поэтому проверяем может ли РЕФЕРЕНСНОЕ быть в группе с текущим
+        // При append - текущее сообщение НОВЕЕ, проверяем может ли текущее быть в группе с референсным
         const timeDiff = Math.abs((currentTimestamp - refTimestamp) / 1000 / 60);
         
-        // Если сообщение от того же пользователя и прошло менее 15 минут - группируем
         if (refUsername === messageData.username && timeDiff < 15) {
-            shouldGroup = true;
+            if (prepend) {
+                // Если загружаем старые сообщения и следующее (более новое) от того же юзера - 
+                // то СЛЕДУЮЩЕЕ должно стать grouped, а не текущее
+                // Поэтому текущее НЕ группируем, но проверяем референсное
+                if (!referenceMessage.classList.contains('grouped')) {
+                    referenceMessage.classList.add('grouped');
+                    // Скрываем заголовок референсного
+                    const refHeader = referenceMessage.querySelector('.message-header');
+                    if (refHeader) refHeader.style.display = 'none';
+                    // Очищаем аватар референсного
+                    const refAvatar = referenceMessage.querySelector('.message-avatar');
+                    if (refAvatar) refAvatar.innerHTML = '';
+                }
+            } else {
+                // При append текущее сообщение группируем
+                shouldGroup = true;
+            }
         }
     }
     
@@ -485,28 +504,34 @@ function addMessage(messageData, save = true, prepend = false) {
     
     // Для НЕ группированных сообщений загружаем аватар
     if (!shouldGroup) {
-        (async () => {
-            let avatarUrl = null;
-            if (userAvatarsCache[messageData.username]) {
-                avatarUrl = userAvatarsCache[messageData.username];
-            } else {
-                try {
-                    const res = await fetch(`/user/${encodeURIComponent(messageData.username)}/avatar`);
-                    const data = await res.json();
-                    if (data.success && data.avatar) {
-                        avatarUrl = data.avatar;
-                    }
-                    userAvatarsCache[messageData.username] = avatarUrl;
-                } catch (e) {
-                    avatarUrl = null;
-                }
-            }
+        // Синхронно проверяем кеш
+        if (userAvatarsCache[messageData.username]) {
+            const avatarUrl = userAvatarsCache[messageData.username];
             if (avatarUrl) {
                 avatar.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
             } else {
                 avatar.textContent = messageData.username[0].toUpperCase();
             }
-        })();
+        } else {
+            // Если нет в кеше - ставим инициал и загружаем асинхронно
+            avatar.textContent = messageData.username[0].toUpperCase();
+            
+            // Загружаем аватар асинхронно только один раз
+            (async () => {
+                try {
+                    const res = await fetch(`/user/${encodeURIComponent(messageData.username)}/avatar`);
+                    const data = await res.json();
+                    const avatarUrl = (data.success && data.avatar) ? data.avatar : null;
+                    userAvatarsCache[messageData.username] = avatarUrl;
+                    
+                    if (avatarUrl) {
+                        avatar.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
+                    }
+                } catch (e) {
+                    userAvatarsCache[messageData.username] = null;
+                }
+            })();
+        }
     }
     // Для группированных аватар остается пустым div
     
