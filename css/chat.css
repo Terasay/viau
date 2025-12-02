@@ -1223,38 +1223,21 @@ emoji-picker {
 
 /* Сгруппированные сообщения - независимые элементы */
 .message.grouped {
-    margin-top: 4px;
-    margin-bottom: 4px;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
 .message.grouped .message-header {
     display: none; /* Скрываем заголовок у группированных */
 }
 
-.message.grouped .message-avatar {
-    width: 35px; /* Минимальная ширина для отступа */
-    min-width: 35px;
-    height: auto;
-    flex-shrink: 0;
+.message.grouped .message-content {
+    margin-left: 48px; /* Отступ слева чтобы выравнять с обычными сообщениями */
 }
 
-.message.grouped .message-avatar::before {
-    content: '';
-    display: block;
-}
-
-/* Позиционирование меню для группированных сообщений */
-.message.grouped .message-actions {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    right: 60px;
-    display: none;
-}
-
-.message.grouped.own .message-actions {
-    left: 60px;
-    right: auto;
+.message.grouped.own .message-content {
+    margin-left: 0;
+    margin-right: 48px; /* Отступ справа для своих сообщений */
 }
 
 .toggle-switch {

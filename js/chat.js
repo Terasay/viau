@@ -490,12 +490,11 @@ function addMessage(messageData, save = true, prepend = false) {
     message.dataset.username = messageData.username;
     message.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
     
-    // Создаем аватар
-    const avatar = document.createElement('div');
-    avatar.className = 'message-avatar';
-    
-    // Для НЕ группированных сообщений загружаем аватар
+    // Создаем аватар ТОЛЬКО для НЕ группированных сообщений
     if (!shouldGroup) {
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        
         // Синхронно проверяем кеш
         if (userAvatarsCache[messageData.username] !== undefined && userAvatarsCache[messageData.username] !== 'loading') {
             const avatarUrl = userAvatarsCache[messageData.username];
@@ -536,10 +535,9 @@ function addMessage(messageData, save = true, prepend = false) {
                 }
             })();
         }
+        
+        message.appendChild(avatar);
     }
-    // Для группированных аватар остается пустым div
-    
-    message.appendChild(avatar);
     
     const content = document.createElement('div');
     content.className = 'message-content';
