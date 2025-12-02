@@ -538,17 +538,7 @@ body.dark-theme .message:hover {
     left: 60px;
 }
 
-.grouped-message-item .message-actions {
-    right: 60px;
-}
-
-.message.own .grouped-message-item .message-actions {
-    right: auto;
-    left: 60px;
-}
-
-.message:hover .message-actions,
-.grouped-message-item:hover .message-actions {
+.message:hover .message-actions {
     display: flex;
     opacity: 1;
     transform: translateY(0);
@@ -1231,20 +1221,37 @@ emoji-picker {
     position: relative;
 }
 
-.grouped-message-item {
-    position: relative;
+/* Сгруппированные сообщения - независимые элементы */
+.message.grouped {
     margin-top: 4px;
-    padding: 6px 12px;
-    border-radius: 8px;
-    transition: background 0.15s ease;
 }
 
-.grouped-message-item:hover {
-    background: rgba(0, 0, 0, 0.03);
+.message.grouped .message-header {
+    display: none; /* Скрываем заголовок у группированных */
 }
 
-body.dark-theme .grouped-message-item:hover {
-    background: rgba(255, 255, 255, 0.03);
+.message.grouped .message-avatar {
+    width: 35px; /* Минимальная ширина для отступа */
+    height: 1px; /* Невидимая высота */
+    flex-shrink: 0;
+}
+
+.message.grouped .message-avatar img {
+    display: none; /* Скрываем аватар */
+}
+
+/* Позиционирование меню для группированных сообщений */
+.message.grouped .message-actions {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 60px;
+    display: none;
+}
+
+.message.grouped.own .message-actions {
+    left: 60px;
+    right: auto;
 }
 
 .message-group {
