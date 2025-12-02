@@ -7,7 +7,9 @@ let userAvatarsCache = {};
 
 let selectedFiles = [];
 let filePreviewContainer = null;
-
+let isLoadingHistory = false;
+let hasMoreMessages = true;
+let oldestMessageId = null;
 
 let imageModal = null;
 let modalImg = null;
@@ -341,21 +343,52 @@ function initChat() {
     setupWebSocket();
 }
 
-function loadChatHistory() {
-    fetch('/api/chat/messages', {
-        method: 'GET'
-    })
+function loadChatHistory(append = false) {
+    if (isLoadingHistory) return;
+    isLoadingHistory = true;
+    
+    const url = oldestMessageId && append 
+        ? `/api/chat/messages?before=${oldestMessageId}&limit=50`
+        : '/api/chat/messages?limit=50';
+    
+    fetch(url, { method: 'GET' })
     .then(res => res.json())
     .then(data => {
-        messages = [];
-        messagesContainer.innerHTML = '';
+        if (!append) {
+            messages = [];
+            messagesContainer.innerHTML = '';
+            oldestMessageId = null;
+        }
+        
+        if (data.messages.length === 0) {
+            hasMoreMessages = false;
+            isLoadingHistory = false;
+            return;
+        }
+        
+        if (data.messages.length > 0) {
+            oldestMessageId = data.messages[0].id;
+        }
+        
+        const scrollHeight = messagesContainer.scrollHeight;
+        const scrollTop = messagesContainer.scrollTop;
+        
         data.messages.forEach(msg => {
-            addMessage(msg, false);
+            addMessage(msg, false, append);
         });
-        scrollToBottom();
+        
+        if (append) {
+            const newScrollHeight = messagesContainer.scrollHeight;
+            messagesContainer.scrollTop = scrollTop + (newScrollHeight - scrollHeight);
+        } else {
+            scrollToBottom();
+        }
+        
+        isLoadingHistory = false;
     })
     .catch(e => {
         console.error('Ошибка загрузки истории:', e);
+        isLoadingHistory = false;
     });
 }
 
@@ -405,7 +438,7 @@ function updateOnlineUsers(users) {
     });
 }
 
-function addMessage(messageData, save = true) {
+function addMessage(messageData, save = true, prepend = false) {
     const lastMessage = messagesContainer.lastElementChild;
     let shouldGroup = false;
     
@@ -633,7 +666,11 @@ function addMessage(messageData, save = true) {
     }
 
     message.appendChild(content);
-    messagesContainer.appendChild(message);
+    if (prepend) {
+    messagesContainer.insertBefore(message, messagesContainer.firstChild);
+    } else {
+        messagesContainer.appendChild(message);
+    }
     
     if (window.twemoji) {
         twemoji.parse(message);
@@ -890,6 +927,12 @@ function setupEventListeners() {
         const compactModeToggle = document.getElementById('compactModeToggle');
         const saveSettingsBtn = document.getElementById('saveSettingsBtn');
         const resetSettingsBtn = document.getElementById('resetSettingsBtn');
+
+        messagesContainer.addEventListener('scroll', () => {
+            if (messagesContainer.scrollTop < 100 && hasMoreMessages && !isLoadingHistory) {
+                loadChatHistory(true);
+            }
+        });
 
         function syncSettingsUI() {
             if (textSizeSlider && textSizeValue) {

@@ -70,10 +70,15 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 @router.get('/messages')
-async def get_chat_messages():
+async def get_chat_messages(before: int = None, limit: int = 50):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute('SELECT id, username, role, text, timestamp FROM messages ORDER BY id DESC LIMIT 50')
+    
+    if before:
+        c.execute('SELECT id, username, role, text, timestamp FROM messages WHERE id < ? ORDER BY id DESC LIMIT ?', (before, limit))
+    else:
+        c.execute('SELECT id, username, role, text, timestamp FROM messages ORDER BY id DESC LIMIT ?', (limit,))
+    
     rows = c.fetchall()
     conn.close()
     
