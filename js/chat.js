@@ -439,107 +439,111 @@ function updateOnlineUsers(users) {
 }
 
 function addMessage(messageData, save = true, prepend = false) {
-    const lastMessage = messagesContainer.lastElementChild;
-    let shouldGroup = false;
-    
-    if (lastMessage && lastMessage.classList.contains('message')) {
-        const lastUsername = lastMessage.dataset.username;
-        const lastTimestamp = parseInt(lastMessage.dataset.timestamp || '0');
-        const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
-        const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60; // разница в минутах
+    // При prepend не проверяем группировку - просто добавляем сообщение
+    if (!prepend) {
+        const lastMessage = messagesContainer.lastElementChild;
+        let shouldGroup = false;
         
-        if (lastUsername === messageData.username && timeDiff < 15) {
-            shouldGroup = true;
-            const lastContent = lastMessage.querySelector('.message-content');
-            if (lastContent) {
-                const text = document.createElement('div');
-                text.className = 'message-text grouped-text';
-                if (/<img|<a/.test(messageData.text)) {
-                    text.innerHTML = messageData.text;
-                    const imgs = text.querySelectorAll('img');
-                    imgs.forEach(img => {
-                        img.style.cursor = 'pointer';
-                        img.addEventListener('click', () => {
-                            openImageModal(img.src);
+        if (lastMessage && lastMessage.classList.contains('message')) {
+            const lastUsername = lastMessage.dataset.username;
+            const lastTimestamp = parseInt(lastMessage.dataset.timestamp || '0');
+            const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
+            const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60;
+            
+            if (lastUsername === messageData.username && timeDiff < 15) {
+                shouldGroup = true;
+                const lastContent = lastMessage.querySelector('.message-content');
+                if (lastContent) {
+                    const text = document.createElement('div');
+                    text.className = 'message-text grouped-text';
+                    if (/<img|<a/.test(messageData.text)) {
+                        text.innerHTML = messageData.text;
+                        const imgs = text.querySelectorAll('img');
+                        imgs.forEach(img => {
+                            img.style.cursor = 'pointer';
+                            img.addEventListener('click', () => {
+                                openImageModal(img.src);
+                            });
                         });
-                    });
-                } else {
-                    text.textContent = messageData.text;
-                }
-                
-                const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
-                if (canEditOrDelete && messageData.id) {
-                    text.dataset.messageId = messageData.id;
-                    const actions = document.createElement('div');
-                    actions.className = 'message-actions';
-                    actions.style.display = 'none';
-                    actions.style.marginTop = '2px';
-                    actions.style.fontSize = '11px';
-                    actions.style.gap = '8px';
-                    actions.style.alignItems = 'center';
-                    actions.style.opacity = '0.8';
+                    } else {
+                        text.textContent = messageData.text;
+                    }
                     
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.textContent = 'Удалить';
-                    deleteBtn.className = 'delete-btn';
-                    deleteBtn.style.color = '#ff6b6b';
-                    deleteBtn.style.background = 'none';
-                    deleteBtn.style.border = 'none';
-                    deleteBtn.style.cursor = 'pointer';
-                    deleteBtn.style.fontSize = '11px';
-                    deleteBtn.style.padding = '0 6px';
-                    deleteBtn.onclick = async (e) => {
-                        e.stopPropagation();
-                        if (confirm('Удалить сообщение?')) {
-                            await deleteMessageApi(messageData.id);
-                        }
-                    };
-                    actions.appendChild(deleteBtn);
-                    
-                    const editBtn = document.createElement('button');
-                    editBtn.textContent = 'Редактировать';
-                    editBtn.className = 'edit-btn';
-                    editBtn.style.color = '';
-                    editBtn.style.background = 'none';
-                    editBtn.style.border = 'none';
-                    editBtn.style.cursor = 'pointer';
-                    editBtn.style.fontSize = '11px';
-                    editBtn.style.padding = '0 6px';
-                    editBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        showEditMessageInputForText(text, messageData);
-                    };
-                    actions.appendChild(editBtn);
-                    
-                    const textWrapper = document.createElement('div');
-                    textWrapper.style.position = 'relative';
-                    textWrapper.appendChild(text);
-                    textWrapper.appendChild(actions);
-                    
-                    textWrapper.addEventListener('mouseenter', () => {
-                        actions.style.display = 'flex';
-                    });
-                    textWrapper.addEventListener('mouseleave', () => {
+                    const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
+                    if (canEditOrDelete && messageData.id) {
+                        text.dataset.messageId = messageData.id;
+                        const actions = document.createElement('div');
+                        actions.className = 'message-actions';
                         actions.style.display = 'none';
-                    });
+                        actions.style.marginTop = '2px';
+                        actions.style.fontSize = '11px';
+                        actions.style.gap = '8px';
+                        actions.style.alignItems = 'center';
+                        actions.style.opacity = '0.8';
+                        
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Удалить';
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.style.color = '#ff6b6b';
+                        deleteBtn.style.background = 'none';
+                        deleteBtn.style.border = 'none';
+                        deleteBtn.style.cursor = 'pointer';
+                        deleteBtn.style.fontSize = '11px';
+                        deleteBtn.style.padding = '0 6px';
+                        deleteBtn.onclick = async (e) => {
+                            e.stopPropagation();
+                            if (confirm('Удалить сообщение?')) {
+                                await deleteMessageApi(messageData.id);
+                            }
+                        };
+                        actions.appendChild(deleteBtn);
+                        
+                        const editBtn = document.createElement('button');
+                        editBtn.textContent = 'Редактировать';
+                        editBtn.className = 'edit-btn';
+                        editBtn.style.color = '';
+                        editBtn.style.background = 'none';
+                        editBtn.style.border = 'none';
+                        editBtn.style.cursor = 'pointer';
+                        editBtn.style.fontSize = '11px';
+                        editBtn.style.padding = '0 6px';
+                        editBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            showEditMessageInputForText(text, messageData);
+                        };
+                        actions.appendChild(editBtn);
+                        
+                        const textWrapper = document.createElement('div');
+                        textWrapper.style.position = 'relative';
+                        textWrapper.appendChild(text);
+                        textWrapper.appendChild(actions);
+                        
+                        textWrapper.addEventListener('mouseenter', () => {
+                            actions.style.display = 'flex';
+                        });
+                        textWrapper.addEventListener('mouseleave', () => {
+                            actions.style.display = 'none';
+                        });
+                        
+                        lastContent.appendChild(textWrapper);
+                    } else {
+                        lastContent.appendChild(text);
+                    }
                     
-                    lastContent.appendChild(textWrapper);
-                } else {
-                    lastContent.appendChild(text);
+                    lastMessage.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
+                    
+                    if (window.twemoji) {
+                        twemoji.parse(text);
+                    }
+                    
+                    scrollToBottom();
+                    return;
                 }
-                
-                lastMessage.dataset.timestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
-                
-                if (window.twemoji) {
-                    twemoji.parse(text);
-                }
-                
-                scrollToBottom();
-                return;
             }
         }
     }
     
+    // Создаем новое сообщение
     const message = document.createElement('div');
     message.className = 'message';
     if (messageData.username === currentUser.username) {
@@ -666,18 +670,20 @@ function addMessage(messageData, save = true, prepend = false) {
     }
 
     message.appendChild(content);
+    
+    // Добавляем сообщение в начало или конец
     if (prepend) {
-    messagesContainer.insertBefore(message, messagesContainer.firstChild);
+        messagesContainer.insertBefore(message, messagesContainer.firstChild);
     } else {
         messagesContainer.appendChild(message);
+        scrollToBottom(); // Скроллим только при добавлении новых сообщений
     }
     
     if (window.twemoji) {
         twemoji.parse(message);
     }
-    
-    scrollToBottom();
 
+    // Вложенные функции остаются без изменений
     function showEditMessageInputForText(textElem, msgData) {
         const originalText = textElem.textContent || textElem.innerText;
         textElem.style.display = 'none';
