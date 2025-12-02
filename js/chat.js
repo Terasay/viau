@@ -507,6 +507,7 @@ function addMessage(messageData, save = true, prepend = false) {
     if (!shouldGroup) {
         const avatar = document.createElement('div');
         avatar.className = 'message-avatar';
+        avatar.dataset.username = messageData.username; // Для идентификации при обновлении
         
         // Синхронно проверяем кеш
         if (userAvatarsCache[messageData.username] !== undefined && userAvatarsCache[messageData.username] !== 'loading') {
@@ -535,14 +536,13 @@ function addMessage(messageData, save = true, prepend = false) {
                     userAvatarsCache[messageData.username] = avatarUrl;
                     
                     // Обновляем ВСЕ аватары этого пользователя на странице
-                    document.querySelectorAll('.message-avatar').forEach(av => {
-                        if (av.textContent === messageData.username[0].toUpperCase() && 
-                            av.parentElement.querySelector('.message-username')?.textContent === messageData.username) {
-                            if (avatarUrl) {
+                    if (avatarUrl) {
+                        document.querySelectorAll('.message-avatar').forEach(av => {
+                            if (av.dataset.username === messageData.username) {
                                 av.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
                             }
-                        }
-                    });
+                        });
+                    }
                 } catch (e) {
                     userAvatarsCache[messageData.username] = null;
                 }
