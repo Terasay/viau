@@ -439,48 +439,25 @@ function updateOnlineUsers(users) {
 }
 
 function addMessage(messageData, save = true, prepend = false) {
-    // Проверяем группировку
+    // Проверяем группировку только при append (новые сообщения)
     let shouldGroup = false;
-    let referenceMessage = null;
     
-    if (prepend) {
-        // При prepend (загрузка старых) проверяем следующее сообщение (которое уже есть)
-        // Но только если мы НЕ первое сообщение в истории
-        referenceMessage = messagesContainer.firstElementChild;
-    } else {
+    if (!prepend) {
         // При append (новое сообщение) проверяем последнее
-        referenceMessage = messagesContainer.lastElementChild;
-    }
-    
-    if (referenceMessage && referenceMessage.classList.contains('message')) {
-        const refUsername = referenceMessage.dataset.username;
-        const refTimestamp = parseInt(referenceMessage.dataset.timestamp || '0');
-        const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
+        const lastMessage = messagesContainer.lastElementChild;
         
-        // При prepend - текущее сообщение СТАРШЕ референсного, поэтому проверяем может ли РЕФЕРЕНСНОЕ быть в группе с текущим
-        // При append - текущее сообщение НОВЕЕ, проверяем может ли текущее быть в группе с референсным
-        const timeDiff = Math.abs((currentTimestamp - refTimestamp) / 1000 / 60);
-        
-        if (refUsername === messageData.username && timeDiff < 15) {
-            if (prepend) {
-                // Если загружаем старые сообщения и следующее (более новое) от того же юзера - 
-                // то СЛЕДУЮЩЕЕ должно стать grouped, а не текущее
-                // Поэтому текущее НЕ группируем, но проверяем референсное
-                if (!referenceMessage.classList.contains('grouped')) {
-                    referenceMessage.classList.add('grouped');
-                    // Скрываем заголовок референсного
-                    const refHeader = referenceMessage.querySelector('.message-header');
-                    if (refHeader) refHeader.style.display = 'none';
-                    // Очищаем аватар референсного
-                    const refAvatar = referenceMessage.querySelector('.message-avatar');
-                    if (refAvatar) refAvatar.innerHTML = '';
-                }
-            } else {
-                // При append текущее сообщение группируем
+        if (lastMessage && lastMessage.classList.contains('message')) {
+            const lastUsername = lastMessage.dataset.username;
+            const lastTimestamp = parseInt(lastMessage.dataset.timestamp || '0');
+            const currentTimestamp = messageData.timestamp ? new Date(messageData.timestamp).getTime() : Date.now();
+            const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60;
+            
+            if (lastUsername === messageData.username && timeDiff < 15) {
                 shouldGroup = true;
             }
         }
     }
+    // При prepend (загрузка истории) НЕ группируем - группировка будет при следующей загрузке
     
     // Создаем сообщение
     const message = document.createElement('div');
@@ -505,7 +482,7 @@ function addMessage(messageData, save = true, prepend = false) {
     // Для НЕ группированных сообщений загружаем аватар
     if (!shouldGroup) {
         // Синхронно проверяем кеш
-        if (userAvatarsCache[messageData.username]) {
+        if (userAvatarsCache[messageData.username] !== undefined) {
             const avatarUrl = userAvatarsCache[messageData.username];
             if (avatarUrl) {
                 avatar.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
@@ -513,10 +490,13 @@ function addMessage(messageData, save = true, prepend = false) {
                 avatar.textContent = messageData.username[0].toUpperCase();
             }
         } else {
-            // Если нет в кеше - ставим инициал и загружаем асинхронно
+            // Если нет в кеше - ставим инициал и загружаем асинхронно ОДИН РАЗ
             avatar.textContent = messageData.username[0].toUpperCase();
             
-            // Загружаем аватар асинхронно только один раз
+            // Отмечаем что загрузка началась
+            userAvatarsCache[messageData.username] = 'loading';
+            
+            // Загружаем аватар асинхронно
             (async () => {
                 try {
                     const res = await fetch(`/user/${encodeURIComponent(messageData.username)}/avatar`);
@@ -524,7 +504,7 @@ function addMessage(messageData, save = true, prepend = false) {
                     const avatarUrl = (data.success && data.avatar) ? data.avatar : null;
                     userAvatarsCache[messageData.username] = avatarUrl;
                     
-                    if (avatarUrl) {
+                    if (avatarUrl && avatar.textContent === messageData.username[0].toUpperCase()) {
                         avatar.innerHTML = `<img src="${avatarUrl}" alt="avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">`;
                     }
                 } catch (e) {
