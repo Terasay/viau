@@ -442,7 +442,6 @@ function addMessage(messageData, save = true, prepend = false) {
     // При prepend не проверяем группировку - просто добавляем сообщение
     if (!prepend) {
         const lastMessage = messagesContainer.lastElementChild;
-        let shouldGroup = false;
         
         if (lastMessage && lastMessage.classList.contains('message')) {
             const lastUsername = lastMessage.dataset.username;
@@ -451,8 +450,7 @@ function addMessage(messageData, save = true, prepend = false) {
             const timeDiff = (currentTimestamp - lastTimestamp) / 1000 / 60;
             
             if (lastUsername === messageData.username && timeDiff < 15) {
-                shouldGroup = true;
-                const lastContent = lastMessage.querySelector('.message-content');  // ← Правильное место объявления
+                const lastContent = lastMessage.querySelector('.message-content');
                 if (lastContent) {
                     const text = document.createElement('div');
                     text.className = 'message-text grouped-text';
@@ -471,7 +469,7 @@ function addMessage(messageData, save = true, prepend = false) {
                         text.textContent = messageData.text;
                     }
                     
-                    lastContent.appendChild(text);  // ← Теперь lastContent доступна
+                    lastContent.appendChild(text);
                     
                     const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
                     if (canEditOrDelete && messageData.id) {
@@ -483,7 +481,7 @@ function addMessage(messageData, save = true, prepend = false) {
                         reactionBtn.title = 'Добавить реакцию';
                         reactionBtn.onclick = (e) => {
                             e.stopPropagation();
-                            showReactionPicker(lastMessage, messageData);  // ← Используем lastMessage
+                            showReactionPicker(lastMessage, messageData);
                         };
                         actions.appendChild(reactionBtn);
 
@@ -617,7 +615,7 @@ function addMessage(messageData, save = true, prepend = false) {
     
     const text = document.createElement('div');
     text.className = 'message-text grouped-text';
-    text.dataset.messageId = messageData.id; // Добавляем ID
+    text.dataset.messageId = messageData.id;
     if (/<img|<a/.test(messageData.text)) {
         text.innerHTML = messageData.text;
         const imgs = text.querySelectorAll('img');
@@ -630,8 +628,7 @@ function addMessage(messageData, save = true, prepend = false) {
     } else {
         text.textContent = messageData.text;
     }
-
-    lastContent.appendChild(text);
+    content.appendChild(text);
 
     const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
     if (canEditOrDelete && messageData.id) {
@@ -643,7 +640,7 @@ function addMessage(messageData, save = true, prepend = false) {
         reactionBtn.title = 'Добавить реакцию';
         reactionBtn.onclick = (e) => {
             e.stopPropagation();
-            showReactionPicker(lastMessage, messageData);
+            showReactionPicker(message, messageData);
         };
         actions.appendChild(reactionBtn);
         
@@ -662,7 +659,7 @@ function addMessage(messageData, save = true, prepend = false) {
             editBtn.title = 'Редактировать';
             editBtn.onclick = (e) => {
                 e.stopPropagation();
-                showEditMessageInputForText(text, messageData);
+                showEditMessageInput(message, messageData, text);
             };
             actions.appendChild(editBtn);
         }
@@ -684,152 +681,152 @@ function addMessage(messageData, save = true, prepend = false) {
         moreBtn.title = 'Ещё';
         moreBtn.onclick = (e) => {
             e.stopPropagation();
-            showContextMenu(e, text, messageData);
+            showContextMenu(e, message, messageData);
         };
         actions.appendChild(moreBtn);
         
-        // Добавляем действия к тексту, а не к lastContent
-        text.style.position = 'relative';
-        text.appendChild(actions);
-        
-        // Обработчики hover для конкретного текстового блока
-        text.addEventListener('mouseenter', () => {
+        content.appendChild(actions);
+
+        message.addEventListener('mouseenter', () => {
             actions.style.display = 'flex';
         });
-        text.addEventListener('mouseleave', () => {
+        message.addEventListener('mouseleave', () => {
             actions.style.display = 'none';
         });
         
-        // Обработчик ПКМ для сгруппированного сообщения
-        text.addEventListener('contextmenu', (e) => {
+        message.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            showContextMenu(e, text, messageData);
+            showContextMenu(e, message, messageData);
         });
     }
 
     message.appendChild(content);
     
-    // Добавляем сообщение в начало или конец
     if (prepend) {
         messagesContainer.insertBefore(message, messagesContainer.firstChild);
     } else {
         messagesContainer.appendChild(message);
-        scrollToBottom(); // Скроллим только при добавлении новых сообщений
+        scrollToBottom();
     }
     
     if (window.twemoji) {
         twemoji.parse(message);
     }
+}
 
-    // Вспомогательная функция для редактирования текста в сгруппированном сообщении
-    function showEditMessageInputForText(textElem, msgData) {
-        const originalText = textElem.textContent || textElem.innerText;
-        textElem.style.display = 'none';
-        
-        const parentWrapper = textElem.parentElement;
-        const actionsElem = parentWrapper.querySelector('.message-actions');
+// Вспомогательная функция для редактирования текста в сгруппированном сообщении
+function showEditMessageInputForText(textElem, msgData) {
+    const originalText = textElem.textContent || textElem.innerText;
+    textElem.style.display = 'none';
+    
+    const parentWrapper = textElem.parentElement;
+    const actionsElem = textElem.querySelector('.message-actions');
+    if (actionsElem) actionsElem.style.display = 'none';
+    
+    const editInput = document.createElement('input');
+    editInput.type = 'text';
+    editInput.value = msgData.text.replace(/<[^>]+>/g, '');
+    editInput.style.fontSize = '13px';
+    editInput.style.width = '90%';
+    editInput.style.marginTop = '4px';
+    editInput.style.borderRadius = '6px';
+    editInput.style.border = '1px solid #ccc';
+    editInput.style.padding = '4px 8px';
+    parentWrapper.insertBefore(editInput, textElem);
+    
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Сохранить';
+    saveBtn.style.fontSize = '11px';
+    saveBtn.style.marginLeft = '6px';
+    saveBtn.style.background = 'var(--primary)';
+    saveBtn.style.color = '#fff';
+    saveBtn.style.border = 'none';
+    saveBtn.style.borderRadius = '6px';
+    saveBtn.style.cursor = 'pointer';
+    saveBtn.style.padding = '4px 12px';
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Отмена';
+    cancelBtn.style.fontSize = '11px';
+    cancelBtn.style.marginLeft = '6px';
+    cancelBtn.style.background = 'none';
+    cancelBtn.style.color = '#999';
+    cancelBtn.style.border = 'none';
+    cancelBtn.style.cursor = 'pointer';
+    cancelBtn.style.padding = '4px 12px';
+    
+    parentWrapper.insertBefore(saveBtn, textElem);
+    parentWrapper.insertBefore(cancelBtn, textElem);
+    
+    saveBtn.onclick = async () => {
+        const newText = editInput.value.trim();
+        if (!newText) return alert('Текст не может быть пустым');
+        await editMessageApi(msgData.id, newText);
+    };
+    
+    cancelBtn.onclick = () => {
+        editInput.remove();
+        saveBtn.remove();
+        cancelBtn.remove();
+        textElem.style.display = '';
         if (actionsElem) actionsElem.style.display = 'none';
-        
-        const editInput = document.createElement('input');
-        editInput.type = 'text';
-        editInput.value = msgData.text.replace(/<[^>]+>/g, '');
-        editInput.style.fontSize = '13px';
-        editInput.style.width = '90%';
-        editInput.style.marginTop = '4px';
-        editInput.style.borderRadius = '6px';
-        editInput.style.border = '1px solid #ccc';
-        editInput.style.padding = '4px 8px';
-        parentWrapper.insertBefore(editInput, textElem);
-        
-        const saveBtn = document.createElement('button');
-        saveBtn.textContent = 'Сохранить';
-        saveBtn.style.fontSize = '11px';
-        saveBtn.style.marginLeft = '6px';
-        saveBtn.style.background = 'var(--btn-bg)';
-        saveBtn.style.color = 'var(--btn-color)';
-        saveBtn.style.border = 'none';
-        saveBtn.style.borderRadius = '6px';
-        saveBtn.style.cursor = 'pointer';
-        
-        const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = 'Отмена';
-        cancelBtn.style.fontSize = '11px';
-        cancelBtn.style.marginLeft = '6px';
-        cancelBtn.style.background = 'none';
-        cancelBtn.style.color = '#999';
-        cancelBtn.style.border = 'none';
-        cancelBtn.style.cursor = 'pointer';
-        
-        parentWrapper.insertBefore(saveBtn, textElem);
-        parentWrapper.insertBefore(cancelBtn, textElem);
-        
-        saveBtn.onclick = async () => {
-            const newText = editInput.value.trim();
-            if (!newText) return alert('Текст не может быть пустым');
-            await editMessageApi(msgData.id, newText);
-        };
-        
-        cancelBtn.onclick = () => {
-            editInput.remove();
-            saveBtn.remove();
-            cancelBtn.remove();
-            textElem.style.display = '';
-            if (actionsElem) actionsElem.style.display = 'none';
-        };
-    }
+    };
+}
 
-    function showEditMessageInput(messageElem, msgData, textElem) {
-        textElem.style.display = 'none';
-        const actionsElem = content.querySelector('.message-actions');
+function showEditMessageInput(messageElem, msgData, textElem) {
+    textElem.style.display = 'none';
+    const content = messageElem.querySelector('.message-content');
+    const actionsElem = content.querySelector('.message-actions');
+    if (actionsElem) actionsElem.style.display = 'none';
+    
+    const editInput = document.createElement('input');
+    editInput.type = 'text';
+    editInput.value = msgData.text.replace(/<[^>]+>/g, '');
+    editInput.style.fontSize = '13px';
+    editInput.style.width = '90%';
+    editInput.style.marginTop = '4px';
+    editInput.style.borderRadius = '6px';
+    editInput.style.border = '1px solid #ccc';
+    editInput.style.padding = '4px 8px';
+    content.appendChild(editInput);
+    
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Сохранить';
+    saveBtn.style.fontSize = '11px';
+    saveBtn.style.marginLeft = '6px';
+    saveBtn.style.background = 'var(--primary)';
+    saveBtn.style.color = '#fff';
+    saveBtn.style.border = 'none';
+    saveBtn.style.borderRadius = '6px';
+    saveBtn.style.cursor = 'pointer';
+    saveBtn.style.padding = '4px 12px';
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Отмена';
+    cancelBtn.style.fontSize = '11px';
+    cancelBtn.style.marginLeft = '6px';
+    cancelBtn.style.background = 'none';
+    cancelBtn.style.color = '#999';
+    cancelBtn.style.border = 'none';
+    cancelBtn.style.cursor = 'pointer';
+    cancelBtn.style.padding = '4px 12px';
+    
+    content.appendChild(saveBtn);
+    content.appendChild(cancelBtn);
+    
+    saveBtn.onclick = async () => {
+        const newText = editInput.value.trim();
+        if (!newText) return alert('Текст не может быть пустым');
+        await editMessageApi(msgData.id, newText);
+    };
+    
+    cancelBtn.onclick = () => {
+        editInput.remove();
+        saveBtn.remove();
+        cancelBtn.remove();
+        textElem.style.display = '';
         if (actionsElem) actionsElem.style.display = 'none';
-        
-        const editInput = document.createElement('input');
-        editInput.type = 'text';
-        editInput.value = msgData.text.replace(/<[^>]+>/g, '');
-        editInput.style.fontSize = '13px';
-        editInput.style.width = '90%';
-        editInput.style.marginTop = '4px';
-        editInput.style.borderRadius = '6px';
-        editInput.style.border = '1px solid #ccc';
-        editInput.style.padding = '4px 8px';
-        content.appendChild(editInput);
-        
-        const saveBtn = document.createElement('button');
-        saveBtn.textContent = 'Сохранить';
-        saveBtn.style.fontSize = '11px';
-        saveBtn.style.marginLeft = '6px';
-        saveBtn.style.background = 'var(--btn-bg)';
-        saveBtn.style.color = 'var(--btn-color)';
-        saveBtn.style.border = 'none';
-        saveBtn.style.borderRadius = '6px';
-        saveBtn.style.cursor = 'pointer';
-        
-        const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = 'Отмена';
-        cancelBtn.style.fontSize = '11px';
-        cancelBtn.style.marginLeft = '6px';
-        cancelBtn.style.background = 'none';
-        cancelBtn.style.color = '#999';
-        cancelBtn.style.border = 'none';
-        cancelBtn.style.cursor = 'pointer';
-        
-        content.appendChild(saveBtn);
-        content.appendChild(cancelBtn);
-        
-        saveBtn.onclick = async () => {
-            const newText = editInput.value.trim();
-            if (!newText) return alert('Текст не может быть пустым');
-            await editMessageApi(msgData.id, newText);
-        };
-        
-        cancelBtn.onclick = () => {
-            editInput.remove();
-            saveBtn.remove();
-            cancelBtn.remove();
-            textElem.style.display = '';
-            if (actionsElem) actionsElem.style.display = 'none';
-        };
-    }
+    };
 }
 
 function setupWebSocket() {
