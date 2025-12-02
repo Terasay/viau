@@ -784,7 +784,7 @@ function setupWebSocket() {
 async function deleteMessageApi(id) {
     const token = localStorage.getItem('token');
     try {
-        const res = await fetch('/api/chat/edit_message', {
+        const res = await fetch('/api/chat/delete_message', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -806,7 +806,7 @@ async function deleteMessageApi(id) {
 async function editMessageApi(id, text) {
     const token = localStorage.getItem('token');
     try {
-        const res = await fetch('/chat/edit_message', {
+        const res = await fetch('/api/chat/edit_message', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
