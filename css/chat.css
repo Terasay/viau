@@ -550,7 +550,7 @@ body.dark-theme .message:hover {
     background: transparent;
     border: none;
     color: var(--text-secondary);
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -558,7 +558,6 @@ body.dark-theme .message:hover {
     transition: all 0.15s ease;
     padding: 0;
 }
-
 .message-actions button:hover {
     background: var(--bg-tertiary);
     color: var(--text-primary);
@@ -893,12 +892,25 @@ body.dark-theme .message:hover {
 
 .message-actions {
     display: none;
-    gap: 8px;
-    margin-top: 4px;
+    position: absolute;
+    top: -12px;
+    right: 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    padding: 4px;
+    gap: 2px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 10;
 }
 
 .message:hover .message-actions {
     display: flex;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .message-actions button {
@@ -1201,6 +1213,7 @@ emoji-picker {
 
 .message-text.grouped-text {
     margin-top: 6px;
+    position: relative;
 }
 
 .message-group {

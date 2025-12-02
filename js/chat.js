@@ -473,25 +473,23 @@ function addMessage(messageData, save = true, prepend = false) {
                     
                     const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
                     if (canEditOrDelete && messageData.id) {
-                        // Создаем панель действий для сгруппированного сообщения
                         const actions = document.createElement('div');
-                        actions.className = 'message-actions';
-                        actions.style.display = 'none';
-                        actions.style.marginTop = '2px';
-                        actions.style.fontSize = '11px';
-                        actions.style.gap = '8px';
-                        actions.style.alignItems = 'center';
-                        actions.style.opacity = '0.8';
+
+                        const reactionBtn = document.createElement('button');
+                        reactionBtn.innerHTML = '<i class="far fa-smile"></i>';
+                        reactionBtn.title = 'Добавить реакцию';
+                        reactionBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            showReactionPicker(message, messageData);
+                        };
+                        actions.appendChild(reactionBtn);
+
+
                         
                         const deleteBtn = document.createElement('button');
-                        deleteBtn.textContent = 'Удалить';
-                        deleteBtn.className = 'delete-btn';
-                        deleteBtn.style.color = '#ff6b6b';
-                        deleteBtn.style.background = 'none';
-                        deleteBtn.style.border = 'none';
-                        deleteBtn.style.cursor = 'pointer';
-                        deleteBtn.style.fontSize = '11px';
-                        deleteBtn.style.padding = '0 6px';
+                        deleteBtn.className = 'danger';
+                        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                        deleteBtn.title = 'Удалить';
                         deleteBtn.onclick = async (e) => {
                             e.stopPropagation();
                             if (confirm('Удалить сообщение?')) {
@@ -499,31 +497,45 @@ function addMessage(messageData, save = true, prepend = false) {
                             }
                         };
                         actions.appendChild(deleteBtn);
+
+
+
+                        const replyBtn = document.createElement('button');
+                        replyBtn.innerHTML = '<i class="fas fa-reply"></i>';
+                        replyBtn.title = 'Ответить';
+                        replyBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            setReplyTo(messageData);
+                        };
+                        actions.appendChild(replyBtn);
+
+
                         
                         if (messageData.username === currentUser.username) {
                             const editBtn = document.createElement('button');
-                            editBtn.textContent = 'Редактировать';
-                            editBtn.className = 'edit-btn';
-                            editBtn.style.color = '';
-                            editBtn.style.background = 'none';
-                            editBtn.style.border = 'none';
-                            editBtn.style.cursor = 'pointer';
-                            editBtn.style.fontSize = '11px';
-                            editBtn.style.padding = '0 6px';
+                            editBtn.innerHTML = '<i class="fas fa-pen"></i>';
+                            editBtn.title = 'Редактировать';
                             editBtn.onclick = (e) => {
                                 e.stopPropagation();
-                                showEditMessageInputForText(text, messageData);
+                                showEditMessageInput(message, messageData, text);
                             };
                             actions.appendChild(editBtn);
                         }
+
+                        const moreBtn = document.createElement('button');
+                        moreBtn.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
+                        moreBtn.title = 'Ещё';
+                        moreBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            showContextMenu(e, message, messageData);
+                        };
+                        actions.appendChild(moreBtn);
                         
-                        lastContent.appendChild(actions);
-                        
-                        lastMessage.addEventListener('mouseenter', () => {
-                            actions.style.display = 'flex';
-                        });
-                        lastMessage.addEventListener('mouseleave', () => {
-                            actions.style.display = 'none';
+                        content.appendChild(actions);
+
+                        message.addEventListener('contextmenu', (e) => {
+                            e.preventDefault();
+                            showContextMenu(e, message, messageData);
                         });
                     }
                     
@@ -599,7 +611,8 @@ function addMessage(messageData, save = true, prepend = false) {
     content.appendChild(header);
     
     const text = document.createElement('div');
-    text.className = 'message-text';
+    text.className = 'message-text grouped-text';
+    text.dataset.messageId = messageData.id; // Добавляем ID
     if (/<img|<a/.test(messageData.text)) {
         text.innerHTML = messageData.text;
         const imgs = text.querySelectorAll('img');
@@ -612,28 +625,47 @@ function addMessage(messageData, save = true, prepend = false) {
     } else {
         text.textContent = messageData.text;
     }
-    content.appendChild(text);
+
+    lastContent.appendChild(text);
 
     const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
     if (canEditOrDelete && messageData.id) {
         const actions = document.createElement('div');
         actions.className = 'message-actions';
-        actions.style.display = 'none';
-        actions.style.marginTop = '2px';
-        actions.style.fontSize = '11px';
-        actions.style.gap = '8px';
-        actions.style.alignItems = 'center';
-        actions.style.opacity = '0.8';
+        
+        const reactionBtn = document.createElement('button');
+        reactionBtn.innerHTML = '<i class="far fa-smile"></i>';
+        reactionBtn.title = 'Добавить реакцию';
+        reactionBtn.onclick = (e) => {
+            e.stopPropagation();
+            showReactionPicker(lastMessage, messageData);
+        };
+        actions.appendChild(reactionBtn);
+        
+        const replyBtn = document.createElement('button');
+        replyBtn.innerHTML = '<i class="fas fa-reply"></i>';
+        replyBtn.title = 'Ответить';
+        replyBtn.onclick = (e) => {
+            e.stopPropagation();
+            setReplyTo(messageData);
+        };
+        actions.appendChild(replyBtn);
+        
+        if (messageData.username === currentUser.username) {
+            const editBtn = document.createElement('button');
+            editBtn.innerHTML = '<i class="fas fa-pen"></i>';
+            editBtn.title = 'Редактировать';
+            editBtn.onclick = (e) => {
+                e.stopPropagation();
+                showEditMessageInputForText(text, messageData);
+            };
+            actions.appendChild(editBtn);
+        }
         
         const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Удалить';
-        deleteBtn.className = 'delete-btn';
-        deleteBtn.style.color = '#ff6b6b';
-        deleteBtn.style.background = 'none';
-        deleteBtn.style.border = 'none';
-        deleteBtn.style.cursor = 'pointer';
-        deleteBtn.style.fontSize = '11px';
-        deleteBtn.style.padding = '0 6px';
+        deleteBtn.className = 'danger';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.title = 'Удалить';
         deleteBtn.onclick = async (e) => {
             e.stopPropagation();
             if (confirm('Удалить сообщение?')) {
@@ -642,30 +674,31 @@ function addMessage(messageData, save = true, prepend = false) {
         };
         actions.appendChild(deleteBtn);
         
-        if (messageData.username === currentUser.username) {
-            const editBtn = document.createElement('button');
-            editBtn.textContent = 'Редактировать';
-            editBtn.className = 'edit-btn';
-            editBtn.style.color = '';
-            editBtn.style.background = 'none';
-            editBtn.style.border = 'none';
-            editBtn.style.cursor = 'pointer';
-            editBtn.style.fontSize = '11px';
-            editBtn.style.padding = '0 6px';
-            editBtn.onclick = (e) => {
-                e.stopPropagation();
-                showEditMessageInput(message, messageData, text);
-            };
-            actions.appendChild(editBtn);
-        }
+        const moreBtn = document.createElement('button');
+        moreBtn.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
+        moreBtn.title = 'Ещё';
+        moreBtn.onclick = (e) => {
+            e.stopPropagation();
+            showContextMenu(e, text, messageData);
+        };
+        actions.appendChild(moreBtn);
         
-        content.appendChild(actions);
+        // Добавляем действия к тексту, а не к lastContent
+        text.style.position = 'relative';
+        text.appendChild(actions);
         
-        message.addEventListener('mouseenter', () => {
+        // Обработчики hover для конкретного текстового блока
+        text.addEventListener('mouseenter', () => {
             actions.style.display = 'flex';
         });
-        message.addEventListener('mouseleave', () => {
+        text.addEventListener('mouseleave', () => {
             actions.style.display = 'none';
+        });
+        
+        // Обработчик ПКМ для сгруппированного сообщения
+        text.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            showContextMenu(e, text, messageData);
         });
     }
 
