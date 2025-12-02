@@ -88,16 +88,26 @@ async def get_chat_messages(before: int = None, limit: int = 50):
         try:
             # Пытаемся распарсить как JSON
             text_data = json.loads(row[3])
-            message = {
-                'id': row[0],
-                'username': row[1],
-                'role': row[2],
-                'text': text_data.get('text', row[3]),
-                'timestamp': row[4]
-            }
-            if 'replyTo' in text_data and text_data['replyTo']:
-                message['replyTo'] = text_data['replyTo']
-        except (json.JSONDecodeError, TypeError):
+            if isinstance(text_data, dict):
+                message = {
+                    'id': row[0],
+                    'username': row[1],
+                    'role': row[2],
+                    'text': text_data.get('text', ''),
+                    'timestamp': row[4]
+                }
+                if 'replyTo' in text_data and text_data['replyTo']:
+                    message['replyTo'] = text_data['replyTo']
+            else:
+                # JSON не объект, используем как текст
+                message = {
+                    'id': row[0],
+                    'username': row[1],
+                    'role': row[2],
+                    'text': str(text_data),
+                    'timestamp': row[4]
+                }
+        except (json.JSONDecodeError, TypeError, ValueError):
             # Если не JSON, то обычный текст
             message = {
                 'id': row[0],
