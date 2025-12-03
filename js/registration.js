@@ -347,10 +347,6 @@ async function handleSubmit() {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Подать заявку';
     }
-}       alert('Ошибка при отправке заявки');
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Подать заявку';
-    }
 }
 
 async function handleCancelApplication() {
