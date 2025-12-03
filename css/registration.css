@@ -459,6 +459,9 @@ body.dark-mode .registration-header {
     flex-shrink: 0;
     position: relative;
     margin-top: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .checkbox-custom::after {
