@@ -4,8 +4,10 @@ let hasApplication = false;
 document.addEventListener('DOMContentLoaded', async () => {
     initTheme();
     await checkAuth();
+    await loadCountries();
+    await loadRules();
     setupEventListeners();
-    setupCharCounters();
+    setupReferralCodeInput();
 });
 
 function initTheme() {
@@ -69,6 +71,68 @@ async function checkAuth() {
     }
 }
 
+async function loadCountries() {
+    try {
+        const response = await fetch('/data/countries.json');
+        const countries = await response.json();
+        
+        const countrySelect = document.getElementById('country');
+        countrySelect.innerHTML = '<option value="">Выберите страну</option>';
+        
+        // Получаем занятые страны
+        const token = localStorage.getItem('token');
+        let occupiedCountries = [];
+        
+        if (token) {
+            try {
+                const occupiedResponse = await fetch('/api/registration/occupied-countries', {
+                    headers: { 'Authorization': token }
+                });
+                if (occupiedResponse.ok) {
+                    const data = await occupiedResponse.json();
+                    occupiedCountries = data.countries || [];
+                }
+            } catch (e) {
+                console.log('Could not fetch occupied countries');
+            }
+        }
+        
+        countries.forEach(country => {
+            if (country.available && !occupiedCountries.includes(country.id)) {
+                const option = document.createElement('option');
+                option.value = country.id;
+                option.textContent = country.name;
+                countrySelect.appendChild(option);
+            }
+        });
+    } catch (error) {
+        console.error('Error loading countries:', error);
+        document.getElementById('country').innerHTML = '<option value="">Ошибка загрузки</option>';
+    }
+}
+
+async function loadRules() {
+    try {
+        const response = await fetch('/data/rules.txt');
+        const rules = await response.text();
+        document.getElementById('rulesContent').textContent = rules;
+    } catch (error) {
+        console.error('Error loading rules:', error);
+        document.getElementById('rulesContent').textContent = 'Не удалось загрузить правила. Попробуйте позже.';
+    }
+}
+
+function showRulesModal() {
+    document.getElementById('rulesModal').classList.add('active');
+}
+
+function closeRulesModal() {
+    document.getElementById('rulesModal').classList.remove('active');
+}
+
+// Делаем функцию глобальной для onclick
+window.closeRulesModal = closeRulesModal;
+
 async function checkExistingApplication() {
     const token = localStorage.getItem('token');
     
@@ -129,21 +193,17 @@ function showExistingApplication(application) {
 }
 
 function fillFormWithApplication(app) {
-    document.getElementById('characterName').value = app.character_name || '';
-    document.getElementById('country').value = app.country || '';
+    document.getElementById('firstName').value = app.first_name || '';
+    document.getElementById('lastName').value = app.last_name || '';
+    document.getElementById('countryOrigin').value = app.country_origin || '';
     document.getElementById('age').value = app.age || '';
-    document.getElementById('experience').value = app.experience || '';
-    document.getElementById('playtime').value = app.playtime || '';
-    document.getElementById('motivation').value = app.motivation || '';
-    document.getElementById('skills').value = app.skills || '';
-    document.getElementById('additionalInfo').value = app.additional_info || '';
+    document.getElementById('country').value = app.country || '';
+    document.getElementById('religion').value = app.religion || '';
+    document.getElementById('ethnicity').value = app.ethnicity || '';
+    document.getElementById('relatives').value = app.relatives || '';
+    document.getElementById('referralCode').value = app.referral_code || '';
     document.getElementById('rulesAccept').checked = true;
     document.getElementById('fairPlay').checked = true;
-    
-    // Обновляем счётчики
-    updateCharCounter('motivation', 'motivationCounter');
-    updateCharCounter('skills', 'skillsCounter');
-    updateCharCounter('additionalInfo', 'additionalCounter');
 }
 
 function disableForm() {
@@ -168,6 +228,10 @@ function setupEventListeners() {
     // Кнопка назад
     document.getElementById('backBtn').addEventListener('click', () => {
         window.location.href = '/';
+function setupEventListeners() {
+    // Кнопка назад
+    document.getElementById('backBtn').addEventListener('click', () => {
+        window.location.href = '/';
     });
     
     // Переключатель темы
@@ -179,8 +243,13 @@ function setupEventListeners() {
     // Кнопка очистки формы
     document.getElementById('resetBtn').addEventListener('click', () => {
         if (confirm('Вы уверены что хотите очистить форму?')) {
-            document.getElementById('applicationForm').reset();
-            updateAllCounters();
+            const form = document.getElementById('applicationForm');
+            form.querySelectorAll('input[type="text"], input[type="number"], select, textarea').forEach(input => {
+                input.value = '';
+            });
+            form.querySelectorAll('input[type="checkbox"]').forEach(input => {
+                input.checked = false;
+            });
         }
     });
     
@@ -192,47 +261,37 @@ function setupEventListeners() {
     
     // Кнопка отзыва заявки
     document.getElementById('cancelApplicationBtn').addEventListener('click', handleCancelApplication);
-}
-
-function setupCharCounters() {
-    const textareas = [
-        { id: 'motivation', counter: 'motivationCounter' },
-        { id: 'skills', counter: 'skillsCounter' },
-        { id: 'additionalInfo', counter: 'additionalCounter' }
-    ];
     
-    textareas.forEach(({ id, counter }) => {
-        const textarea = document.getElementById(id);
-        textarea.addEventListener('input', () => {
-            updateCharCounter(id, counter);
-        });
+    // Ссылка на правила
+    document.getElementById('rulesLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        showRulesModal();
     });
 }
 
-function updateCharCounter(textareaId, counterId) {
-    const textarea = document.getElementById(textareaId);
-    const counter = document.getElementById(counterId);
-    counter.textContent = textarea.value.length;
+function setupReferralCodeInput() {
+    const referralInput = document.getElementById('referralCode');
+    referralInput.addEventListener('input', (e) => {
+        // Приводим к верхнему регистру и оставляем только латинские буквы
+        e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').substring(0, 4);
+    });
 }
 
-function updateAllCounters() {
-    updateCharCounter('motivation', 'motivationCounter');
-    updateCharCounter('skills', 'skillsCounter');
-    updateCharCounter('additionalInfo', 'additionalCounter');
+function setupCharCounters() {
+    // Больше не используется, но оставим для обратной совместимости
 }
 
 async function handleSubmit() {
     // Валидация формы
-    const characterName = document.getElementById('characterName').value.trim();
-    const country = document.getElementById('country').value;
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const countryOrigin = document.getElementById('countryOrigin').value.trim();
     const age = document.getElementById('age').value;
-    const experience = document.getElementById('experience').value;
-    const playtime = document.getElementById('playtime').value;
-    const motivation = document.getElementById('motivation').value.trim();
+    const country = document.getElementById('country').value;
     const rulesAccept = document.getElementById('rulesAccept').checked;
     const fairPlay = document.getElementById('fairPlay').checked;
     
-    if (!characterName || !country || !age || !experience || !playtime || !motivation) {
+    if (!firstName || !lastName || !countryOrigin || !age || !country) {
         alert('Пожалуйста, заполните все обязательные поля');
         return;
     }
@@ -242,15 +301,22 @@ async function handleSubmit() {
         return;
     }
     
+    const referralCode = document.getElementById('referralCode').value.trim();
+    if (referralCode && (referralCode.length !== 4 || !/^[A-Z]{4}$/.test(referralCode))) {
+        alert('Реферальный код должен состоять из 4 букв латинского алфавита (A-Z)');
+        return;
+    }
+    
     const applicationData = {
-        character_name: characterName,
-        country: country,
+        first_name: firstName,
+        last_name: lastName,
+        country_origin: countryOrigin,
         age: parseInt(age),
-        experience: experience,
-        playtime: parseInt(playtime),
-        motivation: motivation,
-        skills: document.getElementById('skills').value.trim(),
-        additional_info: document.getElementById('additionalInfo').value.trim()
+        country: country,
+        religion: document.getElementById('religion').value.trim() || null,
+        ethnicity: document.getElementById('ethnicity').value.trim() || null,
+        relatives: document.getElementById('relatives').value.trim() || null,
+        referral_code: referralCode || null
     };
     
     const submitBtn = document.getElementById('submitBtn');
@@ -282,6 +348,10 @@ async function handleSubmit() {
     } catch (error) {
         console.error('Submit error:', error);
         alert('Ошибка при отправке заявки');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Подать заявку';
+    }
+}       alert('Ошибка при отправке заявки');
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Подать заявку';
     }

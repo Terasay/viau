@@ -1,0 +1,52 @@
+[
+    {
+        "id": "russia",
+        "name": "Россия",
+        "available": true
+    },
+    {
+        "id": "usa",
+        "name": "США",
+        "available": true
+    },
+    {
+        "id": "china",
+        "name": "Китай",
+        "available": true
+    },
+    {
+        "id": "uk",
+        "name": "Великобритания",
+        "available": true
+    },
+    {
+        "id": "france",
+        "name": "Франция",
+        "available": true
+    },
+    {
+        "id": "germany",
+        "name": "Германия",
+        "available": true
+    },
+    {
+        "id": "japan",
+        "name": "Япония",
+        "available": true
+    },
+    {
+        "id": "italy",
+        "name": "Италия",
+        "available": true
+    },
+    {
+        "id": "spain",
+        "name": "Испания",
+        "available": true
+    },
+    {
+        "id": "canada",
+        "name": "Канада",
+        "available": true
+    }
+]

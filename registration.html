@@ -68,145 +68,136 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="characterName">
-                            Игровое имя персонажа
+                        <label for="firstName">
+                            Имя персонажа
                             <span class="required">*</span>
                         </label>
                         <input 
                             type="text" 
-                            id="characterName" 
-                            placeholder="Введите имя вашего персонажа"
+                            id="firstName" 
+                            placeholder="Введите имя персонажа"
                             maxlength="50"
                             required
                         >
-                        <div class="form-hint">Имя, которое будет отображаться в игре</div>
+                        <div class="form-hint">Имя вашего персонажа</div>
                     </div>
 
                     <div class="form-group">
-                        <label for="country">
-                            Выбор страны
+                        <label for="lastName">
+                            Фамилия/Дом
                             <span class="required">*</span>
                         </label>
-                        <select id="country" required>
-                            <option value="">Выберите страну</option>
-                            <option value="russia">Россия</option>
-                            <option value="usa">США</option>
-                            <option value="china">Китай</option>
-                            <option value="uk">Великобритания</option>
-                            <option value="france">Франция</option>
-                            <option value="germany">Германия</option>
-                            <option value="japan">Япония</option>
-                            <option value="other">Другая</option>
-                        </select>
-                        <div class="form-hint">Страна, за которую вы будете играть</div>
+                        <input 
+                            type="text" 
+                            id="lastName" 
+                            placeholder="Введите фамилию или название дома"
+                            maxlength="50"
+                            required
+                        >
+                        <div class="form-hint">Фамилия или династия персонажа</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="countryOrigin">
+                            Страна происхождения
+                            <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="countryOrigin" 
+                            placeholder="Введите страну происхождения"
+                            maxlength="50"
+                            required
+                        >
+                        <div class="form-hint">Страна, откуда родом персонаж</div>
                     </div>
 
                     <div class="form-group">
                         <label for="age">
-                            Возраст
+                            Возраст персонажа
                             <span class="required">*</span>
                         </label>
                         <input 
                             type="number" 
                             id="age" 
-                            placeholder="Введите ваш возраст"
-                            min="13"
+                            placeholder="Введите возраст персонажа"
+                            min="18"
                             max="100"
                             required
                         >
-                        <div class="form-hint">Минимальный возраст - 13 лет</div>
+                        <div class="form-hint">Возраст вашего персонажа (от 18 лет)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="country">
+                            Выбор страны для игры
+                            <span class="required">*</span>
+                        </label>
+                        <select id="country" required>
+                            <option value="">Загрузка...</option>
+                        </select>
+                        <div class="form-hint">Страна, за которую будет играть ваш персонаж</div>
                     </div>
                 </div>
 
                 <div class="form-section">
                     <div class="section-header">
-                        <i class="fas fa-gamepad"></i>
-                        <h2>Игровой опыт</h2>
+                        <i class="fas fa-info-circle"></i>
+                        <h2>Дополнительная информация</h2>
                     </div>
                     
                     <div class="form-group">
-                        <label for="experience">
-                            Опыт в подобных играх
-                            <span class="required">*</span>
-                        </label>
-                        <select id="experience" required>
-                            <option value="">Выберите уровень опыта</option>
-                            <option value="beginner">Новичок</option>
-                            <option value="intermediate">Средний уровень</option>
-                            <option value="advanced">Опытный игрок</option>
-                            <option value="expert">Эксперт</option>
-                        </select>
-                        <div class="form-hint">Ваш уровень игрового опыта</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="playtime">
-                            Доступное время для игры (часов в неделю)
-                            <span class="required">*</span>
+                        <label for="religion">
+                            Религия
                         </label>
                         <input 
-                            type="number" 
-                            id="playtime" 
-                            placeholder="Например: 10"
-                            min="1"
-                            max="168"
-                            required
+                            type="text" 
+                            id="religion" 
+                            placeholder="Введите религию (необязательно)"
+                            maxlength="50"
                         >
-                        <div class="form-hint">Сколько часов в неделю вы готовы уделять игре</div>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <div class="section-header">
-                        <i class="fas fa-comment"></i>
-                        <h2>О себе</h2>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="motivation">
-                            Почему вы хотите стать игроком?
-                            <span class="required">*</span>
-                        </label>
-                        <textarea 
-                            id="motivation" 
-                            placeholder="Расскажите, что вас мотивирует..."
-                            maxlength="500"
-                            rows="4"
-                            required
-                        ></textarea>
-                        <div class="char-counter">
-                            <span id="motivationCounter">0</span> / 500
-                        </div>
+                        <div class="form-hint">Если не указано, будет выставлена стандартная</div>
                     </div>
 
                     <div class="form-group">
-                        <label for="skills">
-                            Ваши навыки и сильные стороны
+                        <label for="ethnicity">
+                            Этнос
                         </label>
-                        <textarea 
-                            id="skills" 
-                            placeholder="Опишите свои игровые навыки..."
-                            maxlength="500"
-                            rows="4"
-                        ></textarea>
-                        <div class="char-counter">
-                            <span id="skillsCounter">0</span> / 500
-                        </div>
+                        <input 
+                            type="text" 
+                            id="ethnicity" 
+                            placeholder="Введите этнос (необязательно)"
+                            maxlength="50"
+                        >
+                        <div class="form-hint">Если не указано, будет выставлен стандартный</div>
                     </div>
 
                     <div class="form-group">
-                        <label for="additionalInfo">
-                            Дополнительная информация
+                        <label for="relatives">
+                            Родственники
                         </label>
                         <textarea 
-                            id="additionalInfo" 
-                            placeholder="Любая дополнительная информация..."
-                            maxlength="500"
-                            rows="4"
+                            id="relatives" 
+                            placeholder="Укажите информацию о родственниках (необязательно)"
+                            maxlength="300"
+                            rows="3"
                         ></textarea>
-                        <div class="char-counter">
-                            <span id="additionalCounter">0</span> / 500
-                        </div>
+                        <div class="form-hint">Если не указано, родственники будут добавлены в соответствии с возрастом</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="referralCode">
+                            Реферальный код
+                        </label>
+                        <input 
+                            type="text" 
+                            id="referralCode" 
+                            placeholder="XXXX"
+                            maxlength="4"
+                            pattern="[A-Z]{4}"
+                            style="text-transform: uppercase;"
+                        >
+                        <div class="form-hint">4 буквы латинского алфавита (A-Z). Необязательно.</div>
                     </div>
                 </div>
 
@@ -216,7 +207,9 @@
                             <input type="checkbox" id="rulesAccept" required>
                             <span class="checkbox-custom"></span>
                             <span class="checkbox-text">
-                                Я ознакомлен с правилами игры и обязуюсь их соблюдать
+                                Я ознакомлен с 
+                                <a href="#" class="rules-link" id="rulesLink">правилами игры</a> 
+                                и обязуюсь их соблюдать
                                 <span class="required">*</span>
                             </span>
                         </label>
@@ -277,6 +270,27 @@
             <button class="btn-primary" onclick="window.location.href='/'">
                 <i class="fas fa-sign-in-alt"></i>
                 Перейти к входу
+            </button>
+        </div>
+    </div>
+
+    <!-- Модальное окно с правилами -->
+    <div class="modal" id="rulesModal">
+        <div class="modal-overlay" onclick="closeRulesModal()"></div>
+        <div class="modal-content rules-modal-content">
+            <button class="modal-close" onclick="closeRulesModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-icon">
+                <i class="fas fa-book"></i>
+            </div>
+            <h2>Правила игры</h2>
+            <div class="rules-content" id="rulesContent">
+                <p>Загрузка правил...</p>
+            </div>
+            <button class="btn-primary" onclick="closeRulesModal()">
+                <i class="fas fa-check"></i>
+                Понятно
             </button>
         </div>
     </div>
