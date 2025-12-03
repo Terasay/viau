@@ -108,22 +108,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-        try {
-            const resp = await fetch('/api/registration/occupied-countries', {
-                headers: { 'Authorization': token }
-            });
-            if (resp.status === 403) {
-                alert('Доступ запрещён');
-                return;
-            }
-            const data = await resp.json();
-            return data.countries || [];
-        } catch (e) {
-            console.error('Error loading occupied countries:', e);
-            return [];
-        }
-    }
-
     // === ЗАЯВКИ ===
     let currentApplicationsFilter = 'pending';
     let allApplications = [];
