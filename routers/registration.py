@@ -420,6 +420,56 @@ async def get_occupied_countries(request: Request):
 # ===== ADMIN ENDPOINTS =====
 # Эти эндпоинты будут использоваться в админ панели
 
+@router.get("/admin/all-applications")
+async def get_all_applications(request: Request):
+    """Получение всех заявок для админ панели"""
+    
+    import sys
+    sys.path.append('..')
+    from main import get_current_user
+    
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({
+            "success": False,
+            "error": "Требуется авторизация"
+        }, status_code=401)
+    
+    # Проверка прав администратора
+    if user.get('role') != 'admin':
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('''
+            SELECT 
+                id, user_id, username,
+                first_name, last_name, country_origin, age,
+                country, religion, ethnicity, relatives, referral_code,
+                status, rejection_reason, created_at, updated_at,
+                reviewed_by, reviewed_at
+            FROM player_applications
+            ORDER BY created_at DESC
+        ''')
+        
+        applications = cursor.fetchall()
+        
+        return JSONResponse({
+            "success": True,
+            "applications": [dict(app) for app in applications]
+        })
+        
+    except Exception as e:
+        print(f"Error getting applications: {e}")
+        return JSONResponse({
+            "success": False,
+            "error": "Ошибка при получении заявок"
+        }, status_code=500)
+    finally:
+        conn.close()
+
 @router.get("/admin/pending-applications")
 async def get_pending_applications(request: Request):
     """Получение всех заявок на рассмотрении (только для админов)"""

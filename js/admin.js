@@ -50,6 +50,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await loadCurrencies();
             } else if (sectionName === 'resources') {
                 await loadResources();
+            } else if (sectionName === 'applications') {
+                await loadApplications();
             }
         });
     });
@@ -105,6 +107,262 @@ document.addEventListener('DOMContentLoaded', async () => {
             actionResult.textContent = 'Ошибка запроса.';
         }
     });
+
+        try {
+            const resp = await fetch('/api/registration/occupied-countries', {
+                headers: { 'Authorization': token }
+            });
+            if (resp.status === 403) {
+                alert('Доступ запрещён');
+                return;
+            }
+            const data = await resp.json();
+            return data.countries || [];
+        } catch (e) {
+            console.error('Error loading occupied countries:', e);
+            return [];
+        }
+    }
+
+    // === ЗАЯВКИ ===
+    let currentApplicationsFilter = 'pending';
+    let allApplications = [];
+
+    async function loadApplications() {
+        const applicationsList = document.getElementById('applications-list');
+        applicationsList.innerHTML = '<div class="loading-msg">Загрузка заявок...</div>';
+
+        try {
+            const resp = await fetch('/api/registration/admin/all-applications', {
+                headers: { 'Authorization': token }
+            });
+
+            if (resp.status === 403) {
+                applicationsList.innerHTML = '<div class="error">Доступ запрещён</div>';
+                return;
+            }
+
+            const data = await resp.json();
+            if (data.success) {
+                allApplications = data.applications;
+                updateApplicationsCounts();
+                displayApplications(currentApplicationsFilter);
+            } else {
+                applicationsList.innerHTML = '<div class="error">Ошибка загрузки заявок</div>';
+            }
+        } catch (e) {
+            console.error('Error loading applications:', e);
+            applicationsList.innerHTML = '<div class="error">Ошибка загрузки заявок</div>';
+        }
+    }
+
+    function updateApplicationsCounts() {
+        const pending = allApplications.filter(a => a.status === 'pending').length;
+        const approved = allApplications.filter(a => a.status === 'approved').length;
+        const rejected = allApplications.filter(a => a.status === 'rejected').length;
+
+        document.getElementById('pending-count').textContent = pending;
+        document.getElementById('approved-count').textContent = approved;
+        document.getElementById('rejected-count').textContent = rejected;
+    }
+
+    function displayApplications(filter) {
+        const applicationsList = document.getElementById('applications-list');
+        const filtered = allApplications.filter(a => a.status === filter);
+
+        if (filtered.length === 0) {
+            applicationsList.innerHTML = `<div class="loading-msg">Нет заявок со статусом "${filter}"</div>`;
+            return;
+        }
+
+        let html = '';
+        for (const app of filtered) {
+            const statusText = app.status === 'pending' ? 'На рассмотрении' :
+                             app.status === 'approved' ? 'Одобрена' : 'Отклонена';
+            
+            const date = new Date(app.created_at).toLocaleString('ru-RU');
+            
+            html += `
+                <div class="application-card ${app.status}">
+                    <div class="application-header">
+                        <div>
+                            <div class="application-user">${app.username}</div>
+                            <div class="application-date">Подана: ${date}</div>
+                        </div>
+                        <div class="application-status ${app.status}">${statusText}</div>
+                    </div>
+                    
+                    <div class="application-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Имя персонажа</div>
+                            <div class="detail-value">${app.first_name || '-'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Фамилия/Дом</div>
+                            <div class="detail-value">${app.last_name || '-'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Происхождение</div>
+                            <div class="detail-value">${app.country_origin || '-'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Возраст</div>
+                            <div class="detail-value">${app.age || '-'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Страна для игры</div>
+                            <div class="detail-value">${app.country || '-'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Религия</div>
+                            <div class="detail-value">${app.religion || 'Не указана'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Этнос</div>
+                            <div class="detail-value">${app.ethnicity || 'Не указан'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Реферальный код</div>
+                            <div class="detail-value">${app.referral_code || 'Нет'}</div>
+                        </div>
+                    </div>
+                    
+                    ${app.relatives ? `
+                        <div class="detail-item" style="margin-top: 8px;">
+                            <div class="detail-label">Родственники</div>
+                            <div class="detail-value">${app.relatives}</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${app.rejection_reason ? `
+                        <div class="rejection-reason">
+                            <strong>Причина отклонения:</strong> ${app.rejection_reason}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="application-actions">
+                        ${app.status === 'pending' ? `
+                            <button class="btn-approve" onclick="approveApplication(${app.id}, '${app.country}')">
+                                <i class="fas fa-check"></i> Одобрить
+                            </button>
+                            <button class="btn-reject" onclick="showRejectModal(${app.id})">
+                                <i class="fas fa-times"></i> Отклонить
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        applicationsList.innerHTML = html;
+    }
+
+    // Фильтры заявок
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentApplicationsFilter = btn.dataset.filter;
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            displayApplications(currentApplicationsFilter);
+        });
+    });
+
+    // Одобрение заявки
+    window.approveApplication = async function(appId, country) {
+        if (!confirm(`Одобрить заявку и назначить страну "${country}"?`)) {
+            return;
+        }
+
+        try {
+            const resp = await fetch('/api/registration/admin/approve-application', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify({
+                    application_id: appId,
+                    assigned_country: country
+                })
+            });
+
+            const data = await resp.json();
+            if (data.success) {
+                alert('Заявка одобрена!');
+                await loadApplications();
+            } else {
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        } catch (e) {
+            console.error('Error approving application:', e);
+            alert('Ошибка при одобрении заявки');
+        }
+    };
+
+    // Модальное окно отклонения
+    window.showRejectModal = function(appId) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay-admin active';
+        modal.innerHTML = `
+            <div class="modal-content-admin">
+                <button class="modal-close-btn" onclick="this.closest('.modal-overlay-admin').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h3 class="modal-title">Отклонить заявку</h3>
+                <div class="modal-form">
+                    <label>
+                        Причина отклонения:
+                        <textarea id="reject-reason" placeholder="Укажите причину отклонения..." required></textarea>
+                    </label>
+                    <div class="modal-actions">
+                        <button class="btn-secondary" onclick="this.closest('.modal-overlay-admin').remove()">
+                            Отмена
+                        </button>
+                        <button class="btn-reject" onclick="rejectApplication(${appId})">
+                            <i class="fas fa-times"></i> Отклонить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    };
+
+    // Отклонение заявки
+    window.rejectApplication = async function(appId) {
+        const reason = document.getElementById('reject-reason').value.trim();
+        if (!reason) {
+            alert('Укажите причину отклонения');
+            return;
+        }
+
+        try {
+            const resp = await fetch('/api/registration/admin/reject-application', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify({
+                    application_id: appId,
+                    reason: reason
+                })
+            });
+
+            const data = await resp.json();
+            if (data.success) {
+                alert('Заявка отклонена');
+                document.querySelector('.modal-overlay-admin').remove();
+                await loadApplications();
+            } else {
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        } catch (e) {
+            console.error('Error rejecting application:', e);
+            alert('Ошибка при отклонении заявки');
+        }
+    };
 
     const currenciesList = document.getElementById('currencies-list');
 

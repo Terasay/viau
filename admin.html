@@ -19,6 +19,9 @@
                 <button class="admin-tab active" data-section="users">
                     <i class="fas fa-users"></i> Пользователи
                 </button>
+                <button class="admin-tab" data-section="applications">
+                    <i class="fas fa-file-signature"></i> Заявки
+                </button>
                 <button class="admin-tab" data-section="currencies">
                     <i class="fas fa-dollar-sign"></i> Валюты
                 </button>
@@ -47,6 +50,27 @@
                         <button type="submit">Применить</button>
                     </form>
                     <div id="action-result" style="margin-top:8px;color:#00ffc6"></div>
+                </div>
+            </section>
+
+            <!-- Раздел заявок -->
+            <section id="applications-section" class="terminal admin-section" style="display:none">
+                <h2>Заявки на регистрацию игроков</h2>
+                
+                <div class="applications-filters" style="margin-bottom: 20px;">
+                    <button class="filter-btn active" data-filter="pending">
+                        <i class="fas fa-clock"></i> На рассмотрении (<span id="pending-count">0</span>)
+                    </button>
+                    <button class="filter-btn" data-filter="approved">
+                        <i class="fas fa-check-circle"></i> Одобренные (<span id="approved-count">0</span>)
+                    </button>
+                    <button class="filter-btn" data-filter="rejected">
+                        <i class="fas fa-times-circle"></i> Отклонённые (<span id="rejected-count">0</span>)
+                    </button>
+                </div>
+
+                <div id="applications-list" class="items-list" style="max-height: 600px;">
+                    <div class="loading-msg">Загрузка заявок...</div>
                 </div>
             </section>
 

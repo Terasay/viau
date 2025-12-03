@@ -320,3 +320,282 @@ button:active, input[type="submit"]:active {
         border-radius: 8px;
     }
 }
+
+/* Стили для заявок */
+.applications-filters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-btn:hover {
+    background: #333;
+    border-color: #00ffc6;
+}
+
+.filter-btn.active {
+    background: #00ffc6;
+    color: #181818;
+    border-color: #00ffc6;
+}
+
+.application-card {
+    background: #232323;
+    border: 2px solid #444;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    transition: all 0.3s;
+}
+
+.application-card:hover {
+    border-color: #00ffc6;
+    box-shadow: 0 4px 12px #00ffc633;
+}
+
+.application-card.pending {
+    border-left: 4px solid #f59e0b;
+}
+
+.application-card.approved {
+    border-left: 4px solid #10b981;
+}
+
+.application-card.rejected {
+    border-left: 4px solid #ef4444;
+}
+
+.application-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.application-user {
+    font-size: 1.2em;
+    color: #00ffc6;
+    font-weight: bold;
+}
+
+.application-date {
+    color: #888;
+    font-size: 0.9em;
+}
+
+.application-status {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.application-status.pending {
+    background: #f59e0b33;
+    color: #f59e0b;
+    border: 1px solid #f59e0b;
+}
+
+.application-status.approved {
+    background: #10b98133;
+    color: #10b981;
+    border: 1px solid #10b981;
+}
+
+.application-status.rejected {
+    background: #ef444433;
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+.application-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 12px 0;
+    padding: 12px;
+    background: #1a1a1a;
+    border-radius: 6px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-label {
+    color: #888;
+    font-size: 0.85em;
+    margin-bottom: 4px;
+}
+
+.detail-value {
+    color: #e0e0e0;
+    font-size: 1em;
+}
+
+.application-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.btn-approve {
+    background: #10b981 !important;
+    color: #fff !important;
+}
+
+.btn-approve:hover {
+    background: #059669 !important;
+}
+
+.btn-reject {
+    background: #ef4444 !important;
+    color: #fff !important;
+}
+
+.btn-reject:hover {
+    background: #dc2626 !important;
+}
+
+.btn-view {
+    background: #3b82f6 !important;
+    color: #fff !important;
+}
+
+.btn-view:hover {
+    background: #2563eb !important;
+}
+
+.rejection-reason {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #ef444422;
+    border-left: 3px solid #ef4444;
+    border-radius: 4px;
+    color: #ef4444;
+    font-size: 0.9em;
+}
+
+.modal-overlay-admin {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-overlay-admin.active {
+    display: flex;
+}
+
+.modal-content-admin {
+    background: #232323;
+    border: 2px solid #00ffc6;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.modal-close-btn:hover {
+    color: #00ffc6;
+}
+
+.modal-title {
+    color: #00ffc6;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.modal-form label {
+    color: #e0e0e0;
+    font-size: 0.95em;
+}
+
+.modal-form textarea {
+    background: #1a1a1a;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.modal-form textarea:focus {
+    border-color: #00ffc6;
+    outline: none;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+.btn-secondary {
+    background: #444;
+    color: #e0e0e0;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+}
+
+.btn-secondary:hover {
+    background: #555;
+}
+
+.rejection-reason {
+    background: #2d1b1b;
+    border-left: 3px solid #ef4444;
+    padding: 12px;
+    margin-top: 12px;
+    border-radius: 6px;
+    color: #e0e0e0;
+    font-size: 0.9em;
+}
