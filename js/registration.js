@@ -228,10 +228,6 @@ function setupEventListeners() {
     // Кнопка назад
     document.getElementById('backBtn').addEventListener('click', () => {
         window.location.href = '/';
-function setupEventListeners() {
-    // Кнопка назад
-    document.getElementById('backBtn').addEventListener('click', () => {
-        window.location.href = '/';
     });
     
     // Переключатель темы
