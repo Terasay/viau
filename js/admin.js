@@ -77,6 +77,50 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadUsers();
 
+    // Действия со странами игроков
+    const countryActionForm = document.getElementById('country-action-form');
+    const countryActionResult = document.getElementById('country-action-result');
+    
+    if (countryActionForm) {
+        countryActionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('country-user-id').value;
+            
+            if (!confirm(`Вы уверены, что хотите снять игрока с его страны? Это вернёт ему роль "user" и освободит страну.`)) {
+                return;
+            }
+            
+            countryActionResult.textContent = 'Отправка...';
+            countryActionResult.className = '';
+            
+            try {
+                const resp = await fetch('/admin/remove-player-country', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token
+                    },
+                    body: JSON.stringify({ user_id: parseInt(userId) })
+                });
+                
+                const data = await resp.json();
+                
+                if (data.success) {
+                    countryActionResult.textContent = data.message || 'Страна успешно освобождена!';
+                    countryActionResult.style.color = '#00ff88';
+                    countryActionForm.reset();
+                    await loadUsers();
+                } else {
+                    countryActionResult.textContent = data.error || 'Ошибка';
+                    countryActionResult.style.color = '#ff4444';
+                }
+            } catch (err) {
+                countryActionResult.textContent = 'Ошибка запроса';
+                countryActionResult.style.color = '#ff4444';
+            }
+        });
+    }
+
     const userActionForm = document.getElementById('user-action-form');
     const actionResult = document.getElementById('action-result');
     userActionForm.addEventListener('submit', async (e) => {

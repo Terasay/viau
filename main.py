@@ -708,6 +708,81 @@ async def admin_set_status(request: Request):
 	conn.commit()
 	conn.close()
 	return JSONResponse({'success': True})
+
+@app.post('/admin/remove-player-country')
+async def remove_player_country(request: Request):
+	"""Снимает игрока со страны и возвращает роль user"""
+	token = request.headers.get('Authorization')
+	payload = decode_jwt(token)
+	role = payload.get('role') if payload else None
+	if role != 'admin':
+		return JSONResponse({'detail': 'Forbidden'}, status_code=403)
+	
+	data = await request.json()
+	user_id = data.get('user_id')
+	
+	conn = sqlite3.connect(DB_FILE)
+	c = conn.cursor()
+	
+	try:
+		# Получаем текущую страну игрока
+		c.execute('SELECT country, role FROM users WHERE id=?', (user_id,))
+		user = c.fetchone()
+		
+		if not user:
+			return JSONResponse({'success': False, 'error': 'Пользователь не найден'}, status_code=404)
+		
+		current_country = user[0]
+		current_role = user[1]
+		
+		if current_role != 'player':
+			return JSONResponse({'success': False, 'error': 'Пользователь не является игроком'}, status_code=400)
+		
+		if not current_country:
+			return JSONResponse({'success': False, 'error': 'У пользователя нет назначенной страны'}, status_code=400)
+		
+		# Обновляем пользователя
+		c.execute('UPDATE users SET role=?, country=NULL WHERE id=?', ('user', user_id))
+		
+		# Отклоняем все заявки пользователя
+		c.execute('''
+			UPDATE player_applications 
+			SET status='rejected', 
+				rejection_reason='Снят со страны администратором',
+				updated_at=?
+			WHERE user_id=?
+		''', (datetime.now().isoformat(), user_id))
+		
+		conn.commit()
+		
+		# Освобождаем страну в countries.json
+		import json
+		countries_path = 'data/countries.json'
+		try:
+			with open(countries_path, 'r', encoding='utf-8') as f:
+				countries = json.load(f)
+			
+			for country in countries:
+				if country['id'] == current_country:
+					country['available'] = True
+					break
+			
+			with open(countries_path, 'w', encoding='utf-8') as f:
+				json.dump(countries, f, ensure_ascii=False, indent=4)
+		except Exception as e:
+			print(f"Error updating countries.json: {e}")
+		
+		return JSONResponse({
+			'success': True,
+			'message': f'Игрок снят со страны "{current_country}". Роль изменена на "user".'
+		})
+		
+	except Exception as e:
+		print(f"Error removing player country: {e}")
+		return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+	finally:
+		conn.close()
+
 @app.get('/registration')
 async def registration_page():
 	return FileResponse('registration.html')

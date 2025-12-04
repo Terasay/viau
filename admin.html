@@ -51,6 +51,22 @@
                     </form>
                     <div id="action-result" style="margin-top:8px;color:#00ffc6"></div>
                 </div>
+                
+                <div id="country-actions" style="margin-top:32px;padding-top:24px;border-top:2px solid #333;">
+                    <h3>Управление странами игроков</h3>
+                    <form id="country-action-form">
+                        <label>ID игрока: <input type="number" id="country-user-id" required style="width:60px"></label>
+                        <button type="submit" class="btn-danger">Снять со страны</button>
+                    </form>
+                    <div id="country-action-result" style="margin-top:8px;color:#00ffc6"></div>
+                    <p style="color:#888;font-size:0.9em;margin-top:12px;">
+                        <i class="fas fa-info-circle"></i> При снятии со страны:
+                        <br>• Роль игрока изменится на "user"
+                        <br>• Страна будет освобождена и станет доступной
+                        <br>• Все заявки игрока будут отклонены
+                        <br>• Игрок сможет подать новую заявку
+                    </p>
+                </div>
             </section>
 
             <!-- Раздел заявок -->
