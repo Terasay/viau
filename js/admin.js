@@ -301,12 +301,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Модальное окно одобрения с редактированием
-    window.showApproveModal = function(appId, username) {
+    window.showApproveModal = async function(appId, username) {
         // Находим заявку в массиве
         const app = allApplications.find(a => a.id === appId);
         if (!app) {
             alert('Заявка не найдена');
             return;
+        }
+
+        // Загружаем актуальный список стран из countries.json
+        let countriesOptions = '<option value="">-- Выберите страну --</option>';
+        try {
+            const resp = await fetch('/api/settings/countries', {
+                headers: { 'Authorization': token }
+            });
+            const data = await resp.json();
+            if (data.success && data.countries) {
+                for (const country of data.countries) {
+                    const selected = app.country === country.name ? 'selected' : '';
+                    countriesOptions += `<option value="${country.name}" ${selected}>${country.name}</option>`;
+                }
+            }
+        } catch (e) {
+            console.error('Error loading countries:', e);
         }
 
         const modal = document.createElement('div');
@@ -340,17 +357,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <label>
                             Страна для игры:
                             <select id="approve-country" required>
-                                <option value="">-- Выберите страну --</option>
-                                <option value="russia" ${app.country === 'russia' ? 'selected' : ''}>Россия</option>
-                                <option value="usa" ${app.country === 'usa' ? 'selected' : ''}>США</option>
-                                <option value="china" ${app.country === 'china' ? 'selected' : ''}>Китай</option>
-                                <option value="uk" ${app.country === 'uk' ? 'selected' : ''}>Великобритания</option>
-                                <option value="france" ${app.country === 'france' ? 'selected' : ''}>Франция</option>
-                                <option value="germany" ${app.country === 'germany' ? 'selected' : ''}>Германия</option>
-                                <option value="japan" ${app.country === 'japan' ? 'selected' : ''}>Япония</option>
-                                <option value="italy" ${app.country === 'italy' ? 'selected' : ''}>Италия</option>
-                                <option value="spain" ${app.country === 'spain' ? 'selected' : ''}>Испания</option>
-                                <option value="canada" ${app.country === 'canada' ? 'selected' : ''}>Канада</option>
+                                ${countriesOptions}
                             </select>
                         </label>
                         <label>
