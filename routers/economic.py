@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 import sqlite3
+import sys
 from datetime import datetime
 
 router = APIRouter(prefix="/api/economic")
@@ -37,6 +38,77 @@ def init_db():
 
 # Вызываем инициализацию при импорте модуля
 init_db()
+
+def migrate_existing_players():
+    """Создаёт страны для всех одобренных заявок, у которых ещё нет записи в countries"""
+    import json
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Получаем все одобренные заявки
+        cursor.execute('''
+            SELECT 
+                pa.id,
+                pa.user_id,
+                pa.first_name,
+                pa.last_name,
+                pa.country,
+                u.username
+            FROM player_applications pa
+            JOIN users u ON pa.user_id = u.id
+            WHERE pa.status = 'approved'
+        ''')
+        
+        approved_apps = cursor.fetchall()
+        countries_created = 0
+        
+        # Загружаем countries.json для получения названий
+        countries_path = 'data/countries.json'
+        country_names = {}
+        try:
+            with open(countries_path, 'r', encoding='utf-8') as f:
+                countries_list = json.load(f)
+                for c in countries_list:
+                    country_names[c['id']] = c['name']
+        except Exception as e:
+            print(f"Warning: Could not load countries.json: {e}")
+        
+        for app in approved_apps:
+            # Проверяем, есть ли уже запись о стране
+            cursor.execute("SELECT id FROM countries WHERE player_id = ?", (app['user_id'],))
+            if cursor.fetchone():
+                continue  # Страна уже существует
+            
+            # Создаём страну
+            country_id = app['country']
+            country_name = country_names.get(country_id, country_id)
+            
+            success = create_country(
+                country_id=country_id,
+                player_id=app['user_id'],
+                ruler_first_name=app['first_name'],
+                ruler_last_name=app['last_name'],
+                country_name=country_name,
+                currency='Золото'
+            )
+            
+            if success:
+                countries_created += 1
+                print(f"✓ Created country {country_name} for player {app['username']}")
+        
+        if countries_created > 0:
+            print(f"Migration complete: {countries_created} countries created")
+        else:
+            print("No countries to migrate")
+            
+        return countries_created
+        
+    except Exception as e:
+        print(f"Error during migration: {e}")
+        return 0
+    finally:
+        conn.close()
 
 async def check_admin(request: Request):
     """Проверка прав администратора"""
@@ -304,3 +376,21 @@ async def delete_country(country_id: str, request: Request):
         return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
     finally:
         conn.close()
+
+@router.post("/migrate-existing-players")
+async def migrate_existing_players_endpoint(request: Request):
+    """Создаёт страны для всех одобренных заявок без стран (только админ)"""
+    user = await check_admin(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Нет доступа'}, status_code=403)
+    
+    try:
+        count = migrate_existing_players()
+        return JSONResponse({
+            'success': True,
+            'message': f'Создано стран: {count}',
+            'count': count
+        })
+    except Exception as e:
+        print(f"Error in migration endpoint: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)

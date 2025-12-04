@@ -1124,6 +1124,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Кнопка миграции существующих игроков
+    const migrateCountriesBtn = document.getElementById('migrate-countries-btn');
+    const migrateResult = document.getElementById('migrate-result');
+
+    if (migrateCountriesBtn) {
+        migrateCountriesBtn.addEventListener('click', async () => {
+            if (!confirm('Создать страны для всех одобренных заявок без стран?')) {
+                return;
+            }
+
+            migrateCountriesBtn.disabled = true;
+            migrateCountriesBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Миграция...';
+            migrateResult.textContent = 'Выполняется миграция...';
+            migrateResult.className = 'form-result';
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/economic/migrate-existing-players', {
+                    method: 'POST',
+                    headers: { 'Authorization': token }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    migrateResult.textContent = data.message;
+                    migrateResult.className = 'form-result success';
+                    await loadCountriesEconomic();
+                } else {
+                    migrateResult.textContent = `Ошибка: ${data.error}`;
+                    migrateResult.className = 'form-result error';
+                }
+            } catch (err) {
+                migrateResult.textContent = `Ошибка: ${err.message}`;
+                migrateResult.className = 'form-result error';
+            } finally {
+                migrateCountriesBtn.disabled = false;
+                migrateCountriesBtn.innerHTML = '<i class="fas fa-database"></i> Запустить миграцию';
+            }
+        });
+    }
+
     function displayCountriesEconomic(countries) {
         const countriesList = document.getElementById('countries-economic-list');
 
