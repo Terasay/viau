@@ -318,8 +318,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await resp.json();
             if (data.success && data.countries) {
                 for (const country of data.countries) {
-                    const selected = app.country === country.name ? 'selected' : '';
-                    countriesOptions += `<option value="${country.name}" ${selected}>${country.name}</option>`;
+                    // Сравниваем с id, т.к. в заявке хранится id страны
+                    const selected = app.country === country.id ? 'selected' : '';
+                    countriesOptions += `<option value="${country.id}" ${selected}>${country.name}</option>`;
                 }
             }
         } catch (e) {

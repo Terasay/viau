@@ -73,9 +73,15 @@ async function checkAuth() {
 
 async function loadCountries() {
     try {
-        const response = await fetch('/data/countries.json');
-        const countries = await response.json();
+        // Загружаем страны через API settings для актуальных данных
+        const response = await fetch('/api/settings/countries');
+        const data = await response.json();
         
+        if (!data.success || !data.countries) {
+            throw new Error('Failed to load countries');
+        }
+        
+        const countries = data.countries;
         const countrySelect = document.getElementById('country');
         countrySelect.innerHTML = '<option value="">Выберите страну</option>';
         
@@ -89,8 +95,8 @@ async function loadCountries() {
                     headers: { 'Authorization': token }
                 });
                 if (occupiedResponse.ok) {
-                    const data = await occupiedResponse.json();
-                    occupiedCountries = data.countries || [];
+                    const occupiedData = await occupiedResponse.json();
+                    occupiedCountries = occupiedData.countries || [];
                 }
             } catch (e) {
                 console.log('Could not fetch occupied countries');

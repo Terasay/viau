@@ -76,11 +76,7 @@ async def update_rules(data: RulesData, request: Request):
 
 @router.get("/countries")
 async def get_countries(request: Request):
-    """Получение списка стран"""
-    user = await check_admin(request)
-    if not user:
-        return JSONResponse({'success': False, 'error': 'Нет доступа'}, status_code=403)
-    
+    """Получение списка стран (доступно всем для формы регистрации)"""
     try:
         if not os.path.exists(COUNTRIES_FILE):
             return JSONResponse({'success': False, 'error': 'Файл стран не найден'})
