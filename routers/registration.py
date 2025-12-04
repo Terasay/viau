@@ -648,23 +648,41 @@ async def approve_application(data: ApproveApplicationData, request: Request):
             now
         ))
         
-        # Обновляем countries.json
+        # Создаём страну в экономической системе
         import json
         countries_path = 'data/countries.json'
+        country_name = data.assigned_country  # По умолчанию используем ID
+        
         try:
             with open(countries_path, 'r', encoding='utf-8') as f:
-                countries = json.load(f)
+                countries_list = json.load(f)
             
-            # Отмечаем страну как занятую
-            for country in countries:
-                if country['id'] == data.assigned_country:
-                    country['available'] = False
+            # Находим название страны по ID
+            for country_data in countries_list:
+                if country_data['id'] == data.assigned_country:
+                    country_name = country_data['name']
+                    country_data['available'] = False  # Отмечаем как занятую
                     break
             
+            # Сохраняем обновлённый список стран
             with open(countries_path, 'w', encoding='utf-8') as f:
-                json.dump(countries, f, ensure_ascii=False, indent=4)
+                json.dump(countries_list, f, ensure_ascii=False, indent=4)
         except Exception as e:
-            print(f"Error updating countries.json: {e}")
+            print(f"Error loading country name from countries.json: {e}")
+        
+        # Создаём запись о стране в БД
+        from routers.economic import create_country
+        country_created = create_country(
+            country_id=data.assigned_country,
+            player_id=user_id,
+            ruler_first_name=data.first_name,
+            ruler_last_name=data.last_name,
+            country_name=country_name,
+            currency='Золото'  # Валюта по умолчанию
+        )
+        
+        if not country_created:
+            print(f"Warning: Failed to create country record for {data.assigned_country}")
         
         conn.commit()
         

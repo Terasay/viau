@@ -21,7 +21,7 @@ import jwt
 from datetime import datetime, timedelta
 import bcrypt
 
-from routers import converter, maps, chat, registration, characters, settings
+from routers import converter, maps, chat, registration, characters, settings, economic
 
 load_dotenv()
 GMAIL_CLIENT_ID = os.getenv('GMAIL_CLIENT_ID')
@@ -48,6 +48,7 @@ app.include_router(chat.router)
 app.include_router(registration.router)
 app.include_router(characters.router)
 app.include_router(settings.router)
+app.include_router(economic.router)
 
 AVATARS_DIR = 'avatars'
 if not os.path.exists(AVATARS_DIR):

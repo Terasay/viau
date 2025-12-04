@@ -56,6 +56,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await loadCharacters();
             } else if (sectionName === 'settings') {
                 await loadSettings();
+            } else if (sectionName === 'countries-economic') {
+                await loadCountriesEconomic();
             }
         });
     });
@@ -1092,6 +1094,166 @@ document.addEventListener('DOMContentLoaded', async () => {
             editCharacterResult.className = 'form-result error';
         }
     });
+
+    // === НАСТРОЙКИ ===
+    async function loadSettings() {
+        await loadRules();
+        await loadCountries();
+    }
+
+    // === СТРАНЫ (ЭКОНОМИКА) ===
+    async function loadCountriesEconomic() {
+        const countriesList = document.getElementById('countries-economic-list');
+        countriesList.innerHTML = '<div class="loading-msg">Загрузка стран...</div>';
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/economic/countries', {
+                headers: { 'Authorization': token }
+            });
+            const data = await response.json();
+
+            if (!data.success) {
+                countriesList.innerHTML = `<div class="error">${data.error}</div>`;
+                return;
+            }
+
+            displayCountriesEconomic(data.countries);
+        } catch (e) {
+            countriesList.innerHTML = `<div class="error">Ошибка загрузки: ${e.message}</div>`;
+        }
+    }
+
+    function displayCountriesEconomic(countries) {
+        const countriesList = document.getElementById('countries-economic-list');
+
+        if (!countries || countries.length === 0) {
+            countriesList.innerHTML = '<div class="loading-msg">Нет зарегистрированных стран</div>';
+            return;
+        }
+
+        let html = '';
+        for (const country of countries) {
+            html += `
+                <div class="item-card">
+                    <div class="item-header">
+                        <div>
+                            <div class="item-code">${country.country_name}</div>
+                            <div class="item-name">ID: ${country.id}</div>
+                        </div>
+                        <div class="item-rate">
+                            <i class="fas fa-coins"></i> ${country.secret_coins} монет
+                        </div>
+                    </div>
+                    <div class="application-details" style="margin-top:12px">
+                        <div class="detail-item">
+                            <span class="detail-label">Правитель</span>
+                            <span class="detail-value">${country.ruler_first_name} ${country.ruler_last_name}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Игрок</span>
+                            <span class="detail-value">${country.player_username || 'N/A'} (ID: ${country.player_id})</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Валюта</span>
+                            <span class="detail-value">${country.currency}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Создана</span>
+                            <span class="detail-value">${new Date(country.created_at).toLocaleString('ru-RU')}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        countriesList.innerHTML = html;
+    }
+
+    // Добавление секретных монет
+    const addCoinsForm = document.getElementById('add-coins-form');
+    const addCoinsResult = document.getElementById('add-coins-result');
+
+    if (addCoinsForm) {
+        addCoinsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const countryId = document.getElementById('coins-country-id').value.trim();
+            const amount = parseInt(document.getElementById('coins-amount').value);
+            
+            addCoinsResult.textContent = 'Отправка...';
+            addCoinsResult.className = 'form-result';
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/economic/country/${countryId}/add-coins?amount=${amount}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addCoinsResult.textContent = data.message;
+                    addCoinsResult.className = 'form-result success';
+                    addCoinsForm.reset();
+                    await loadCountriesEconomic();
+                } else {
+                    addCoinsResult.textContent = `Ошибка: ${data.error}`;
+                    addCoinsResult.className = 'form-result error';
+                }
+            } catch (err) {
+                addCoinsResult.textContent = `Ошибка: ${err.message}`;
+                addCoinsResult.className = 'form-result error';
+            }
+        });
+    }
+
+    // Изменение валюты страны
+    const updateCurrencyCountryForm = document.getElementById('update-currency-form');
+    const updateCurrencyCountryResult = document.getElementById('update-currency-result');
+
+    if (updateCurrencyCountryForm) {
+        updateCurrencyCountryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const countryId = document.getElementById('currency-country-id').value.trim();
+            const currency = document.getElementById('currency-name').value.trim();
+            
+            updateCurrencyCountryResult.textContent = 'Отправка...';
+            updateCurrencyCountryResult.className = 'form-result';
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`/api/economic/country/${countryId}/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ currency })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateCurrencyCountryResult.textContent = data.message;
+                    updateCurrencyCountryResult.className = 'form-result success';
+                    updateCurrencyCountryForm.reset();
+                    await loadCountriesEconomic();
+                } else {
+                    updateCurrencyCountryResult.textContent = `Ошибка: ${data.error}`;
+                    updateCurrencyCountryResult.className = 'form-result error';
+                }
+            } catch (err) {
+                updateCurrencyCountryResult.textContent = `Ошибка: ${err.message}`;
+                updateCurrencyCountryResult.className = 'form-result error';
+            }
+        });
+    }
 
     // === НАСТРОЙКИ ===
     async function loadSettings() {

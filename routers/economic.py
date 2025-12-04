@@ -1,0 +1,306 @@
+from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from typing import Optional
+import sqlite3
+from datetime import datetime
+
+router = APIRouter(prefix="/api/economic")
+
+def get_db():
+    conn = sqlite3.connect('users.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    """Инициализация таблицы стран"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS countries (
+            id TEXT PRIMARY KEY,
+            player_id INTEGER UNIQUE,
+            ruler_first_name TEXT NOT NULL,
+            ruler_last_name TEXT NOT NULL,
+            country_name TEXT NOT NULL,
+            currency TEXT DEFAULT 'Золото',
+            secret_coins INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (player_id) REFERENCES users (id)
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
+
+# Вызываем инициализацию при импорте модуля
+init_db()
+
+async def check_admin(request: Request):
+    """Проверка прав администратора"""
+    import sys
+    sys.path.append('..')
+    from main import get_current_user
+    
+    user = await get_current_user(request)
+    if not user or user.get('role') != 'admin':
+        return None
+    return user
+
+def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler_last_name: str, country_name: str, currency: str = 'Золото'):
+    """Создание новой страны в БД"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        now = datetime.now().isoformat()
+        
+        cursor.execute('''
+            INSERT INTO countries (
+                id, player_id, ruler_first_name, ruler_last_name,
+                country_name, currency, secret_coins, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            country_id,
+            player_id,
+            ruler_first_name,
+            ruler_last_name,
+            country_name,
+            currency,
+            0,  # secret_coins начинаются с 0
+            now,
+            now
+        ))
+        
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError as e:
+        print(f"Country already exists or integrity error: {e}")
+        return False
+    except Exception as e:
+        print(f"Error creating country: {e}")
+        return False
+    finally:
+        conn.close()
+
+@router.get("/countries")
+async def get_all_countries(request: Request):
+    """Получение списка всех стран (для админов)"""
+    user = await check_admin(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Нет доступа'}, status_code=403)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('''
+            SELECT 
+                c.id,
+                c.player_id,
+                c.ruler_first_name,
+                c.ruler_last_name,
+                c.country_name,
+                c.currency,
+                c.secret_coins,
+                c.created_at,
+                c.updated_at,
+                u.username as player_username
+            FROM countries c
+            LEFT JOIN users u ON c.player_id = u.id
+            ORDER BY c.created_at DESC
+        ''')
+        
+        countries = []
+        for row in cursor.fetchall():
+            countries.append({
+                'id': row['id'],
+                'player_id': row['player_id'],
+                'player_username': row['player_username'],
+                'ruler_first_name': row['ruler_first_name'],
+                'ruler_last_name': row['ruler_last_name'],
+                'country_name': row['country_name'],
+                'currency': row['currency'],
+                'secret_coins': row['secret_coins'],
+                'created_at': row['created_at'],
+                'updated_at': row['updated_at']
+            })
+        
+        return JSONResponse({'success': True, 'countries': countries})
+    except Exception as e:
+        print(f"Error loading countries: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.get("/country/{country_id}")
+async def get_country(country_id: str, request: Request):
+    """Получение информации о стране"""
+    import sys
+    sys.path.append('..')
+    from main import get_current_user
+    
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('''
+            SELECT 
+                c.*,
+                u.username as player_username,
+                u.email as player_email
+            FROM countries c
+            LEFT JOIN users u ON c.player_id = u.id
+            WHERE c.id = ?
+        ''', (country_id,))
+        
+        country = cursor.fetchone()
+        if not country:
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        # Игрок может видеть только свою страну, админ - все
+        if user.get('role') != 'admin' and user.get('id') != country['player_id']:
+            return JSONResponse({'success': False, 'error': 'Нет доступа'}, status_code=403)
+        
+        return JSONResponse({
+            'success': True,
+            'country': {
+                'id': country['id'],
+                'player_id': country['player_id'],
+                'player_username': country['player_username'],
+                'player_email': country['player_email'],
+                'ruler_first_name': country['ruler_first_name'],
+                'ruler_last_name': country['ruler_last_name'],
+                'country_name': country['country_name'],
+                'currency': country['currency'],
+                'secret_coins': country['secret_coins'],
+                'created_at': country['created_at'],
+                'updated_at': country['updated_at']
+            }
+        })
+    except Exception as e:
+        print(f"Error loading country: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+class UpdateCountryData(BaseModel):
+    currency: Optional[str] = None
+    secret_coins: Optional[int] = None
+
+@router.post("/country/{country_id}/update")
+async def update_country(country_id: str, data: UpdateCountryData, request: Request):
+    """Обновление данных страны (только админ)"""
+    user = await check_admin(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Нет доступа'}, status_code=403)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        now = datetime.now().isoformat()
+        
+        # Проверяем существование страны
+        cursor.execute("SELECT id FROM countries WHERE id = ?", (country_id,))
+        if not cursor.fetchone():
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        # Обновляем только переданные поля
+        updates = []
+        params = []
+        
+        if data.currency is not None:
+            updates.append("currency = ?")
+            params.append(data.currency)
+        
+        if data.secret_coins is not None:
+            updates.append("secret_coins = ?")
+            params.append(data.secret_coins)
+        
+        if not updates:
+            return JSONResponse({'success': False, 'error': 'Нет данных для обновления'})
+        
+        updates.append("updated_at = ?")
+        params.append(now)
+        params.append(country_id)
+        
+        cursor.execute(f'''
+            UPDATE countries SET {', '.join(updates)}
+            WHERE id = ?
+        ''', params)
+        
+        conn.commit()
+        
+        return JSONResponse({'success': True, 'message': 'Страна обновлена'})
+    except Exception as e:
+        conn.rollback()
+        print(f"Error updating country: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.post("/country/{country_id}/add-coins")
+async def add_secret_coins(country_id: str, amount: int, request: Request):
+    """Добавление секретных монет стране (только админ)"""
+    user = await check_admin(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Нет доступа'}, status_code=403)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        now = datetime.now().isoformat()
+        
+        cursor.execute('''
+            UPDATE countries 
+            SET secret_coins = secret_coins + ?,
+                updated_at = ?
+            WHERE id = ?
+        ''', (amount, now, country_id))
+        
+        if cursor.rowcount == 0:
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        conn.commit()
+        
+        return JSONResponse({'success': True, 'message': f'Добавлено {amount} секретных монет'})
+    except Exception as e:
+        conn.rollback()
+        print(f"Error adding coins: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.delete("/country/{country_id}")
+async def delete_country(country_id: str, request: Request):
+    """Удаление страны (только админ)"""
+    user = await check_admin(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Нет доступа'}, status_code=403)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("DELETE FROM countries WHERE id = ?", (country_id,))
+        
+        if cursor.rowcount == 0:
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        conn.commit()
+        
+        return JSONResponse({'success': True, 'message': 'Страна удалена'})
+    except Exception as e:
+        conn.rollback()
+        print(f"Error deleting country: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
