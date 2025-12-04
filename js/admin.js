@@ -54,6 +54,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await loadApplications();
             } else if (sectionName === 'characters') {
                 await loadCharacters();
+            } else if (sectionName === 'settings') {
+                await loadSettings();
             }
         });
     });
@@ -1080,6 +1082,251 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) {
             editCharacterResult.textContent = 'Ошибка запроса';
             editCharacterResult.className = 'form-result error';
+        }
+    });
+
+    // === НАСТРОЙКИ ===
+    async function loadSettings() {
+        await loadRules();
+        await loadCountries();
+    }
+
+    // Правила
+    const rulesContent = document.getElementById('rules-content');
+    const editRulesForm = document.getElementById('edit-rules-form');
+    const editRulesResult = document.getElementById('edit-rules-result');
+
+    async function loadRules() {
+        try {
+            const resp = await fetch('/api/settings/rules', {
+                headers: { 'Authorization': token }
+            });
+            const data = await resp.json();
+            
+            if (data.success) {
+                rulesContent.value = data.content;
+            } else {
+                rulesContent.value = 'Ошибка загрузки правил';
+            }
+        } catch (e) {
+            rulesContent.value = 'Ошибка загрузки правил';
+        }
+    }
+
+    editRulesForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        try {
+            const resp = await fetch('/api/settings/rules', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify({ content: rulesContent.value })
+            });
+
+            const data = await resp.json();
+            
+            if (data.success) {
+                editRulesResult.textContent = 'Правила сохранены!';
+                editRulesResult.className = 'form-result success';
+            } else {
+                editRulesResult.textContent = data.error || 'Ошибка сохранения';
+                editRulesResult.className = 'form-result error';
+            }
+        } catch (err) {
+            editRulesResult.textContent = 'Ошибка запроса';
+            editRulesResult.className = 'form-result error';
+        }
+    });
+
+    // Страны
+    const countriesListSettings = document.getElementById('countries-list');
+
+    async function loadCountries() {
+        try {
+            const resp = await fetch('/api/settings/countries', {
+                headers: { 'Authorization': token }
+            });
+            const data = await resp.json();
+            
+            if (data.success) {
+                displayCountries(data.countries);
+            }
+        } catch (e) {
+            countriesListSettings.innerHTML = '<div class="error">Ошибка загрузки стран</div>';
+        }
+    }
+
+    function displayCountries(countries) {
+        if (!countries || countries.length === 0) {
+            countriesListSettings.innerHTML = '<div class="loading-msg">Нет стран</div>';
+            return;
+        }
+
+        let html = '';
+        for (const country of countries) {
+            const statusColor = country.available ? '#00ff88' : '#ff4444';
+            const statusText = country.available ? 'Доступна' : 'Недоступна';
+            
+            html += `
+                <div class="item-card" onclick="selectCountry('${country.id}')" style="cursor:pointer;">
+                    <div class="item-header">
+                        <div>
+                            <div class="item-code">${country.name}</div>
+                            <div class="item-name">ID: ${country.id}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="color:${statusColor};font-weight:bold;">${statusText}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        countriesListSettings.innerHTML = html;
+    }
+
+    window.selectCountry = async function(countryId) {
+        try {
+            const resp = await fetch('/api/settings/countries', {
+                headers: { 'Authorization': token }
+            });
+            const data = await resp.json();
+            const country = data.countries.find(c => c.id === countryId);
+            
+            if (!country) return;
+            
+            // Заполняем форму редактирования
+            document.getElementById('country-id-edit-old').value = country.id;
+            document.getElementById('country-id-edit').value = country.id;
+            document.getElementById('country-name-edit').value = country.name;
+            document.getElementById('country-available-edit').checked = country.available;
+            
+            // Показываем форму
+            document.getElementById('edit-country-form').style.display = 'flex';
+            document.getElementById('country-edit-placeholder').style.display = 'none';
+            document.getElementById('edit-country-form').scrollIntoView({ behavior: 'smooth' });
+        } catch (e) {
+            console.error('Error selecting country:', e);
+        }
+    };
+
+    // Добавление страны
+    const addCountryForm = document.getElementById('add-country-form');
+    const addCountryResult = document.getElementById('add-country-result');
+
+    addCountryForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const countryData = {
+            id: document.getElementById('country-id-add').value,
+            name: document.getElementById('country-name-add').value,
+            available: document.getElementById('country-available-add').checked
+        };
+
+        try {
+            const resp = await fetch('/api/settings/countries/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify(countryData)
+            });
+
+            const data = await resp.json();
+            
+            if (data.success) {
+                addCountryResult.textContent = 'Страна добавлена!';
+                addCountryResult.className = 'form-result success';
+                addCountryForm.reset();
+                document.getElementById('country-available-add').checked = true;
+                await loadCountries();
+            } else {
+                addCountryResult.textContent = data.error || 'Ошибка';
+                addCountryResult.className = 'form-result error';
+            }
+        } catch (err) {
+            addCountryResult.textContent = 'Ошибка запроса';
+            addCountryResult.className = 'form-result error';
+        }
+    });
+
+    // Редактирование страны
+    const editCountryForm = document.getElementById('edit-country-form');
+    const editCountryResult = document.getElementById('edit-country-result');
+
+    editCountryForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const countryData = {
+            old_id: document.getElementById('country-id-edit-old').value,
+            id: document.getElementById('country-id-edit').value,
+            name: document.getElementById('country-name-edit').value,
+            available: document.getElementById('country-available-edit').checked
+        };
+
+        try {
+            const resp = await fetch('/api/settings/countries/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify(countryData)
+            });
+
+            const data = await resp.json();
+            
+            if (data.success) {
+                editCountryResult.textContent = 'Страна обновлена!';
+                editCountryResult.className = 'form-result success';
+                await loadCountries();
+            } else {
+                editCountryResult.textContent = data.error || 'Ошибка';
+                editCountryResult.className = 'form-result error';
+            }
+        } catch (err) {
+            editCountryResult.textContent = 'Ошибка запроса';
+            editCountryResult.className = 'form-result error';
+        }
+    });
+
+    // Удаление страны
+    document.getElementById('delete-country-btn').addEventListener('click', async () => {
+        const countryId = document.getElementById('country-id-edit-old').value;
+        const countryName = document.getElementById('country-name-edit').value;
+        
+        if (!confirm(`Вы уверены, что хотите удалить страну "${countryName}"?`)) {
+            return;
+        }
+
+        try {
+            const resp = await fetch('/api/settings/countries/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify({ id: countryId })
+            });
+
+            const data = await resp.json();
+            
+            if (data.success) {
+                editCountryResult.textContent = 'Страна удалена!';
+                editCountryResult.className = 'form-result success';
+                editCountryForm.style.display = 'none';
+                document.getElementById('country-edit-placeholder').style.display = 'block';
+                await loadCountries();
+            } else {
+                editCountryResult.textContent = data.error || 'Ошибка';
+                editCountryResult.className = 'form-result error';
+            }
+        } catch (err) {
+            editCountryResult.textContent = 'Ошибка запроса';
+            editCountryResult.className = 'form-result error';
         }
     });
 });

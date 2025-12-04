@@ -31,6 +31,9 @@
                 <button class="admin-tab" data-section="characters">
                     <i class="fas fa-user-crown"></i> Персонажи
                 </button>
+                <button class="admin-tab" data-section="settings">
+                    <i class="fas fa-cog"></i> Настройки
+                </button>
             </div>
 
             <!-- Раздел пользователей -->
@@ -419,6 +422,81 @@
                             </div>
                             <div id="edit-character-result" class="form-result"></div>
                         </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Раздел настроек -->
+            <section id="settings-section" class="terminal admin-section" style="display:none">
+                <h2>Настройки игры</h2>
+                
+                <div class="converter-admin-grid">
+                    <!-- Редактор правил -->
+                    <div class="converter-admin-panel" style="grid-column: 1 / -1;">
+                        <h3>Правила игры (rules.txt)</h3>
+                        <form id="edit-rules-form" class="admin-form">
+                            <textarea id="rules-content" rows="20" style="width:100%;font-family:'Fira Mono',monospace;font-size:0.95em;background:#111;color:#e0e0e0;border:1px solid #444;border-radius:6px;padding:12px;resize:vertical;" placeholder="Загрузка правил..."></textarea>
+                            <button type="submit">Сохранить правила</button>
+                            <div id="edit-rules-result" class="form-result"></div>
+                        </form>
+                    </div>
+
+                    <!-- Управление странами -->
+                    <div class="converter-admin-panel" style="grid-column: 1 / -1;">
+                        <h3>Управление странами (countries.json)</h3>
+                        
+                        <div id="countries-list" class="items-list" style="margin-bottom:20px;max-height:400px;">
+                            <div class="loading-msg">Загрузка стран...</div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                            <!-- Добавление страны -->
+                            <div>
+                                <h4 style="color:#00ffc6;margin-bottom:12px;">Добавить страну</h4>
+                                <form id="add-country-form" class="admin-form">
+                                    <label>
+                                        ID страны (латиница):
+                                        <input type="text" id="country-id-add" required placeholder="russia">
+                                    </label>
+                                    <label>
+                                        Название страны:
+                                        <input type="text" id="country-name-add" required placeholder="Россия">
+                                    </label>
+                                    <label style="flex-direction:row;align-items:center;gap:8px;">
+                                        <input type="checkbox" id="country-available-add" checked style="width:auto;margin:0;">
+                                        Доступна для выбора
+                                    </label>
+                                    <button type="submit">Добавить страну</button>
+                                    <div id="add-country-result" class="form-result"></div>
+                                </form>
+                            </div>
+
+                            <!-- Редактирование страны -->
+                            <div>
+                                <h4 style="color:#00ffc6;margin-bottom:12px;">Редактировать страну</h4>
+                                <form id="edit-country-form" class="admin-form" style="display:none;">
+                                    <input type="hidden" id="country-id-edit-old">
+                                    <label>
+                                        ID страны (латиница):
+                                        <input type="text" id="country-id-edit" required>
+                                    </label>
+                                    <label>
+                                        Название страны:
+                                        <input type="text" id="country-name-edit" required>
+                                    </label>
+                                    <label style="flex-direction:row;align-items:center;gap:8px;">
+                                        <input type="checkbox" id="country-available-edit" style="width:auto;margin:0;">
+                                        Доступна для выбора
+                                    </label>
+                                    <button type="submit">Сохранить изменения</button>
+                                    <button type="button" id="delete-country-btn" class="btn-danger">Удалить страну</button>
+                                    <div id="edit-country-result" class="form-result"></div>
+                                </form>
+                                <div id="country-edit-placeholder" style="color:#888;font-size:0.9em;padding:20px;text-align:center;">
+                                    Выберите страну из списка выше для редактирования
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
