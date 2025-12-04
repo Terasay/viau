@@ -71,7 +71,7 @@ async function checkAuth() {
     }
 }
 
-async function loadCountries() {
+async function loadCountries(userCountry = null) {
     try {
         // Загружаем страны через API settings для актуальных данных
         const response = await fetch('/api/settings/countries');
@@ -104,13 +104,19 @@ async function loadCountries() {
         }
         
         countries.forEach(country => {
-            if (country.available && !occupiedCountries.includes(country.id)) {
+            // Показываем страну если она доступна И не занята, ИЛИ это страна текущего пользователя
+            if ((country.available && !occupiedCountries.includes(country.id)) || country.id === userCountry) {
                 const option = document.createElement('option');
                 option.value = country.id;
                 option.textContent = country.name;
                 countrySelect.appendChild(option);
             }
         });
+        
+        // Если передана страна пользователя, устанавливаем её
+        if (userCountry) {
+            countrySelect.value = userCountry;
+        }
     } catch (error) {
         console.error('Error loading countries:', error);
         document.getElementById('country').innerHTML = '<option value="">Ошибка загрузки</option>';
@@ -153,6 +159,8 @@ async function checkExistingApplication() {
             const data = await response.json();
             if (data.application) {
                 hasApplication = true;
+                // Перезагружаем страны с учётом страны пользователя, затем показываем заявку
+                await loadCountries(data.application.country);
                 showExistingApplication(data.application);
             }
         }
@@ -196,19 +204,20 @@ function showExistingApplication(application) {
     if (application.status === 'pending' || application.status === 'approved') {
         disableForm();
     }
-}
-
 function fillFormWithApplication(app) {
     document.getElementById('firstName').value = app.first_name || '';
     document.getElementById('lastName').value = app.last_name || '';
     document.getElementById('countryOrigin').value = app.country_origin || '';
     document.getElementById('age').value = app.age || '';
+    // Страна уже установлена в loadCountries()
     document.getElementById('country').value = app.country || '';
     document.getElementById('religion').value = app.religion || '';
     document.getElementById('ethnicity').value = app.ethnicity || '';
     document.getElementById('relatives').value = app.relatives || '';
     document.getElementById('referralCode').value = app.referral_code || '';
     document.getElementById('rulesAccept').checked = true;
+    document.getElementById('fairPlay').checked = true;
+}   document.getElementById('rulesAccept').checked = true;
     document.getElementById('fairPlay').checked = true;
 }
 
