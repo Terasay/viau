@@ -616,6 +616,38 @@ async def approve_application(data: ApproveApplicationData, request: Request):
             WHERE id = ?
         ''', (data.assigned_country, user_id))
         
+        # Создаём персонажа-правителя
+        from routers.characters import calculate_birth_year
+        birth_year = calculate_birth_year(data.age)
+        
+        cursor.execute('''
+            INSERT INTO characters (
+                first_name, last_name, birth_year, position,
+                ethnicity, religion, relatives, friends, enemies,
+                military, administration, diplomacy, intrigue, knowledge,
+                user_id, country, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            data.first_name,
+            data.last_name,
+            birth_year,
+            'Правитель',
+            data.ethnicity,
+            data.religion,
+            None,  # relatives - будет заполнено вручную админом
+            None,  # friends
+            None,  # enemies
+            5,  # military - стандартные значения
+            5,  # administration
+            5,  # diplomacy
+            5,  # intrigue
+            5,  # knowledge
+            user_id,
+            data.assigned_country,
+            now,
+            now
+        ))
+        
         # Обновляем countries.json
         import json
         countries_path = 'data/countries.json'

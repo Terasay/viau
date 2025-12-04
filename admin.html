@@ -28,6 +28,9 @@
                 <button class="admin-tab" data-section="resources">
                     <i class="fas fa-coins"></i> Ресурсы
                 </button>
+                <button class="admin-tab" data-section="characters">
+                    <i class="fas fa-user-crown"></i> Персонажи
+                </button>
             </div>
 
             <!-- Раздел пользователей -->
@@ -209,6 +212,212 @@
                             </label>
                             <button type="submit" class="btn-danger">Удалить</button>
                             <div id="delete-resource-result" class="form-result"></div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Раздел персонажей -->
+            <section id="characters-section" class="terminal admin-section" style="display:none">
+                <h2>База данных персонажей</h2>
+                
+                <div class="converter-admin-grid">
+                    <div class="converter-admin-panel" style="grid-column: 1 / -1;">
+                        <h3>Список персонажей</h3>
+                        <div id="characters-list" class="items-list" style="max-height: 400px;">
+                            <div class="loading-msg">Загрузка...</div>
+                        </div>
+                    </div>
+
+                    <div class="converter-admin-panel">
+                        <h3>Добавить персонажа</h3>
+                        <form id="add-character-form" class="admin-form">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <label>
+                                    Имя:
+                                    <input type="text" id="char-first-name-add" required>
+                                </label>
+                                <label>
+                                    Фамилия:
+                                    <input type="text" id="char-last-name-add" required>
+                                </label>
+                                <label>
+                                    Год рождения:
+                                    <input type="number" id="char-birth-year-add" required min="1400" max="1516">
+                                </label>
+                                <label>
+                                    Должность:
+                                    <input type="text" id="char-position-add" required value="Правитель">
+                                </label>
+                                <label>
+                                    Этнос:
+                                    <input type="text" id="char-ethnicity-add">
+                                </label>
+                                <label>
+                                    Религия:
+                                    <input type="text" id="char-religion-add">
+                                </label>
+                            </div>
+                            
+                            <label>
+                                Родственники (ID через запятую):
+                                <input type="text" id="char-relatives-add" placeholder="1, 5, 12">
+                            </label>
+                            <label>
+                                Друзья (ID через запятую):
+                                <input type="text" id="char-friends-add" placeholder="3, 7">
+                            </label>
+                            <label>
+                                Враги (ID через запятую):
+                                <input type="text" id="char-enemies-add" placeholder="2, 9">
+                            </label>
+                            
+                            <h4 style="color: #00ffc6; margin-top: 16px;">Характеристики (0-10)</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <label>
+                                    Военное дело:
+                                    <input type="number" id="char-military-add" min="0" max="10" value="5">
+                                </label>
+                                <label>
+                                    Управление:
+                                    <input type="number" id="char-administration-add" min="0" max="10" value="5">
+                                </label>
+                                <label>
+                                    Дипломатия:
+                                    <input type="number" id="char-diplomacy-add" min="0" max="10" value="5">
+                                </label>
+                                <label>
+                                    Интриги:
+                                    <input type="number" id="char-intrigue-add" min="0" max="10" value="5">
+                                </label>
+                                <label>
+                                    Знания:
+                                    <input type="number" id="char-knowledge-add" min="0" max="10" value="5">
+                                </label>
+                            </div>
+                            
+                            <label>
+                                User ID (опционально):
+                                <input type="number" id="char-user-id-add">
+                            </label>
+                            <label>
+                                Страна:
+                                <select id="char-country-add">
+                                    <option value="">Нет</option>
+                                    <option value="russia">Россия</option>
+                                    <option value="usa">США</option>
+                                    <option value="china">Китай</option>
+                                    <option value="uk">Великобритания</option>
+                                    <option value="france">Франция</option>
+                                    <option value="germany">Германия</option>
+                                    <option value="japan">Япония</option>
+                                    <option value="italy">Италия</option>
+                                    <option value="spain">Испания</option>
+                                    <option value="canada">Канада</option>
+                                </select>
+                            </label>
+                            
+                            <button type="submit">Добавить персонажа</button>
+                            <div id="add-character-result" class="form-result"></div>
+                        </form>
+                    </div>
+
+                    <div class="converter-admin-panel">
+                        <h3>Редактировать персонажа</h3>
+                        <p style="color: #888; font-size: 0.9em;">Нажмите на персонажа в списке для редактирования</p>
+                        <form id="edit-character-form" class="admin-form" style="display: none;">
+                            <input type="hidden" id="char-id-edit">
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <label>
+                                    Имя:
+                                    <input type="text" id="char-first-name-edit" required>
+                                </label>
+                                <label>
+                                    Фамилия:
+                                    <input type="text" id="char-last-name-edit" required>
+                                </label>
+                                <label>
+                                    Год рождения:
+                                    <input type="number" id="char-birth-year-edit" required min="1400" max="1516">
+                                </label>
+                                <label>
+                                    Должность:
+                                    <input type="text" id="char-position-edit" required>
+                                </label>
+                                <label>
+                                    Этнос:
+                                    <input type="text" id="char-ethnicity-edit">
+                                </label>
+                                <label>
+                                    Религия:
+                                    <input type="text" id="char-religion-edit">
+                                </label>
+                            </div>
+                            
+                            <label>
+                                Родственники (ID через запятую):
+                                <input type="text" id="char-relatives-edit">
+                            </label>
+                            <label>
+                                Друзья (ID через запятую):
+                                <input type="text" id="char-friends-edit">
+                            </label>
+                            <label>
+                                Враги (ID через запятую):
+                                <input type="text" id="char-enemies-edit">
+                            </label>
+                            
+                            <h4 style="color: #00ffc6; margin-top: 16px;">Характеристики (0-10)</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <label>
+                                    Военное дело:
+                                    <input type="number" id="char-military-edit" min="0" max="10">
+                                </label>
+                                <label>
+                                    Управление:
+                                    <input type="number" id="char-administration-edit" min="0" max="10">
+                                </label>
+                                <label>
+                                    Дипломатия:
+                                    <input type="number" id="char-diplomacy-edit" min="0" max="10">
+                                </label>
+                                <label>
+                                    Интриги:
+                                    <input type="number" id="char-intrigue-edit" min="0" max="10">
+                                </label>
+                                <label>
+                                    Знания:
+                                    <input type="number" id="char-knowledge-edit" min="0" max="10">
+                                </label>
+                            </div>
+                            
+                            <label>
+                                User ID:
+                                <input type="number" id="char-user-id-edit">
+                            </label>
+                            <label>
+                                Страна:
+                                <select id="char-country-edit">
+                                    <option value="">Нет</option>
+                                    <option value="russia">Россия</option>
+                                    <option value="usa">США</option>
+                                    <option value="china">Китай</option>
+                                    <option value="uk">Великобритания</option>
+                                    <option value="france">Франция</option>
+                                    <option value="germany">Германия</option>
+                                    <option value="japan">Япония</option>
+                                    <option value="italy">Италия</option>
+                                    <option value="spain">Испания</option>
+                                    <option value="canada">Канада</option>
+                                </select>
+                            </label>
+                            
+                            <div style="display: flex; gap: 12px;">
+                                <button type="submit">Обновить</button>
+                                <button type="button" class="btn-danger" id="delete-character-btn">Удалить персонажа</button>
+                            </div>
+                            <div id="edit-character-result" class="form-result"></div>
                         </form>
                     </div>
                 </div>

@@ -52,6 +52,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await loadResources();
             } else if (sectionName === 'applications') {
                 await loadApplications();
+            } else if (sectionName === 'characters') {
+                await loadCharacters();
             }
         });
     });
@@ -820,6 +822,264 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) {
             deleteResourceResult.textContent = 'Ошибка запроса';
             deleteResourceResult.className = 'form-result error';
+        }
+    });
+
+    // === ПЕРСОНАЖИ ===
+    const charactersList = document.getElementById('characters-list');
+
+    async function loadCharacters() {
+        try {
+            const resp = await fetch('/api/characters/admin/all', {
+                headers: { 'Authorization': token }
+            });
+            
+            if (resp.status === 403) {
+                charactersList.innerHTML = '<div class="error">Нет доступа</div>';
+                return;
+            }
+
+            const data = await resp.json();
+            if (data.success) {
+                displayCharacters(data.characters);
+            }
+        } catch (e) {
+            charactersList.innerHTML = '<div class="error">Ошибка загрузки персонажей</div>';
+        }
+    }
+
+    function displayCharacters(characters) {
+        if (!characters || characters.length === 0) {
+            charactersList.innerHTML = '<div class="loading-msg">Нет персонажей</div>';
+            return;
+        }
+
+        let html = '';
+        for (const char of characters) {
+            const age = 1516 - char.birth_year;
+            html += `
+                <div class="item-card character-card" onclick="selectCharacter(${char.id})" style="cursor: pointer;">
+                    <div class="item-header">
+                        <div>
+                            <div class="item-code">${char.first_name} ${char.last_name}</div>
+                            <div class="item-name">${char.position} • ${age} лет (${char.birth_year} г.р.)</div>
+                            ${char.country ? `<div style="color: #00ffc6; font-size: 0.85em; margin-top: 4px;">🏴 ${char.country}</div>` : ''}
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: #888; font-size: 0.85em;">ID: ${char.id}</div>
+                            ${char.user_id ? `<div style="color: #888; font-size: 0.85em;">User: ${char.user_id}</div>` : ''}
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; font-size: 0.85em;">
+                        <div style="text-align: center;">
+                            <div style="color: #888;">⚔️ Военное</div>
+                            <div style="color: #00ffc6; font-weight: bold;">${char.military}</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="color: #888;">📊 Управление</div>
+                            <div style="color: #00ffc6; font-weight: bold;">${char.administration}</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="color: #888;">🤝 Дипломатия</div>
+                            <div style="color: #00ffc6; font-weight: bold;">${char.diplomacy}</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="color: #888;">🎭 Интриги</div>
+                            <div style="color: #00ffc6; font-weight: bold;">${char.intrigue}</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="color: #888;">📚 Знания</div>
+                            <div style="color: #00ffc6; font-weight: bold;">${char.knowledge}</div>
+                        </div>
+                    </div>
+                    ${char.ethnicity || char.religion ? `
+                        <div style="margin-top: 8px; font-size: 0.85em; color: #aaa;">
+                            ${char.ethnicity ? `Этнос: ${char.ethnicity}` : ''} 
+                            ${char.ethnicity && char.religion ? ' • ' : ''}
+                            ${char.religion ? `Религия: ${char.religion}` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+        charactersList.innerHTML = html;
+    }
+
+    window.selectCharacter = async function(charId) {
+        try {
+            const resp = await fetch('/api/characters/admin/all', {
+                headers: { 'Authorization': token }
+            });
+            const data = await resp.json();
+            const char = data.characters.find(c => c.id === charId);
+            
+            if (!char) return;
+            
+            // Заполняем форму редактирования
+            document.getElementById('char-id-edit').value = char.id;
+            document.getElementById('char-first-name-edit').value = char.first_name;
+            document.getElementById('char-last-name-edit').value = char.last_name;
+            document.getElementById('char-birth-year-edit').value = char.birth_year;
+            document.getElementById('char-position-edit').value = char.position;
+            document.getElementById('char-ethnicity-edit').value = char.ethnicity || '';
+            document.getElementById('char-religion-edit').value = char.religion || '';
+            document.getElementById('char-relatives-edit').value = char.relatives || '';
+            document.getElementById('char-friends-edit').value = char.friends || '';
+            document.getElementById('char-enemies-edit').value = char.enemies || '';
+            document.getElementById('char-military-edit').value = char.military;
+            document.getElementById('char-administration-edit').value = char.administration;
+            document.getElementById('char-diplomacy-edit').value = char.diplomacy;
+            document.getElementById('char-intrigue-edit').value = char.intrigue;
+            document.getElementById('char-knowledge-edit').value = char.knowledge;
+            document.getElementById('char-user-id-edit').value = char.user_id || '';
+            document.getElementById('char-country-edit').value = char.country || '';
+            
+            // Показываем форму
+            document.getElementById('edit-character-form').style.display = 'block';
+            document.getElementById('edit-character-form').scrollIntoView({ behavior: 'smooth' });
+        } catch (e) {
+            console.error('Error selecting character:', e);
+        }
+    };
+
+    // Добавление персонажа
+    const addCharacterForm = document.getElementById('add-character-form');
+    const addCharacterResult = document.getElementById('add-character-result');
+
+    addCharacterForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const characterData = {
+            first_name: document.getElementById('char-first-name-add').value,
+            last_name: document.getElementById('char-last-name-add').value,
+            birth_year: parseInt(document.getElementById('char-birth-year-add').value),
+            position: document.getElementById('char-position-add').value,
+            ethnicity: document.getElementById('char-ethnicity-add').value || null,
+            religion: document.getElementById('char-religion-add').value || null,
+            relatives: document.getElementById('char-relatives-add').value || null,
+            friends: document.getElementById('char-friends-add').value || null,
+            enemies: document.getElementById('char-enemies-add').value || null,
+            military: parseInt(document.getElementById('char-military-add').value),
+            administration: parseInt(document.getElementById('char-administration-add').value),
+            diplomacy: parseInt(document.getElementById('char-diplomacy-add').value),
+            intrigue: parseInt(document.getElementById('char-intrigue-add').value),
+            knowledge: parseInt(document.getElementById('char-knowledge-add').value),
+            user_id: document.getElementById('char-user-id-add').value ? parseInt(document.getElementById('char-user-id-add').value) : null,
+            country: document.getElementById('char-country-add').value || null
+        };
+
+        try {
+            const resp = await fetch('/api/characters/admin/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify(characterData)
+            });
+
+            const data = await resp.json();
+            
+            if (data.success) {
+                addCharacterResult.textContent = 'Персонаж добавлен!';
+                addCharacterResult.className = 'form-result success';
+                addCharacterForm.reset();
+                await loadCharacters();
+            } else {
+                addCharacterResult.textContent = data.error || 'Ошибка';
+                addCharacterResult.className = 'form-result error';
+            }
+        } catch (err) {
+            addCharacterResult.textContent = 'Ошибка запроса';
+            addCharacterResult.className = 'form-result error';
+        }
+    });
+
+    // Редактирование персонажа
+    const editCharacterForm = document.getElementById('edit-character-form');
+    const editCharacterResult = document.getElementById('edit-character-result');
+
+    editCharacterForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const characterData = {
+            id: parseInt(document.getElementById('char-id-edit').value),
+            first_name: document.getElementById('char-first-name-edit').value,
+            last_name: document.getElementById('char-last-name-edit').value,
+            birth_year: parseInt(document.getElementById('char-birth-year-edit').value),
+            position: document.getElementById('char-position-edit').value,
+            ethnicity: document.getElementById('char-ethnicity-edit').value || null,
+            religion: document.getElementById('char-religion-edit').value || null,
+            relatives: document.getElementById('char-relatives-edit').value || null,
+            friends: document.getElementById('char-friends-edit').value || null,
+            enemies: document.getElementById('char-enemies-edit').value || null,
+            military: parseInt(document.getElementById('char-military-edit').value),
+            administration: parseInt(document.getElementById('char-administration-edit').value),
+            diplomacy: parseInt(document.getElementById('char-diplomacy-edit').value),
+            intrigue: parseInt(document.getElementById('char-intrigue-edit').value),
+            knowledge: parseInt(document.getElementById('char-knowledge-edit').value),
+            user_id: document.getElementById('char-user-id-edit').value ? parseInt(document.getElementById('char-user-id-edit').value) : null,
+            country: document.getElementById('char-country-edit').value || null
+        };
+
+        try {
+            const resp = await fetch('/api/characters/admin/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify(characterData)
+            });
+
+            const data = await resp.json();
+            
+            if (data.success) {
+                editCharacterResult.textContent = 'Персонаж обновлён!';
+                editCharacterResult.className = 'form-result success';
+                await loadCharacters();
+            } else {
+                editCharacterResult.textContent = data.error || 'Ошибка';
+                editCharacterResult.className = 'form-result error';
+            }
+        } catch (err) {
+            editCharacterResult.textContent = 'Ошибка запроса';
+            editCharacterResult.className = 'form-result error';
+        }
+    });
+
+    // Удаление персонажа
+    document.getElementById('delete-character-btn').addEventListener('click', async () => {
+        const charId = document.getElementById('char-id-edit').value;
+        
+        if (!confirm('Вы уверены, что хотите удалить этого персонажа?')) {
+            return;
+        }
+
+        try {
+            const resp = await fetch('/api/characters/admin/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                body: JSON.stringify({ id: parseInt(charId) })
+            });
+
+            const data = await resp.json();
+            
+            if (data.success) {
+                editCharacterResult.textContent = 'Персонаж удалён!';
+                editCharacterResult.className = 'form-result success';
+                editCharacterForm.style.display = 'none';
+                await loadCharacters();
+            } else {
+                editCharacterResult.textContent = data.error || 'Ошибка';
+                editCharacterResult.className = 'form-result error';
+            }
+        } catch (err) {
+            editCharacterResult.textContent = 'Ошибка запроса';
+            editCharacterResult.className = 'form-result error';
         }
     });
 });
