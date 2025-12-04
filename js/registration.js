@@ -3,8 +3,7 @@ let hasApplication = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     initTheme();
-    await checkAuth();
-    await loadCountries();
+    await checkAuth(); // checkAuth внутри вызовет loadCountries с правильными параметрами
     await loadRules();
     setupEventListeners();
     setupReferralCodeInput();
@@ -162,10 +161,15 @@ async function checkExistingApplication() {
                 // Перезагружаем страны с учётом страны пользователя, затем показываем заявку
                 await loadCountries(data.application.country);
                 showExistingApplication(data.application);
+            } else {
+                // Если заявки нет, загружаем страны без особых параметров
+                await loadCountries();
             }
         }
     } catch (error) {
         console.error('Error checking application:', error);
+        // В случае ошибки всё равно загружаем страны
+        await loadCountries();
     }
 }
 
