@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     <div class="application-actions">
                         ${app.status === 'pending' ? `
-                            <button class="btn-approve" onclick="approveApplication(${app.id}, '${app.country}')">
+                            <button class="btn-approve" onclick="showApproveModal(${app.id}, '${app.username}')">
                                 <i class="fas fa-check"></i> Одобрить
                             </button>
                             <button class="btn-reject" onclick="showRejectModal(${app.id})">
@@ -252,8 +252,111 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    // Модальное окно одобрения с редактированием
+    window.showApproveModal = function(appId, username) {
+        // Находим заявку в массиве
+        const app = allApplications.find(a => a.id === appId);
+        if (!app) {
+            alert('Заявка не найдена');
+            return;
+        }
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay-admin active';
+        modal.innerHTML = `
+            <div class="modal-content-admin" style="max-width: 700px;">
+                <button class="modal-close-btn" onclick="this.closest('.modal-overlay-admin').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h3 class="modal-title">Одобрить заявку - ${username}</h3>
+                <div class="modal-form">
+                    <p style="color: #888; margin-bottom: 16px;">Проверьте и при необходимости отредактируйте данные перед одобрением:</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <label>
+                            Имя персонажа:
+                            <input type="text" id="approve-first-name" value="${app.first_name || ''}" required>
+                        </label>
+                        <label>
+                            Фамилия/Дом:
+                            <input type="text" id="approve-last-name" value="${app.last_name || ''}" required>
+                        </label>
+                        <label>
+                            Происхождение:
+                            <input type="text" id="approve-country-origin" value="${app.country_origin || ''}" required>
+                        </label>
+                        <label>
+                            Возраст:
+                            <input type="number" id="approve-age" value="${app.age || ''}" required>
+                        </label>
+                        <label>
+                            Страна для игры:
+                            <select id="approve-country" required>
+                                <option value="">-- Выберите страну --</option>
+                                <option value="russia" ${app.country === 'russia' ? 'selected' : ''}>Россия</option>
+                                <option value="usa" ${app.country === 'usa' ? 'selected' : ''}>США</option>
+                                <option value="china" ${app.country === 'china' ? 'selected' : ''}>Китай</option>
+                                <option value="uk" ${app.country === 'uk' ? 'selected' : ''}>Великобритания</option>
+                                <option value="france" ${app.country === 'france' ? 'selected' : ''}>Франция</option>
+                                <option value="germany" ${app.country === 'germany' ? 'selected' : ''}>Германия</option>
+                                <option value="japan" ${app.country === 'japan' ? 'selected' : ''}>Япония</option>
+                                <option value="italy" ${app.country === 'italy' ? 'selected' : ''}>Италия</option>
+                                <option value="spain" ${app.country === 'spain' ? 'selected' : ''}>Испания</option>
+                                <option value="canada" ${app.country === 'canada' ? 'selected' : ''}>Канада</option>
+                            </select>
+                        </label>
+                        <label>
+                            Религия:
+                            <input type="text" id="approve-religion" value="${app.religion || ''}">
+                        </label>
+                        <label>
+                            Этнос:
+                            <input type="text" id="approve-ethnicity" value="${app.ethnicity || ''}">
+                        </label>
+                        <label>
+                            Реферальный код:
+                            <input type="text" id="approve-referral" value="${app.referral_code || ''}" maxlength="4" pattern="[A-Z]{4}">
+                        </label>
+                    </div>
+                    
+                    <label style="margin-top: 8px;">
+                        Родственники:
+                        <textarea id="approve-relatives" style="min-height: 60px;">${app.relatives || ''}</textarea>
+                    </label>
+                    
+                    <div class="modal-actions">
+                        <button class="btn-secondary" onclick="this.closest('.modal-overlay-admin').remove()">
+                            Отмена
+                        </button>
+                        <button class="btn-approve" onclick="approveApplication(${appId})">
+                            <i class="fas fa-check"></i> Одобрить заявку
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    };
+
     // Одобрение заявки
-    window.approveApplication = async function(appId, country) {
+    window.approveApplication = async function(appId) {
+        // Получаем данные из формы
+        const firstName = document.getElementById('approve-first-name')?.value.trim();
+        const lastName = document.getElementById('approve-last-name')?.value.trim();
+        const countryOrigin = document.getElementById('approve-country-origin')?.value.trim();
+        const age = parseInt(document.getElementById('approve-age')?.value);
+        const country = document.getElementById('approve-country')?.value;
+        const religion = document.getElementById('approve-religion')?.value.trim();
+        const ethnicity = document.getElementById('approve-ethnicity')?.value.trim();
+        const referralCode = document.getElementById('approve-referral')?.value.trim();
+        const relatives = document.getElementById('approve-relatives')?.value.trim();
+
+        // Валидация
+        if (!firstName || !lastName || !countryOrigin || !age || !country) {
+            alert('Заполните все обязательные поля');
+            return;
+        }
+
         if (!confirm(`Одобрить заявку и назначить страну "${country}"?`)) {
             return;
         }
@@ -267,13 +370,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
                 body: JSON.stringify({
                     application_id: appId,
-                    assigned_country: country
+                    first_name: firstName,
+                    last_name: lastName,
+                    country_origin: countryOrigin,
+                    age: age,
+                    assigned_country: country,
+                    religion: religion || null,
+                    ethnicity: ethnicity || null,
+                    referral_code: referralCode || null,
+                    relatives: relatives || null
                 })
             });
 
             const data = await resp.json();
             if (data.success) {
-                alert('Заявка одобрена!');
+                alert('Заявка одобрена! Пользователь получил роль "player".');
+                document.querySelector('.modal-overlay-admin').remove();
                 await loadApplications();
             } else {
                 alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));

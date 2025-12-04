@@ -551,6 +551,27 @@ button:active, input[type="submit"]:active {
 .modal-form label {
     color: #e0e0e0;
     font-size: 0.95em;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-form input,
+.modal-form select {
+    margin-top: 6px;
+    background: #232323;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 1em;
+    font-family: 'Fira Mono', 'Consolas', monospace;
+    transition: all 0.3s;
+}
+
+.modal-form input:focus,
+.modal-form select:focus {
+    border-color: #00ffc6;
+    outline: none;
 }
 
 .modal-form textarea {

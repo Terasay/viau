@@ -521,7 +521,15 @@ async def get_pending_applications(request: Request):
 
 class ApproveApplicationData(BaseModel):
     application_id: int
+    first_name: str
+    last_name: str
+    country_origin: str
+    age: int
     assigned_country: str
+    religion: Optional[str] = None
+    ethnicity: Optional[str] = None
+    referral_code: Optional[str] = None
+    relatives: Optional[str] = None
 
 @router.post("/admin/approve-application")
 async def approve_application(data: ApproveApplicationData, request: Request):
@@ -564,27 +572,74 @@ async def approve_application(data: ApproveApplicationData, request: Request):
                 "error": "Можно одобрить только заявки на рассмотрении"
             }, status_code=400)
         
+        user_id = application['user_id']
         now = datetime.now().isoformat()
         
-        # Обновляем статус заявки
+        # Обновляем заявку с новыми данными
         cursor.execute('''
             UPDATE player_applications SET
+                first_name = ?,
+                last_name = ?,
+                country_origin = ?,
+                age = ?,
+                country = ?,
+                religion = ?,
+                ethnicity = ?,
+                referral_code = ?,
+                relatives = ?,
                 status = 'approved',
                 reviewed_by = ?,
                 reviewed_at = ?,
                 updated_at = ?
             WHERE id = ?
-        ''', (user['id'], now, now, data.application_id))
+        ''', (
+            data.first_name,
+            data.last_name,
+            data.country_origin,
+            data.age,
+            data.assigned_country,
+            data.religion,
+            data.ethnicity,
+            data.referral_code,
+            data.relatives,
+            user['id'],
+            now,
+            now,
+            data.application_id
+        ))
         
-        # Обновляем роль пользователя
+        # Обновляем роль пользователя и назначаем страну
         cursor.execute('''
             UPDATE users SET
                 role = 'player',
                 country = ?
             WHERE id = ?
-        ''', (data.assigned_country, application['user_id']))
+        ''', (data.assigned_country, user_id))
+        
+        # Обновляем countries.json
+        import json
+        countries_path = 'data/countries.json'
+        try:
+            with open(countries_path, 'r', encoding='utf-8') as f:
+                countries = json.load(f)
+            
+            # Отмечаем страну как занятую
+            for country in countries:
+                if country['id'] == data.assigned_country:
+                    country['available'] = False
+                    break
+            
+            with open(countries_path, 'w', encoding='utf-8') as f:
+                json.dump(countries, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"Error updating countries.json: {e}")
         
         conn.commit()
+        
+        return JSONResponse({
+            "success": True,
+            "message": "Заявка одобрена, пользователь получил роль player"
+        })
         
         return JSONResponse({
             "success": True,
