@@ -95,7 +95,7 @@ def migrate_existing_players():
             
             if success:
                 countries_created += 1
-                print(f"✓ Created country {country_name} for player {app['username']}")
+                print(f"[+] Created country {country_name} for player {app['username']}")
         
         if countries_created > 0:
             print(f"Migration complete: {countries_created} countries created")
