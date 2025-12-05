@@ -785,11 +785,3 @@ async def remove_player_country(request: Request):
 		return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
 	finally:
 		conn.close()
-
-@app.get('/registration')
-async def registration_page():
-    return FileResponse('registration.html')
-
-@app.get('/game')
-async def game_page():
-    return FileResponse('game.html')
