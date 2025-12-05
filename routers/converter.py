@@ -179,12 +179,6 @@ async def convert_resource(request: Request):
     })
 
 
-@router.get('/page')
-async def converter_page():
-    """Отдать HTML страницу конвертера"""
-    return FileResponse('converter.html')
-
-
 # ==================== ADMIN ENDPOINTS ====================
 
 @router.get('/admin/all-data')
