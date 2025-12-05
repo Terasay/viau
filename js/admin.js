@@ -875,7 +875,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div>
                             <div class="item-code">${char.first_name} ${char.last_name}</div>
                             <div class="item-name">${char.position} • ${age} лет (${char.birth_year} г.р.)</div>
-                            ${char.country ? `<div style="color: #00ffc6; font-size: 0.85em; margin-top: 4px;">🏴 ${char.country}</div>` : ''}
+                            ${char.country ? `<div style="color: #00ffc6; font-size: 0.85em; margin-top: 4px;"><i class="fas fa-flag"></i> ${char.country}</div>` : ''}
                         </div>
                         <div style="text-align: right;">
                             <div style="color: #888; font-size: 0.85em;">ID: ${char.id}</div>
@@ -884,23 +884,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; font-size: 0.85em;">
                         <div style="text-align: center;">
-                            <div style="color: #888;">⚔️ Военное</div>
+                            <div style="color: #888;"><i class="fas fa-shield-alt"></i> Военное</div>
                             <div style="color: #00ffc6; font-weight: bold;">${char.military}</div>
                         </div>
                         <div style="text-align: center;">
-                            <div style="color: #888;">📊 Управление</div>
+                            <div style="color: #888;"><i class="fas fa-chart-line"></i> Управление</div>
                             <div style="color: #00ffc6; font-weight: bold;">${char.administration}</div>
                         </div>
                         <div style="text-align: center;">
-                            <div style="color: #888;">🤝 Дипломатия</div>
+                            <div style="color: #888;"><i class="fas fa-handshake"></i> Дипломатия</div>
                             <div style="color: #00ffc6; font-weight: bold;">${char.diplomacy}</div>
                         </div>
                         <div style="text-align: center;">
-                            <div style="color: #888;">🎭 Интриги</div>
+                            <div style="color: #888;"><i class="fas fa-user-secret"></i> Интриги</div>
                             <div style="color: #00ffc6; font-weight: bold;">${char.intrigue}</div>
                         </div>
                         <div style="text-align: center;">
-                            <div style="color: #888;">📚 Знания</div>
+                            <div style="color: #888;"><i class="fas fa-book"></i> Знания</div>
                             <div style="color: #00ffc6; font-weight: bold;">${char.knowledge}</div>
                         </div>
                     </div>
