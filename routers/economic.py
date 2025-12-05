@@ -159,31 +159,55 @@ def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler
 
 @router.get("/countries")
 async def get_all_countries(request: Request):
-    """Получение списка всех стран (для админов)"""
-    user = await check_admin(request)
+    """Получение списка стран (для админов - все страны, для игроков - только своя)"""
+    import sys
+    sys.path.append('..')
+    from main import get_current_user
+    
+    user = await get_current_user(request)
     if not user:
-        return JSONResponse({'success': False, 'error': 'Нет доступа'}, status_code=403)
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
     
     conn = get_db()
     cursor = conn.cursor()
     
     try:
-        cursor.execute('''
-            SELECT 
-                c.id,
-                c.player_id,
-                c.ruler_first_name,
-                c.ruler_last_name,
-                c.country_name,
-                c.currency,
-                c.secret_coins,
-                c.created_at,
-                c.updated_at,
-                u.username as player_username
-            FROM countries c
-            LEFT JOIN users u ON c.player_id = u.id
-            ORDER BY c.created_at DESC
-        ''')
+        # Если админ - показываем все страны, если игрок - только его страну
+        if user.get('role') == 'admin':
+            cursor.execute('''
+                SELECT 
+                    c.id,
+                    c.player_id,
+                    c.ruler_first_name,
+                    c.ruler_last_name,
+                    c.country_name,
+                    c.currency,
+                    c.secret_coins,
+                    c.created_at,
+                    c.updated_at,
+                    u.username as player_username
+                FROM countries c
+                LEFT JOIN users u ON c.player_id = u.id
+                ORDER BY c.created_at DESC
+            ''')
+        else:
+            # Для обычных игроков - только их страна
+            cursor.execute('''
+                SELECT 
+                    c.id,
+                    c.player_id,
+                    c.ruler_first_name,
+                    c.ruler_last_name,
+                    c.country_name,
+                    c.currency,
+                    c.secret_coins,
+                    c.created_at,
+                    c.updated_at,
+                    u.username as player_username
+                FROM countries c
+                LEFT JOIN users u ON c.player_id = u.id
+                WHERE c.player_id = ?
+            ''', (user['id'],))
         
         countries = []
         for row in cursor.fetchall():

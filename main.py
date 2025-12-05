@@ -788,4 +788,8 @@ async def remove_player_country(request: Request):
 
 @app.get('/registration')
 async def registration_page():
-	return FileResponse('registration.html')
+    return FileResponse('registration.html')
+
+@app.get('/game')
+async def game_page():
+    return FileResponse('game.html')

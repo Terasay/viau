@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра - VIAU</title>
+    <link rel="stylesheet" href="/css/game.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Экран загрузки -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <i class="fas fa-crown fa-3x"></i>
+            <h2>Загрузка игры...</h2>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <!-- Экран ошибки доступа -->
+    <div id="access-denied" class="access-screen" style="display: none;">
+        <div class="access-content">
+            <i class="fas fa-lock fa-4x"></i>
+            <h1>403 - Доступ запрещён</h1>
+            <p>Для доступа к игре необходимо зарегистрироваться как игрок.</p>
+            <p class="hint">Пожалуйста, заполните бланк регистрации игрока.</p>
+            <button onclick="window.location.href='https://zxcmirok.ru/registration'" class="btn-primary">
+                <i class="fas fa-file-signature"></i> Перейти к регистрации
+            </button>
+            <button onclick="window.location.href='/'" class="btn-secondary">
+                <i class="fas fa-home"></i> На главную
+            </button>
+        </div>
+    </div>
+
+    <!-- Основной игровой интерфейс -->
+    <div id="game-container" class="game-container" style="display: none;">
+        <!-- Верхняя панель -->
+        <header class="game-header">
+            <div class="header-left">
+                <div class="country-info">
+                    <i class="fas fa-flag"></i>
+                    <span id="country-name" class="country-name">Загрузка...</span>
+                </div>
+                <div class="ruler-info">
+                    <i class="fas fa-crown"></i>
+                    <span id="ruler-name" class="ruler-name">Загрузка...</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <h1 class="game-title">VIAU - Игра</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <i class="fas fa-user"></i>
+                    <span id="username" class="username">Загрузка...</span>
+                </div>
+                <button id="logout-btn" class="btn-icon" title="Выход">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Панель ресурсов -->
+        <div class="resources-bar">
+            <div class="resource-item">
+                <i class="fas fa-coins"></i>
+                <span class="resource-label">Казна:</span>
+                <span id="currency-name" class="resource-value">Золото</span>
+                <span id="secret-coins" class="resource-value">0</span>
+            </div>
+            <div class="resource-separator"></div>
+            <div class="resource-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span class="resource-label">Дата:</span>
+                <span class="resource-value">1 января 1516 г.</span>
+            </div>
+        </div>
+
+        <!-- Навигационное меню -->
+        <nav class="game-navigation">
+            <button class="nav-btn active" data-section="overview">
+                <i class="fas fa-home"></i>
+                <span>Обзор</span>
+            </button>
+            <button class="nav-btn" data-section="economy">
+                <i class="fas fa-chart-line"></i>
+                <span>Экономика</span>
+            </button>
+            <button class="nav-btn" data-section="military">
+                <i class="fas fa-shield-alt"></i>
+                <span>Армия</span>
+            </button>
+            <button class="nav-btn" data-section="diplomacy">
+                <i class="fas fa-handshake"></i>
+                <span>Дипломатия</span>
+            </button>
+            <button class="nav-btn" data-section="characters">
+                <i class="fas fa-users"></i>
+                <span>Персонажи</span>
+            </button>
+            <button class="nav-btn" data-section="map">
+                <i class="fas fa-map"></i>
+                <span>Карта</span>
+            </button>
+        </nav>
+
+        <!-- Контент секций -->
+        <main class="game-content">
+            <!-- Секция: Обзор -->
+            <section id="overview-section" class="game-section active">
+                <h2><i class="fas fa-home"></i> Обзор страны</h2>
+                <div class="section-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-info-circle"></i> Основная информация</h3>
+                        <div class="info-row">
+                            <span class="info-label">Страна:</span>
+                            <span id="overview-country" class="info-value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Правитель:</span>
+                            <span id="overview-ruler" class="info-value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Валюта:</span>
+                            <span id="overview-currency" class="info-value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Казна:</span>
+                            <span id="overview-coins" class="info-value">-</span>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-chart-pie"></i> Статистика</h3>
+                        <p class="placeholder-text">Здесь будет отображаться статистика страны</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Секция: Экономика -->
+            <section id="economy-section" class="game-section" style="display: none;">
+                <h2><i class="fas fa-chart-line"></i> Экономика</h2>
+                <div class="placeholder-card">
+                    <i class="fas fa-hammer fa-3x"></i>
+                    <h3>Раздел в разработке</h3>
+                    <p>Управление экономикой страны будет доступно в следующих обновлениях</p>
+                </div>
+            </section>
+
+            <!-- Секция: Армия -->
+            <section id="military-section" class="game-section" style="display: none;">
+                <h2><i class="fas fa-shield-alt"></i> Военные силы</h2>
+                <div class="placeholder-card">
+                    <i class="fas fa-hammer fa-3x"></i>
+                    <h3>Раздел в разработке</h3>
+                    <p>Управление армией будет доступно в следующих обновлениях</p>
+                </div>
+            </section>
+
+            <!-- Секция: Дипломатия -->
+            <section id="diplomacy-section" class="game-section" style="display: none;">
+                <h2><i class="fas fa-handshake"></i> Дипломатия</h2>
+                <div class="placeholder-card">
+                    <i class="fas fa-hammer fa-3x"></i>
+                    <h3>Раздел в разработке</h3>
+                    <p>Дипломатические отношения будут доступны в следующих обновлениях</p>
+                </div>
+            </section>
+
+            <!-- Секция: Персонажи -->
+            <section id="characters-section" class="game-section" style="display: none;">
+                <h2><i class="fas fa-users"></i> Персонажи</h2>
+                <div class="placeholder-card">
+                    <i class="fas fa-hammer fa-3x"></i>
+                    <h3>Раздел в разработке</h3>
+                    <p>Управление персонажами будет доступно в следующих обновлениях</p>
+                </div>
+            </section>
+
+            <!-- Секция: Карта -->
+            <section id="map-section" class="game-section" style="display: none;">
+                <h2><i class="fas fa-map"></i> Карта мира</h2>
+                <div class="placeholder-card">
+                    <i class="fas fa-hammer fa-3x"></i>
+                    <h3>Раздел в разработке</h3>
+                    <p>Интерактивная карта будет доступна в следующих обновлениях</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/js/game.js"></script>
+</body>
+</html>
