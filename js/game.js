@@ -114,8 +114,8 @@ function initInterface() {
         document.getElementById('ruler-name').textContent = 'Управление игрой';
         document.getElementById('currency-name').textContent = '-';
         document.getElementById('secret-coins').textContent = '-';
-    } else {
-        // Для игроков показываем данные страны
+    } else if (currentCountry) {
+        // Для игроков показываем данные страны (только если страна загружена)
         document.getElementById('country-name').textContent = currentCountry.country_name;
         document.getElementById('ruler-name').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
