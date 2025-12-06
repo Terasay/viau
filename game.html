@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Экран загрузки -->
     <div id="loading-screen" class="loading-screen">
         <div class="loading-content">
             <i class="fas fa-crown fa-3x"></i>
@@ -17,7 +16,6 @@
         </div>
     </div>
 
-    <!-- Экран ошибки доступа -->
     <div id="access-denied" class="access-screen" style="display: none;">
         <div class="access-content">
             <i class="fas fa-lock fa-4x"></i>
@@ -33,9 +31,7 @@
         </div>
     </div>
 
-    <!-- Основной игровой интерфейс -->
     <div id="game-container" class="game-container" style="display: none;">
-        <!-- Верхняя панель -->
         <header class="game-header">
             <div class="header-left">
                 <div class="country-info">
@@ -61,7 +57,6 @@
             </div>
         </header>
 
-        <!-- Панель ресурсов -->
         <div class="resources-bar">
             <div class="resource-item">
                 <i class="fas fa-coins"></i>
@@ -77,7 +72,6 @@
             </div>
         </div>
 
-        <!-- Навигационное меню -->
         <nav class="game-navigation">
             <button class="nav-btn active" data-section="overview">
                 <i class="fas fa-home"></i>
@@ -105,9 +99,7 @@
             </button>
         </nav>
 
-        <!-- Контент секций -->
         <main class="game-content">
-            <!-- Секция: Обзор -->
             <section id="overview-section" class="game-section active">
                 <h2><i class="fas fa-home"></i> Обзор страны</h2>
                 <div class="section-grid">
@@ -137,7 +129,6 @@
                 </div>
             </section>
 
-            <!-- Секция: Экономика -->
             <section id="economy-section" class="game-section" style="display: none;">
                 <h2><i class="fas fa-chart-line"></i> Экономика</h2>
                 <div class="placeholder-card">
@@ -147,7 +138,6 @@
                 </div>
             </section>
 
-            <!-- Секция: Армия -->
             <section id="military-section" class="game-section" style="display: none;">
                 <h2><i class="fas fa-shield-alt"></i> Военные силы</h2>
                 <div class="placeholder-card">
@@ -157,7 +147,6 @@
                 </div>
             </section>
 
-            <!-- Секция: Дипломатия -->
             <section id="diplomacy-section" class="game-section" style="display: none;">
                 <h2><i class="fas fa-handshake"></i> Дипломатия</h2>
                 <div class="placeholder-card">
@@ -167,7 +156,6 @@
                 </div>
             </section>
 
-            <!-- Секция: Персонажи -->
             <section id="characters-section" class="game-section" style="display: none;">
                 <h2><i class="fas fa-users"></i> Персонажи</h2>
                 <div class="placeholder-card">
@@ -177,7 +165,6 @@
                 </div>
             </section>
 
-            <!-- Секция: Карта -->
             <section id="map-section" class="game-section" style="display: none;">
                 <h2><i class="fas fa-map"></i> Карта мира</h2>
                 <div class="placeholder-card">
