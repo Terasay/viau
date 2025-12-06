@@ -44,8 +44,10 @@ async function initGame() {
             return;
         }
 
-        // Загрузка данных страны игрока
-        await loadCountryData();
+        // Для админов и модераторов не загружаем страну (у них нет своей страны)
+        if (currentUser.role === 'player') {
+            await loadCountryData();
+        }
 
         // Инициализация интерфейса
         initInterface();
@@ -84,13 +86,13 @@ async function loadCountryData() {
             throw new Error('No country data available');
         }
 
-        // Ищем страну текущего пользователя
+        // Ищем страну текущего пользователя (только для игроков)
         const userCountry = data.countries.find(c => c.player_id === currentUser.id);
 
         if (!userCountry) {
             // Если у игрока нет страны - редирект на регистрацию
             alert('У вас нет зарегистрированной страны. Пожалуйста, заполните заявку.');
-            window.location.href = 'https://zxcmirok.ru/registration';
+            window.location.href = '/registration';
             return;
         }
 
@@ -106,21 +108,75 @@ async function loadCountryData() {
 
 function initInterface() {
     // Заполняем информацию в шапке
-    document.getElementById('country-name').textContent = currentCountry.country_name;
-    document.getElementById('ruler-name').textContent = 
-        `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
+    if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
+        // Для админов и модераторов показываем специальную панель
+        document.getElementById('country-name').textContent = currentUser.role === 'admin' ? 'Панель администратора' : 'Панель модератора';
+        document.getElementById('ruler-name').textContent = 'Управление игрой';
+        document.getElementById('currency-name').textContent = '-';
+        document.getElementById('secret-coins').textContent = '-';
+    } else {
+        // Для игроков показываем данные страны
+        document.getElementById('country-name').textContent = currentCountry.country_name;
+        document.getElementById('ruler-name').textContent = 
+            `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
+        document.getElementById('currency-name').textContent = currentCountry.currency;
+        document.getElementById('secret-coins').textContent = currentCountry.secret_coins;
+
+        // Заполняем секцию обзора
+        document.getElementById('overview-country').textContent = currentCountry.country_name;
+        document.getElementById('overview-ruler').textContent = 
+            `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
+        document.getElementById('overview-currency').textContent = currentCountry.currency;
+        document.getElementById('overview-coins').textContent = currentCountry.secret_coins;
+    }
+
     document.getElementById('username').textContent = currentUser.username;
 
-    // Заполняем ресурсы
-    document.getElementById('currency-name').textContent = currentCountry.currency;
-    document.getElementById('secret-coins').textContent = currentCountry.secret_coins;
-
-    // Заполняем секцию обзора
-    document.getElementById('overview-country').textContent = currentCountry.country_name;
-    document.getElementById('overview-ruler').textContent = 
-        `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
-    document.getElementById('overview-currency').textContent = currentCountry.currency;
-    document.getElementById('overview-coins').textContent = currentCountry.secret_coins;
+    // Обновляем секцию обзора для админов/модераторов
+    if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
+        const overviewSection = document.getElementById('overview-section');
+        overviewSection.innerHTML = `
+            <h2><i class="fas fa-tools"></i> Панель управления игрой</h2>
+            <div class="section-grid">
+                <div class="info-card">
+                    <h3><i class="fas fa-user-shield"></i> Информация о роли</h3>
+                    <div class="info-row">
+                        <span class="info-label">Роль:</span>
+                        <span class="info-value">${currentUser.role === 'admin' ? 'Администратор' : 'Модератор'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Пользователь:</span>
+                        <span class="info-value">${currentUser.username}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">${currentUser.email}</span>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <h3><i class="fas fa-cogs"></i> Быстрые действия</h3>
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                        <button class="btn-primary" onclick="window.location.href='/admin'">
+                            <i class="fas fa-user-shield"></i> Админ-панель
+                        </button>
+                        <button class="btn-secondary" onclick="window.location.href='/chat'">
+                            <i class="fas fa-comments"></i> Чат
+                        </button>
+                        <button class="btn-secondary" onclick="window.location.href='/map'">
+                            <i class="fas fa-map"></i> Карты
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 24px;">
+                <div class="placeholder-card">
+                    <i class="fas fa-gamepad fa-3x"></i>
+                    <h3>Игровые функции для администраторов</h3>
+                    <p>Управление игровыми процессами, событиями и механиками будет доступно в следующих обновлениях</p>
+                </div>
+            </div>
+        `;
+    }
 
     // Настройка навигации
     setupNavigation();
@@ -157,8 +213,10 @@ function logout() {
 
 // Функции для работы с данными страны (будут расширяться)
 async function updateCountryData() {
-    // Перезагрузка данных страны с сервера
-    await loadCountryData();
+    // Перезагрузка данных страны с сервера (только для игроков)
+    if (currentUser.role === 'player') {
+        await loadCountryData();
+    }
     initInterface();
 }
 
