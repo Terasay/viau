@@ -6,8 +6,15 @@
     <title>Игра - VIAU</title>
     <link rel="stylesheet" href="/css/game.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div class="background-animation">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
     <div id="loading-screen" class="loading-screen">
         <div class="loading-content">
             <i class="fas fa-crown fa-3x"></i>
@@ -51,6 +58,9 @@
                     <i class="fas fa-user"></i>
                     <span id="username" class="username">Загрузка...</span>
                 </div>
+                <button id="theme-toggle" class="btn-icon" title="Переключить тему">
+                    <i class="fas fa-moon"></i>
+                </button>
                 <button id="logout-btn" class="btn-icon" title="Выход">
                     <i class="fas fa-sign-out-alt"></i>
                 </button>

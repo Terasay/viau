@@ -2,6 +2,12 @@ let currentUser = null;
 let currentCountry = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Применяем сохраненную тему
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.body.classList.add('dark-mode');
+    }
+    
     await initGame();
 });
 
@@ -181,8 +187,29 @@ function initInterface() {
     // Настройка навигации
     setupNavigation();
 
+    // Переключатель темы
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        updateThemeIcon();
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcon();
+        });
+    }
+
     // Кнопка выхода
     document.getElementById('logout-btn').addEventListener('click', logout);
+}
+
+function updateThemeIcon() {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        const icon = themeToggle.querySelector('i');
+        const isDark = document.body.classList.contains('dark-mode');
+        icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+    }
 }
 
 function setupNavigation() {
