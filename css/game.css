@@ -409,11 +409,11 @@ body.dark-mode .game-header {
 
 .game-section {
     display: none;
-    animation: fadeIn 0.4s ease;
+    animation: fadeIn 0.5s ease;
 }
 
 .game-section.active {
-    display: block;
+    display: block !important;
 }
 
 @keyframes fadeIn {
