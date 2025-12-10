@@ -438,6 +438,219 @@ NAVY_TECH = {
     ]
 }
 
+# НАУКА И ОБРАЗОВАНИЕ
+EDUCATION_TECH = {
+    "id": "education",
+    "name": "Наука и образование",
+    "lines": [
+        {
+            "id": "education_system",
+            "name": "Образовательная система",
+            "technologies": [
+                # БАЗОВЫЙ УРОВЕНЬ (1500-1650)
+                {"id": "church_schools", "name": "Церковные школы", "year": 1500, "requires": []},
+                {"id": "monastery_education", "name": "Монастырское образование", "year": 1510, "requires": ["church_schools"]},
+                {"id": "city_schools", "name": "Городские школы", "year": 1520, "requires": ["monastery_education"]},
+                {"id": "latin_schools", "name": "Латинские школы", "year": 1530, "requires": ["city_schools"]},
+                {"id": "gymnasiums_1", "name": "Гимназии I", "year": 1540, "requires": ["latin_schools"]},
+                {"id": "universities_1", "name": "Университеты I", "year": 1550, "requires": ["gymnasiums_1"]},
+                {"id": "humanist_education", "name": "Гуманистическое образование", "year": 1560, "requires": ["universities_1"]},
+                {"id": "gymnasiums_2", "name": "Гимназии II", "year": 1570, "requires": ["humanist_education"]},
+                {"id": "universities_2", "name": "Университеты II", "year": 1580, "requires": ["gymnasiums_2"]},
+                {"id": "classical_education", "name": "Классическое образование", "year": 1590, "requires": ["universities_2"]},
+                {"id": "education_standards_1", "name": "Образовательные стандарты I", "year": 1600, "requires": ["classical_education"]},
+                {"id": "academies", "name": "Академии", "year": 1610, "requires": ["education_standards_1"]},
+                {"id": "universities_3", "name": "Университеты III", "year": 1620, "requires": ["academies"]},
+                {"id": "education_standards_2", "name": "Образовательные стандарты II", "year": 1630, "requires": ["universities_3"]},
+                {"id": "education_reform_1", "name": "Реформа образования I", "year": 1640, "requires": ["education_standards_2"]},
+                {"id": "expanded_education", "name": "Расширенное образование", "year": 1650, "requires": ["education_reform_1"]},
+                # ЭПОХА ПРОСВЕЩЕНИЯ (1650-1800)
+                {"id": "scientific_societies", "name": "Научные общества", "year": 1660, "requires": ["expanded_education"]},
+                {"id": "real_schools", "name": "Реальные школы", "year": 1670, "requires": ["scientific_societies"]},
+                {"id": "universities_4", "name": "Университеты IV", "year": 1680, "requires": ["real_schools"]},
+                {"id": "academies_of_sciences", "name": "Академии наук", "year": 1690, "requires": ["universities_4"]},
+                {"id": "secular_education", "name": "Светское образование", "year": 1700, "requires": ["academies_of_sciences"]},
+                {"id": "primary_schools_1", "name": "Начальные школы I", "year": 1710, "requires": ["secular_education"]},
+                {"id": "education_reform_2", "name": "Образовательная реформа II", "year": 1720, "requires": ["primary_schools_1"]},
+                {"id": "primary_schools_2", "name": "Начальные школы II", "year": 1730, "requires": ["education_reform_2"]},
+                {"id": "vocational_education_1", "name": "Профессиональное образование I", "year": 1740, "requires": ["primary_schools_2"]},
+                {"id": "universities_5", "name": "Университеты V", "year": 1750, "requires": ["vocational_education_1"]},
+                {"id": "compulsory_primary_education", "name": "Обязательное начальное образование", "year": 1760, "requires": ["universities_5"]},
+                {"id": "pedagogical_institutes", "name": "Педагогические институты", "year": 1770, "requires": ["compulsory_primary_education"]},
+                {"id": "vocational_education_2", "name": "Профессиональное образование II", "year": 1780, "requires": ["pedagogical_institutes"]},
+                {"id": "education_system_1", "name": "Образовательная система I", "year": 1790, "requires": ["vocational_education_2"]},
+                {"id": "state_education", "name": "Государственное образование", "year": 1800, "requires": ["education_system_1"]},
+                # СОВРЕМЕННАЯ ЭПОХА (1800-1900)
+                {"id": "universal_primary_education_1", "name": "Всеобщее начальное образование I", "year": 1810, "requires": ["state_education"]},
+                {"id": "technical_schools", "name": "Технические училища", "year": 1820, "requires": ["universal_primary_education_1"]},
+                {"id": "universal_primary_education_2", "name": "Всеобщее начальное образование II", "year": 1830, "requires": ["technical_schools"]},
+                {"id": "secondary_education_1", "name": "Среднее образование I", "year": 1840, "requires": ["universal_primary_education_2"]},
+                {"id": "polytechnic_institutes", "name": "Политехнические институты", "year": 1850, "requires": ["secondary_education_1"]},
+                {"id": "secondary_education_2", "name": "Среднее образование II", "year": 1860, "requires": ["polytechnic_institutes"]},
+                {"id": "womens_education", "name": "Женское образование", "year": 1870, "requires": ["secondary_education_2"]},
+                {"id": "higher_technical_education", "name": "Высшее техническое образование", "year": 1880, "requires": ["womens_education"]},
+                {"id": "education_system_2", "name": "Образовательная система II", "year": 1890, "requires": ["higher_technical_education"]},
+                {"id": "modern_education_system", "name": "Современная система образования", "year": 1900, "requires": ["education_system_2"]},
+            ]
+        },
+        {
+            "id": "scientific_research",
+            "name": "Научные исследования",
+            "technologies": [
+                # БАЗОВЫЙ УРОВЕНЬ (1500-1650)
+                {"id": "alchemy_natural_philosophy", "name": "Алхимия и натурфилософия", "year": 1500, "requires": []},
+                {"id": "astronomical_observations", "name": "Астрономические наблюдения", "year": 1510, "requires": ["alchemy_natural_philosophy"]},
+                {"id": "medical_research_1", "name": "Медицинские исследования I", "year": 1520, "requires": ["astronomical_observations"]},
+                {"id": "anatomy", "name": "Анатомия", "year": 1530, "requires": ["medical_research_1"]},
+                {"id": "botany", "name": "Ботаника", "year": 1540, "requires": ["anatomy"]},
+                {"id": "experimental_method", "name": "Экспериментальный метод", "year": 1550, "requires": ["botany"]},
+                {"id": "scientific_method_1", "name": "Научный метод I", "year": 1560, "requires": ["experimental_method"]},
+                {"id": "optics", "name": "Оптика", "year": 1570, "requires": ["scientific_method_1"]},
+                {"id": "medical_research_2", "name": "Медицинские исследования II", "year": 1580, "requires": ["optics"]},
+                {"id": "mechanics", "name": "Механика", "year": 1590, "requires": ["medical_research_2"]},
+                {"id": "scientific_method_2", "name": "Научный метод II", "year": 1600, "requires": ["mechanics"]},
+                {"id": "telescope", "name": "Телескоп", "year": 1610, "requires": ["scientific_method_2"]},
+                {"id": "microscope", "name": "Микроскоп", "year": 1620, "requires": ["telescope"]},
+                {"id": "mathematics_1", "name": "Математика I", "year": 1630, "requires": ["microscope"]},
+                {"id": "scientific_instruments", "name": "Научные инструменты", "year": 1640, "requires": ["mathematics_1"]},
+                {"id": "experimental_science", "name": "Экспериментальная наука", "year": 1650, "requires": ["scientific_instruments"]},
+                # НАУЧНАЯ РЕВОЛЮЦИЯ (1650-1750)
+                {"id": "classical_mechanics", "name": "Классическая механика", "year": 1660, "requires": ["experimental_science"]},
+                {"id": "mathematics_2", "name": "Математика II", "year": 1670, "requires": ["classical_mechanics"]},
+                {"id": "scientific_laboratories_1", "name": "Научные лаборатории I", "year": 1680, "requires": ["mathematics_2"]},
+                {"id": "physics_1", "name": "Физика I", "year": 1690, "requires": ["scientific_laboratories_1"]},
+                {"id": "calculus", "name": "Исчисление", "year": 1700, "requires": ["physics_1"]},
+                {"id": "scientific_laboratories_2", "name": "Научные лаборатории II", "year": 1710, "requires": ["calculus"]},
+                {"id": "physics_2", "name": "Физика II", "year": 1720, "requires": ["scientific_laboratories_2"]},
+                {"id": "astronomy", "name": "Астрономия", "year": 1730, "requires": ["physics_2"]},
+                {"id": "mathematics_3", "name": "Математика III", "year": 1740, "requires": ["astronomy"]},
+                {"id": "scientific_research_1", "name": "Научные исследования I", "year": 1750, "requires": ["mathematics_3"]},
+                # ЭПОХА ПРОСВЕЩЕНИЯ (1750-1850)
+                {"id": "chemistry_1", "name": "Химия I", "year": 1760, "requires": ["scientific_research_1"]},
+                {"id": "natural_sciences", "name": "Естественные науки", "year": 1770, "requires": ["chemistry_1"]},
+                {"id": "chemistry_2", "name": "Химия II", "year": 1780, "requires": ["natural_sciences"]},
+                {"id": "electricity_1", "name": "Электричество I", "year": 1790, "requires": ["chemistry_2"]},
+                {"id": "scientific_research_2", "name": "Научные исследования II", "year": 1800, "requires": ["electricity_1"]},
+                {"id": "electricity_2", "name": "Электричество II", "year": 1810, "requires": ["scientific_research_2"]},
+                {"id": "thermodynamics", "name": "Термодинамика", "year": 1820, "requires": ["electricity_2"]},
+                {"id": "electromagnetism", "name": "Электромагнетизм", "year": 1830, "requires": ["thermodynamics"]},
+                {"id": "scientific_method_3", "name": "Научный метод III", "year": 1840, "requires": ["electromagnetism"]},
+                {"id": "scientific_research_3", "name": "Научные исследования III", "year": 1850, "requires": ["scientific_method_3"]},
+                # СОВРЕМЕННАЯ НАУКА (1850-1900)
+                {"id": "organic_chemistry", "name": "Органическая химия", "year": 1860, "requires": ["scientific_research_3"]},
+                {"id": "theory_of_evolution", "name": "Теория эволюции", "year": 1865, "requires": ["organic_chemistry"]},
+                {"id": "modern_physics_1", "name": "Современная физика I", "year": 1870, "requires": ["theory_of_evolution"]},
+                {"id": "microbiology", "name": "Микробиология", "year": 1875, "requires": ["modern_physics_1"]},
+                {"id": "electrical_engineering", "name": "Электротехника", "year": 1880, "requires": ["microbiology"]},
+                {"id": "modern_physics_2", "name": "Современная физика II", "year": 1885, "requires": ["electrical_engineering"]},
+                {"id": "medicine_and_hygiene", "name": "Медицина и гигиена", "year": 1890, "requires": ["modern_physics_2"]},
+                {"id": "scientific_research_4", "name": "Научные исследования IV", "year": 1895, "requires": ["medicine_and_hygiene"]},
+                {"id": "modern_science", "name": "Современная наука", "year": 1900, "requires": ["scientific_research_4"]},
+            ]
+        },
+        {
+            "id": "medicine_healthcare",
+            "name": "Медицина и здравоохранение",
+            "technologies": [
+                # БАЗОВЫЙ УРОВЕНЬ (1500-1650)
+                {"id": "folk_medicine", "name": "Народная медицина", "year": 1500, "requires": []},
+                {"id": "barber_surgeons", "name": "Цирюльники-хирурги", "year": 1510, "requires": ["folk_medicine"]},
+                {"id": "apothecaries", "name": "Аптекари", "year": 1520, "requires": ["barber_surgeons"]},
+                {"id": "medical_schools_1", "name": "Медицинские школы I", "year": 1530, "requires": ["apothecaries"]},
+                {"id": "anatomical_studies", "name": "Анатомические исследования", "year": 1540, "requires": ["medical_schools_1"]},
+                {"id": "surgery_1", "name": "Хирургия I", "year": 1550, "requires": ["anatomical_studies"]},
+                {"id": "medical_schools_2", "name": "Медицинские школы II", "year": 1560, "requires": ["surgery_1"]},
+                {"id": "medicinal_herbs", "name": "Лекарственные травы", "year": 1570, "requires": ["medical_schools_2"]},
+                {"id": "surgery_2", "name": "Хирургия II", "year": 1580, "requires": ["medicinal_herbs"]},
+                {"id": "hospitals_1", "name": "Больницы I", "year": 1590, "requires": ["surgery_2"]},
+                {"id": "medical_practice_1", "name": "Медицинская практика I", "year": 1600, "requires": ["hospitals_1"]},
+                {"id": "hospitals_2", "name": "Больницы II", "year": 1610, "requires": ["medical_practice_1"]},
+                {"id": "surgical_instruments", "name": "Хирургические инструменты", "year": 1620, "requires": ["hospitals_2"]},
+                {"id": "medical_practice_2", "name": "Медицинская практика II", "year": 1630, "requires": ["surgical_instruments"]},
+                {"id": "pharmacies", "name": "Аптеки", "year": 1640, "requires": ["medical_practice_2"]},
+                {"id": "improved_surgery", "name": "Улучшенная хирургия", "year": 1650, "requires": ["pharmacies"]},
+                # РАЗВИТИЕ (1650-1800)
+                {"id": "medical_universities", "name": "Медицинские университеты", "year": 1660, "requires": ["improved_surgery"]},
+                {"id": "anatomical_theaters", "name": "Анатомические театры", "year": 1670, "requires": ["medical_universities"]},
+                {"id": "surgery_3", "name": "Хирургия III", "year": 1680, "requires": ["anatomical_theaters"]},
+                {"id": "obstetrics", "name": "Акушерство", "year": 1690, "requires": ["surgery_3"]},
+                {"id": "hospitals_3", "name": "Больницы III", "year": 1700, "requires": ["obstetrics"]},
+                {"id": "medical_practice_3", "name": "Медицинская практика III", "year": 1710, "requires": ["hospitals_3"]},
+                {"id": "military_medicine", "name": "Военная медицина", "year": 1720, "requires": ["medical_practice_3"]},
+                {"id": "vaccination", "name": "Вакцинация", "year": 1730, "requires": ["military_medicine"]},
+                {"id": "surgery_4", "name": "Хирургия IV", "year": 1740, "requires": ["vaccination"]},
+                {"id": "city_hospitals", "name": "Городские больницы", "year": 1750, "requires": ["surgery_4"]},
+                {"id": "improved_hygiene", "name": "Улучшенная гигиена", "year": 1760, "requires": ["city_hospitals"]},
+                {"id": "medical_practice_4", "name": "Медицинская практика IV", "year": 1770, "requires": ["improved_hygiene"]},
+                {"id": "clinical_medicine", "name": "Клиническая медицина", "year": 1780, "requires": ["medical_practice_4"]},
+                {"id": "sanitation_1", "name": "Санитария I", "year": 1790, "requires": ["clinical_medicine"]},
+                {"id": "public_health_1", "name": "Общественное здравоохранение I", "year": 1800, "requires": ["sanitation_1"]},
+                # СОВРЕМЕННАЯ МЕДИЦИНА (1800-1900)
+                {"id": "anesthesia", "name": "Анестезия", "year": 1810, "requires": ["public_health_1"]},
+                {"id": "stethoscope_diagnostics", "name": "Стетоскоп и диагностика", "year": 1820, "requires": ["anesthesia"]},
+                {"id": "improved_surgery_modern", "name": "Улучшенная хирургия", "year": 1830, "requires": ["stethoscope_diagnostics"]},
+                {"id": "sanitation_2", "name": "Санитария II", "year": 1840, "requires": ["improved_surgery_modern"]},
+                {"id": "antiseptics", "name": "Антисептика", "year": 1850, "requires": ["sanitation_2"]},
+                {"id": "germ_theory", "name": "Микробная теория", "year": 1860, "requires": ["antiseptics"]},
+                {"id": "asepsis", "name": "Асептика", "year": 1870, "requires": ["germ_theory"]},
+                {"id": "modern_surgery", "name": "Современная хирургия", "year": 1880, "requires": ["asepsis"]},
+                {"id": "public_health_2", "name": "Общественное здравоохранение II", "year": 1890, "requires": ["modern_surgery"]},
+                {"id": "modern_medicine", "name": "Современная медицина", "year": 1900, "requires": ["public_health_2"]},
+            ]
+        },
+        {
+            "id": "printing_knowledge",
+            "name": "Печать и распространение знаний",
+            "technologies": [
+                # БАЗОВЫЙ УРОВЕНЬ (1500-1650)
+                {"id": "printing_press", "name": "Печатный станок", "year": 1500, "requires": []},
+                {"id": "improved_printing", "name": "Улучшенная печать", "year": 1510, "requires": ["printing_press"]},
+                {"id": "book_printing_1", "name": "Книгопечатание I", "year": 1520, "requires": ["improved_printing"]},
+                {"id": "printing_houses", "name": "Типографии", "year": 1530, "requires": ["book_printing_1"]},
+                {"id": "book_printing_2", "name": "Книгопечатание II", "year": 1540, "requires": ["printing_houses"]},
+                {"id": "book_distribution", "name": "Распространение книг", "year": 1550, "requires": ["book_printing_2"]},
+                {"id": "improved_fonts", "name": "Улучшенные шрифты", "year": 1560, "requires": ["book_distribution"]},
+                {"id": "book_publishing_1", "name": "Книгоиздательство I", "year": 1570, "requires": ["improved_fonts"]},
+                {"id": "libraries_1", "name": "Библиотеки I", "year": 1580, "requires": ["book_publishing_1"]},
+                {"id": "book_publishing_2", "name": "Книгоиздательство II", "year": 1590, "requires": ["libraries_1"]},
+                {"id": "mass_book_printing", "name": "Массовое книгопечатание", "year": 1600, "requires": ["book_publishing_2"]},
+                {"id": "libraries_2", "name": "Библиотеки II", "year": 1610, "requires": ["mass_book_printing"]},
+                {"id": "periodical_press", "name": "Периодическая печать", "year": 1620, "requires": ["libraries_2"]},
+                {"id": "book_trade", "name": "Книжная торговля", "year": 1630, "requires": ["periodical_press"]},
+                {"id": "public_libraries", "name": "Публичные библиотеки", "year": 1640, "requires": ["book_trade"]},
+                {"id": "newspapers", "name": "Газеты", "year": 1650, "requires": ["public_libraries"]},
+                # ЭПОХА ПРОСВЕЩЕНИЯ (1650-1800)
+                {"id": "improved_printing_enlightenment", "name": "Улучшенная печать", "year": 1660, "requires": ["newspapers"]},
+                {"id": "encyclopedias", "name": "Энциклопедии", "year": 1670, "requires": ["improved_printing_enlightenment"]},
+                {"id": "literary_journals", "name": "Литературные журналы", "year": 1680, "requires": ["encyclopedias"]},
+                {"id": "book_publishing_3", "name": "Книгоиздательство III", "year": 1690, "requires": ["literary_journals"]},
+                {"id": "regular_newspapers", "name": "Регулярные газеты", "year": 1700, "requires": ["book_publishing_3"]},
+                {"id": "mass_print_distribution", "name": "Массовое распространение печати", "year": 1710, "requires": ["regular_newspapers"]},
+                {"id": "scientific_journals", "name": "Научные журналы", "year": 1720, "requires": ["mass_print_distribution"]},
+                {"id": "improved_book_printing", "name": "Улучшенное книгопечатание", "year": 1730, "requires": ["scientific_journals"]},
+                {"id": "reading_rooms", "name": "Читальные залы", "year": 1740, "requires": ["improved_book_printing"]},
+                {"id": "book_industry", "name": "Книжная индустрия", "year": 1750, "requires": ["reading_rooms"]},
+                {"id": "daily_newspapers", "name": "Ежедневные газеты", "year": 1760, "requires": ["book_industry"]},
+                {"id": "libraries_3", "name": "Библиотеки III", "year": 1770, "requires": ["daily_newspapers"]},
+                {"id": "mass_literacy", "name": "Массовая грамотность", "year": 1780, "requires": ["libraries_3"]},
+                {"id": "book_publishing_4", "name": "Книгоиздательство IV", "year": 1790, "requires": ["mass_literacy"]},
+                {"id": "magazine_industry", "name": "Журнальная индустрия", "year": 1800, "requires": ["book_publishing_4"]},
+                # ИНДУСТРИАЛЬНАЯ ЭПОХА (1800-1900)
+                {"id": "mechanized_printing", "name": "Механизированная печать", "year": 1810, "requires": ["magazine_industry"]},
+                {"id": "steam_printing_machines", "name": "Паровые печатные машины", "year": 1820, "requires": ["mechanized_printing"]},
+                {"id": "cheap_books", "name": "Дешевые книги", "year": 1830, "requires": ["steam_printing_machines"]},
+                {"id": "mass_press", "name": "Массовая пресса", "year": 1840, "requires": ["cheap_books"]},
+                {"id": "rotary_printing", "name": "Ротационная печать", "year": 1850, "requires": ["mass_press"]},
+                {"id": "illustrated_magazines", "name": "Иллюстрированные журналы", "year": 1860, "requires": ["rotary_printing"]},
+                {"id": "modern_book_publishing", "name": "Современное книгоиздательство", "year": 1870, "requires": ["illustrated_magazines"]},
+                {"id": "mass_press_2", "name": "Массовая пресса II", "year": 1880, "requires": ["modern_book_publishing"]},
+                {"id": "modern_printing", "name": "Современная полиграфия", "year": 1890, "requires": ["mass_press_2"]},
+                {"id": "media_industry", "name": "Индустрия СМИ", "year": 1900, "requires": ["modern_printing"]},
+            ]
+        }
+    ]
+}
+
 # ПРОМЫШЛЕННОСТЬ
 INDUSTRY_TECH = {
     "id": "industry",
@@ -960,6 +1173,7 @@ async def get_tech_categories():
         "categories": [
             {"id": "land_forces", "name": "Сухопутные войска"},
             {"id": "navy", "name": "Военно-морской флот"},
+            {"id": "education", "name": "Наука и образование"},
             {"id": "industry", "name": "Промышленность"},
             {"id": "infrastructure", "name": "Инфраструктура"}
         ]
@@ -972,6 +1186,8 @@ async def get_tech_tree(category: str):
         return JSONResponse({"success": True, "data": LAND_FORCES_TECH})
     elif category == "navy":
         return JSONResponse({"success": True, "data": NAVY_TECH})
+    elif category == "education":
+        return JSONResponse({"success": True, "data": EDUCATION_TECH})
     elif category == "industry":
         return JSONResponse({"success": True, "data": INDUSTRY_TECH})
     elif category == "infrastructure":
