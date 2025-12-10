@@ -50,8 +50,8 @@
     flex: 1;
     position: relative;
     cursor: grab;
-    max-height: 75vh;
-    min-height: 75vh;
+    max-height: 100vh;
+    min-height: 100vh;
 }
 
 .tech-lines-container.dragging {
