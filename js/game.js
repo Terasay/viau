@@ -200,7 +200,7 @@ function initInterface() {
     }
 
     // Кнопка выхода
-    document.getElementById('logout-btn').addEventListener('click', logout);
+    document.getElementById('home-btn').addEventListener('click', goToHome);
 }
 
 function updateThemeIcon() {
@@ -234,6 +234,10 @@ function setupNavigation() {
             }
         });
     });
+}
+
+function goToHome() {
+    window.location.href = '/';
 }
 
 function logout() {
