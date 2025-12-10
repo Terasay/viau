@@ -95,14 +95,23 @@ function renderTechTree() {
     const linesContainer = document.createElement('div');
     linesContainer.className = 'tech-lines-container';
     
+    // Wrapper для контента с прокруткой
+    const wrapper = document.createElement('div');
+    wrapper.className = 'tech-lines-wrapper';
+    
     console.log('Rendering', techData.lines.length, 'tech lines');
     
     // Отрисовываем каждую линию технологий
     techData.lines.forEach((line, index) => {
         console.log(`Rendering line ${index + 1}:`, line.name);
         const lineElement = renderTechLine(line);
-        linesContainer.appendChild(lineElement);
+        wrapper.appendChild(lineElement);
     });
+    
+    linesContainer.appendChild(wrapper);
+    
+    // Добавляем drag-to-scroll
+    setupDragScroll(linesContainer);
     
     container.appendChild(linesContainer);
     console.log('Lines container added');
@@ -128,6 +137,45 @@ function renderTechTree() {
     console.log('Legend added. Render complete!');
 }
 
+// Настройка drag-to-scroll
+function setupDragScroll(element) {
+    let isDragging = false;
+    let startX, startY, scrollLeft, scrollTop;
+    
+    element.addEventListener('mousedown', (e) => {
+        // Игнорируем клики по узлам технологий
+        if (e.target.closest('.tech-node')) return;
+        
+        isDragging = true;
+        element.classList.add('dragging');
+        startX = e.pageX - element.offsetLeft;
+        startY = e.pageY - element.offsetTop;
+        scrollLeft = element.scrollLeft;
+        scrollTop = element.scrollTop;
+    });
+    
+    element.addEventListener('mouseleave', () => {
+        isDragging = false;
+        element.classList.remove('dragging');
+    });
+    
+    element.addEventListener('mouseup', () => {
+        isDragging = false;
+        element.classList.remove('dragging');
+    });
+    
+    element.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const x = e.pageX - element.offsetLeft;
+        const y = e.pageY - element.offsetTop;
+        const walkX = (x - startX) * 1.5;
+        const walkY = (y - startY) * 1.5;
+        element.scrollLeft = scrollLeft - walkX;
+        element.scrollTop = scrollTop - walkY;
+    });
+}
+
 // Отрисовка одной линии технологий
 function renderTechLine(line) {
     const lineDiv = document.createElement('div');
@@ -146,48 +194,73 @@ function renderTechLine(line) {
     nodesContainer.className = 'tech-nodes-container';
     nodesContainer.id = `tech-line-${line.id}`;
     
-    // Группируем технологии по тирам
-    const tierGroups = {};
-    line.technologies.forEach(tech => {
-        if (!tierGroups[tech.tier]) {
-            tierGroups[tech.tier] = [];
-        }
-        tierGroups[tech.tier].push(tech);
-    });
-    
     // Создаем SVG для связей
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.classList.add('tech-connections');
+    svg.style.width = '100%';
+    svg.style.height = '100%';
     nodesContainer.appendChild(svg);
     
-    // Отрисовываем тиры
-    const tierElements = {};
-    Object.keys(tierGroups).sort((a, b) => a - b).forEach(tier => {
-        const tierDiv = document.createElement('div');
-        tierDiv.className = 'tech-tier';
-        tierDiv.dataset.tier = tier;
-        
-        tierGroups[tier].forEach(tech => {
-            const node = createTechNode(tech);
-            tierDiv.appendChild(node);
-            
-            // Сохраняем элемент для рисования связей
-            if (!tierElements[tech.id]) {
-                tierElements[tech.id] = node;
-            }
-        });
-        
-        nodesContainer.appendChild(tierDiv);
+    // Вычисляем позиции для технологий
+    const positions = calculateTechPositions(line.technologies);
+    
+    // Обновляем высоту контейнера
+    const maxY = Math.max(...Object.values(positions).map(p => p.y));
+    nodesContainer.style.minHeight = `${maxY + 200}px`;
+    
+    // Отрисовываем узлы с вычисленными позициями
+    const nodeElements = {};
+    line.technologies.forEach(tech => {
+        const node = createTechNode(tech);
+        const pos = positions[tech.id];
+        node.style.left = `${pos.x}px`;
+        node.style.top = `${pos.y}px`;
+        nodesContainer.appendChild(node);
+        nodeElements[tech.id] = node;
     });
     
     lineDiv.appendChild(nodesContainer);
     
     // Рисуем связи после того, как элементы добавлены в DOM
     setTimeout(() => {
-        drawConnections(line.technologies, tierElements, svg);
+        drawConnections(line.technologies, nodeElements, svg, positions);
     }, 100);
     
     return lineDiv;
+}
+
+// Вычисление позиций технологий в виде древа
+function calculateTechPositions(technologies) {
+    const positions = {};
+    const nodeWidth = 220; // 200px + margin
+    const nodeHeight = 120; // высота узла + отступ
+    const tierSpacing = 180; // расстояние по вертикали между тирами
+    
+    // Группируем по тирам
+    const tierGroups = {};
+    technologies.forEach(tech => {
+        if (!tierGroups[tech.tier]) {
+            tierGroups[tech.tier] = [];
+        }
+        tierGroups[tech.tier].push(tech);
+    });
+    
+    // Сортируем тиры
+    const sortedTiers = Object.keys(tierGroups).sort((a, b) => a - b);
+    
+    // Для каждого тира вычисляем позиции
+    sortedTiers.forEach((tier, tierIndex) => {
+        const techs = tierGroups[tier];
+        const y = tierIndex * tierSpacing;
+        
+        // Распределяем технологии горизонтально
+        techs.forEach((tech, index) => {
+            const x = index * nodeWidth;
+            positions[tech.id] = { x, y };
+        });
+    });
+    
+    return positions;
 }
 
 // Создание узла технологии
@@ -245,8 +318,14 @@ function getTechStatus(tech) {
 }
 
 // Рисование связей между технологиями
-function drawConnections(technologies, elements, svg) {
+function drawConnections(technologies, elements, svg, positions) {
     svg.innerHTML = '';
+    
+    // Устанавливаем размеры SVG
+    const maxX = Math.max(...Object.values(positions).map(p => p.x)) + 250;
+    const maxY = Math.max(...Object.values(positions).map(p => p.y)) + 150;
+    svg.setAttribute('width', maxX);
+    svg.setAttribute('height', maxY);
     
     technologies.forEach(tech => {
         if (tech.requires && tech.requires.length > 0) {
@@ -254,21 +333,21 @@ function drawConnections(technologies, elements, svg) {
                 const fromNode = elements[reqId];
                 const toNode = elements[tech.id];
                 
-                if (fromNode && toNode) {
-                    const fromRect = fromNode.getBoundingClientRect();
-                    const toRect = toNode.getBoundingClientRect();
-                    const containerRect = svg.parentElement.getBoundingClientRect();
+                if (fromNode && toNode && positions[reqId] && positions[tech.id]) {
+                    const fromPos = positions[reqId];
+                    const toPos = positions[tech.id];
                     
-                    const x1 = fromRect.right - containerRect.left;
-                    const y1 = fromRect.top + fromRect.height / 2 - containerRect.top;
-                    const x2 = toRect.left - containerRect.left;
-                    const y2 = toRect.top + toRect.height / 2 - containerRect.top;
+                    // Координаты для вертикального древа
+                    const x1 = fromPos.x + 100; // центр узла (200px / 2)
+                    const y1 = fromPos.y + 90; // низ узла
+                    const x2 = toPos.x + 100;
+                    const y2 = toPos.y; // верх следующего узла
                     
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                     
-                    // Рисуем кривую Безье для более плавной линии
-                    const midX = (x1 + x2) / 2;
-                    const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+                    // Рисуем вертикальную кривую
+                    const midY = (y1 + y2) / 2;
+                    const d = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
                     
                     line.setAttribute('d', d);
                     line.classList.add('tech-connection-line');
