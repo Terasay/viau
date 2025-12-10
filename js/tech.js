@@ -111,6 +111,12 @@ function renderTechTree() {
     // Добавляем drag-to-scroll
     setupDragScroll(linesContainer);
     
+    // Индикатор зума
+    const zoomIndicator = document.createElement('div');
+    zoomIndicator.className = 'tech-zoom-indicator';
+    zoomIndicator.textContent = '100%';
+    linesContainer.appendChild(zoomIndicator);
+    
     container.appendChild(linesContainer);
     console.log('Lines container added');
     
@@ -139,6 +145,12 @@ function renderTechTree() {
 function setupDragScroll(element) {
     let isDragging = false;
     let startX, startY, scrollLeft, scrollTop;
+    let currentZoom = 1;
+    const minZoom = 0.3;
+    const maxZoom = 2;
+    const zoomSpeed = 0.1;
+    
+    const wrapper = element.querySelector('.tech-lines-wrapper');
     
     element.addEventListener('mousedown', (e) => {
         // Игнорируем клики по узлам технологий
@@ -172,6 +184,45 @@ function setupDragScroll(element) {
         element.scrollLeft = scrollLeft - walkX;
         element.scrollTop = scrollTop - walkY;
     });
+    
+    // Зум колёсиком мыши
+    element.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        
+        const delta = e.deltaY > 0 ? -zoomSpeed : zoomSpeed;
+        const newZoom = Math.min(Math.max(currentZoom + delta, minZoom), maxZoom);
+        
+        if (newZoom !== currentZoom) {
+            // Получаем позицию курсора относительно контейнера
+            const rect = element.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Вычисляем точку масштабирования
+            const scrollX = element.scrollLeft + x;
+            const scrollY = element.scrollTop + y;
+            
+            // Применяем новый зум
+            currentZoom = newZoom;
+            wrapper.style.transform = `scale(${currentZoom})`;
+            wrapper.style.transformOrigin = '0 0';
+            
+            // Корректируем скролл чтобы зум был относительно курсора
+            element.scrollLeft = scrollX * (newZoom / (currentZoom - delta)) - x;
+            element.scrollTop = scrollY * (newZoom / (currentZoom - delta)) - y;
+            
+            // Обновляем индикатор зума
+            const indicator = element.querySelector('.tech-zoom-indicator');
+            if (indicator) {
+                indicator.textContent = `${Math.round(currentZoom * 100)}%`;
+                indicator.classList.add('visible');
+                clearTimeout(indicator.hideTimeout);
+                indicator.hideTimeout = setTimeout(() => {
+                    indicator.classList.remove('visible');
+                }, 1500);
+            }
+        }
+    }, { passive: false });
 }
 
 // Отрисовка одной линии технологий
