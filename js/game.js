@@ -227,6 +227,11 @@ function setupNavigation() {
             // Добавляем активные классы
             btn.classList.add('active');
             document.getElementById(`${sectionName}-section`).classList.add('active');
+            
+            // Инициализируем технологии при первом открытии
+            if (sectionName === 'technologies' && window.techModule) {
+                window.techModule.init();
+            }
         });
     });
 }

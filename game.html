@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игра - VIAU</title>
     <link rel="stylesheet" href="/css/game.css">
+    <link rel="stylesheet" href="/css/tech.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -103,6 +104,10 @@
                 <i class="fas fa-users"></i>
                 <span>Персонажи</span>
             </button>
+            <button class="nav-btn" data-section="technologies">
+                <i class="fas fa-flask"></i>
+                <span>Технологии</span>
+            </button>
             <button class="nav-btn" data-section="map">
                 <i class="fas fa-map"></i>
                 <span>Карта</span>
@@ -175,6 +180,17 @@
                 </div>
             </section>
 
+            <section id="technologies-section" class="game-section" style="display: none;">
+                <h2><i class="fas fa-flask"></i> Древо технологий</h2>
+                <div class="tech-container" id="tech-tree-content">
+                    <div class="loading-content">
+                        <i class="fas fa-flask fa-3x"></i>
+                        <h3>Загрузка древа технологий...</h3>
+                        <div class="loading-spinner"></div>
+                    </div>
+                </div>
+            </section>
+
             <section id="map-section" class="game-section" style="display: none;">
                 <h2><i class="fas fa-map"></i> Карта мира</h2>
                 <div class="placeholder-card">
@@ -187,5 +203,6 @@
     </div>
 
     <script src="/js/game.js"></script>
+    <script src="/js/tech.js"></script>
 </body>
 </html>
