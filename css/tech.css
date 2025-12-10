@@ -147,7 +147,7 @@ body:not(.dark-mode) .tech-line-header {
     position: relative;
     min-height: 100%;
     width: 100%;
-    padding-top: 70px;
+    padding-top: 120px;
 }
 
 /* Группа технологий (тир) - теперь вертикально */
