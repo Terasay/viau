@@ -50,6 +50,7 @@
     flex: 1;
     position: relative;
     cursor: grab;
+    max-height: 70vh;
 }
 
 .tech-lines-container.dragging {
@@ -58,6 +59,7 @@
 }
 
 .tech-lines-wrapper {
+    position: relative;
     min-width: max-content;
     min-height: max-content;
     padding: 40px;
@@ -65,22 +67,30 @@
 
 /* Отдельная линия технологий */
 .tech-line {
-    margin-bottom: 60px;
-    position: relative;
+    position: absolute;
+    top: 0;
+    width: 1200px;
+    min-height: 100%;
 }
 
 .tech-line:last-child {
-    margin-bottom: 0;
+    margin-right: 0;
 }
 
 .tech-line-header {
     margin-bottom: 30px;
-    padding-bottom: 12px;
+    padding: 12px 16px;
     border-bottom: 2px solid var(--border);
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(8px);
+    border-radius: var(--radius);
     position: sticky;
     top: 0;
-    background: var(--bg-secondary);
     z-index: 10;
+}
+
+body:not(.dark-mode) .tech-line-header {
+    background: rgba(255, 255, 255, 0.95);
 }
 
 .tech-line-header h4 {
@@ -100,7 +110,7 @@
 /* Контейнер для узлов технологий */
 .tech-nodes-container {
     position: relative;
-    min-height: 800px;
+    min-height: 100%;
     width: 100%;
 }
 

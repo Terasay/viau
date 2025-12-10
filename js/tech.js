@@ -101,10 +101,10 @@ function renderTechTree() {
     
     console.log('Rendering', techData.lines.length, 'tech lines');
     
-    // Отрисовываем каждую линию технологий
+    // Отрисовываем каждую линию технологий горизонтально
     techData.lines.forEach((line, index) => {
         console.log(`Rendering line ${index + 1}:`, line.name);
-        const lineElement = renderTechLine(line);
+        const lineElement = renderTechLine(line, index);
         wrapper.appendChild(lineElement);
     });
     
@@ -177,9 +177,12 @@ function setupDragScroll(element) {
 }
 
 // Отрисовка одной линии технологий
-function renderTechLine(line) {
+function renderTechLine(line, lineIndex) {
     const lineDiv = document.createElement('div');
     lineDiv.className = 'tech-line';
+    
+    const lineHorizontalOffset = lineIndex * 1400; // расстояние между линиями по горизонтали
+    lineDiv.style.left = `${lineHorizontalOffset}px`;
     
     // Заголовок линии
     const header = document.createElement('div');
