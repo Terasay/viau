@@ -283,10 +283,14 @@ function calculateTechPositions(technologies) {
         const techs = levelGroups[level];
         const y = parseInt(level) * verticalSpacing;
         
-        // Распределяем горизонтально
+        // Вычисляем общую ширину для центрирования
+        const totalWidth = techs.length * nodeWidth;
+        const centerOffset = (1400 - totalWidth) / 2; // 1400 - ширина линии
+        
+        // Распределяем горизонтально с центрированием
         techs.forEach((tech, index) => {
             positions[tech.id] = {
-                x: index * nodeWidth,
+                x: centerOffset + (index * nodeWidth),
                 y: y
             };
         });

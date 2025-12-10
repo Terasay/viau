@@ -50,7 +50,8 @@
     flex: 1;
     position: relative;
     cursor: grab;
-    max-height: 70vh;
+    max-height: 75vh;
+    min-height: 75vh;
 }
 
 .tech-lines-container.dragging {
@@ -109,19 +110,22 @@
 }
 
 .tech-line-header {
-    margin-bottom: 30px;
-    padding: 12px 16px;
-    border-bottom: 2px solid var(--border);
-    background: rgba(30, 41, 59, 0.95);
-    backdrop-filter: blur(8px);
-    border-radius: var(--radius);
-    position: sticky;
+    position: absolute;
     top: 0;
-    z-index: 10;
+    left: 0;
+    right: 0;
+    padding: 12px 16px;
+    background: rgba(30, 41, 59, 0.98);
+    backdrop-filter: blur(12px);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    z-index: 100;
+    margin-bottom: 0;
 }
 
 body:not(.dark-mode) .tech-line-header {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.98);
 }
 
 .tech-line-header h4 {
@@ -143,6 +147,7 @@ body:not(.dark-mode) .tech-line-header {
     position: relative;
     min-height: 100%;
     width: 100%;
+    padding-top: 70px;
 }
 
 /* Группа технологий (тир) - теперь вертикально */
