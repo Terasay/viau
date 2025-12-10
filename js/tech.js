@@ -181,7 +181,7 @@ function renderTechLine(line, lineIndex) {
     const lineDiv = document.createElement('div');
     lineDiv.className = 'tech-line';
     
-    const lineHorizontalOffset = lineIndex * 1400; // расстояние между линиями по горизонтали
+    const lineHorizontalOffset = lineIndex * 1600; // расстояние между линиями по горизонтали
     lineDiv.style.left = `${lineHorizontalOffset}px`;
     
     // Заголовок линии
@@ -232,34 +232,63 @@ function renderTechLine(line, lineIndex) {
     return lineDiv;
 }
 
-// Вычисление позиций технологий в виде древа
+// Вычисление позиций технологий в виде древа по зависимостям
 function calculateTechPositions(technologies) {
     const positions = {};
-    const nodeWidth = 220; // 200px + margin
-    const nodeHeight = 120; // высота узла + отступ
-    const tierSpacing = 180; // расстояние по вертикали между тирами
+    const nodeWidth = 260; // ширина узла + отступ
+    const verticalSpacing = 150; // расстояние между уровнями по вертикали
     
-    // Группируем по тирам
-    const tierGroups = {};
+    // Создаем карту технологий для быстрого доступа
+    const techMap = {};
     technologies.forEach(tech => {
-        if (!tierGroups[tech.tier]) {
-            tierGroups[tech.tier] = [];
-        }
-        tierGroups[tech.tier].push(tech);
+        techMap[tech.id] = tech;
     });
     
-    // Сортируем тиры
-    const sortedTiers = Object.keys(tierGroups).sort((a, b) => a - b);
-    
-    // Для каждого тира вычисляем позиции
-    sortedTiers.forEach((tier, tierIndex) => {
-        const techs = tierGroups[tier];
-        const y = tierIndex * tierSpacing;
+    // Функция для расчета уровня (глубины) технологии в дереве
+    const calculateLevel = (techId, visited = new Set()) => {
+        if (visited.has(techId)) return 0; // защита от циклов
+        visited.add(techId);
         
-        // Распределяем технологии горизонтально
+        const tech = techMap[techId];
+        if (!tech || !tech.requires || tech.requires.length === 0) {
+            return 0; // корневая технология
+        }
+        
+        // Уровень = максимальный уровень родителей + 1
+        const parentLevels = tech.requires
+            .filter(reqId => techMap[reqId]) // только технологии из этой линии
+            .map(reqId => calculateLevel(reqId, new Set(visited)));
+        
+        return parentLevels.length > 0 ? Math.max(...parentLevels) + 1 : 0;
+    };
+    
+    // Вычисляем уровни для всех технологий
+    const levels = {};
+    technologies.forEach(tech => {
+        levels[tech.id] = calculateLevel(tech.id);
+    });
+    
+    // Группируем по уровням
+    const levelGroups = {};
+    technologies.forEach(tech => {
+        const level = levels[tech.id];
+        if (!levelGroups[level]) {
+            levelGroups[level] = [];
+        }
+        levelGroups[level].push(tech);
+    });
+    
+    // Позиционируем технологии
+    Object.keys(levelGroups).forEach(level => {
+        const techs = levelGroups[level];
+        const y = parseInt(level) * verticalSpacing;
+        
+        // Распределяем горизонтально
         techs.forEach((tech, index) => {
-            const x = index * nodeWidth;
-            positions[tech.id] = { x, y };
+            positions[tech.id] = {
+                x: index * nodeWidth,
+                y: y
+            };
         });
     });
     

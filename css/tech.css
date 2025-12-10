@@ -100,7 +100,7 @@
 .tech-line {
     position: absolute;
     top: 0;
-    width: 1300px;
+    width: 1400px;
     min-height: 2800px;
 }
 
@@ -183,7 +183,7 @@ body:not(.dark-mode) .tech-line-header {
     border: 2px solid var(--border);
     border-radius: var(--radius);
     padding: 12px 16px;
-    width: 200px;
+    width: 240px;
     cursor: pointer;
     transition: all 0.3s ease;
     position: absolute;
