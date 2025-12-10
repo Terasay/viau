@@ -722,6 +722,236 @@ INDUSTRY_TECH = {
     ]
 }
 
+# ИНФРАСТРУКТУРА
+INFRASTRUCTURE_TECH = {
+    "id": "infrastructure",
+    "name": "Инфраструктура",
+    "lines": [
+        {
+            "id": "roads_transport",
+            "name": "Дороги и транспорт",
+            "technologies": [
+                # Базовый уровень (1500-1650)
+                {"id": "dirt_roads", "name": "Грунтовые дороги", "year": 1500, "requires": []},
+                {"id": "improved_dirt_roads", "name": "Улучшенные грунтовые дороги", "year": 1510, "requires": ["dirt_roads"]},
+                {"id": "paved_roads_1", "name": "Мощеные дороги I", "year": 1520, "requires": ["improved_dirt_roads"]},
+                {"id": "road_construction", "name": "Дорожное строительство", "year": 1530, "requires": ["paved_roads_1"]},
+                {"id": "paved_roads_2", "name": "Мощеные дороги II", "year": 1540, "requires": ["road_construction"]},
+                {"id": "post_stations_roads", "name": "Почтовые станции", "year": 1550, "requires": ["paved_roads_2"]},
+                {"id": "road_network_1", "name": "Дорожная сеть I", "year": 1560, "requires": ["post_stations_roads"]},
+                {"id": "bridges_1", "name": "Мосты I", "year": 1570, "requires": ["road_network_1"]},
+                {"id": "stone_bridges", "name": "Каменные мосты", "year": 1580, "requires": ["bridges_1"]},
+                {"id": "road_network_2", "name": "Дорожная сеть II", "year": 1590, "requires": ["stone_bridges"]},
+                {"id": "post_roads", "name": "Почтовые тракты", "year": 1600, "requires": ["road_network_2"]},
+                {"id": "bridges_2", "name": "Мосты II", "year": 1610, "requires": ["post_roads"]},
+                {"id": "road_maintenance", "name": "Дорожное обслуживание", "year": 1620, "requires": ["bridges_2"]},
+                {"id": "road_network_3", "name": "Дорожная сеть III", "year": 1630, "requires": ["road_maintenance"]},
+                {"id": "large_bridges", "name": "Крупные мосты", "year": 1640, "requires": ["road_network_3"]},
+                {"id": "main_roads", "name": "Магистральные дороги", "year": 1650, "requires": ["large_bridges"]},
+                
+                # Эпоха улучшений (1650-1800)
+                {"id": "road_surfacing", "name": "Дорожные покрытия", "year": 1660, "requires": ["main_roads"]},
+                {"id": "improved_bridges", "name": "Улучшенные мосты", "year": 1670, "requires": ["road_surfacing"]},
+                {"id": "canals_1", "name": "Каналы I", "year": 1680, "requires": ["improved_bridges"]},
+                {"id": "locks", "name": "Шлюзы", "year": 1690, "requires": ["canals_1"]},
+                {"id": "canals_2", "name": "Каналы II", "year": 1700, "requires": ["locks"]},
+                {"id": "road_system", "name": "Дорожная система", "year": 1710, "requires": ["canals_2"]},
+                {"id": "macadam_roads", "name": "Макадамовское покрытие", "year": 1720, "requires": ["road_system"]},
+                {"id": "canals_3", "name": "Каналы III", "year": 1730, "requires": ["macadam_roads"]},
+                {"id": "river_navigation", "name": "Речное судоходство", "year": 1740, "requires": ["canals_3"]},
+                {"id": "improved_canals", "name": "Улучшенные каналы", "year": 1750, "requires": ["river_navigation"]},
+                {"id": "modern_bridges", "name": "Современные мосты", "year": 1760, "requires": ["improved_canals"]},
+                {"id": "road_infrastructure", "name": "Дорожная инфраструктура", "year": 1770, "requires": ["modern_bridges"]},
+                {"id": "navigable_canals", "name": "Судоходные каналы", "year": 1780, "requires": ["road_infrastructure"]},
+                {"id": "quality_roads", "name": "Качественные дороги", "year": 1790, "requires": ["navigable_canals"]},
+                {"id": "transport_system", "name": "Транспортная система", "year": 1800, "requires": ["quality_roads"]},
+                
+                # Железнодорожная эпоха (1800-1870)
+                {"id": "rail_tracks", "name": "Рельсовые пути", "year": 1810, "requires": ["transport_system"]},
+                {"id": "steam_locomotives_1", "name": "Паровозы I", "year": 1820, "requires": ["rail_tracks"]},
+                {"id": "railways_1", "name": "Железные дороги I", "year": 1825, "requires": ["steam_locomotives_1"]},
+                {"id": "steam_locomotives_2", "name": "Паровозы II", "year": 1830, "requires": ["railways_1"]},
+                {"id": "railways_2", "name": "Железные дороги II", "year": 1835, "requires": ["steam_locomotives_2"]},
+                {"id": "railway_network_1", "name": "Железнодорожная сеть I", "year": 1840, "requires": ["railways_2"]},
+                {"id": "improved_locomotives", "name": "Улучшенные локомотивы", "year": 1845, "requires": ["railway_network_1"]},
+                {"id": "railway_network_2", "name": "Железнодорожная сеть II", "year": 1850, "requires": ["improved_locomotives"]},
+                {"id": "railway_bridges", "name": "Железнодорожные мосты", "year": 1855, "requires": ["railway_network_2"]},
+                {"id": "railway_network_3", "name": "Железнодорожная сеть III", "year": 1860, "requires": ["railway_bridges"]},
+                {"id": "modern_locomotives", "name": "Современные локомотивы", "year": 1865, "requires": ["railway_network_3"]},
+                {"id": "national_railway_network", "name": "Национальная железнодорожная сеть", "year": 1870, "requires": ["modern_locomotives"]},
+                
+                # Современная эпоха (1870-1900)
+                {"id": "steel_rails", "name": "Стальные рельсы", "year": 1875, "requires": ["national_railway_network"]},
+                {"id": "railway_stations", "name": "Железнодорожные вокзалы", "year": 1880, "requires": ["steel_rails"]},
+                {"id": "high_speed_trains", "name": "Скоростные поезда", "year": 1885, "requires": ["railway_stations"]},
+                {"id": "electric_trams", "name": "Электрические трамваи", "year": 1890, "requires": ["high_speed_trains"]},
+                {"id": "metro", "name": "Метрополитен", "year": 1895, "requires": ["electric_trams"]},
+                {"id": "modern_transport_system", "name": "Современная транспортная система", "year": 1900, "requires": ["metro"]},
+            ]
+        },
+        {
+            "id": "urban_construction",
+            "name": "Городское строительство",
+            "technologies": [
+                # Базовый уровень (1500-1650)
+                {"id": "wooden_construction", "name": "Деревянное строительство", "year": 1500, "requires": []},
+                {"id": "stone_construction", "name": "Каменное строительство", "year": 1510, "requires": ["wooden_construction"]},
+                {"id": "brick_production", "name": "Кирпичное производство", "year": 1520, "requires": ["stone_construction"]},
+                {"id": "city_fortifications_1", "name": "Городские укрепления I", "year": 1530, "requires": ["brick_production"]},
+                {"id": "brick_construction", "name": "Кирпичное строительство", "year": 1540, "requires": ["city_fortifications_1"]},
+                {"id": "city_fortifications_2", "name": "Городские укрепления II", "year": 1550, "requires": ["brick_construction"]},
+                {"id": "multi_story_buildings", "name": "Многоэтажные здания", "year": 1560, "requires": ["city_fortifications_2"]},
+                {"id": "urban_planning_1", "name": "Городское планирование I", "year": 1570, "requires": ["multi_story_buildings"]},
+                {"id": "public_buildings", "name": "Общественные здания", "year": 1580, "requires": ["urban_planning_1"]},
+                {"id": "city_fortifications_3", "name": "Городские укрепления III", "year": 1590, "requires": ["public_buildings"]},
+                {"id": "sewerage_1", "name": "Канализация I", "year": 1600, "requires": ["city_fortifications_3"]},
+                {"id": "water_supply", "name": "Водопроводы", "year": 1610, "requires": ["sewerage_1"]},
+                {"id": "urban_planning_2", "name": "Городское планирование II", "year": 1620, "requires": ["water_supply"]},
+                {"id": "improved_sewerage", "name": "Улучшенная канализация", "year": 1630, "requires": ["urban_planning_2"]},
+                {"id": "administrative_buildings", "name": "Административные здания", "year": 1640, "requires": ["improved_sewerage"]},
+                {"id": "urban_infrastructure_1", "name": "Городская инфраструктура I", "year": 1650, "requires": ["administrative_buildings"]},
+                
+                # Развитие (1650-1800)
+                {"id": "regular_layout", "name": "Регулярная застройка", "year": 1660, "requires": ["urban_infrastructure_1"]},
+                {"id": "city_squares", "name": "Городские площади", "year": 1670, "requires": ["regular_layout"]},
+                {"id": "improved_water_supply", "name": "Улучшенные водопроводы", "year": 1680, "requires": ["city_squares"]},
+                {"id": "urban_infrastructure_2", "name": "Городская инфраструктура II", "year": 1690, "requires": ["improved_water_supply"]},
+                {"id": "bastion_fortifications", "name": "Бастионные укрепления", "year": 1700, "requires": ["urban_infrastructure_2"]},
+                {"id": "public_parks", "name": "Общественные парки", "year": 1710, "requires": ["bastion_fortifications"]},
+                {"id": "street_lighting_1", "name": "Городское освещение I", "year": 1720, "requires": ["public_parks"]},
+                {"id": "wide_streets", "name": "Широкие улицы", "year": 1730, "requires": ["street_lighting_1"]},
+                {"id": "urban_infrastructure_3", "name": "Городская инфраструктура III", "year": 1740, "requires": ["wide_streets"]},
+                {"id": "improved_lighting", "name": "Улучшенное освещение", "year": 1750, "requires": ["urban_infrastructure_3"]},
+                {"id": "stone_embankments", "name": "Каменные набережные", "year": 1760, "requires": ["improved_lighting"]},
+                {"id": "urban_improvement", "name": "Городское благоустройство", "year": 1770, "requires": ["stone_embankments"]},
+                {"id": "centralized_sewerage", "name": "Централизованная канализация", "year": 1780, "requires": ["urban_improvement"]},
+                {"id": "urban_planning_3", "name": "Городское планирование III", "year": 1790, "requires": ["centralized_sewerage"]},
+                {"id": "modern_development", "name": "Современная застройка", "year": 1800, "requires": ["urban_planning_3"]},
+                
+                # Индустриальная эпоха (1800-1900)
+                {"id": "industrial_districts", "name": "Промышленные кварталы", "year": 1810, "requires": ["modern_development"]},
+                {"id": "reinforced_concrete", "name": "Железобетон", "year": 1820, "requires": ["industrial_districts"]},
+                {"id": "high_rise_development", "name": "Многоэтажная застройка", "year": 1830, "requires": ["reinforced_concrete"]},
+                {"id": "gas_lighting", "name": "Газовое освещение", "year": 1840, "requires": ["high_rise_development"]},
+                {"id": "urban_sanitation", "name": "Городская санитария", "year": 1850, "requires": ["gas_lighting"]},
+                {"id": "modern_sewerage", "name": "Современная канализация", "year": 1860, "requires": ["urban_sanitation"]},
+                {"id": "high_pressure_water", "name": "Водопровод высокого давления", "year": 1870, "requires": ["modern_sewerage"]},
+                {"id": "electric_lighting", "name": "Электрическое освещение", "year": 1880, "requires": ["high_pressure_water"]},
+                {"id": "skyscrapers", "name": "Небоскребы", "year": 1890, "requires": ["electric_lighting"]},
+                {"id": "modern_urban_planning", "name": "Современное городское планирование", "year": 1900, "requires": ["skyscrapers"]},
+            ]
+        },
+        {
+            "id": "port_infrastructure",
+            "name": "Портовая инфраструктура",
+            "technologies": [
+                # Базовый уровень (1500-1650)
+                {"id": "wooden_piers", "name": "Деревянные причалы", "year": 1500, "requires": []},
+                {"id": "port_facilities", "name": "Портовые сооружения", "year": 1510, "requires": ["wooden_piers"]},
+                {"id": "improved_piers", "name": "Улучшенные причалы", "year": 1520, "requires": ["port_facilities"]},
+                {"id": "port_warehouses_1", "name": "Портовые склады I", "year": 1530, "requires": ["improved_piers"]},
+                {"id": "stone_moles", "name": "Каменные молы", "year": 1540, "requires": ["port_warehouses_1"]},
+                {"id": "port_warehouses_2", "name": "Портовые склады II", "year": 1550, "requires": ["stone_moles"]},
+                {"id": "harbors_1", "name": "Гавани I", "year": 1560, "requires": ["port_warehouses_2"]},
+                {"id": "docks", "name": "Доки", "year": 1570, "requires": ["harbors_1"]},
+                {"id": "harbors_2", "name": "Гавани II", "year": 1580, "requires": ["docks"]},
+                {"id": "improved_docks", "name": "Улучшенные доки", "year": 1590, "requires": ["harbors_2"]},
+                {"id": "port_infrastructure_1", "name": "Портовая инфраструктура I", "year": 1600, "requires": ["improved_docks"]},
+                {"id": "shipyards_1", "name": "Верфи I", "year": 1610, "requires": ["port_infrastructure_1"]},
+                {"id": "port_dredging", "name": "Портовое углубление", "year": 1620, "requires": ["shipyards_1"]},
+                {"id": "shipyards_2", "name": "Верфи II", "year": 1630, "requires": ["port_dredging"]},
+                {"id": "port_infrastructure_2", "name": "Портовая инфраструктура II", "year": 1640, "requires": ["shipyards_2"]},
+                {"id": "large_harbors", "name": "Крупные гавани", "year": 1650, "requires": ["port_infrastructure_2"]},
+                
+                # Развитие (1650-1800)
+                {"id": "stone_docks", "name": "Каменные доки", "year": 1660, "requires": ["large_harbors"]},
+                {"id": "dry_docks_1", "name": "Сухие доки I", "year": 1670, "requires": ["stone_docks"]},
+                {"id": "port_cranes", "name": "Портовые краны", "year": 1680, "requires": ["dry_docks_1"]},
+                {"id": "dry_docks_2", "name": "Сухие доки II", "year": 1690, "requires": ["port_cranes"]},
+                {"id": "improved_shipyards", "name": "Улучшенные верфи", "year": 1700, "requires": ["dry_docks_2"]},
+                {"id": "port_infrastructure_3", "name": "Портовая инфраструктура III", "year": 1710, "requires": ["improved_shipyards"]},
+                {"id": "deep_water_ports", "name": "Глубоководные порты", "year": 1720, "requires": ["port_infrastructure_3"]},
+                {"id": "lighthouses_port", "name": "Маяки", "year": 1730, "requires": ["deep_water_ports"]},
+                {"id": "modern_docks", "name": "Современные доки", "year": 1740, "requires": ["lighthouses_port"]},
+                {"id": "port_equipment", "name": "Портовое оборудование", "year": 1750, "requires": ["modern_docks"]},
+                {"id": "improved_lighthouses", "name": "Улучшенные маяки", "year": 1760, "requires": ["port_equipment"]},
+                {"id": "large_shipyards", "name": "Крупные верфи", "year": 1770, "requires": ["improved_lighthouses"]},
+                {"id": "port_infrastructure_4", "name": "Портовая инфраструктура IV", "year": 1780, "requires": ["large_shipyards"]},
+                {"id": "stone_breakwaters", "name": "Каменные волноломы", "year": 1790, "requires": ["port_infrastructure_4"]},
+                {"id": "modern_harbors", "name": "Современные гавани", "year": 1800, "requires": ["stone_breakwaters"]},
+                
+                # Индустриальная эпоха (1800-1900)
+                {"id": "steam_cranes", "name": "Паровые краны", "year": 1810, "requires": ["modern_harbors"]},
+                {"id": "iron_docks", "name": "Железные доки", "year": 1820, "requires": ["steam_cranes"]},
+                {"id": "modern_shipyards", "name": "Современные верфи", "year": 1830, "requires": ["iron_docks"]},
+                {"id": "port_railway", "name": "Портовая железная дорога", "year": 1840, "requires": ["modern_shipyards"]},
+                {"id": "steel_docks", "name": "Стальные доки", "year": 1850, "requires": ["port_railway"]},
+                {"id": "mechanized_loading", "name": "Механизированная погрузка", "year": 1860, "requires": ["steel_docks"]},
+                {"id": "modern_port_infrastructure", "name": "Современная портовая инфраструктура", "year": 1870, "requires": ["mechanized_loading"]},
+                {"id": "electric_cranes", "name": "Электрические краны", "year": 1880, "requires": ["modern_port_infrastructure"]},
+                {"id": "modern_shipyards_2", "name": "Современные верфи II", "year": 1890, "requires": ["electric_cranes"]},
+                {"id": "industrial_ports", "name": "Индустриальные порты", "year": 1900, "requires": ["modern_shipyards_2"]},
+            ]
+        },
+        {
+            "id": "communications",
+            "name": "Связь и коммуникации",
+            "technologies": [
+                # Базовый уровень (1500-1700)
+                {"id": "courier_service", "name": "Курьерская служба", "year": 1500, "requires": []},
+                {"id": "post_stations_comm_1", "name": "Почтовые станции I", "year": 1510, "requires": ["courier_service"]},
+                {"id": "postal_service", "name": "Почтовая служба", "year": 1520, "requires": ["post_stations_comm_1"]},
+                {"id": "post_stations_comm_2", "name": "Почтовые станции II", "year": 1530, "requires": ["postal_service"]},
+                {"id": "regular_mail", "name": "Регулярная почта", "year": 1540, "requires": ["post_stations_comm_2"]},
+                {"id": "postal_routes", "name": "Почтовые тракты", "year": 1550, "requires": ["regular_mail"]},
+                {"id": "state_post", "name": "Государственная почта", "year": 1560, "requires": ["postal_routes"]},
+                {"id": "mail_routes", "name": "Почтовые маршруты", "year": 1570, "requires": ["state_post"]},
+                {"id": "improved_mail", "name": "Улучшенная почта", "year": 1580, "requires": ["mail_routes"]},
+                {"id": "post_offices", "name": "Почтовые конторы", "year": 1590, "requires": ["improved_mail"]},
+                {"id": "fast_mail", "name": "Быстрая почта", "year": 1600, "requires": ["post_offices"]},
+                {"id": "postal_network_1", "name": "Почтовая сеть I", "year": 1610, "requires": ["fast_mail"]},
+                {"id": "mail_coaches", "name": "Почтовые кареты", "year": 1620, "requires": ["postal_network_1"]},
+                {"id": "postal_network_2", "name": "Почтовая сеть II", "year": 1630, "requires": ["mail_coaches"]},
+                {"id": "regular_routes", "name": "Регулярные маршруты", "year": 1640, "requires": ["postal_network_2"]},
+                {"id": "postal_system", "name": "Почтовая система", "year": 1650, "requires": ["regular_routes"]},
+                {"id": "improved_postal_service", "name": "Улучшенная почтовая служба", "year": 1660, "requires": ["postal_system"]},
+                {"id": "post_stations_comm_3", "name": "Почтовые станции III", "year": 1670, "requires": ["improved_postal_service"]},
+                {"id": "efficient_mail", "name": "Эффективная почта", "year": 1680, "requires": ["post_stations_comm_3"]},
+                {"id": "postal_network_3", "name": "Почтовая сеть III", "year": 1690, "requires": ["efficient_mail"]},
+                {"id": "modern_postal_service", "name": "Современная почтовая служба", "year": 1700, "requires": ["postal_network_3"]},
+                
+                # Эпоха инноваций (1700-1850)
+                {"id": "optical_telegraph_1", "name": "Оптический телеграф I", "year": 1710, "requires": ["modern_postal_service"]},
+                {"id": "semaphore_communication", "name": "Семафорная связь", "year": 1720, "requires": ["optical_telegraph_1"]},
+                {"id": "optical_telegraph_2", "name": "Оптический телеграф II", "year": 1730, "requires": ["semaphore_communication"]},
+                {"id": "signal_towers", "name": "Сигнальные башни", "year": 1740, "requires": ["optical_telegraph_2"]},
+                {"id": "telegraph_network_1", "name": "Телеграфная сеть I", "year": 1750, "requires": ["signal_towers"]},
+                {"id": "improved_semaphore", "name": "Улучшенный семафор", "year": 1760, "requires": ["telegraph_network_1"]},
+                {"id": "telegraph_network_2", "name": "Телеграфная сеть II", "year": 1770, "requires": ["improved_semaphore"]},
+                {"id": "railway_mail", "name": "Железнодорожная почта", "year": 1780, "requires": ["telegraph_network_2"]},
+                {"id": "fast_communication", "name": "Быстрая связь", "year": 1790, "requires": ["railway_mail"]},
+                {"id": "modern_postal_system", "name": "Современная почтовая система", "year": 1800, "requires": ["fast_communication"]},
+                {"id": "electric_telegraph_1", "name": "Электрический телеграф I", "year": 1810, "requires": ["modern_postal_system"]},
+                {"id": "telegraph_lines", "name": "Телеграфные линии", "year": 1820, "requires": ["electric_telegraph_1"]},
+                {"id": "electric_telegraph_2", "name": "Электрический телеграф II", "year": 1830, "requires": ["telegraph_lines"]},
+                {"id": "morse_code", "name": "Азбука Морзе", "year": 1840, "requires": ["electric_telegraph_2"]},
+                {"id": "telegraph_network_3", "name": "Телеграфная сеть III", "year": 1850, "requires": ["morse_code"]},
+                
+                # Электрическая эпоха (1850-1900)
+                {"id": "undersea_cables", "name": "Подводные кабели", "year": 1860, "requires": ["telegraph_network_3"]},
+                {"id": "international_telegraph", "name": "Международный телеграф", "year": 1865, "requires": ["undersea_cables"]},
+                {"id": "telephone_1", "name": "Телефон I", "year": 1870, "requires": ["international_telegraph"]},
+                {"id": "telephone_lines", "name": "Телефонные линии", "year": 1875, "requires": ["telephone_1"]},
+                {"id": "telephone_2", "name": "Телефон II", "year": 1880, "requires": ["telephone_lines"]},
+                {"id": "telephone_exchanges", "name": "Телефонные станции", "year": 1885, "requires": ["telephone_2"]},
+                {"id": "long_distance_communication", "name": "Междугородняя связь", "year": 1890, "requires": ["telephone_exchanges"]},
+                {"id": "wireless_telegraph", "name": "Радиотелеграф", "year": 1895, "requires": ["long_distance_communication"]},
+                {"id": "modern_communications", "name": "Современные коммуникации", "year": 1900, "requires": ["wireless_telegraph"]},
+            ]
+        }
+    ]
+}
+
 @router.get("/categories")
 async def get_tech_categories():
     """Получить список всех доступных категорий технологий"""
@@ -730,7 +960,8 @@ async def get_tech_categories():
         "categories": [
             {"id": "land_forces", "name": "Сухопутные войска"},
             {"id": "navy", "name": "Военно-морской флот"},
-            {"id": "industry", "name": "Промышленность"}
+            {"id": "industry", "name": "Промышленность"},
+            {"id": "infrastructure", "name": "Инфраструктура"}
         ]
     })
 
@@ -743,6 +974,8 @@ async def get_tech_tree(category: str):
         return JSONResponse({"success": True, "data": NAVY_TECH})
     elif category == "industry":
         return JSONResponse({"success": True, "data": INDUSTRY_TECH})
+    elif category == "infrastructure":
+        return JSONResponse({"success": True, "data": INFRASTRUCTURE_TECH})
     else:
         return JSONResponse({"success": False, "error": "Unknown category"}, status_code=404)
 
