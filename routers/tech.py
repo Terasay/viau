@@ -438,6 +438,290 @@ NAVY_TECH = {
     ]
 }
 
+# ПРОМЫШЛЕННОСТЬ
+INDUSTRY_TECH = {
+    "id": "industry",
+    "name": "Промышленность",
+    "lines": [
+        {
+            "id": "metallurgy",
+            "name": "Металлургия",
+            "technologies": [
+                # Базовый уровень (1500-1600)
+                {"id": "blacksmithing", "name": "Кузнечное дело", "year": 1500, "requires": []},
+                {"id": "blast_furnaces_1", "name": "Доменные печи I", "year": 1510, "requires": ["blacksmithing"]},
+                {"id": "iron_ore", "name": "Железная руда", "year": 1520, "requires": ["blast_furnaces_1"]},
+                {"id": "blast_furnaces_2", "name": "Доменные печи II", "year": 1530, "requires": ["iron_ore"]},
+                {"id": "cast_iron", "name": "Чугун", "year": 1540, "requires": ["blast_furnaces_2"]},
+                {"id": "wrought_iron", "name": "Кованое железо", "year": 1550, "requires": ["cast_iron"]},
+                {"id": "improved_smelting", "name": "Улучшенная плавка", "year": 1560, "requires": ["wrought_iron"]},
+                {"id": "blast_furnaces_3", "name": "Доменные печи III", "year": 1570, "requires": ["improved_smelting"]},
+                {"id": "quality_iron", "name": "Качественное железо", "year": 1580, "requires": ["blast_furnaces_3"]},
+                {"id": "steel_production_1", "name": "Стальное производство I", "year": 1590, "requires": ["quality_iron"]},
+                {"id": "carbon_steel", "name": "Углеродистая сталь", "year": 1600, "requires": ["steel_production_1"]},
+                
+                # Развитие (1600-1750)
+                {"id": "blast_furnaces_4", "name": "Доменные печи IV", "year": 1610, "requires": ["carbon_steel"]},
+                {"id": "charcoal", "name": "Древесный уголь", "year": 1620, "requires": ["blast_furnaces_4"]},
+                {"id": "improved_forges", "name": "Улучшенные горны", "year": 1630, "requires": ["charcoal"]},
+                {"id": "steel_production_2", "name": "Стальное производство II", "year": 1640, "requires": ["improved_forges"]},
+                {"id": "foundry_production", "name": "Литейное производство", "year": 1650, "requires": ["steel_production_2"]},
+                {"id": "cast_iron_casting", "name": "Чугунное литье", "year": 1660, "requires": ["foundry_production"]},
+                {"id": "coal_for_metallurgy", "name": "Каменный уголь для металлургии", "year": 1670, "requires": ["cast_iron_casting"]},
+                {"id": "coking_coal", "name": "Коксование угля", "year": 1680, "requires": ["coal_for_metallurgy"]},
+                {"id": "coke_blast_furnaces", "name": "Коксовые доменные печи", "year": 1690, "requires": ["coking_coal"]},
+                {"id": "quality_cast_iron", "name": "Качественный чугун", "year": 1700, "requires": ["coke_blast_furnaces"]},
+                {"id": "improved_casting_met", "name": "Улучшенное литье", "year": 1710, "requires": ["quality_cast_iron"]},
+                {"id": "rolling_mills_1", "name": "Прокатные станы I", "year": 1720, "requires": ["improved_casting_met"]},
+                {"id": "puddling", "name": "Пудлингование", "year": 1730, "requires": ["rolling_mills_1"]},
+                {"id": "rolling_mills_2", "name": "Прокатные станы II", "year": 1740, "requires": ["puddling"]},
+                {"id": "welding_iron", "name": "Сварочное железо", "year": 1750, "requires": ["rolling_mills_2"]},
+                
+                # Промышленная революция (1750-1860)
+                {"id": "improved_puddling", "name": "Улучшенное пудлингование", "year": 1760, "requires": ["welding_iron"]},
+                {"id": "quality_steel", "name": "Качественная сталь", "year": 1770, "requires": ["improved_puddling"]},
+                {"id": "iron_rolling", "name": "Прокат железа", "year": 1780, "requires": ["quality_steel"]},
+                {"id": "industrial_production_met", "name": "Промышленное производство", "year": 1790, "requires": ["iron_rolling"]},
+                {"id": "cast_steel", "name": "Литая сталь", "year": 1800, "requires": ["industrial_production_met"]},
+                {"id": "crucible_steel", "name": "Тигельная сталь", "year": 1810, "requires": ["cast_steel"]},
+                {"id": "hot_blast", "name": "Горячее дутье", "year": 1820, "requires": ["crucible_steel"]},
+                {"id": "improved_blast_furnaces", "name": "Улучшенные доменные печи", "year": 1830, "requires": ["hot_blast"]},
+                {"id": "quality_rolling", "name": "Качественный прокат", "year": 1840, "requires": ["improved_blast_furnaces"]},
+                {"id": "bessemer_process_1", "name": "Бессемеровский процесс I", "year": 1850, "requires": ["quality_rolling"]},
+                {"id": "bessemer_process_2", "name": "Бессемеровский процесс II", "year": 1860, "requires": ["bessemer_process_1"]},
+                
+                # Сталелитейная эпоха (1860-1900)
+                {"id": "mass_steel_production", "name": "Массовое производство стали", "year": 1865, "requires": ["bessemer_process_2"]},
+                {"id": "open_hearth_1", "name": "Мартеновский процесс I", "year": 1870, "requires": ["mass_steel_production"]},
+                {"id": "alloy_steel", "name": "Легированная сталь", "year": 1875, "requires": ["open_hearth_1"]},
+                {"id": "open_hearth_2", "name": "Мартеновский процесс II", "year": 1880, "requires": ["alloy_steel"]},
+                {"id": "high_quality_steel", "name": "Высококачественная сталь", "year": 1885, "requires": ["open_hearth_2"]},
+                {"id": "electrometallurgy", "name": "Электрометаллургия", "year": 1890, "requires": ["high_quality_steel"]},
+                {"id": "modern_steel", "name": "Современная сталь", "year": 1895, "requires": ["electrometallurgy"]},
+                {"id": "industrial_metallurgy", "name": "Промышленная металлургия", "year": 1900, "requires": ["modern_steel"]},
+            ]
+        },
+        {
+            "id": "textiles",
+            "name": "Текстильная промышленность",
+            "technologies": [
+                # Базовый уровень (1500-1650)
+                {"id": "hand_spinning", "name": "Ручное прядение", "year": 1500, "requires": []},
+                {"id": "hand_weaving", "name": "Ручное ткачество", "year": 1510, "requires": ["hand_spinning"]},
+                {"id": "quality_fabrics", "name": "Качественные ткани", "year": 1520, "requires": ["hand_weaving"]},
+                {"id": "improved_looms", "name": "Улучшенные станки", "year": 1530, "requires": ["quality_fabrics"]},
+                {"id": "wool_industry", "name": "Шерстяная промышленность", "year": 1540, "requires": ["improved_looms"]},
+                {"id": "linen_production", "name": "Льняное производство", "year": 1550, "requires": ["wool_industry"]},
+                {"id": "textile_manufactory_1", "name": "Текстильные мануфактуры I", "year": 1560, "requires": ["linen_production"]},
+                {"id": "dyeing", "name": "Красильное дело", "year": 1570, "requires": ["textile_manufactory_1"]},
+                {"id": "textile_manufactory_2", "name": "Текстильные мануфактуры II", "year": 1580, "requires": ["dyeing"]},
+                {"id": "fabric_bleaching", "name": "Отбеливание тканей", "year": 1590, "requires": ["textile_manufactory_2"]},
+                {"id": "cotton_production", "name": "Хлопковое производство", "year": 1600, "requires": ["fabric_bleaching"]},
+                {"id": "textile_manufactory_3", "name": "Текстильные мануфактуры III", "year": 1610, "requires": ["cotton_production"]},
+                {"id": "quality_cotton", "name": "Качественный хлопок", "year": 1620, "requires": ["textile_manufactory_3"]},
+                {"id": "printed_fabrics", "name": "Набивные ткани", "year": 1630, "requires": ["quality_cotton"]},
+                {"id": "improved_dyeing", "name": "Улучшенное красильное дело", "year": 1640, "requires": ["printed_fabrics"]},
+                {"id": "textile_manufactory_4", "name": "Текстильные мануфактуры IV", "year": 1650, "requires": ["improved_dyeing"]},
+                
+                # Механизация (1650-1800)
+                {"id": "spinning_wheel_flyer", "name": "Прялка с рогулькой", "year": 1660, "requires": ["textile_manufactory_4"]},
+                {"id": "fly_shuttle", "name": "Челнок-самолет", "year": 1670, "requires": ["spinning_wheel_flyer"]},
+                {"id": "improved_spinning_wheels", "name": "Улучшенные прялки", "year": 1680, "requires": ["fly_shuttle"]},
+                {"id": "quality_bleaching", "name": "Качественное отбеливание", "year": 1690, "requires": ["improved_spinning_wheels"]},
+                {"id": "spinning_production", "name": "Прядильное производство", "year": 1700, "requires": ["quality_bleaching"]},
+                {"id": "flying_shuttle", "name": "Летучий челнок", "year": 1710, "requires": ["spinning_production"]},
+                {"id": "spinning_jenny", "name": "Прядильная машина Харгривса", "year": 1720, "requires": ["flying_shuttle"]},
+                {"id": "water_frame", "name": "Ватерная прядильная машина", "year": 1730, "requires": ["spinning_jenny"]},
+                {"id": "spinning_mule", "name": "Мюль-машина", "year": 1740, "requires": ["water_frame"]},
+                {"id": "mechanical_spinning_1", "name": "Механическое прядение I", "year": 1750, "requires": ["spinning_mule"]},
+                {"id": "power_loom_1", "name": "Механический ткацкий станок I", "year": 1760, "requires": ["mechanical_spinning_1"]},
+                {"id": "mechanical_spinning_2", "name": "Механическое прядение II", "year": 1770, "requires": ["power_loom_1"]},
+                {"id": "power_loom_2", "name": "Механический ткацкий станок II", "year": 1780, "requires": ["mechanical_spinning_2"]},
+                {"id": "cotton_gin", "name": "Хлопкоочистительная машина", "year": 1790, "requires": ["power_loom_2"]},
+                {"id": "factory_production_textile", "name": "Фабричное производство", "year": 1800, "requires": ["cotton_gin"]},
+                
+                # Индустриальная эпоха (1800-1900)
+                {"id": "steam_powered_looms", "name": "Паровые ткацкие станки", "year": 1810, "requires": ["factory_production_textile"]},
+                {"id": "jacquard_loom", "name": "Жаккардовый станок", "year": 1820, "requires": ["steam_powered_looms"]},
+                {"id": "mass_fabric_production", "name": "Массовое производство тканей", "year": 1830, "requires": ["jacquard_loom"]},
+                {"id": "improved_looms_industrial", "name": "Улучшенные станки", "year": 1840, "requires": ["mass_fabric_production"]},
+                {"id": "synthetic_dyes_1", "name": "Синтетические красители I", "year": 1850, "requires": ["improved_looms_industrial"]},
+                {"id": "industrial_textiles", "name": "Промышленный текстиль", "year": 1860, "requires": ["synthetic_dyes_1"]},
+                {"id": "synthetic_dyes_2", "name": "Синтетические красители II", "year": 1870, "requires": ["industrial_textiles"]},
+                {"id": "automated_looms", "name": "Автоматизированные станки", "year": 1880, "requires": ["synthetic_dyes_2"]},
+                {"id": "modern_textile_industry", "name": "Современная текстильная промышленность", "year": 1890, "requires": ["automated_looms"]},
+            ]
+        },
+        {
+            "id": "energy",
+            "name": "Энергетика",
+            "technologies": [
+                # Базовый уровень (1500-1650)
+                {"id": "water_mills", "name": "Водяные мельницы", "year": 1500, "requires": []},
+                {"id": "improved_water_wheels", "name": "Улучшенные водяные колеса", "year": 1510, "requires": ["water_mills"]},
+                {"id": "windmills", "name": "Ветряные мельницы", "year": 1520, "requires": ["improved_water_wheels"]},
+                {"id": "improved_windmills", "name": "Улучшенные ветряки", "year": 1530, "requires": ["windmills"]},
+                {"id": "mechanical_transmissions", "name": "Механические передачи", "year": 1540, "requires": ["improved_windmills"]},
+                {"id": "cam_mechanisms", "name": "Кулачковые механизмы", "year": 1550, "requires": ["mechanical_transmissions"]},
+                {"id": "milling", "name": "Мельничное дело", "year": 1560, "requires": ["cam_mechanisms"]},
+                {"id": "industrial_water_wheels", "name": "Промышленные водяные колеса", "year": 1570, "requires": ["milling"]},
+                {"id": "gear_transmissions", "name": "Шестеренчатые передачи", "year": 1580, "requires": ["industrial_water_wheels"]},
+                {"id": "pumps", "name": "Насосы", "year": 1590, "requires": ["gear_transmissions"]},
+                {"id": "hydraulic_systems", "name": "Гидравлические системы", "year": 1600, "requires": ["pumps"]},
+                {"id": "improved_pumps", "name": "Улучшенные насосы", "year": 1610, "requires": ["hydraulic_systems"]},
+                {"id": "water_engines", "name": "Водяные двигатели", "year": 1620, "requires": ["improved_pumps"]},
+                {"id": "industrial_mills", "name": "Промышленные мельницы", "year": 1630, "requires": ["water_engines"]},
+                {"id": "water_power", "name": "Водяная энергия", "year": 1640, "requires": ["industrial_mills"]},
+                {"id": "improved_hydraulics", "name": "Улучшенная гидравлика", "year": 1650, "requires": ["water_power"]},
+                
+                # Паровая революция (1650-1800)
+                {"id": "vacuum_pumps", "name": "Вакуумные насосы", "year": 1660, "requires": ["improved_hydraulics"]},
+                {"id": "atmospheric_pressure", "name": "Атмосферное давление", "year": 1670, "requires": ["vacuum_pumps"]},
+                {"id": "savery_pump", "name": "Паровой насос Севери", "year": 1680, "requires": ["atmospheric_pressure"]},
+                {"id": "newcomen_engine_1", "name": "Паровая машина Ньюкомена I", "year": 1690, "requires": ["savery_pump"]},
+                {"id": "newcomen_engine_2", "name": "Паровая машина Ньюкомена II", "year": 1700, "requires": ["newcomen_engine_1"]},
+                {"id": "improved_steam_pumps", "name": "Улучшенные паровые насосы", "year": 1710, "requires": ["newcomen_engine_2"]},
+                {"id": "industrial_steam_engines", "name": "Промышленные паровые машины", "year": 1720, "requires": ["improved_steam_pumps"]},
+                {"id": "watt_condenser", "name": "Конденсатор Уатта", "year": 1730, "requires": ["industrial_steam_engines"]},
+                {"id": "watt_engine_1", "name": "Паровая машина Уатта I", "year": 1740, "requires": ["watt_condenser"]},
+                {"id": "watt_engine_2", "name": "Паровая машина Уатта II", "year": 1750, "requires": ["watt_engine_1"]},
+                {"id": "rotary_steam_engine", "name": "Ротативная паровая машина", "year": 1760, "requires": ["watt_engine_2"]},
+                {"id": "steam_power_factories", "name": "Паровая энергия для заводов", "year": 1770, "requires": ["rotary_steam_engine"]},
+                {"id": "high_pressure_steam", "name": "Высокого давления паровые машины", "year": 1780, "requires": ["steam_power_factories"]},
+                {"id": "steam_locomotives_energy", "name": "Паровые локомотивы", "year": 1790, "requires": ["high_pressure_steam"]},
+                {"id": "industrial_steam_power", "name": "Промышленная паровая энергия", "year": 1800, "requires": ["steam_locomotives_energy"]},
+                
+                # Промышленная эпоха (1800-1890)
+                {"id": "improved_steam_engines", "name": "Улучшенные паровые машины", "year": 1810, "requires": ["industrial_steam_power"]},
+                {"id": "multi_cylinder_engines", "name": "Многоцилиндровые машины", "year": 1820, "requires": ["improved_steam_engines"]},
+                {"id": "efficient_steam_engines", "name": "Эффективные паровые двигатели", "year": 1830, "requires": ["multi_cylinder_engines"]},
+                {"id": "steam_turbines_1", "name": "Паровые турбины I", "year": 1840, "requires": ["efficient_steam_engines"]},
+                {"id": "compound_engines", "name": "Компаунд-машины", "year": 1850, "requires": ["steam_turbines_1"]},
+                {"id": "steam_turbines_2", "name": "Паровые турбины II", "year": 1860, "requires": ["compound_engines"]},
+                {"id": "industrial_turbines", "name": "Промышленные турбины", "year": 1870, "requires": ["steam_turbines_2"]},
+                {"id": "electric_generators_1", "name": "Электрогенераторы I", "year": 1880, "requires": ["industrial_turbines"]},
+                {"id": "electric_generators_2", "name": "Электрогенераторы II", "year": 1890, "requires": ["electric_generators_1"]},
+                
+                # Электрическая эра (1890-1900)
+                {"id": "dynamos", "name": "Динамо-машины", "year": 1891, "requires": ["electric_generators_2"]},
+                {"id": "power_stations_1", "name": "Электростанции I", "year": 1893, "requires": ["dynamos"]},
+                {"id": "electric_grids", "name": "Электрические сети", "year": 1895, "requires": ["power_stations_1"]},
+                {"id": "power_stations_2", "name": "Электростанции II", "year": 1897, "requires": ["electric_grids"]},
+                {"id": "industrial_electrification", "name": "Промышленная электрификация", "year": 1900, "requires": ["power_stations_2"]},
+            ]
+        },
+        {
+            "id": "chemistry",
+            "name": "Химия и материалы",
+            "technologies": [
+                # Базовый уровень (1500-1700)
+                {"id": "alchemy", "name": "Алхимия", "year": 1500, "requires": []},
+                {"id": "minerals", "name": "Минералы", "year": 1510, "requires": ["alchemy"]},
+                {"id": "acids", "name": "Кислоты", "year": 1520, "requires": ["minerals"]},
+                {"id": "alkalis", "name": "Щелочи", "year": 1530, "requires": ["acids"]},
+                {"id": "distillation", "name": "Дистилляция", "year": 1540, "requires": ["alkalis"]},
+                {"id": "chemistry_basics", "name": "Основы химии", "year": 1550, "requires": ["distillation"]},
+                {"id": "salts", "name": "Соли", "year": 1560, "requires": ["chemistry_basics"]},
+                {"id": "experimental_chemistry", "name": "Экспериментальная химия", "year": 1570, "requires": ["salts"]},
+                {"id": "gunpowder_production", "name": "Порох производство", "year": 1580, "requires": ["experimental_chemistry"]},
+                {"id": "quality_gunpowder", "name": "Качественный порох", "year": 1590, "requires": ["gunpowder_production"]},
+                {"id": "glass_production", "name": "Стекольное производство", "year": 1600, "requires": ["quality_gunpowder"]},
+                {"id": "ceramics", "name": "Керамика", "year": 1610, "requires": ["glass_production"]},
+                {"id": "improved_glass", "name": "Улучшенное стекло", "year": 1620, "requires": ["ceramics"]},
+                {"id": "acid_production", "name": "Кислотное производство", "year": 1630, "requires": ["improved_glass"]},
+                {"id": "saltpeter", "name": "Селитра", "year": 1640, "requires": ["acid_production"]},
+                {"id": "basic_chemistry", "name": "Основная химия", "year": 1650, "requires": ["saltpeter"]},
+                {"id": "dyes", "name": "Красители", "year": 1660, "requires": ["basic_chemistry"]},
+                {"id": "hydrochloric_acid", "name": "Соляная кислота", "year": 1670, "requires": ["dyes"]},
+                {"id": "sulfuric_acid", "name": "Серная кислота", "year": 1680, "requires": ["hydrochloric_acid"]},
+                {"id": "chemical_productions", "name": "Химические производства", "year": 1690, "requires": ["sulfuric_acid"]},
+                {"id": "industrial_chemistry_1", "name": "Промышленная химия I", "year": 1700, "requires": ["chemical_productions"]},
+                
+                # Развитие (1700-1850)
+                {"id": "chlorine", "name": "Хлор", "year": 1710, "requires": ["industrial_chemistry_1"]},
+                {"id": "bleaching_powder", "name": "Отбеливающий порошок", "year": 1720, "requires": ["chlorine"]},
+                {"id": "chemical_processes", "name": "Химические процессы", "year": 1730, "requires": ["bleaching_powder"]},
+                {"id": "industrial_chemistry_2", "name": "Промышленная химия II", "year": 1740, "requires": ["chemical_processes"]},
+                {"id": "soda", "name": "Сода", "year": 1750, "requires": ["industrial_chemistry_2"]},
+                {"id": "ammonia", "name": "Аммиак", "year": 1760, "requires": ["soda"]},
+                {"id": "leblanc_process", "name": "Процесс Леблана", "year": 1770, "requires": ["ammonia"]},
+                {"id": "chemical_industry", "name": "Химическая промышленность", "year": 1780, "requires": ["leblanc_process"]},
+                {"id": "quality_acids", "name": "Качественные кислоты", "year": 1790, "requires": ["chemical_industry"]},
+                {"id": "industrial_soda", "name": "Промышленная сода", "year": 1800, "requires": ["quality_acids"]},
+                {"id": "chloride_of_lime", "name": "Хлорная известь", "year": 1810, "requires": ["industrial_soda"]},
+                {"id": "modern_chemistry", "name": "Современная химия", "year": 1820, "requires": ["chloride_of_lime"]},
+                {"id": "solvay_process", "name": "Процесс Сольве", "year": 1830, "requires": ["modern_chemistry"]},
+                {"id": "improved_soda_production", "name": "Улучшенное производство соды", "year": 1840, "requires": ["solvay_process"]},
+                {"id": "chemical_fertilizers", "name": "Химические удобрения", "year": 1850, "requires": ["improved_soda_production"]},
+                
+                # Органическая химия (1850-1900)
+                {"id": "aniline_dyes", "name": "Анилиновые красители", "year": 1860, "requires": ["chemical_fertilizers"]},
+                {"id": "synthetic_dyes_chem_1", "name": "Синтетические красители I", "year": 1865, "requires": ["aniline_dyes"]},
+                {"id": "organic_chemistry", "name": "Органическая химия", "year": 1870, "requires": ["synthetic_dyes_chem_1"]},
+                {"id": "explosives_1", "name": "Взрывчатые вещества I", "year": 1875, "requires": ["organic_chemistry"]},
+                {"id": "dynamite", "name": "Динамит", "year": 1880, "requires": ["explosives_1"]},
+                {"id": "synthetic_dyes_chem_2", "name": "Синтетические красители II", "year": 1885, "requires": ["dynamite"]},
+                {"id": "explosives_2", "name": "Взрывчатые вещества II", "year": 1890, "requires": ["synthetic_dyes_chem_2"]},
+                {"id": "smokeless_powder_chem", "name": "Бездымный порох", "year": 1895, "requires": ["explosives_2"]},
+                {"id": "modern_chemical_industry", "name": "Современная химическая промышленность", "year": 1900, "requires": ["smokeless_powder_chem"]},
+            ]
+        },
+        {
+            "id": "production_methods",
+            "name": "Производственные методы",
+            "technologies": [
+                # Базовый уровень (1500-1650)
+                {"id": "guild_production", "name": "Цеховое производство", "year": 1500, "requires": []},
+                {"id": "craft_guilds", "name": "Ремесленные гильдии", "year": 1510, "requires": ["guild_production"]},
+                {"id": "workshops", "name": "Мастерские", "year": 1520, "requires": ["craft_guilds"]},
+                {"id": "labor_specialization", "name": "Специализация труда", "year": 1530, "requires": ["workshops"]},
+                {"id": "quality_craftsmanship", "name": "Качественное ремесло", "year": 1540, "requires": ["labor_specialization"]},
+                {"id": "journeymen", "name": "Подмастерья", "year": 1550, "requires": ["quality_craftsmanship"]},
+                {"id": "guild_organization", "name": "Цеховая организация", "year": 1560, "requires": ["journeymen"]},
+                {"id": "early_manufactories", "name": "Ранние мануфактуры", "year": 1570, "requires": ["guild_organization"]},
+                {"id": "division_of_labor_1", "name": "Разделение труда I", "year": 1580, "requires": ["early_manufactories"]},
+                {"id": "manufactory_production_1", "name": "Мануфактурное производство I", "year": 1590, "requires": ["division_of_labor_1"]},
+                {"id": "centralized_workshops", "name": "Централизованные мастерские", "year": 1600, "requires": ["manufactory_production_1"]},
+                {"id": "manufactory_production_2", "name": "Мануфактурное производство II", "year": 1610, "requires": ["centralized_workshops"]},
+                {"id": "division_of_labor_2", "name": "Разделение труда II", "year": 1620, "requires": ["manufactory_production_2"]},
+                {"id": "large_manufactories", "name": "Крупные мануфактуры", "year": 1630, "requires": ["division_of_labor_2"]},
+                {"id": "specialized_production", "name": "Специализированное производство", "year": 1640, "requires": ["large_manufactories"]},
+                {"id": "manufactory_production_3", "name": "Мануфактурное производство III", "year": 1650, "requires": ["specialized_production"]},
+                
+                # Переход к фабрикам (1650-1800)
+                {"id": "production_buildings", "name": "Производственные здания", "year": 1660, "requires": ["manufactory_production_3"]},
+                {"id": "production_organization", "name": "Организация производства", "year": 1670, "requires": ["production_buildings"]},
+                {"id": "water_power_production", "name": "Водяная энергия на производстве", "year": 1680, "requires": ["production_organization"]},
+                {"id": "machine_production_1", "name": "Машинное производство I", "year": 1690, "requires": ["water_power_production"]},
+                {"id": "early_factories", "name": "Ранние фабрики", "year": 1700, "requires": ["machine_production_1"]},
+                {"id": "mechanized_production", "name": "Механизированное производство", "year": 1710, "requires": ["early_factories"]},
+                {"id": "machine_production_2", "name": "Машинное производство II", "year": 1720, "requires": ["mechanized_production"]},
+                {"id": "factory_system_1", "name": "Фабричная система I", "year": 1730, "requires": ["machine_production_2"]},
+                {"id": "standard_parts", "name": "Стандартные детали", "year": 1740, "requires": ["factory_system_1"]},
+                {"id": "factory_system_2", "name": "Фабричная система II", "year": 1750, "requires": ["standard_parts"]},
+                {"id": "steam_factories", "name": "Паровые фабрики", "year": 1760, "requires": ["factory_system_2"]},
+                {"id": "machine_production_3", "name": "Машинное производство III", "year": 1770, "requires": ["steam_factories"]},
+                {"id": "industrial_production_prod", "name": "Индустриальное производство", "year": 1780, "requires": ["machine_production_3"]},
+                {"id": "standardization_1", "name": "Стандартизация I", "year": 1790, "requires": ["industrial_production_prod"]},
+                {"id": "factory_production_methods", "name": "Заводское производство", "year": 1800, "requires": ["standardization_1"]},
+                
+                # Массовое производство (1800-1900)
+                {"id": "interchangeable_parts", "name": "Взаимозаменяемые детали", "year": 1810, "requires": ["factory_production_methods"]},
+                {"id": "standardization_2", "name": "Стандартизация II", "year": 1820, "requires": ["interchangeable_parts"]},
+                {"id": "machine_building", "name": "Машиностроение", "year": 1830, "requires": ["standardization_2"]},
+                {"id": "precision_tools", "name": "Точные станки", "year": 1840, "requires": ["machine_building"]},
+                {"id": "standardization_3", "name": "Стандартизация III", "year": 1850, "requires": ["precision_tools"]},
+                {"id": "assembly_line", "name": "Конвейерная сборка", "year": 1860, "requires": ["standardization_3"]},
+                {"id": "mass_production_1", "name": "Массовое производство I", "year": 1870, "requires": ["assembly_line"]},
+                {"id": "production_electrification", "name": "Электрификация производства", "year": 1880, "requires": ["mass_production_1"]},
+                {"id": "mass_production_2", "name": "Массовое производство II", "year": 1890, "requires": ["production_electrification"]},
+                {"id": "modern_factories", "name": "Современные заводы", "year": 1895, "requires": ["mass_production_2"]},
+                {"id": "industrial_organization", "name": "Промышленная организация", "year": 1900, "requires": ["modern_factories"]},
+            ]
+        }
+    ]
+}
+
 @router.get("/categories")
 async def get_tech_categories():
     """Получить список всех доступных категорий технологий"""
@@ -445,7 +729,8 @@ async def get_tech_categories():
         "success": True,
         "categories": [
             {"id": "land_forces", "name": "Сухопутные войска"},
-            {"id": "navy", "name": "Военно-морской флот"}
+            {"id": "navy", "name": "Военно-морской флот"},
+            {"id": "industry", "name": "Промышленность"}
         ]
     })
 
@@ -456,6 +741,8 @@ async def get_tech_tree(category: str):
         return JSONResponse({"success": True, "data": LAND_FORCES_TECH})
     elif category == "navy":
         return JSONResponse({"success": True, "data": NAVY_TECH})
+    elif category == "industry":
+        return JSONResponse({"success": True, "data": INDUSTRY_TECH})
     else:
         return JSONResponse({"success": False, "error": "Unknown category"}, status_code=404)
 
