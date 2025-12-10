@@ -3,9 +3,18 @@
 let techData = null;
 let playerProgress = null;
 let selectedTech = null;
+let isInitialized = false;
 
 // Инициализация модуля технологий
 async function initTechnologies() {
+    // Если уже инициализировано, просто отрисовываем
+    if (isInitialized && techData) {
+        console.log('Tech tree already initialized, skipping load');
+        return;
+    }
+    
+    console.log('Initializing tech tree...');
+    
     try {
         const token = localStorage.getItem('token');
         
@@ -15,17 +24,20 @@ async function initTechnologies() {
         });
         
         if (!treeResponse.ok) {
-            console.error('Failed to load tech tree');
+            console.error('Failed to load tech tree:', treeResponse.status);
             return;
         }
         
         const treeData = await treeResponse.json();
+        console.log('Tech tree response:', treeData);
+        
         if (!treeData.success) {
             console.error('Tech tree error:', treeData.error);
             return;
         }
         
         techData = treeData.data;
+        console.log('Tech data loaded:', techData);
         
         // Загружаем прогресс игрока
         const progressResponse = await fetch('/api/tech/player/progress', {
@@ -34,6 +46,7 @@ async function initTechnologies() {
         
         if (progressResponse.ok) {
             const progressData = await progressResponse.json();
+            console.log('Player progress:', progressData);
             if (progressData.success) {
                 playerProgress = progressData;
             }
@@ -41,6 +54,8 @@ async function initTechnologies() {
         
         // Отрисовываем древо
         renderTechTree();
+        isInitialized = true;
+        console.log('Tech tree initialized successfully');
         
     } catch (error) {
         console.error('Error initializing technologies:', error);
@@ -49,9 +64,19 @@ async function initTechnologies() {
 
 // Отрисовка древа технологий
 function renderTechTree() {
+    console.log('Rendering tech tree...');
     const container = document.getElementById('tech-tree-content');
-    if (!container || !techData) return;
+    if (!container) {
+        console.error('Tech tree container not found!');
+        return;
+    }
     
+    if (!techData) {
+        console.error('No tech data to render!');
+        return;
+    }
+    
+    console.log('Container found, clearing content');
     container.innerHTML = '';
     
     // Заголовок категории
@@ -64,18 +89,23 @@ function renderTechTree() {
         </div>
     `;
     container.appendChild(header);
+    console.log('Header added');
     
     // Контейнер линий
     const linesContainer = document.createElement('div');
     linesContainer.className = 'tech-lines-container';
     
+    console.log('Rendering', techData.lines.length, 'tech lines');
+    
     // Отрисовываем каждую линию технологий
-    techData.lines.forEach(line => {
+    techData.lines.forEach((line, index) => {
+        console.log(`Rendering line ${index + 1}:`, line.name);
         const lineElement = renderTechLine(line);
         linesContainer.appendChild(lineElement);
     });
     
     container.appendChild(linesContainer);
+    console.log('Lines container added');
     
     // Легенда
     const legend = document.createElement('div');
@@ -95,6 +125,7 @@ function renderTechTree() {
         </div>
     `;
     container.appendChild(legend);
+    console.log('Legend added. Render complete!');
 }
 
 // Отрисовка одной линии технологий
