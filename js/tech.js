@@ -279,9 +279,10 @@ function calculateTechPositions(technologies) {
     });
     
     // Позиционируем технологии
+    const headerOffset = 100; // Отступ для заголовка линии
     Object.keys(levelGroups).forEach(level => {
         const techs = levelGroups[level];
-        const y = parseInt(level) * verticalSpacing;
+        const y = parseInt(level) * verticalSpacing + headerOffset;
         
         // Вычисляем общую ширину для центрирования
         const totalWidth = techs.length * nodeWidth;
