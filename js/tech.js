@@ -148,8 +148,8 @@ function setupDragScroll(element) {
         
         isDragging = true;
         element.classList.add('dragging');
-        startX = e.pageX - element.offsetLeft;
-        startY = e.pageY - element.offsetTop;
+        startX = e.pageX;
+        startY = e.pageY;
         scrollLeft = element.scrollLeft;
         scrollTop = element.scrollTop;
     });
@@ -167,8 +167,8 @@ function setupDragScroll(element) {
     element.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
         e.preventDefault();
-        const x = e.pageX - element.offsetLeft;
-        const y = e.pageY - element.offsetTop;
+        const x = e.pageX;
+        const y = e.pageY;
         const walkX = (x - startX) * 1.5;
         const walkY = (y - startY) * 1.5;
         element.scrollLeft = scrollLeft - walkX;
