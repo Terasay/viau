@@ -4,27 +4,24 @@ let techData = null;
 let playerProgress = null;
 let selectedTech = null;
 let isInitialized = false;
+let currentCategory = 'land_forces';
 
 // Инициализация модуля технологий
-async function initTechnologies() {
-    // Если уже инициализировано, просто отрисовываем
-    if (isInitialized && techData) {
-        console.log('Tech tree already initialized, skipping load');
-        return;
-    }
-    
-    console.log('Initializing tech tree...');
+async function initTechnologies(category = 'land_forces') {
+    console.log('Initializing tech tree for category:', category);
+    currentCategory = category;
     
     try {
         const token = localStorage.getItem('token');
         
         // Загружаем данные древа технологий
-        const treeResponse = await fetch('/api/tech/tree/land_forces', {
+        const treeResponse = await fetch(`/api/tech/tree/${category}`, {
             headers: { 'Authorization': token }
         });
         
         if (!treeResponse.ok) {
             console.error('Failed to load tech tree:', treeResponse.status);
+            showError('Не удалось загрузить древо технологий');
             return;
         }
         
@@ -33,6 +30,7 @@ async function initTechnologies() {
         
         if (!treeData.success) {
             console.error('Tech tree error:', treeData.error);
+            showError(treeData.error || 'Ошибка загрузки технологий');
             return;
         }
         
@@ -502,9 +500,70 @@ function researchTechnology(techId) {
     alert('Функция исследования технологий будет доступна в следующих обновлениях');
 }
 
+// Функция для отображения ошибки
+function showError(message) {
+    const container = document.getElementById('tech-tree-content');
+    if (container) {
+        container.innerHTML = `
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle fa-3x"></i>
+                <h3>${message}</h3>
+                <p>Попробуйте обновить страницу</p>
+            </div>
+        `;
+    }
+}
+
+// Переключение категории технологий
+async function switchCategory(category) {
+    console.log('Switching to category:', category);
+    
+    // Обновляем активную вкладку
+    document.querySelectorAll('.tech-category-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.category === category) {
+            tab.classList.add('active');
+        }
+    });
+    
+    // Показываем загрузку
+    const container = document.getElementById('tech-tree-content');
+    if (container) {
+        container.innerHTML = `
+            <div class="loading-content">
+                <i class="fas fa-flask fa-3x"></i>
+                <h3>Загрузка древа технологий...</h3>
+                <div class="loading-spinner"></div>
+            </div>
+        `;
+    }
+    
+    // Загружаем новую категорию
+    await initTechnologies(category);
+}
+
+// Инициализация обработчиков событий
+function initEventHandlers() {
+    // Обработчики для вкладок категорий
+    document.querySelectorAll('.tech-category-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const category = tab.dataset.category;
+            if (category !== currentCategory) {
+                switchCategory(category);
+            }
+        });
+    });
+}
+
+// Инициализация при загрузке страницы
+setTimeout(() => {
+    initEventHandlers();
+}, 100);
+
 // Экспортируем функции для использования в game.js
 window.techModule = {
     init: initTechnologies,
     showInfo: showTechInfo,
-    closeInfo: closeTechInfo
+    closeInfo: closeTechInfo,
+    switchCategory: switchCategory
 };

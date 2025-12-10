@@ -3,9 +3,11 @@ from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/api/tech", tags=["technologies"])
 
-# Данные по технологиям "Сухопутные войска" из Технологии.md
+# Данные по технологиям из Технологии.md
+
+# СУХОПУТНЫЕ ВОЙСКА
 LAND_FORCES_TECH = {
-    "category": "land_forces",
+    "id": "land_forces",
     "name": "Сухопутные войска",
     "lines": [
         {
@@ -191,6 +193,251 @@ LAND_FORCES_TECH = {
     ]
 }
 
+# ВОЕННО-МОРСКОЙ ФЛОТ
+NAVY_TECH = {
+    "id": "navy",
+    "name": "Военно-морской флот",
+    "lines": [
+        {
+            "id": "warships",
+            "name": "Военные корабли",
+            "technologies": [
+                # Базовый уровень (1500-1550)
+                {"id": "caravels", "name": "Каравеллы", "year": 1500, "requires": []},
+                {"id": "improved_caravels", "name": "Улучшенные каравеллы", "year": 1510, "requires": ["caravels"]},
+                {"id": "carracks", "name": "Каракки", "year": 1520, "requires": ["improved_caravels"]},
+                {"id": "galleons_1", "name": "Галеоны I", "year": 1530, "requires": ["carracks"]},
+                {"id": "improved_rigging", "name": "Улучшенное такелажное оснащение", "year": 1540, "requires": ["galleons_1"]},
+                {"id": "galleons_2", "name": "Галеоны II", "year": 1550, "requires": ["improved_rigging"]},
+                
+                # Эпоха галеонов (1550-1650)
+                {"id": "war_galleons", "name": "Военные галеоны", "year": 1560, "requires": ["galleons_2"]},
+                {"id": "multi_deck_ships", "name": "Многопалубные корабли", "year": 1570, "requires": ["war_galleons"]},
+                {"id": "heavy_galleons", "name": "Тяжелые галеоны", "year": 1580, "requires": ["multi_deck_ships"]},
+                {"id": "improved_stability", "name": "Улучшенная остойчивость", "year": 1590, "requires": ["heavy_galleons"]},
+                {"id": "ships_of_line_1", "name": "Линейные корабли I", "year": 1600, "requires": ["improved_stability"]},
+                {"id": "three_deck_ships", "name": "Трехпалубные корабли", "year": 1610, "requires": ["ships_of_line_1"]},
+                {"id": "ships_of_line_2", "name": "Линейные корабли II", "year": 1620, "requires": ["three_deck_ships"]},
+                {"id": "improved_hull", "name": "Улучшенная конструкция корпуса", "year": 1630, "requires": ["ships_of_line_2"]},
+                {"id": "ships_of_line_3", "name": "Линейные корабли III", "year": 1640, "requires": ["improved_hull"]},
+                {"id": "heavy_ships_of_line", "name": "Тяжелые линкоры", "year": 1650, "requires": ["ships_of_line_3"]},
+                
+                # Классическая эпоха (1650-1750)
+                {"id": "frigates_1", "name": "Фрегаты I", "year": 1660, "requires": ["heavy_ships_of_line"]},
+                {"id": "corvettes", "name": "Корветы", "year": 1670, "requires": ["frigates_1"]},
+                {"id": "frigates_2", "name": "Фрегаты II", "year": 1680, "requires": ["corvettes"]},
+                {"id": "sloops", "name": "Шлюпы", "year": 1690, "requires": ["frigates_2"]},
+                {"id": "brigs", "name": "Бриги", "year": 1700, "requires": ["sloops"]},
+                {"id": "ships_of_line_4", "name": "Линейные корабли IV", "year": 1710, "requires": ["brigs"]},
+                {"id": "frigates_3", "name": "Фрегаты III", "year": 1720, "requires": ["ships_of_line_4"]},
+                {"id": "heavy_frigates", "name": "Тяжелые фрегаты", "year": 1730, "requires": ["frigates_3"]},
+                {"id": "ships_of_line_5", "name": "Линейные корабли V", "year": 1740, "requires": ["heavy_frigates"]},
+                {"id": "improved_frigates", "name": "Улучшенные фрегаты", "year": 1750, "requires": ["ships_of_line_5"]},
+                
+                # Переходная эпоха (1750-1830)
+                {"id": "copper_plating", "name": "Медная обшивка днища", "year": 1760, "requires": ["improved_frigates"]},
+                {"id": "fast_frigates", "name": "Быстроходные фрегаты", "year": 1770, "requires": ["copper_plating"]},
+                {"id": "ships_of_line_6", "name": "Линейные корабли VI", "year": 1780, "requires": ["fast_frigates"]},
+                {"id": "scout_ships", "name": "Разведывательные суда", "year": 1790, "requires": ["ships_of_line_6"]},
+                {"id": "experimental_steamships", "name": "Экспериментальные паровые суда", "year": 1800, "requires": ["scout_ships"]},
+                {"id": "paddle_steamers", "name": "Паровые колесные суда", "year": 1810, "requires": ["experimental_steamships"]},
+                {"id": "steam_frigates_1", "name": "Паровые фрегаты I", "year": 1820, "requires": ["paddle_steamers"]},
+                {"id": "screw_ships", "name": "Винтовые корабли", "year": 1830, "requires": ["steam_frigates_1"]},
+                
+                # Паровая эпоха (1830-1870)
+                {"id": "steam_frigates_2", "name": "Паровые фрегаты II", "year": 1840, "requires": ["screw_ships"]},
+                {"id": "steam_ships_of_line_1", "name": "Паровые линкоры I", "year": 1845, "requires": ["steam_frigates_2"]},
+                {"id": "ironclads_1", "name": "Броненосцы I", "year": 1850, "requires": ["steam_ships_of_line_1"]},
+                {"id": "iron_plating", "name": "Железная обшивка", "year": 1855, "requires": ["ironclads_1"]},
+                {"id": "ironclads_2", "name": "Броненосцы II", "year": 1860, "requires": ["iron_plating"]},
+                {"id": "turret_ironclads", "name": "Башенные броненосцы", "year": 1865, "requires": ["ironclads_2"]},
+                {"id": "steam_ships_of_line_2", "name": "Паровые линкоры II", "year": 1870, "requires": ["turret_ironclads"]},
+                
+                # Современный флот (1870-1900)
+                {"id": "cruisers_1", "name": "Крейсеры I", "year": 1875, "requires": ["steam_ships_of_line_2"]},
+                {"id": "modern_battleships", "name": "Современные броненосцы", "year": 1880, "requires": ["cruisers_1"]},
+                {"id": "cruisers_2", "name": "Крейсеры II", "year": 1885, "requires": ["modern_battleships"]},
+                {"id": "pre_dreadnoughts", "name": "Эскадренные броненосцы", "year": 1890, "requires": ["cruisers_2"]},
+                {"id": "dreadnoughts", "name": "Дредноуты", "year": 1895, "requires": ["pre_dreadnoughts"]},
+            ]
+        },
+        {
+            "id": "naval_weapons",
+            "name": "Морское вооружение",
+            "technologies": [
+                # Базовый уровень (1500-1550)
+                {"id": "falconets", "name": "Фальконеты", "year": 1500, "requires": []},
+                {"id": "broadside_guns", "name": "Бортовые пушки", "year": 1510, "requires": ["falconets"]},
+                {"id": "culverins", "name": "Кулеврины", "year": 1520, "requires": ["broadside_guns"]},
+                {"id": "improved_naval_guns", "name": "Улучшенные морские пушки", "year": 1530, "requires": ["culverins"]},
+                {"id": "gun_ports", "name": "Пушечные порты", "year": 1540, "requires": ["improved_naval_guns"]},
+                {"id": "multi_tier_armament", "name": "Многоярусное вооружение", "year": 1550, "requires": ["gun_ports"]},
+                
+                # Развитие (1550-1700)
+                {"id": "heavy_naval_guns", "name": "Тяжелые морские пушки", "year": 1560, "requires": ["multi_tier_armament"]},
+                {"id": "caliber_standardization_navy", "name": "Стандартизация калибров", "year": 1570, "requires": ["heavy_naval_guns"]},
+                {"id": "improved_carriages_navy", "name": "Улучшенные лафеты", "year": 1580, "requires": ["caliber_standardization_navy"]},
+                {"id": "anti_ship_shot", "name": "Противокорабельные ядра", "year": 1590, "requires": ["improved_carriages_navy"]},
+                {"id": "incendiary_shot", "name": "Зажигательные снаряды", "year": 1600, "requires": ["anti_ship_shot"]},
+                {"id": "boarding_grapeshot", "name": "Картечь для абордажа", "year": 1610, "requires": ["incendiary_shot"]},
+                {"id": "improved_naval_powder", "name": "Улучшенный порох для флота", "year": 1620, "requires": ["boarding_grapeshot"]},
+                {"id": "long_range_guns", "name": "Дальнобойные пушки", "year": 1630, "requires": ["improved_naval_powder"]},
+                {"id": "bomb_guns", "name": "Бомбические орудия", "year": 1640, "requires": ["long_range_guns"]},
+                {"id": "ship_mortars", "name": "Мортиры на кораблях", "year": 1650, "requires": ["bomb_guns"]},
+                {"id": "improved_aiming_navy", "name": "Улучшенное прицеливание", "year": 1660, "requires": ["ship_mortars"]},
+                {"id": "naval_artillery_1", "name": "Корабельная артиллерия I", "year": 1670, "requires": ["improved_aiming_navy"]},
+                {"id": "explosive_shells_navy", "name": "Разрывные снаряды", "year": 1680, "requires": ["naval_artillery_1"]},
+                {"id": "naval_artillery_2", "name": "Корабельная артиллерия II", "year": 1690, "requires": ["explosive_shells_navy"]},
+                {"id": "improved_shells_navy", "name": "Улучшенные снаряды", "year": 1700, "requires": ["naval_artillery_2"]},
+                
+                # Промышленная эпоха (1700-1840)
+                {"id": "ammo_standardization_navy", "name": "Стандартизация боеприпасов", "year": 1710, "requires": ["improved_shells_navy"]},
+                {"id": "improved_gun_decks", "name": "Улучшенные орудийные палубы", "year": 1720, "requires": ["ammo_standardization_navy"]},
+                {"id": "carronades", "name": "Карронады", "year": 1730, "requires": ["improved_gun_decks"]},
+                {"id": "naval_artillery_3", "name": "Корабельная артиллерия III", "year": 1740, "requires": ["carronades"]},
+                {"id": "long_guns", "name": "Длинные пушки", "year": 1750, "requires": ["naval_artillery_3"]},
+                {"id": "improved_rate_of_fire", "name": "Улучшенная скорострельность", "year": 1760, "requires": ["long_guns"]},
+                {"id": "high_explosive_shells_navy", "name": "Фугасные снаряды", "year": 1770, "requires": ["improved_rate_of_fire"]},
+                {"id": "naval_artillery_4", "name": "Корабельная артиллерия IV", "year": 1780, "requires": ["high_explosive_shells_navy"]},
+                {"id": "naval_rockets", "name": "Ракетное оружие для флота", "year": 1790, "requires": ["naval_artillery_4"]},
+                {"id": "improved_carronades", "name": "Улучшенные карронады", "year": 1800, "requires": ["naval_rockets"]},
+                {"id": "rifled_naval_guns_1", "name": "Нарезные морские орудия I", "year": 1810, "requires": ["improved_carronades"]},
+                {"id": "explosive_bombs", "name": "Разрывные бомбы", "year": 1820, "requires": ["rifled_naval_guns_1"]},
+                {"id": "rifled_naval_guns_2", "name": "Нарезные морские орудия II", "year": 1830, "requires": ["explosive_bombs"]},
+                {"id": "breech_loading_naval_guns", "name": "Казнозарядные морские пушки", "year": 1840, "requires": ["rifled_naval_guns_2"]},
+                
+                # Современное вооружение (1840-1900)
+                {"id": "turret_guns_1", "name": "Башенные орудия I", "year": 1850, "requires": ["breech_loading_naval_guns"]},
+                {"id": "armor_piercing_shells", "name": "Бронебойные снаряды", "year": 1855, "requires": ["turret_guns_1"]},
+                {"id": "turret_guns_2", "name": "Башенные орудия II", "year": 1860, "requires": ["armor_piercing_shells"]},
+                {"id": "quick_firing_naval_guns_1", "name": "Скорострельные морские пушки I", "year": 1865, "requires": ["turret_guns_2"]},
+                {"id": "torpedoes", "name": "Торпеды", "year": 1870, "requires": ["quick_firing_naval_guns_1"]},
+                {"id": "quick_firing_naval_guns_2", "name": "Скорострельные морские пушки II", "year": 1875, "requires": ["torpedoes"]},
+                {"id": "heavy_naval_artillery", "name": "Тяжелая корабельная артиллерия", "year": 1880, "requires": ["quick_firing_naval_guns_2"]},
+                {"id": "improved_torpedoes", "name": "Улучшенные торпеды", "year": 1885, "requires": ["heavy_naval_artillery"]},
+                {"id": "quick_firing_guns_3", "name": "Скорострельные орудия III", "year": 1890, "requires": ["improved_torpedoes"]},
+                {"id": "modern_naval_artillery", "name": "Современная морская артиллерия", "year": 1895, "requires": ["quick_firing_guns_3"]},
+            ]
+        },
+        {
+            "id": "navigation",
+            "name": "Навигация и мореходство",
+            "technologies": [
+                # Базовый уровень (1500-1600)
+                {"id": "compass", "name": "Компас", "year": 1500, "requires": []},
+                {"id": "astrolabe", "name": "Астролябия", "year": 1510, "requires": ["compass"]},
+                {"id": "sea_charts_1", "name": "Морские карты I", "year": 1520, "requires": ["astrolabe"]},
+                {"id": "piloting", "name": "Лоцманское искусство", "year": 1530, "requires": ["sea_charts_1"]},
+                {"id": "sea_charts_2", "name": "Морские карты II", "year": 1540, "requires": ["piloting"]},
+                {"id": "navigation_tables", "name": "Навигационные таблицы", "year": 1550, "requires": ["sea_charts_2"]},
+                {"id": "improved_sails", "name": "Улучшенные паруса", "year": 1560, "requires": ["navigation_tables"]},
+                {"id": "lateen_sails", "name": "Косые паруса", "year": 1570, "requires": ["improved_sails"]},
+                {"id": "sea_charts_3", "name": "Морские карты III", "year": 1580, "requires": ["lateen_sails"]},
+                {"id": "star_navigation", "name": "Навигация по звездам", "year": 1590, "requires": ["sea_charts_3"]},
+                {"id": "log_speed", "name": "Лаг (измеритель скорости)", "year": 1600, "requires": ["star_navigation"]},
+                
+                # Развитие (1600-1750)
+                {"id": "quadrant", "name": "Квадрант", "year": 1610, "requires": ["log_speed"]},
+                {"id": "improved_compass", "name": "Улучшенные компасы", "year": 1620, "requires": ["quadrant"]},
+                {"id": "sea_charts_4", "name": "Морские карты IV", "year": 1630, "requires": ["improved_compass"]},
+                {"id": "sextant", "name": "Секстант", "year": 1640, "requires": ["sea_charts_4"]},
+                {"id": "naval_astronomy", "name": "Морская астрономия", "year": 1650, "requires": ["sextant"]},
+                {"id": "barometer", "name": "Барометр", "year": 1660, "requires": ["naval_astronomy"]},
+                {"id": "depth_sounder", "name": "Глубиномер", "year": 1670, "requires": ["barometer"]},
+                {"id": "octant", "name": "Октант", "year": 1680, "requires": ["depth_sounder"]},
+                {"id": "improved_sextant", "name": "Улучшенный секстант", "year": 1690, "requires": ["octant"]},
+                {"id": "chronometers_1", "name": "Морские хронометры I", "year": 1700, "requires": ["improved_sextant"]},
+                {"id": "longitude_finding", "name": "Точное определение долготы", "year": 1710, "requires": ["chronometers_1"]},
+                {"id": "chronometers_2", "name": "Морские хронометры II", "year": 1720, "requires": ["longitude_finding"]},
+                {"id": "scientific_cartography", "name": "Научная картография", "year": 1730, "requires": ["chronometers_2"]},
+                {"id": "sea_charts_5", "name": "Морские карты V", "year": 1740, "requires": ["scientific_cartography"]},
+                {"id": "improved_astronomy", "name": "Улучшенная астрономия", "year": 1750, "requires": ["sea_charts_5"]},
+                
+                # Точная навигация (1750-1850)
+                {"id": "precision_chronometers", "name": "Прецизионные хронометры", "year": 1760, "requires": ["improved_astronomy"]},
+                {"id": "sea_signals", "name": "Морские сигналы", "year": 1770, "requires": ["precision_chronometers"]},
+                {"id": "semaphore", "name": "Семафорная связь", "year": 1780, "requires": ["sea_signals"]},
+                {"id": "lighthouses", "name": "Морские маяки", "year": 1790, "requires": ["semaphore"]},
+                {"id": "improved_lighthouses", "name": "Улучшенные маяки", "year": 1800, "requires": ["lighthouses"]},
+                {"id": "precise_sea_charts", "name": "Точные морские карты", "year": 1810, "requires": ["improved_lighthouses"]},
+                {"id": "hydrography", "name": "Гидрография", "year": 1820, "requires": ["precise_sea_charts"]},
+                {"id": "oceanography", "name": "Океанография", "year": 1830, "requires": ["hydrography"]},
+                {"id": "meteorology", "name": "Метеорология", "year": 1840, "requires": ["oceanography"]},
+                {"id": "steam_navigation", "name": "Паровая навигация", "year": 1850, "requires": ["meteorology"]},
+                
+                # Современная навигация (1850-1900)
+                {"id": "precise_depth_measurement", "name": "Точные измерения глубины", "year": 1855, "requires": ["steam_navigation"]},
+                {"id": "improved_meteorology", "name": "Улучшенная метеорология", "year": 1860, "requires": ["precise_depth_measurement"]},
+                {"id": "ocean_currents", "name": "Морские течения", "year": 1865, "requires": ["improved_meteorology"]},
+                {"id": "radio_communication_1", "name": "Радиосвязь на море I", "year": 1870, "requires": ["ocean_currents"]},
+                {"id": "modern_cartography", "name": "Современная картография", "year": 1875, "requires": ["radio_communication_1"]},
+                {"id": "radio_communication_2", "name": "Радиосвязь на море II", "year": 1880, "requires": ["modern_cartography"]},
+                {"id": "electric_lighthouses", "name": "Электрическое освещение маяков", "year": 1885, "requires": ["radio_communication_2"]},
+                {"id": "precise_navigation", "name": "Точная навигация", "year": 1890, "requires": ["electric_lighthouses"]},
+                {"id": "modern_navigation_systems", "name": "Современные навигационные системы", "year": 1895, "requires": ["precise_navigation"]},
+            ]
+        },
+        {
+            "id": "naval_doctrine",
+            "name": "Морская доктрина и тактика",
+            "technologies": [
+                # Базовый уровень (1500-1600)
+                {"id": "boarding_tactics", "name": "Абордажная тактика", "year": 1500, "requires": []},
+                {"id": "ship_discipline", "name": "Корабельная дисциплина", "year": 1510, "requires": ["boarding_tactics"]},
+                {"id": "marines_1", "name": "Морская пехота I", "year": 1520, "requires": ["ship_discipline"]},
+                {"id": "boarding_weapons", "name": "Абордажное оружие", "year": 1530, "requires": ["marines_1"]},
+                {"id": "marines_2", "name": "Морская пехота II", "year": 1540, "requires": ["boarding_weapons"]},
+                {"id": "fleet_organization", "name": "Флотская организация", "year": 1550, "requires": ["marines_2"]},
+                {"id": "squadrons", "name": "Эскадры", "year": 1560, "requires": ["fleet_organization"]},
+                {"id": "naval_battles", "name": "Морские сражения", "year": 1570, "requires": ["squadrons"]},
+                {"id": "pursuit_tactics", "name": "Тактика преследования", "year": 1580, "requires": ["naval_battles"]},
+                {"id": "improved_boarding", "name": "Улучшенная абордажная тактика", "year": 1590, "requires": ["pursuit_tactics"]},
+                {"id": "fleet_discipline", "name": "Флотская дисциплина", "year": 1600, "requires": ["improved_boarding"]},
+                
+                # Линейная тактика (1600-1750)
+                {"id": "line_formation", "name": "Построение линией", "year": 1610, "requires": ["fleet_discipline"]},
+                {"id": "linear_fleet_tactics_1", "name": "Линейная тактика флота I", "year": 1620, "requires": ["line_formation"]},
+                {"id": "squadron_coordination", "name": "Координация эскадр", "year": 1630, "requires": ["linear_fleet_tactics_1"]},
+                {"id": "linear_fleet_tactics_2", "name": "Линейная тактика флота II", "year": 1640, "requires": ["squadron_coordination"]},
+                {"id": "fleet_signals", "name": "Флотские сигналы", "year": 1650, "requires": ["linear_fleet_tactics_2"]},
+                {"id": "line_breaking", "name": "Тактика прорыва линии", "year": 1660, "requires": ["fleet_signals"]},
+                {"id": "linear_fleet_tactics_3", "name": "Линейная тактика флота III", "year": 1670, "requires": ["line_breaking"]},
+                {"id": "concentrated_fire", "name": "Сосредоточение огня", "year": 1680, "requires": ["linear_fleet_tactics_3"]},
+                {"id": "maneuver_warfare", "name": "Маневренная война", "year": 1690, "requires": ["concentrated_fire"]},
+                {"id": "cruiser_operations", "name": "Крейсерские операции", "year": 1700, "requires": ["maneuver_warfare"]},
+                {"id": "port_blockade", "name": "Блокада портов", "year": 1710, "requires": ["cruiser_operations"]},
+                {"id": "linear_fleet_tactics_4", "name": "Линейная тактика флота IV", "year": 1720, "requires": ["port_blockade"]},
+                {"id": "fleet_artillery", "name": "Флотская артиллерия", "year": 1730, "requires": ["linear_fleet_tactics_4"]},
+                {"id": "amphibious_operations", "name": "Десантные операции", "year": 1740, "requires": ["fleet_artillery"]},
+                {"id": "convoy_system", "name": "Конвойная система", "year": 1750, "requires": ["amphibious_operations"]},
+                
+                # Эпоха реформ (1750-1850)
+                {"id": "aggressive_tactics", "name": "Агрессивная тактика", "year": 1760, "requires": ["convoy_system"]},
+                {"id": "improved_signals", "name": "Улучшенные сигналы", "year": 1770, "requires": ["aggressive_tactics"]},
+                {"id": "force_concentration", "name": "Сосредоточение сил", "year": 1780, "requires": ["improved_signals"]},
+                {"id": "tactical_flexibility", "name": "Тактическая гибкость", "year": 1790, "requires": ["force_concentration"]},
+                {"id": "steam_tactics", "name": "Паровая тактика", "year": 1800, "requires": ["tactical_flexibility"]},
+                {"id": "screw_maneuverability", "name": "Винтовая маневренность", "year": 1810, "requires": ["steam_tactics"]},
+                {"id": "torpedo_tactics", "name": "Торпедная тактика", "year": 1820, "requires": ["screw_maneuverability"]},
+                {"id": "ironclad_doctrine", "name": "Броненосная доктрина", "year": 1830, "requires": ["torpedo_tactics"]},
+                {"id": "modern_naval_warfare", "name": "Современная морская война", "year": 1840, "requires": ["ironclad_doctrine"]},
+                {"id": "cruiser_warfare", "name": "Крейсерская война", "year": 1850, "requires": ["modern_naval_warfare"]},
+                
+                # Современная доктрина (1850-1900)
+                {"id": "ocean_fleet", "name": "Океанский флот", "year": 1855, "requires": ["cruiser_warfare"]},
+                {"id": "sea_power_theory_1", "name": "Теория морской мощи I", "year": 1860, "requires": ["ocean_fleet"]},
+                {"id": "high_seas_fleet", "name": "Флот открытого моря", "year": 1865, "requires": ["sea_power_theory_1"]},
+                {"id": "sea_power_theory_2", "name": "Теория морской мощи II", "year": 1870, "requires": ["high_seas_fleet"]},
+                {"id": "command_of_sea", "name": "Командование морем", "year": 1875, "requires": ["sea_power_theory_2"]},
+                {"id": "modern_fleet_organization", "name": "Современная флотская организация", "year": 1880, "requires": ["command_of_sea"]},
+                {"id": "squadron_maneuvers", "name": "Эскадренные маневры", "year": 1885, "requires": ["modern_fleet_organization"]},
+                {"id": "grand_fleet", "name": "Большой флот", "year": 1890, "requires": ["squadron_maneuvers"]},
+                {"id": "sea_dominance", "name": "Доминирование на море", "year": 1895, "requires": ["grand_fleet"]},
+            ]
+        }
+    ]
+}
+
 @router.get("/categories")
 async def get_tech_categories():
     """Получить список всех доступных категорий технологий"""
@@ -198,9 +445,7 @@ async def get_tech_categories():
         "success": True,
         "categories": [
             {"id": "land_forces", "name": "Сухопутные войска"},
-            {"id": "navy", "name": "Военно-морской флот"},
-            {"id": "economy", "name": "Экономика"},
-            {"id": "government", "name": "Государственное управление"}
+            {"id": "navy", "name": "Военно-морской флот"}
         ]
     })
 
@@ -208,15 +453,11 @@ async def get_tech_categories():
 async def get_tech_tree(category: str):
     """Получить древо технологий для указанной категории"""
     if category == "land_forces":
-        return JSONResponse({
-            "success": True,
-            "data": LAND_FORCES_TECH
-        })
+        return JSONResponse({"success": True, "data": LAND_FORCES_TECH})
+    elif category == "navy":
+        return JSONResponse({"success": True, "data": NAVY_TECH})
     else:
-        return JSONResponse({
-            "success": False,
-            "error": "Категория в разработке"
-        })
+        return JSONResponse({"success": False, "error": "Unknown category"}, status_code=404)
 
 @router.get("/player/progress")
 async def get_player_tech_progress():

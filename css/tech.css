@@ -8,6 +8,47 @@
     gap: 16px;
 }
 
+/* Вкладки категорий */
+.tech-category-tabs {
+    display: flex;
+    gap: 12px;
+    padding: 0 0 16px 0;
+    border-bottom: 2px solid var(--border);
+}
+
+.tech-category-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tech-category-tab:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.tech-category-tab.active {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(109, 40, 217, 0.3);
+}
+
+.tech-category-tab i {
+    font-size: 1.1em;
+}
+
 /* Заголовок категории */
 .tech-category-header {
     background: var(--bg-secondary);
@@ -484,6 +525,34 @@ body:not(.dark-mode) .tech-line-header {
     border-color: var(--border);
     background: transparent;
     opacity: 0.6;
+}
+
+/* Сообщения об ошибках */
+.error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.error-message i {
+    color: var(--danger);
+}
+
+.error-message h3 {
+    color: var(--text-primary);
+    font-size: 1.3em;
+    font-weight: 600;
+    margin: 0;
+}
+
+.error-message p {
+    color: var(--text-secondary);
+    margin: 0;
 }
 
 /* Адаптивность */
