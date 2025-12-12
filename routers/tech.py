@@ -14,32 +14,32 @@ LAND_FORCES_TECH = {
             "technologies": [
                 {"id": "arquebus", "name": "Аркебузы", "year": 1500, "requires": []},
                 {"id": "hand_cannons", "name": "Ручницы", "year": 1500, "requires": []},
-                {"id": "matchlock", "name": "Фитильные замки", "year": 1525, "requires": ["arquebus"]},
-                {"id": "improved_gunpowder", "name": "Улучшенный порох", "year": 1530, "requires": ["hand_cannons", "gunpowder_chemistry"]},  # межкатегориальная
-                {"id": "early_muskets", "name": "Ранние мушкеты", "year": 1545, "requires": ["matchlock", "improved_gunpowder"]},  # схождение
-                {"id": "musket_production_1", "name": "Мушкетное производство I", "year": 1565, "requires": ["early_muskets"]},
-                {"id": "wheellock", "name": "Колесцовый замок", "year": 1585, "requires": ["musket_production_1", "precision_metalworking"]},  # межкатегориальная
+                {"id": "matchlock", "name": "Фитильные замки", "year": 1525, "requires": ["arquebus", "gunpowder_production"]},
+                {"id": "improved_gunpowder", "name": "Улучшенный порох", "year": 1530, "requires": ["basic_chemistry"]},
+                {"id": "early_muskets", "name": "Ранние мушкеты", "year": 1545, "requires": ["matchlock"]},
+                {"id": "musket_production_1", "name": "Мушкетное производство I", "year": 1565, "requires": ["early_muskets", "early_manufactories"]},
+                {"id": "wheellock", "name": "Колесцовый замок", "year": 1585, "requires": ["matchlock"]},
                 {"id": "light_muskets", "name": "Легкие мушкеты", "year": 1605, "requires": ["wheellock"]},
-                {"id": "paper_cartridges", "name": "Бумажные патроны", "year": 1625, "requires": ["light_muskets", "paper_mills"]},  # межкатегориальная
-                {"id": "early_flintlock", "name": "Ранний кремневый замок", "year": 1650, "requires": ["paper_cartridges"]},
+                {"id": "paper_cartridges", "name": "Бумажные патроны", "year": 1625, "requires": ["light_muskets", "improved_looms"]},
+                {"id": "early_flintlock", "name": "Ранний кремневый замок", "year": 1650, "requires": ["light_muskets"]},
                 {"id": "flintlock_musket_1", "name": "Кремневые мушкеты I", "year": 1670, "requires": ["early_flintlock"]},
                 {"id": "improved_flint_system", "name": "Улучшенная кремневая система", "year": 1685, "requires": ["flintlock_musket_1"]},
-                {"id": "socket_bayonet", "name": "Трубчатый штык", "year": 1700, "requires": ["improved_flint_system", "pike_and_shot"]},  # межлинейная
-                {"id": "flintlock_musket_2", "name": "Кремневые мушкеты II", "year": 1720, "requires": ["socket_bayonet"]},
-                {"id": "improved_barrels", "name": "Улучшенные стволы", "year": 1740, "requires": ["flintlock_musket_2", "iron_boring"]},  # межкатегориальная
+                {"id": "socket_bayonet", "name": "Трубчатый штык", "year": 1700, "requires": ["early_muskets", "pike_and_shot"]},
+                {"id": "flintlock_musket_2", "name": "Кремневые мушкеты II", "year": 1720, "requires": ["flintlock_musket_1"]},
+                {"id": "improved_barrels", "name": "Улучшенные стволы", "year": 1740, "requires": ["flintlock_musket_2", "iron_boring"]},
                 {"id": "experimental_rifling", "name": "Экспериментальные нарезы", "year": 1755, "requires": ["improved_barrels"]},
                 {"id": "rifles", "name": "Штуцеры", "year": 1770, "requires": ["experimental_rifling"]},
-                {"id": "jaeger_rifles", "name": "Нарезные винтовки егерей", "year": 1785, "requires": ["rifles", "jaeger_units"]},  # межлинейная
+                {"id": "jaeger_rifles", "name": "Нарезные винтовки егерей", "year": 1785, "requires": ["rifles", "jaeger_units"]},
                 {"id": "percussion_cap", "name": "Ударный капсюль", "year": 1800, "requires": ["jaeger_rifles"]},
                 {"id": "caplock_rifles", "name": "Капсюльные винтовки", "year": 1815, "requires": ["percussion_cap"]},
-                {"id": "mass_rifle_production", "name": "Массовое производство винтовок", "year": 1830, "requires": ["caplock_rifles", "interchangeable_parts"]},  # межкатегориальная
+                {"id": "mass_rifle_production", "name": "Массовое производство винтовок", "year": 1830, "requires": ["caplock_rifles", "interchangeable_parts"]},
                 {"id": "needle_gun", "name": "Игольчатая винтовка", "year": 1840, "requires": ["mass_rifle_production"]},
                 {"id": "unitary_cartridge", "name": "Унитарный патрон", "year": 1850, "requires": ["needle_gun"]},
                 {"id": "breechloader_1", "name": "Казнозарядные винтовки I", "year": 1860, "requires": ["unitary_cartridge"]},
-                {"id": "metallic_cartridge", "name": "Металлический патрон", "year": 1865, "requires": ["breechloader_1", "brass_manufacturing"]},  # межкатегориальная
+                {"id": "metallic_cartridge", "name": "Металлический патрон", "year": 1865, "requires": ["breechloader_1", "brass_manufacturing"]},
                 {"id": "breechloader_2", "name": "Казнозарядные винтовки II", "year": 1870, "requires": ["metallic_cartridge"]},
                 {"id": "magazine_rifles_1", "name": "Магазинные винтовки I", "year": 1880, "requires": ["breechloader_2"]},
-                {"id": "smokeless_powder", "name": "Бездымный порох", "year": 1885, "requires": ["magazine_rifles_1", "nitrocellulose"]},  # межкатегориальная
+                {"id": "smokeless_powder", "name": "Бездымный порох", "year": 1885, "requires": ["magazine_rifles_1", "nitrocellulose"]},
                 {"id": "magazine_rifles_2", "name": "Магазинные винтовки II", "year": 1890, "requires": ["smokeless_powder"]},
                 {"id": "smokeless_rifles", "name": "Винтовки под бездымный порох", "year": 1895, "requires": ["magazine_rifles_2"]},
                 {"id": "modern_small_arms", "name": "Современное стрелковое оружие", "year": 1900, "requires": ["smokeless_rifles"]},
@@ -51,34 +51,34 @@ LAND_FORCES_TECH = {
             "technologies": [
                 {"id": "bronze_cannons", "name": "Бронзовые пушки", "year": 1500, "requires": []},
                 {"id": "siege_mortars", "name": "Осадные мортиры", "year": 1500, "requires": []},
-                {"id": "improved_casting", "name": "Улучшенное литье", "year": 1520, "requires": ["bronze_cannons", "bronze_casting"]},  # межкатегориальная
+                {"id": "improved_casting", "name": "Улучшенное литье", "year": 1520, "requires": ["bronze_cannons", "bronze_casting"]},
                 {"id": "howitzers", "name": "Гаубицы", "year": 1530, "requires": ["siege_mortars"]},
-                {"id": "standard_calibers", "name": "Стандартные калибры орудий", "year": 1545, "requires": ["improved_casting", "howitzers"]},  # схождение
+                {"id": "standard_calibers", "name": "Стандартные калибры орудий", "year": 1545, "requires": ["improved_casting", "howitzers"]},
                 {"id": "light_field_guns", "name": "Легкие полевые пушки", "year": 1565, "requires": ["standard_calibers"]},
                 {"id": "field_artillery_1", "name": "Полевая артиллерия I", "year": 1585, "requires": ["light_field_guns"]},
-                {"id": "iron_shot", "name": "Чугунные ядра", "year": 1600, "requires": ["field_artillery_1", "iron_casting"]},  # межкатегориальная
+                {"id": "iron_shot", "name": "Чугунные ядра", "year": 1600, "requires": ["field_artillery_1", "iron_casting"]},
                 {"id": "canister_shot", "name": "Картечь", "year": 1615, "requires": ["iron_shot"]},
                 {"id": "improved_carriages", "name": "Улучшенные лафеты", "year": 1630, "requires": ["canister_shot"]},
-                {"id": "explosive_shells", "name": "Разрывные гранаты", "year": 1645, "requires": ["improved_carriages", "gunpowder_chemistry"]},  # межкатегориальная
+                {"id": "explosive_shells", "name": "Разрывные гранаты", "year": 1645, "requires": ["improved_carriages", "gunpowder_chemistry"]},
                 {"id": "gun_standardization", "name": "Стандартизация орудий", "year": 1660, "requires": ["explosive_shells"]},
                 {"id": "limbers", "name": "Передки и зарядные ящики", "year": 1675, "requires": ["gun_standardization"]},
-                {"id": "horse_artillery", "name": "Конная артиллерия", "year": 1690, "requires": ["limbers", "cavalry_regiments"]},  # межлинейная
+                {"id": "horse_artillery", "name": "Конная артиллерия", "year": 1690, "requires": ["limbers", "cavalry_regiments"]},
                 {"id": "improved_fuses", "name": "Улучшенные запалы", "year": 1705, "requires": ["horse_artillery"]},
-                {"id": "artillery_school", "name": "Артиллерийская школа", "year": 1720, "requires": ["improved_fuses", "scientific_societies"]},  # межкатегориальная (EDUCATION)
+                {"id": "artillery_school", "name": "Артиллерийская школа", "year": 1720, "requires": ["improved_fuses", "scientific_societies"]},
                 {"id": "field_artillery_2", "name": "Полевая артиллерия II", "year": 1735, "requires": ["artillery_school"]},
-                {"id": "steel_barrels", "name": "Стальные стволы", "year": 1750, "requires": ["field_artillery_2", "crucible_steel"]},  # межкатегориальная
+                {"id": "steel_barrels", "name": "Стальные стволы", "year": 1750, "requires": ["field_artillery_2", "crucible_steel"]},
                 {"id": "improved_range", "name": "Улучшенная дальность", "year": 1765, "requires": ["steel_barrels"]},
                 {"id": "mountain_artillery", "name": "Горная артиллерия", "year": 1780, "requires": ["improved_range"]},
                 {"id": "siege_artillery", "name": "Осадная артиллерия", "year": 1790, "requires": ["mountain_artillery"]},
                 {"id": "rockets", "name": "Ракеты", "year": 1800, "requires": ["siege_artillery"]},
                 {"id": "shrapnel", "name": "Шрапнель", "year": 1815, "requires": ["rockets"]},
                 {"id": "rifled_artillery_1", "name": "Нарезная артиллерия I", "year": 1825, "requires": ["shrapnel"]},
-                {"id": "breech_loading_artillery", "name": "Казнозарядные орудия", "year": 1835, "requires": ["rifled_artillery_1", "precision_engineering"]},  # межкатегориальная
+                {"id": "breech_loading_artillery", "name": "Казнозарядные орудия", "year": 1835, "requires": ["rifled_artillery_1", "precision_engineering"]},
                 {"id": "rifled_artillery_2", "name": "Нарезная артиллерия II", "year": 1850, "requires": ["breech_loading_artillery"]},
-                {"id": "steel_carriages", "name": "Стальные лафеты", "year": 1860, "requires": ["rifled_artillery_2", "mass_steel_production"]},  # межкатегориальная
+                {"id": "steel_carriages", "name": "Стальные лафеты", "year": 1860, "requires": ["rifled_artillery_2", "mass_steel_production"]},
                 {"id": "rapid_fire_guns_1", "name": "Скорострельные орудия I", "year": 1865, "requires": ["steel_carriages"]},
-                {"id": "smokeless_powder_artillery", "name": "Бездымный порох для артиллерии", "year": 1875, "requires": ["rapid_fire_guns_1", "smokeless_powder"]},  # межлинейная
-                {"id": "high_explosive_shells", "name": "Фугасные снаряды", "year": 1880, "requires": ["smokeless_powder_artillery", "dynamite"]},  # межкатегориальная
+                {"id": "smokeless_powder_artillery", "name": "Бездымный порох для артиллерии", "year": 1875, "requires": ["rapid_fire_guns_1", "smokeless_powder"]},
+                {"id": "high_explosive_shells", "name": "Фугасные снаряды", "year": 1880, "requires": ["smokeless_powder_artillery", "dynamite"]},
                 {"id": "hydraulic_recoil", "name": "Гидравлические тормоза отката", "year": 1885, "requires": ["high_explosive_shells"]},
                 {"id": "heavy_artillery", "name": "Тяжелая артиллерия", "year": 1890, "requires": ["hydraulic_recoil"]},
                 {"id": "quick_firing_artillery", "name": "Скорострельная артиллерия", "year": 1895, "requires": ["heavy_artillery"]},
@@ -91,18 +91,18 @@ LAND_FORCES_TECH = {
                 {"id": "mercenary_armies", "name": "Наемные армии", "year": 1500, "requires": []},
                 {"id": "militia_levies", "name": "Народное ополчение", "year": 1500, "requires": []},
                 {"id": "landsknechts", "name": "Ландскнехты", "year": 1525, "requires": ["mercenary_armies"]},
-                {"id": "military_discipline_1", "name": "Военная дисциплина I", "year": 1535, "requires": ["militia_levies", "feudal_administration"]},  # межкатегориальная (ECONOMY)
-                {"id": "standing_army_1", "name": "Постоянная армия I", "year": 1555, "requires": ["landsknechts", "military_discipline_1"]},  # схождение
-                {"id": "military_uniform", "name": "Военная униформа", "year": 1580, "requires": ["standing_army_1", "textile_manufacturing"]},  # межкатегориальная
+                {"id": "military_discipline_1", "name": "Военная дисциплина I", "year": 1535, "requires": ["militia_levies", "feudal_administration"]},
+                {"id": "standing_army_1", "name": "Постоянная армия I", "year": 1555, "requires": ["landsknechts", "military_discipline_1"]},
+                {"id": "military_uniform", "name": "Военная униформа", "year": 1580, "requires": ["standing_army_1", "textile_manufacturing"]},
                 {"id": "regimental_system", "name": "Полковая система", "year": 1600, "requires": ["military_uniform"]},
-                {"id": "line_infantry", "name": "Линейная пехота", "year": 1620, "requires": ["regimental_system", "flintlock_musket_1"]},  # межлинейная
+                {"id": "line_infantry", "name": "Линейная пехота", "year": 1620, "requires": ["regimental_system", "flintlock_musket_1"]},
                 {"id": "pike_and_shot", "name": "Пикинеры и мушкетеры", "year": 1635, "requires": ["line_infantry"]},
                 {"id": "volley_fire", "name": "Залповый огонь", "year": 1655, "requires": ["pike_and_shot"]},
                 {"id": "battalion_system", "name": "Батальонная система", "year": 1675, "requires": ["volley_fire"]},
-                {"id": "linear_tactics", "name": "Линейная тактика", "year": 1695, "requires": ["battalion_system", "socket_bayonet"]},  # межлинейная
-                {"id": "grenadiers", "name": "Гренадеры", "year": 1720, "requires": ["linear_tactics", "explosive_shells"]},  # межлинейная
+                {"id": "linear_tactics", "name": "Линейная тактика", "year": 1695, "requires": ["battalion_system", "socket_bayonet"]},
+                {"id": "grenadiers", "name": "Гренадеры", "year": 1720, "requires": ["linear_tactics", "explosive_shells"]},
                 {"id": "jaeger_units", "name": "Егерские части", "year": 1750, "requires": ["grenadiers"]},
-                {"id": "modern_fleet_organization", "name": "Современная армейская организация", "year": 1800, "requires": ["jaeger_units", "general_staff"]},  # межкатегориальная (или просто внутренняя эволюция)
+                {"id": "modern_fleet_organization", "name": "Современная армейская организация", "year": 1800, "requires": ["jaeger_units", "general_staff"]},
             ]
         },
         {
@@ -111,18 +111,18 @@ LAND_FORCES_TECH = {
             "technologies": [
                 {"id": "heavy_cavalry", "name": "Тяжелая кавалерия", "year": 1500, "requires": []},
                 {"id": "light_cavalry_scouts", "name": "Легкая разведывательная кавалерия", "year": 1500, "requires": []},
-                {"id": "cuirassiers", "name": "Кирасиры", "year": 1530, "requires": ["heavy_cavalry", "armor_smithing"]},  # межкатегориальная
+                {"id": "cuirassiers", "name": "Кирасиры", "year": 1530, "requires": ["heavy_cavalry", "armor_smithing"]},
                 {"id": "hussars_early", "name": "Ранние гусары", "year": 1535, "requires": ["light_cavalry_scouts"]},
                 {"id": "reiters", "name": "Рейтары", "year": 1555, "requires": ["cuirassiers", "cavalry_pistols"]},
-                {"id": "cavalry_pistols", "name": "Конные пистолеты", "year": 1550, "requires": ["wheellock"]},  # межлинейная
+                {"id": "cavalry_pistols", "name": "Конные пистолеты", "year": 1550, "requires": ["wheellock"]},
                 {"id": "dragoons_1", "name": "Драгуны I", "year": 1575, "requires": ["hussars_early", "carbines"]},
-                {"id": "carbines", "name": "Карабины", "year": 1570, "requires": ["light_muskets"]},  # межлинейная
-                {"id": "cavalry_regiments", "name": "Кавалерийские полки", "year": 1600, "requires": ["reiters", "dragoons_1"]},  # схождение
+                {"id": "carbines", "name": "Карабины", "year": 1570, "requires": ["light_muskets"]},
+                {"id": "cavalry_regiments", "name": "Кавалерийские полки", "year": 1600, "requires": ["reiters", "dragoons_1"]},
                 {"id": "hussars", "name": "Гусары", "year": 1625, "requires": ["cavalry_regiments"]},
-                {"id": "cavalry_charge", "name": "Кавалерийская атака", "year": 1650, "requires": ["hussars", "linear_tactics"]},  # межлинейная
+                {"id": "cavalry_charge", "name": "Кавалерийская атака", "year": 1650, "requires": ["hussars", "linear_tactics"]},
                 {"id": "horse_breeding", "name": "Улучшенная селекция лошадей", "year": 1680, "requires": ["cavalry_charge"]},
                 {"id": "uhlans", "name": "Уланы", "year": 1710, "requires": ["horse_breeding"]},
-                {"id": "dragoons_2", "name": "Драгуны II", "year": 1750, "requires": ["uhlans", "jaeger_rifles"]},  # межлинейная
+                {"id": "dragoons_2", "name": "Драгуны II", "year": 1750, "requires": ["uhlans", "jaeger_rifles"]},
                 {"id": "cuirassier_reform", "name": "Кирасирская реформа", "year": 1800, "requires": ["dragoons_2"]},
             ]
         }
@@ -140,37 +140,37 @@ NAVY_TECH = {
             "technologies": [
                 {"id": "caravels", "name": "Каравеллы", "year": 1500, "requires": []},
                 {"id": "galleys", "name": "Галеры", "year": 1500, "requires": []},
-                {"id": "carracks", "name": "Каракки", "year": 1520, "requires": ["caravels", "improved_sails"]},  # межлинейная
+                {"id": "carracks", "name": "Каракки", "year": 1520, "requires": ["caravels", "improved_sails"]},
                 {"id": "improved_galleys", "name": "Улучшенные галеры", "year": 1525, "requires": ["galleys"]},
                 {"id": "galleons_1", "name": "Галеоны I", "year": 1540, "requires": ["carracks"]},
-                {"id": "galleasses", "name": "Галеасы", "year": 1545, "requires": ["improved_galleys", "broadside_guns"]},  # межлинейная, схождение
-                {"id": "galleons_2", "name": "Галеоны II", "year": 1565, "requires": ["galleons_1", "galleasses"]},  # схождение путей
-                {"id": "war_galleons", "name": "Военные галеоны", "year": 1585, "requires": ["galleons_2", "multi_tier_armament"]},  # межлинейная
+                {"id": "galleasses", "name": "Галеасы", "year": 1545, "requires": ["improved_galleys", "broadside_guns"]},
+                {"id": "galleons_2", "name": "Галеоны II", "year": 1565, "requires": ["galleons_1", "galleasses"]},
+                {"id": "war_galleons", "name": "Военные галеоны", "year": 1585, "requires": ["galleons_2", "multi_tier_armament"]},
                 {"id": "ships_of_line_1", "name": "Линейные корабли I", "year": 1605, "requires": ["war_galleons"]},
-                {"id": "multi_deck_ships", "name": "Многопалубные корабли", "year": 1625, "requires": ["ships_of_line_1", "improved_hull_construction"]},  # межкатегориальная
+                {"id": "multi_deck_ships", "name": "Многопалубные корабли", "year": 1625, "requires": ["ships_of_line_1", "improved_hull_construction"]},
                 {"id": "ships_of_line_2", "name": "Линейные корабли II", "year": 1645, "requires": ["multi_deck_ships"]},
                 {"id": "frigates_1", "name": "Фрегаты I", "year": 1665, "requires": ["ships_of_line_2"]},
-                {"id": "ships_of_line_3", "name": "Линейные корабли III", "year": 1680, "requires": ["frigates_1", "naval_artillery_1"]},  # межлинейная
+                {"id": "ships_of_line_3", "name": "Линейные корабли III", "year": 1680, "requires": ["frigates_1", "naval_artillery_1"]},
                 {"id": "corvettes", "name": "Корветы", "year": 1695, "requires": ["frigates_1"]},
-                {"id": "ships_of_line_4", "name": "Линейные корабли IV", "year": 1715, "requires": ["ships_of_line_3", "chronometers_1"]},  # межлинейная
-                {"id": "frigates_2", "name": "Фрегаты II", "year": 1730, "requires": ["corvettes", "ships_of_line_4"]},  # схождение
+                {"id": "ships_of_line_4", "name": "Линейные корабли IV", "year": 1715, "requires": ["ships_of_line_3", "chronometers_1"]},
+                {"id": "frigates_2", "name": "Фрегаты II", "year": 1730, "requires": ["corvettes", "ships_of_line_4"]},
                 {"id": "ships_of_line_5", "name": "Линейные корабли V", "year": 1745, "requires": ["frigates_2"]},
-                {"id": "copper_plating", "name": "Медная обшивка днища", "year": 1765, "requires": ["ships_of_line_5", "copper_smelting"]},  # межкатегориальная
+                {"id": "copper_plating", "name": "Медная обшивка днища", "year": 1765, "requires": ["ships_of_line_5", "copper_smelting"]},
                 {"id": "fast_frigates", "name": "Быстроходные фрегаты", "year": 1780, "requires": ["copper_plating"]},
-                {"id": "ships_of_line_6", "name": "Линейные корабли VI", "year": 1795, "requires": ["fast_frigates", "carronades"]},  # межлинейная
-                {"id": "experimental_steamships", "name": "Экспериментальные паровые суда", "year": 1810, "requires": ["ships_of_line_6", "steam_engine"]},  # межкатегориальная
+                {"id": "ships_of_line_6", "name": "Линейные корабли VI", "year": 1795, "requires": ["fast_frigates", "carronades"]},
+                {"id": "experimental_steamships", "name": "Экспериментальные паровые суда", "year": 1810, "requires": ["ships_of_line_6", "steam_engine"]},
                 {"id": "paddle_steamers", "name": "Паровые колесные суда", "year": 1820, "requires": ["experimental_steamships"]},
-                {"id": "steam_frigates_1", "name": "Паровые фрегаты I", "year": 1835, "requires": ["paddle_steamers", "improved_steam_engines"]},  # межкатегориальная
-                {"id": "screw_ships", "name": "Винтовые корабли", "year": 1845, "requires": ["steam_frigates_1", "precision_engineering"]},  # межкатегориальная
+                {"id": "steam_frigates_1", "name": "Паровые фрегаты I", "year": 1835, "requires": ["paddle_steamers", "improved_steam_engines"]},
+                {"id": "screw_ships", "name": "Винтовые корабли", "year": 1845, "requires": ["steam_frigates_1", "precision_engineering"]},
                 {"id": "steam_ships_of_line", "name": "Паровые линкоры", "year": 1855, "requires": ["screw_ships"]},
-                {"id": "ironclads_1", "name": "Броненосцы I", "year": 1860, "requires": ["steam_ships_of_line", "rolled_iron"]},  # межкатегориальная
-                {"id": "turret_ironclads", "name": "Башенные броненосцы", "year": 1870, "requires": ["ironclads_1", "turret_guns_1"]},  # межлинейная
-                {"id": "ironclads_2", "name": "Броненосцы II", "year": 1875, "requires": ["turret_ironclads", "mass_steel_production"]},  # межкатегориальная
+                {"id": "ironclads_1", "name": "Броненосцы I", "year": 1860, "requires": ["steam_ships_of_line", "rolled_iron"]},
+                {"id": "turret_ironclads", "name": "Башенные броненосцы", "year": 1870, "requires": ["ironclads_1", "turret_guns_1"]},
+                {"id": "ironclads_2", "name": "Броненосцы II", "year": 1875, "requires": ["turret_ironclads", "mass_steel_production"]},
                 {"id": "cruisers_1", "name": "Крейсеры I", "year": 1880, "requires": ["ironclads_2"]},
-                {"id": "modern_battleships", "name": "Современные броненосцы", "year": 1885, "requires": ["cruisers_1", "heavy_naval_artillery"]},  # межлинейная
+                {"id": "modern_battleships", "name": "Современные броненосцы", "year": 1885, "requires": ["cruisers_1", "heavy_naval_artillery"]},
                 {"id": "cruisers_2", "name": "Крейсеры II", "year": 1890, "requires": ["modern_battleships"]},
                 {"id": "pre_dreadnoughts", "name": "Эскадренные броненосцы", "year": 1895, "requires": ["cruisers_2"]},
-                {"id": "dreadnoughts", "name": "Дредноуты", "year": 1900, "requires": ["pre_dreadnoughts", "modern_naval_artillery"]},  # межлинейная
+                {"id": "dreadnoughts", "name": "Дредноуты", "year": 1900, "requires": ["pre_dreadnoughts", "modern_naval_artillery"]},
             ]
         },
         {
@@ -180,15 +180,15 @@ NAVY_TECH = {
                 {"id": "falconets", "name": "Фальконеты", "year": 1500, "requires": []},
                 {"id": "naval_bombards", "name": "Морские бомбарды", "year": 1500, "requires": []},
                 {"id": "broadside_guns", "name": "Бортовые пушки", "year": 1515, "requires": ["falconets"]},
-                {"id": "culverins", "name": "Кулеврины", "year": 1520, "requires": ["naval_bombards", "bronze_casting"]},  # межкатегориальная
-                {"id": "improved_naval_guns", "name": "Улучшенные морские пушки", "year": 1535, "requires": ["broadside_guns", "culverins"]},  # схождение
+                {"id": "culverins", "name": "Кулеврины", "year": 1520, "requires": ["naval_bombards", "bronze_casting"]},
+                {"id": "improved_naval_guns", "name": "Улучшенные морские пушки", "year": 1535, "requires": ["broadside_guns", "culverins"]},
                 {"id": "gun_ports", "name": "Пушечные порты", "year": 1550, "requires": ["improved_naval_guns"]},
                 {"id": "multi_tier_armament", "name": "Многоярусное вооружение", "year": 1570, "requires": ["gun_ports"]},
-                {"id": "heavy_naval_guns", "name": "Тяжелые морские пушки", "year": 1585, "requires": ["multi_tier_armament", "iron_casting"]},  # межкатегориальная
+                {"id": "heavy_naval_guns", "name": "Тяжелые морские пушки", "year": 1585, "requires": ["multi_tier_armament", "iron_casting"]},
                 {"id": "caliber_standardization_navy", "name": "Стандартизация калибров", "year": 1600, "requires": ["heavy_naval_guns"]},
                 {"id": "improved_carriages_navy", "name": "Улучшенные лафеты", "year": 1615, "requires": ["caliber_standardization_navy"]},
                 {"id": "anti_ship_shot", "name": "Противокорабельные ядра", "year": 1630, "requires": ["improved_carriages_navy"]},
-                {"id": "incendiary_shot", "name": "Зажигательные снаряды", "year": 1645, "requires": ["anti_ship_shot", "gunpowder_chemistry"]},  # межкатегориальная
+                {"id": "incendiary_shot", "name": "Зажигательные снаряды", "year": 1645, "requires": ["anti_ship_shot", "gunpowder_chemistry"]},
                 {"id": "boarding_grapeshot", "name": "Картечь для абордажа", "year": 1660, "requires": ["incendiary_shot"]},
                 {"id": "long_range_guns", "name": "Дальнобойные пушки", "year": 1675, "requires": ["boarding_grapeshot"]},
                 {"id": "naval_artillery_1", "name": "Корабельная артиллерия I", "year": 1690, "requires": ["long_range_guns"]},
@@ -197,16 +197,16 @@ NAVY_TECH = {
                 {"id": "carronades", "name": "Карронады", "year": 1735, "requires": ["naval_artillery_2"]},
                 {"id": "naval_artillery_3", "name": "Корабельная артиллерия III", "year": 1750, "requires": ["carronades"]},
                 {"id": "long_guns", "name": "Длинные пушки", "year": 1765, "requires": ["naval_artillery_3"]},
-                {"id": "improved_rate_of_fire", "name": "Улучшенная скорострельность", "year": 1780, "requires": ["long_guns", "precision_machining"]},  # межкатегориальная
+                {"id": "improved_rate_of_fire", "name": "Улучшенная скорострельность", "year": 1780, "requires": ["long_guns", "precision_machining"]},
                 {"id": "naval_artillery_4", "name": "Корабельная артиллерия IV", "year": 1795, "requires": ["improved_rate_of_fire"]},
-                {"id": "naval_rockets", "name": "Ракетное оружие для флота", "year": 1810, "requires": ["naval_artillery_4", "rockets"]},  # межкатегориальная (ARMY)
-                {"id": "rifled_naval_guns_1", "name": "Нарезные морские орудия I", "year": 1820, "requires": ["naval_rockets", "rifled_artillery"]},  # межкатегориальная (ARMY)
+                {"id": "naval_rockets", "name": "Ракетное оружие для флота", "year": 1810, "requires": ["naval_artillery_4", "rockets"]},
+                {"id": "rifled_naval_guns_1", "name": "Нарезные морские орудия I", "year": 1820, "requires": ["naval_rockets", "rifled_artillery"]},
                 {"id": "explosive_bombs", "name": "Разрывные бомбы", "year": 1835, "requires": ["rifled_naval_guns_1"]},
-                {"id": "breech_loading_naval_guns", "name": "Казнозарядные морские пушки", "year": 1845, "requires": ["explosive_bombs", "breech_loading_artillery"]},  # межкатегориальная (ARMY)
+                {"id": "breech_loading_naval_guns", "name": "Казнозарядные морские пушки", "year": 1845, "requires": ["explosive_bombs", "breech_loading_artillery"]},
                 {"id": "turret_guns_1", "name": "Башенные орудия I", "year": 1855, "requires": ["breech_loading_naval_guns"]},
-                {"id": "armor_piercing_shells", "name": "Бронебойные снаряды", "year": 1865, "requires": ["turret_guns_1", "hardened_steel"]},  # межкатегориальная
+                {"id": "armor_piercing_shells", "name": "Бронебойные снаряды", "year": 1865, "requires": ["turret_guns_1", "hardened_steel"]},
                 {"id": "turret_guns_2", "name": "Башенные орудия II", "year": 1870, "requires": ["armor_piercing_shells"]},
-                {"id": "torpedoes", "name": "Торпеды", "year": 1875, "requires": ["turret_guns_2", "dynamite"]},  # межкатегориальная
+                {"id": "torpedoes", "name": "Торпеды", "year": 1875, "requires": ["turret_guns_2", "dynamite"]},
                 {"id": "quick_firing_naval_guns", "name": "Скорострельные морские пушки", "year": 1880, "requires": ["torpedoes"]},
                 {"id": "heavy_naval_artillery", "name": "Тяжелая корабельная артиллерия", "year": 1885, "requires": ["quick_firing_naval_guns"]},
                 {"id": "improved_torpedoes", "name": "Улучшенные торпеды", "year": 1890, "requires": ["heavy_naval_artillery"]},
@@ -219,34 +219,34 @@ NAVY_TECH = {
             "technologies": [
                 {"id": "compass", "name": "Компас", "year": 1500, "requires": []},
                 {"id": "coastal_piloting", "name": "Прибрежное лоцманство", "year": 1500, "requires": []},
-                {"id": "astrolabe", "name": "Астролябия", "year": 1515, "requires": ["compass", "astronomical_observations"]},  # межкатегориальная (EDUCATION)
-                {"id": "sea_charts_1", "name": "Морские карты I", "year": 1525, "requires": ["coastal_piloting", "printing_press"]},  # межкатегориальная (EDUCATION)
-                {"id": "navigation_tables", "name": "Навигационные таблицы", "year": 1540, "requires": ["astrolabe", "sea_charts_1"]},  # схождение
+                {"id": "astrolabe", "name": "Астролябия", "year": 1515, "requires": ["compass", "astronomical_observations"]},
+                {"id": "sea_charts_1", "name": "Морские карты I", "year": 1525, "requires": ["coastal_piloting", "printing_press"]},
+                {"id": "navigation_tables", "name": "Навигационные таблицы", "year": 1540, "requires": ["astrolabe", "sea_charts_1"]},
                 {"id": "improved_sails", "name": "Улучшенные паруса", "year": 1555, "requires": ["navigation_tables"]},
                 {"id": "sea_charts_2", "name": "Морские карты II", "year": 1575, "requires": ["improved_sails"]},
                 {"id": "star_navigation", "name": "Навигация по звездам", "year": 1595, "requires": ["sea_charts_2"]},
                 {"id": "log_speed", "name": "Лаг (измеритель скорости)", "year": 1615, "requires": ["star_navigation"]},
                 {"id": "quadrant", "name": "Квадрант", "year": 1625, "requires": ["log_speed"]},
-                {"id": "improved_compass", "name": "Улучшенные компасы", "year": 1640, "requires": ["quadrant", "precision_metalworking"]},  # межкатегориальная
-                {"id": "sextant", "name": "Секстант", "year": 1655, "requires": ["improved_compass", "optics"]},  # межкатегориальная (EDUCATION)
+                {"id": "improved_compass", "name": "Улучшенные компасы", "year": 1640, "requires": ["quadrant", "precision_metalworking"]},
+                {"id": "sextant", "name": "Секстант", "year": 1655, "requires": ["improved_compass", "optics"]},
                 {"id": "naval_astronomy", "name": "Морская астрономия", "year": 1670, "requires": ["sextant"]},
-                {"id": "barometer", "name": "Барометр", "year": 1685, "requires": ["naval_astronomy", "scientific_instruments"]},  # межкатегориальная (EDUCATION)
+                {"id": "barometer", "name": "Барометр", "year": 1685, "requires": ["naval_astronomy", "scientific_instruments"]},
                 {"id": "depth_sounder", "name": "Глубиномер", "year": 1700, "requires": ["barometer"]},
-                {"id": "chronometers_1", "name": "Морские хронометры I", "year": 1715, "requires": ["depth_sounder", "precision_clockmaking"]},  # межкатегориальная
+                {"id": "chronometers_1", "name": "Морские хронометры I", "year": 1715, "requires": ["depth_sounder", "precision_clockmaking"]},
                 {"id": "longitude_finding", "name": "Точное определение долготы", "year": 1730, "requires": ["chronometers_1"]},
-                {"id": "scientific_cartography", "name": "Научная картография", "year": 1745, "requires": ["longitude_finding", "scientific_method_2"]},  # межкатегориальная (EDUCATION)
+                {"id": "scientific_cartography", "name": "Научная картография", "year": 1745, "requires": ["longitude_finding", "scientific_method_2"]},
                 {"id": "chronometers_2", "name": "Морские хронометры II", "year": 1760, "requires": ["scientific_cartography"]},
                 {"id": "sea_signals", "name": "Морские сигналы", "year": 1775, "requires": ["chronometers_2"]},
                 {"id": "semaphore", "name": "Семафорная связь", "year": 1790, "requires": ["sea_signals"]},
                 {"id": "lighthouses", "name": "Морские маяки", "year": 1805, "requires": ["semaphore"]},
                 {"id": "precise_sea_charts", "name": "Точные морские карты", "year": 1820, "requires": ["lighthouses"]},
                 {"id": "hydrography", "name": "Гидрография", "year": 1835, "requires": ["precise_sea_charts"]},
-                {"id": "steam_navigation", "name": "Паровая навигация", "year": 1850, "requires": ["hydrography", "steam_frigates_1"]},  # межлинейная
-                {"id": "oceanography", "name": "Океанография", "year": 1860, "requires": ["steam_navigation", "scientific_research_3"]},  # межкатегориальная (EDUCATION)
+                {"id": "steam_navigation", "name": "Паровая навигация", "year": 1850, "requires": ["hydrography", "steam_frigates_1"]},
+                {"id": "oceanography", "name": "Океанография", "year": 1860, "requires": ["steam_navigation", "scientific_research_3"]},
                 {"id": "ocean_currents", "name": "Морские течения", "year": 1870, "requires": ["oceanography"]},
-                {"id": "radio_communication_navy", "name": "Радиосвязь на море", "year": 1880, "requires": ["ocean_currents", "telegraph"]},  # межкатегориальная
+                {"id": "radio_communication_navy", "name": "Радиосвязь на море", "year": 1880, "requires": ["ocean_currents", "telegraph"]},
                 {"id": "modern_cartography", "name": "Современная картография", "year": 1890, "requires": ["radio_communication_navy"]},
-                {"id": "electric_lighthouses", "name": "Электрическое освещение маяков", "year": 1895, "requires": ["modern_cartography", "electric_lighting"]},  # межкатегориальная
+                {"id": "electric_lighthouses", "name": "Электрическое освещение маяков", "year": 1895, "requires": ["modern_cartography", "electric_lighting"]},
                 {"id": "modern_navigation_systems", "name": "Современные навигационные системы", "year": 1900, "requires": ["electric_lighthouses"]},
             ]
         },
@@ -257,32 +257,32 @@ NAVY_TECH = {
                 {"id": "boarding_tactics", "name": "Абордажная тактика", "year": 1500, "requires": []},
                 {"id": "naval_gunnery", "name": "Корабельная стрельба", "year": 1500, "requires": []},
                 {"id": "ship_discipline", "name": "Корабельная дисциплина", "year": 1520, "requires": ["boarding_tactics"]},
-                {"id": "broadside_doctrine", "name": "Бортовой залп", "year": 1525, "requires": ["naval_gunnery", "broadside_guns"]},  # межлинейная
+                {"id": "broadside_doctrine", "name": "Бортовой залп", "year": 1525, "requires": ["naval_gunnery", "broadside_guns"]},
                 {"id": "marines_1", "name": "Морская пехота I", "year": 1540, "requires": ["ship_discipline"]},
-                {"id": "fleet_organization", "name": "Флотская организация", "year": 1545, "requires": ["broadside_doctrine", "marines_1"]},  # схождение
+                {"id": "fleet_organization", "name": "Флотская организация", "year": 1545, "requires": ["broadside_doctrine", "marines_1"]},
                 {"id": "squadrons", "name": "Эскадры", "year": 1565, "requires": ["fleet_organization"]},
                 {"id": "naval_battles", "name": "Морские сражения", "year": 1585, "requires": ["squadrons"]},
-                {"id": "fleet_discipline", "name": "Флотская дисциплина", "year": 1605, "requires": ["naval_battles", "line_infantry"]},  # межкатегориальная (ARMY)
+                {"id": "fleet_discipline", "name": "Флотская дисциплина", "year": 1605, "requires": ["naval_battles", "line_infantry"]},
                 {"id": "line_formation", "name": "Построение линией", "year": 1620, "requires": ["fleet_discipline"]},
-                {"id": "linear_fleet_tactics_1", "name": "Линейная тактика флота I", "year": 1640, "requires": ["line_formation", "ships_of_line_1"]},  # межлинейная
+                {"id": "linear_fleet_tactics_1", "name": "Линейная тактика флота I", "year": 1640, "requires": ["line_formation", "ships_of_line_1"]},
                 {"id": "squadron_coordination", "name": "Координация эскадр", "year": 1655, "requires": ["linear_fleet_tactics_1"]},
-                {"id": "fleet_signals", "name": "Флотские сигналы", "year": 1670, "requires": ["squadron_coordination", "sea_signals"]},  # межлинейная
+                {"id": "fleet_signals", "name": "Флотские сигналы", "year": 1670, "requires": ["squadron_coordination", "sea_signals"]},
                 {"id": "line_breaking", "name": "Тактика прорыва линии", "year": 1685, "requires": ["fleet_signals"]},
                 {"id": "concentrated_fire", "name": "Сосредоточение огня", "year": 1700, "requires": ["line_breaking"]},
-                {"id": "cruiser_operations", "name": "Крейсерские операции", "year": 1715, "requires": ["concentrated_fire", "frigates_2"]},  # межлинейная
+                {"id": "cruiser_operations", "name": "Крейсерские операции", "year": 1715, "requires": ["concentrated_fire", "frigates_2"]},
                 {"id": "port_blockade", "name": "Блокада портов", "year": 1730, "requires": ["cruiser_operations"]},
-                {"id": "fleet_artillery", "name": "Флотская артиллерия", "year": 1745, "requires": ["port_blockade", "naval_artillery_3"]},  # межлинейная
+                {"id": "fleet_artillery", "name": "Флотская артиллерия", "year": 1745, "requires": ["port_blockade", "naval_artillery_3"]},
                 {"id": "convoy_system", "name": "Конвойная система", "year": 1760, "requires": ["fleet_artillery"]},
                 {"id": "aggressive_tactics", "name": "Агрессивная тактика", "year": 1775, "requires": ["convoy_system"]},
                 {"id": "force_concentration", "name": "Сосредоточение сил", "year": 1790, "requires": ["aggressive_tactics"]},
-                {"id": "tactical_flexibility", "name": "Тактическая гибкость", "year": 1805, "requires": ["force_concentration", "semaphore"]},  # межлинейная
-                {"id": "steam_tactics", "name": "Паровая тактика", "year": 1820, "requires": ["tactical_flexibility", "paddle_steamers"]},  # межлинейная
-                {"id": "screw_maneuverability", "name": "Винтовая маневренность", "year": 1835, "requires": ["steam_tactics", "screw_ships"]},  # межлинейная
-                {"id": "ironclad_doctrine", "name": "Броненосная доктрина", "year": 1850, "requires": ["screw_maneuverability", "ironclads_1"]},  # межлинейная
+                {"id": "tactical_flexibility", "name": "Тактическая гибкость", "year": 1805, "requires": ["force_concentration", "semaphore"]},
+                {"id": "steam_tactics", "name": "Паровая тактика", "year": 1820, "requires": ["tactical_flexibility", "paddle_steamers"]},
+                {"id": "screw_maneuverability", "name": "Винтовая маневренность", "year": 1835, "requires": ["steam_tactics", "screw_ships"]},
+                {"id": "ironclad_doctrine", "name": "Броненосная доктрина", "year": 1850, "requires": ["screw_maneuverability", "ironclads_1"]},
                 {"id": "modern_naval_warfare", "name": "Современная морская война", "year": 1860, "requires": ["ironclad_doctrine"]},
                 {"id": "ocean_fleet", "name": "Океанский флот", "year": 1870, "requires": ["modern_naval_warfare"]},
-                {"id": "sea_power_theory", "name": "Теория морской мощи", "year": 1880, "requires": ["ocean_fleet", "modern_fleet_organization"]},  # межкатегориальная (ARMY)
-                {"id": "command_of_sea", "name": "Командование морем", "year": 1890, "requires": ["sea_power_theory", "modern_battleships"]},  # межлинейная
+                {"id": "sea_power_theory", "name": "Теория морской мощи", "year": 1880, "requires": ["ocean_fleet", "modern_fleet_organization"]},
+                {"id": "command_of_sea", "name": "Командование морем", "year": 1890, "requires": ["sea_power_theory", "modern_battleships"]},
                 {"id": "sea_dominance", "name": "Доминирование на море", "year": 1900, "requires": ["command_of_sea"]},
             ]
         }
@@ -301,30 +301,30 @@ EDUCATION_TECH = {
                 {"id": "church_schools", "name": "Церковные школы", "year": 1500, "requires": []},
                 {"id": "city_schools", "name": "Городские школы", "year": 1500, "requires": []},
                 {"id": "monastery_education", "name": "Монастырское образование", "year": 1520, "requires": ["church_schools"]},
-                {"id": "latin_schools", "name": "Латинские школы", "year": 1530, "requires": ["city_schools", "printing_press"]},  # межлинейная зависимость
-                {"id": "gymnasiums_1", "name": "Гимназии I", "year": 1550, "requires": ["latin_schools", "monastery_education"]},  # схождение путей
+                {"id": "latin_schools", "name": "Латинские школы", "year": 1530, "requires": ["city_schools", "printing_press"]},
+                {"id": "gymnasiums_1", "name": "Гимназии I", "year": 1550, "requires": ["latin_schools", "monastery_education"]},
                 {"id": "universities_1", "name": "Университеты I", "year": 1570, "requires": ["gymnasiums_1"]},
-                {"id": "humanist_education", "name": "Гуманистическое образование", "year": 1590, "requires": ["universities_1", "book_publishing_1"]},  # межлинейная зависимость
+                {"id": "humanist_education", "name": "Гуманистическое образование", "year": 1590, "requires": ["universities_1", "book_publishing_1"]},
                 {"id": "academies", "name": "Академии", "year": 1610, "requires": ["humanist_education"]},
                 {"id": "classical_education", "name": "Классическое образование", "year": 1630, "requires": ["academies"]},
-                {"id": "scientific_societies", "name": "Научные общества", "year": 1660, "requires": ["classical_education", "experimental_science"]},  # межлинейная
+                {"id": "scientific_societies", "name": "Научные общества", "year": 1660, "requires": ["classical_education", "experimental_science"]},
                 {"id": "real_schools", "name": "Реальные школы", "year": 1680, "requires": ["scientific_societies"]},
                 {"id": "universities_2", "name": "Университеты II", "year": 1700, "requires": ["real_schools"]},
-                {"id": "secular_education", "name": "Светское образование", "year": 1720, "requires": ["universities_2", "encyclopedias"]},  # межлинейная
+                {"id": "secular_education", "name": "Светское образование", "year": 1720, "requires": ["universities_2", "encyclopedias"]},
                 {"id": "primary_schools_1", "name": "Начальные школы I", "year": 1740, "requires": ["secular_education"]},
                 {"id": "vocational_education_1", "name": "Профессиональное образование I", "year": 1750, "requires": ["primary_schools_1"]},
-                {"id": "compulsory_primary_education", "name": "Обязательное начальное образование", "year": 1770, "requires": ["vocational_education_1", "mass_literacy"]},  # межлинейная
+                {"id": "compulsory_primary_education", "name": "Обязательное начальное образование", "year": 1770, "requires": ["vocational_education_1", "mass_literacy"]},
                 {"id": "pedagogical_institutes", "name": "Педагогические институты", "year": 1785, "requires": ["compulsory_primary_education"]},
                 {"id": "state_education", "name": "Государственное образование", "year": 1800, "requires": ["pedagogical_institutes"]},
                 {"id": "universal_primary_education", "name": "Всеобщее начальное образование", "year": 1815, "requires": ["state_education"]},
-                {"id": "technical_schools", "name": "Технические училища", "year": 1825, "requires": ["universal_primary_education", "scientific_research_2"]},  # межлинейная
+                {"id": "technical_schools", "name": "Технические училища", "year": 1825, "requires": ["universal_primary_education", "scientific_research_2"]},
                 {"id": "secondary_education_1", "name": "Среднее образование I", "year": 1840, "requires": ["technical_schools"]},
-                {"id": "polytechnic_institutes", "name": "Политехнические институты", "year": 1855, "requires": ["secondary_education_1", "industrial_chemistry"]},  # межкатегориальная
+                {"id": "polytechnic_institutes", "name": "Политехнические институты", "year": 1855, "requires": ["secondary_education_1", "industrial_chemistry"]},
                 {"id": "secondary_education_2", "name": "Среднее образование II", "year": 1865, "requires": ["polytechnic_institutes"]},
                 {"id": "womens_education", "name": "Женское образование", "year": 1875, "requires": ["secondary_education_2"]},
-                {"id": "higher_technical_education", "name": "Высшее техническое образование", "year": 1885, "requires": ["womens_education", "electrical_engineering"]},  # межлинейная
+                {"id": "higher_technical_education", "name": "Высшее техническое образование", "year": 1885, "requires": ["womens_education", "electrical_engineering"]},
                 {"id": "education_system_2", "name": "Образовательная система II", "year": 1895, "requires": ["higher_technical_education"]},
-                {"id": "modern_education_system", "name": "Современная система образования", "year": 1900, "requires": ["education_system_2", "modern_science"]},  # межлинейная
+                {"id": "modern_education_system", "name": "Современная система образования", "year": 1900, "requires": ["education_system_2", "modern_science"]},
             ]
         },
         {
@@ -334,15 +334,15 @@ EDUCATION_TECH = {
                 {"id": "alchemy_natural_philosophy", "name": "Алхимия и натурфилософия", "year": 1500, "requires": []},
                 {"id": "astronomical_observations", "name": "Астрономические наблюдения", "year": 1500, "requires": []},
                 {"id": "medical_research_1", "name": "Медицинские исследования I", "year": 1520, "requires": ["alchemy_natural_philosophy"]},
-                {"id": "anatomy", "name": "Анатомия", "year": 1530, "requires": ["medical_research_1", "anatomical_studies"]},  # межлинейная
+                {"id": "anatomy", "name": "Анатомия", "year": 1530, "requires": ["medical_research_1", "anatomical_studies"]},
                 {"id": "experimental_method", "name": "Экспериментальный метод", "year": 1540, "requires": ["astronomical_observations"]},
-                {"id": "botany", "name": "Ботаника", "year": 1550, "requires": ["anatomy", "experimental_method"]},  # схождение
+                {"id": "botany", "name": "Ботаника", "year": 1550, "requires": ["anatomy", "experimental_method"]},
                 {"id": "scientific_method_1", "name": "Научный метод I", "year": 1570, "requires": ["botany"]},
                 {"id": "optics", "name": "Оптика", "year": 1585, "requires": ["scientific_method_1"]},
                 {"id": "mechanics", "name": "Механика", "year": 1600, "requires": ["optics"]},
-                {"id": "telescope", "name": "Телескоп", "year": 1615, "requires": ["mechanics", "glassmaking"]},  # межкатегориальная
+                {"id": "telescope", "name": "Телескоп", "year": 1615, "requires": ["mechanics", "glassmaking"]},
                 {"id": "microscope", "name": "Микроскоп", "year": 1630, "requires": ["telescope"]},
-                {"id": "scientific_instruments", "name": "Научные инструменты", "year": 1645, "requires": ["microscope", "precision_tools"]},  # межкатегориальная
+                {"id": "scientific_instruments", "name": "Научные инструменты", "year": 1645, "requires": ["microscope", "precision_tools"]},
                 {"id": "experimental_science", "name": "Экспериментальная наука", "year": 1650, "requires": ["scientific_instruments"]},
                 {"id": "classical_mechanics", "name": "Классическая механика", "year": 1665, "requires": ["experimental_science"]},
                 {"id": "mathematics_2", "name": "Математика II", "year": 1680, "requires": ["classical_mechanics"]},
@@ -355,13 +355,13 @@ EDUCATION_TECH = {
                 {"id": "natural_sciences", "name": "Естественные науки", "year": 1780, "requires": ["chemistry_1"]},
                 {"id": "electricity_1", "name": "Электричество I", "year": 1795, "requires": ["natural_sciences"]},
                 {"id": "scientific_research_2", "name": "Научные исследования II", "year": 1810, "requires": ["electricity_1"]},
-                {"id": "thermodynamics", "name": "Термодинамика", "year": 1825, "requires": ["scientific_research_2", "steam_engine"]},  # межкатегориальная
+                {"id": "thermodynamics", "name": "Термодинамика", "year": 1825, "requires": ["scientific_research_2", "steam_engine"]},
                 {"id": "electromagnetism", "name": "Электромагнетизм", "year": 1840, "requires": ["thermodynamics"]},
                 {"id": "scientific_research_3", "name": "Научные исследования III", "year": 1850, "requires": ["electromagnetism"]},
                 {"id": "organic_chemistry", "name": "Органическая химия", "year": 1860, "requires": ["scientific_research_3"]},
                 {"id": "theory_of_evolution", "name": "Теория эволюции", "year": 1870, "requires": ["organic_chemistry"]},
-                {"id": "microbiology", "name": "Микробиология", "year": 1880, "requires": ["theory_of_evolution", "germ_theory"]},  # межлинейная
-                {"id": "electrical_engineering", "name": "Электротехника", "year": 1890, "requires": ["microbiology", "dynamo"]},  # межкатегориальная
+                {"id": "microbiology", "name": "Микробиология", "year": 1880, "requires": ["theory_of_evolution", "germ_theory"]},
+                {"id": "electrical_engineering", "name": "Электротехника", "year": 1890, "requires": ["microbiology", "dynamo"]},
                 {"id": "modern_science", "name": "Современная наука", "year": 1900, "requires": ["electrical_engineering"]},
             ]
         },
@@ -372,26 +372,26 @@ EDUCATION_TECH = {
                 {"id": "folk_medicine", "name": "Народная медицина", "year": 1500, "requires": []},
                 {"id": "barber_surgeons", "name": "Цирюльники-хирурги", "year": 1500, "requires": []},
                 {"id": "apothecaries", "name": "Аптекари", "year": 1520, "requires": ["folk_medicine"]},
-                {"id": "medical_schools_1", "name": "Медицинские школы I", "year": 1535, "requires": ["barber_surgeons", "universities_1"]},  # межлинейная
-                {"id": "anatomical_studies", "name": "Анатомические исследования", "year": 1550, "requires": ["medical_schools_1", "printing_press"]},  # межлинейная
+                {"id": "medical_schools_1", "name": "Медицинские школы I", "year": 1535, "requires": ["barber_surgeons", "universities_1"]},
+                {"id": "anatomical_studies", "name": "Анатомические исследования", "year": 1550, "requires": ["medical_schools_1", "printing_press"]},
                 {"id": "surgery_1", "name": "Хирургия I", "year": 1565, "requires": ["anatomical_studies"]},
-                {"id": "medicinal_herbs", "name": "Лекарственные травы", "year": 1580, "requires": ["apothecaries", "botany"]},  # межлинейная
-                {"id": "hospitals_1", "name": "Больницы I", "year": 1595, "requires": ["surgery_1", "medicinal_herbs"]},  # схождение
-                {"id": "surgical_instruments", "name": "Хирургические инструменты", "year": 1620, "requires": ["hospitals_1", "precision_metalworking"]},  # межкатегориальная
+                {"id": "medicinal_herbs", "name": "Лекарственные травы", "year": 1580, "requires": ["apothecaries", "botany"]},
+                {"id": "hospitals_1", "name": "Больницы I", "year": 1595, "requires": ["surgery_1", "medicinal_herbs"]},
+                {"id": "surgical_instruments", "name": "Хирургические инструменты", "year": 1620, "requires": ["hospitals_1", "precision_metalworking"]},
                 {"id": "pharmacies", "name": "Аптеки", "year": 1645, "requires": ["surgical_instruments"]},
-                {"id": "medical_universities", "name": "Медицинские университеты", "year": 1665, "requires": ["pharmacies", "scientific_societies"]},  # межлинейная
+                {"id": "medical_universities", "name": "Медицинские университеты", "year": 1665, "requires": ["pharmacies", "scientific_societies"]},
                 {"id": "anatomical_theaters", "name": "Анатомические театры", "year": 1685, "requires": ["medical_universities"]},
                 {"id": "surgery_2", "name": "Хирургия II", "year": 1705, "requires": ["anatomical_theaters"]},
                 {"id": "obstetrics", "name": "Акушерство", "year": 1720, "requires": ["surgery_2"]},
                 {"id": "military_medicine", "name": "Военная медицина", "year": 1735, "requires": ["obstetrics"]},
-                {"id": "vaccination", "name": "Вакцинация", "year": 1750, "requires": ["military_medicine", "microscope"]},  # межлинейная
+                {"id": "vaccination", "name": "Вакцинация", "year": 1750, "requires": ["military_medicine", "microscope"]},
                 {"id": "city_hospitals", "name": "Городские больницы", "year": 1765, "requires": ["vaccination"]},
                 {"id": "clinical_medicine", "name": "Клиническая медицина", "year": 1785, "requires": ["city_hospitals"]},
                 {"id": "public_health_1", "name": "Общественное здравоохранение I", "year": 1800, "requires": ["clinical_medicine"]},
-                {"id": "anesthesia", "name": "Анестезия", "year": 1815, "requires": ["public_health_1", "chemistry_1"]},  # межлинейная
+                {"id": "anesthesia", "name": "Анестезия", "year": 1815, "requires": ["public_health_1", "chemistry_1"]},
                 {"id": "stethoscope_diagnostics", "name": "Стетоскоп и диагностика", "year": 1830, "requires": ["anesthesia"]},
                 {"id": "sanitation_1", "name": "Санитария I", "year": 1845, "requires": ["stethoscope_diagnostics"]},
-                {"id": "antiseptics", "name": "Антисептика", "year": 1855, "requires": ["sanitation_1", "organic_chemistry"]},  # межлинейная
+                {"id": "antiseptics", "name": "Антисептика", "year": 1855, "requires": ["sanitation_1", "organic_chemistry"]},
                 {"id": "germ_theory", "name": "Микробная теория", "year": 1865, "requires": ["antiseptics"]},
                 {"id": "asepsis", "name": "Асептика", "year": 1875, "requires": ["germ_theory"]},
                 {"id": "modern_surgery", "name": "Современная хирургия", "year": 1885, "requires": ["asepsis"]},
@@ -404,29 +404,29 @@ EDUCATION_TECH = {
             "name": "Печать и распространение знаний",
             "technologies": [
                 {"id": "printing_press", "name": "Печатный станок", "year": 1500, "requires": []},
-                {"id": "improved_printing", "name": "Улучшенная печать", "year": 1515, "requires": ["printing_press", "precision_metalworking"]},  # межкатегориальная
+                {"id": "improved_printing", "name": "Улучшенная печать", "year": 1515, "requires": ["printing_press", "precision_metalworking"]},
                 {"id": "book_printing_1", "name": "Книгопечатание I", "year": 1530, "requires": ["improved_printing"]},
                 {"id": "printing_houses", "name": "Типографии", "year": 1545, "requires": ["book_printing_1"]},
-                {"id": "book_distribution", "name": "Распространение книг", "year": 1560, "requires": ["printing_houses", "merchant_networks"]},  # межкатегориальная
+                {"id": "book_distribution", "name": "Распространение книг", "year": 1560, "requires": ["printing_houses", "merchant_networks"]},
                 {"id": "book_publishing_1", "name": "Книгоиздательство I", "year": 1575, "requires": ["book_distribution"]},
                 {"id": "libraries_1", "name": "Библиотеки I", "year": 1590, "requires": ["book_publishing_1"]},
                 {"id": "mass_book_printing", "name": "Массовое книгопечатание", "year": 1605, "requires": ["libraries_1"]},
                 {"id": "periodical_press", "name": "Периодическая печать", "year": 1625, "requires": ["mass_book_printing"]},
-                {"id": "newspapers", "name": "Газеты", "year": 1645, "requires": ["periodical_press", "paper_mills"]},  # межкатегориальная
+                {"id": "newspapers", "name": "Газеты", "year": 1645, "requires": ["periodical_press", "paper_mills"]},
                 {"id": "improved_printing_enlightenment", "name": "Улучшенная печать", "year": 1665, "requires": ["newspapers"]},
                 {"id": "encyclopedias", "name": "Энциклопедии", "year": 1680, "requires": ["improved_printing_enlightenment"]},
                 {"id": "book_publishing_2", "name": "Книгоиздательство II", "year": 1695, "requires": ["encyclopedias"]},
                 {"id": "regular_newspapers", "name": "Регулярные газеты", "year": 1710, "requires": ["book_publishing_2"]},
-                {"id": "scientific_journals", "name": "Научные журналы", "year": 1725, "requires": ["regular_newspapers", "scientific_societies"]},  # межлинейная
+                {"id": "scientific_journals", "name": "Научные журналы", "year": 1725, "requires": ["regular_newspapers", "scientific_societies"]},
                 {"id": "book_industry", "name": "Книжная индустрия", "year": 1745, "requires": ["scientific_journals"]},
                 {"id": "libraries_2", "name": "Библиотеки II", "year": 1765, "requires": ["book_industry"]},
                 {"id": "mass_literacy", "name": "Массовая грамотность", "year": 1785, "requires": ["libraries_2"]},
                 {"id": "magazine_industry", "name": "Журнальная индустрия", "year": 1800, "requires": ["mass_literacy"]},
-                {"id": "mechanized_printing", "name": "Механизированная печать", "year": 1815, "requires": ["magazine_industry", "precision_engineering"]},  # межкатегориальная
-                {"id": "steam_printing_machines", "name": "Паровые печатные машины", "year": 1825, "requires": ["mechanized_printing", "steam_engine"]},  # межкатегориальная
+                {"id": "mechanized_printing", "name": "Механизированная печать", "year": 1815, "requires": ["magazine_industry", "precision_engineering"]},
+                {"id": "steam_printing_machines", "name": "Паровые печатные машины", "year": 1825, "requires": ["mechanized_printing", "steam_engine"]},
                 {"id": "cheap_books", "name": "Дешевые книги", "year": 1840, "requires": ["steam_printing_machines"]},
                 {"id": "mass_press", "name": "Массовая пресса", "year": 1855, "requires": ["cheap_books"]},
-                {"id": "rotary_printing", "name": "Ротационная печать", "year": 1865, "requires": ["mass_press", "interchangeable_parts"]},  # межкатегориальная
+                {"id": "rotary_printing", "name": "Ротационная печать", "year": 1865, "requires": ["mass_press", "interchangeable_parts"]},
                 {"id": "illustrated_magazines", "name": "Иллюстрированные журналы", "year": 1875, "requires": ["rotary_printing"]},
                 {"id": "modern_book_publishing", "name": "Современное книгоиздательство", "year": 1885, "requires": ["illustrated_magazines"]},
                 {"id": "modern_printing", "name": "Современная полиграфия", "year": 1895, "requires": ["modern_book_publishing"]},
