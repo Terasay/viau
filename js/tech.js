@@ -4,10 +4,27 @@ let playerProgress = null;
 let selectedTech = null;
 let isInitialized = false;
 let currentCategory = 'land_forces';
+let currentCountryId = null;
+let viewingCountryId = null; // Для админа - какую страну просматривает
 
 async function initTechnologies(category = 'land_forces') {
     console.log('Initializing tech tree for category:', category);
     currentCategory = category;
+    
+    // Получаем данные о текущем пользователе и стране
+    if (!currentCountryId && window.gameState) {
+        const user = window.gameState.getUser();
+        const country = window.gameState.getCountry();
+        
+        if (country) {
+            currentCountryId = country.id;
+            viewingCountryId = country.id;
+        } else if (user && (user.role === 'admin' || user.role === 'moderator')) {
+            // Для админа показываем селектор стран
+            await showCountrySelector();
+            return;
+        }
+    }
     
     try {
         const token = localStorage.getItem('token');
@@ -37,16 +54,30 @@ async function initTechnologies(category = 'land_forces') {
             return;
         }
         
-        const progressResponse = await fetch('/api/tech/player/progress', {
-            headers: { 'Authorization': token }
-        });
-        
-        if (progressResponse.ok) {
-            const progressData = await progressResponse.json();
-            console.log('Player progress:', progressData);
-            if (progressData.success) {
-                playerProgress = progressData;
+        // Загружаем прогресс страны
+        if (viewingCountryId) {
+            console.log('Fetching country progress for:', viewingCountryId);
+            const progressResponse = await fetch(`/api/tech/country/${viewingCountryId}/progress`, {
+                headers: { 'Authorization': token }
+            });
+            
+            if (progressResponse.ok) {
+                const progressData = await progressResponse.json();
+                console.log('Country progress:', progressData);
+                if (progressData.success) {
+                    playerProgress = {
+                        researched: progressData.researched || [],
+                        researching: progressData.researching,
+                        progress: progressData.research_progress || 0
+                    };
+                }
             }
+        } else {
+            playerProgress = {
+                researched: [],
+                researching: null,
+                progress: 0
+            };
         }
         
         renderTechTree();
@@ -890,9 +921,61 @@ function closeTechInfo() {
     }
 }
 
-function researchTechnology(techId) {
+async function researchTechnology(techId) {
     console.log('Starting research for:', techId);
-    alert('Функция исследования технологий будет доступна в следующих обновлениях');
+    
+    if (!viewingCountryId) {
+        alert('Ошибка: страна не выбрана');
+        return;
+    }
+    
+    // Проверяем права: админ может изучать для любой страны
+    const user = window.gameState?.getUser();
+    const isAdmin = user && (user.role === 'admin' || user.role === 'moderator');
+    
+    if (!isAdmin && viewingCountryId !== currentCountryId) {
+        alert('Вы можете изучать технологии только для своей страны');
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/tech/research', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({
+                tech_id: techId,
+                country_id: viewingCountryId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Технология успешно изучена!');
+            
+            // Обновляем прогресс
+            if (!playerProgress.researched) {
+                playerProgress.researched = [];
+            }
+            playerProgress.researched.push(techId);
+            
+            // Перерисовываем древо
+            renderTechTree();
+            
+            // Закрываем панель информации
+            closeTechInfo();
+        } else {
+            alert('Ошибка: ' + (data.error || 'Не удалось изучить технологию'));
+        }
+        
+    } catch (error) {
+        console.error('Error researching technology:', error);
+        alert('Произошла ошибка при изучении технологии');
+    }
 }
 
 function showError(message) {
@@ -953,9 +1036,108 @@ setTimeout(() => {
     initEventHandlers();
 }, 100);
 
+// Функция для отображения селектора стран (для админа)
+async function showCountrySelector() {
+    const container = document.getElementById('tech-tree-content');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="loading-content">
+            <i class="fas fa-globe fa-3x"></i>
+            <h3>Загрузка списка стран...</h3>
+            <div class="loading-spinner"></div>
+        </div>
+    `;
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/tech/admin/countries', {
+            headers: { 'Authorization': token }
+        });
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            showError('Ошибка загрузки списка стран');
+            return;
+        }
+        
+        container.innerHTML = `
+            <div class="tech-country-selector">
+                <div class="tech-category-header">
+                    <div class="tech-category-title">
+                        <i class="fas fa-flag"></i>
+                        <h3>Выберите страну для просмотра технологий</h3>
+                    </div>
+                </div>
+                <div class="countries-grid">
+                    ${data.countries.map(country => `
+                        <div class="country-card" onclick="window.techModule.selectCountry('${country.id}', '${country.name}')">
+                            <div class="country-card-header">
+                                <i class="fas fa-flag"></i>
+                                <h4>${country.name}</h4>
+                            </div>
+                            <div class="country-card-info">
+                                <div class="country-info-row">
+                                    <i class="fas fa-crown"></i>
+                                    <span>${country.ruler}</span>
+                                </div>
+                                <div class="country-info-row">
+                                    <i class="fas fa-user"></i>
+                                    <span>${country.player || 'Нет игрока'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error('Error loading countries:', error);
+        showError('Не удалось загрузить список стран');
+    }
+}
+
+// Выбор страны для просмотра (для админа)
+async function selectCountry(countryId, countryName) {
+    console.log('Selected country:', countryId, countryName);
+    viewingCountryId = countryId;
+    
+    // Показываем индикатор выбранной страны
+    updateCountryIndicator(countryName);
+    
+    // Загружаем технологии для выбранной страны
+    await initTechnologies(currentCategory);
+}
+
+// Обновление индикатора выбранной страны
+function updateCountryIndicator(countryName) {
+    const header = document.querySelector('.tech-category-header');
+    if (!header) return;
+    
+    // Проверяем, есть ли уже индикатор
+    let indicator = document.querySelector('.tech-country-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.className = 'tech-country-indicator';
+        header.appendChild(indicator);
+    }
+    
+    indicator.innerHTML = `
+        <i class="fas fa-flag"></i>
+        <span>Просмотр страны: <strong>${countryName}</strong></span>
+        <button class="btn-change-country" onclick="window.techModule.showCountrySelector()">
+            <i class="fas fa-exchange-alt"></i> Сменить страну
+        </button>
+    `;
+}
+
 window.techModule = {
     init: initTechnologies,
     showInfo: showTechInfo,
     closeInfo: closeTechInfo,
-    switchCategory: switchCategory
+    switchCategory: switchCategory,
+    showCountrySelector: showCountrySelector,
+    selectCountry: selectCountry
 };

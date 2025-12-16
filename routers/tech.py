@@ -1,7 +1,39 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from typing import List
+import sqlite3
+import sys
+from datetime import datetime
 
 router = APIRouter(prefix="/api/tech", tags=["technologies"])
+
+def get_db():
+    conn = sqlite3.connect('users.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_tech_db():
+    """Инициализация таблицы прогресса технологий"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS country_technologies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            country_id TEXT NOT NULL,
+            tech_id TEXT NOT NULL,
+            researched_at TEXT NOT NULL,
+            UNIQUE(country_id, tech_id),
+            FOREIGN KEY (country_id) REFERENCES countries (id)
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
+
+# Вызываем инициализацию при импорте модуля
+init_tech_db()
 
 # СУХОПУТНЫЕ ВОЙСКА
 LAND_FORCES_TECH = {
@@ -963,11 +995,210 @@ async def get_tech_tree(category: str):
 
 @router.get("/player/progress")
 async def get_player_tech_progress():
-    """Получить прогресс игрока по технологиям"""
-    # TODO:
+    """Получить прогресс игрока по технологиям (deprecated - использовать /country/{country_id}/progress)"""
+    # TODO: Оставлено для совместимости, позже удалить
     return JSONResponse({
         "success": True,
-        "researched": ["arquebus", "improved_arquebus", "matchlock"],
+        "researched": [],
         "researching": None,
         "research_progress": 0
     })
+
+# ===== НОВЫЕ ЭНДПОИНТЫ ДЛЯ РАБОТЫ С ТЕХНОЛОГИЯМИ СТРАН =====
+
+@router.get("/country/{country_id}/progress")
+async def get_country_tech_progress(country_id: str, request: Request):
+    """Получить прогресс страны по технологиям"""
+    sys.path.append('..')
+    from main import get_current_user
+    
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({
+            "success": False,
+            "error": "Требуется авторизация"
+        }, status_code=401)
+    
+    # Проверяем права: игрок может видеть только свою страну, админ - любую
+    if user.get('role') not in ['admin', 'moderator']:
+        # Проверяем что это страна игрока
+        conn = get_db()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT player_id FROM countries WHERE id = ?", (country_id,))
+            country = cursor.fetchone()
+            if not country or country['player_id'] != user['id']:
+                return JSONResponse({
+                    "success": False,
+                    "error": "Нет доступа к этой стране"
+                }, status_code=403)
+        finally:
+            conn.close()
+    
+    # Получаем изученные технологии
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('''
+            SELECT tech_id, researched_at 
+            FROM country_technologies 
+            WHERE country_id = ?
+            ORDER BY researched_at ASC
+        ''', (country_id,))
+        
+        researched_techs = cursor.fetchall()
+        researched_ids = [tech['tech_id'] for tech in researched_techs]
+        
+        return JSONResponse({
+            "success": True,
+            "country_id": country_id,
+            "researched": researched_ids,
+            "researching": None,  # Пока нет системы исследования в реальном времени
+            "research_progress": 0
+        })
+        
+    except Exception as e:
+        print(f"Error getting tech progress: {e}")
+        return JSONResponse({
+            "success": False,
+            "error": "Ошибка получения прогресса"
+        }, status_code=500)
+    finally:
+        conn.close()
+
+class ResearchTechData(BaseModel):
+    tech_id: str
+    country_id: str
+
+@router.post("/research")
+async def research_technology(data: ResearchTechData, request: Request):
+    """Изучить технологию для страны"""
+    sys.path.append('..')
+    from main import get_current_user
+    
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({
+            "success": False,
+            "error": "Требуется авторизация"
+        }, status_code=401)
+    
+    # Проверяем права: игрок может изучать только для своей страны, админ - для любой
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("SELECT player_id FROM countries WHERE id = ?", (data.country_id,))
+        country = cursor.fetchone()
+        
+        if not country:
+            return JSONResponse({
+                "success": False,
+                "error": "Страна не найдена"
+            }, status_code=404)
+        
+        if user.get('role') not in ['admin', 'moderator']:
+            if country['player_id'] != user['id']:
+                return JSONResponse({
+                    "success": False,
+                    "error": "Нет доступа к этой стране"
+                }, status_code=403)
+        
+        # Проверяем, не изучена ли уже технология
+        cursor.execute('''
+            SELECT id FROM country_technologies 
+            WHERE country_id = ? AND tech_id = ?
+        ''', (data.country_id, data.tech_id))
+        
+        if cursor.fetchone():
+            return JSONResponse({
+                "success": False,
+                "error": "Технология уже изучена"
+            }, status_code=400)
+        
+        # Добавляем изученную технологию
+        now = datetime.now().isoformat()
+        cursor.execute('''
+            INSERT INTO country_technologies (country_id, tech_id, researched_at)
+            VALUES (?, ?, ?)
+        ''', (data.country_id, data.tech_id, now))
+        
+        conn.commit()
+        
+        return JSONResponse({
+            "success": True,
+            "message": "Технология изучена",
+            "tech_id": data.tech_id,
+            "researched_at": now
+        })
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"Error researching technology: {e}")
+        return JSONResponse({
+            "success": False,
+            "error": "Ошибка при изучении технологии"
+        }, status_code=500)
+    finally:
+        conn.close()
+
+@router.get("/admin/countries")
+async def get_countries_for_tech_view(request: Request):
+    """Получить список стран для админа (для выбора страны в просмотре технологий)"""
+    sys.path.append('..')
+    from main import get_current_user
+    
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({
+            "success": False,
+            "error": "Требуется авторизация"
+        }, status_code=401)
+    
+    if user.get('role') not in ['admin', 'moderator']:
+        return JSONResponse({
+            "success": False,
+            "error": "Доступно только для администраторов"
+        }, status_code=403)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('''
+            SELECT 
+                c.id,
+                c.country_name,
+                c.ruler_first_name,
+                c.ruler_last_name,
+                c.player_id,
+                u.username as player_username
+            FROM countries c
+            LEFT JOIN users u ON c.player_id = u.id
+            ORDER BY c.country_name ASC
+        ''')
+        
+        countries = cursor.fetchall()
+        
+        return JSONResponse({
+            "success": True,
+            "countries": [
+                {
+                    "id": country['id'],
+                    "name": country['country_name'],
+                    "ruler": f"{country['ruler_first_name']} {country['ruler_last_name']}",
+                    "player": country['player_username']
+                }
+                for country in countries
+            ]
+        })
+        
+    except Exception as e:
+        print(f"Error getting countries: {e}")
+        return JSONResponse({
+            "success": False,
+            "error": "Ошибка получения списка стран"
+        }, status_code=500)
+    finally:
+        conn.close()

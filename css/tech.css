@@ -710,6 +710,124 @@ body:not(.dark-mode) .tech-line-header {
     }
 }
 
+/* Селектор стран для админа */
+.tech-country-selector {
+    padding: 24px;
+}
+
+.countries-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.country-card {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.country-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+    transform: translateY(-4px);
+}
+
+.country-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.country-card-header i {
+    font-size: 1.5em;
+    color: var(--primary);
+}
+
+.country-card-header h4 {
+    margin: 0;
+    font-size: 1.2em;
+    color: var(--text-primary);
+}
+
+.country-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.country-info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 0.95em;
+}
+
+.country-info-row i {
+    width: 20px;
+    text-align: center;
+    color: var(--primary);
+}
+
+/* Индикатор выбранной страны */
+.tech-country-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+    border: 1px solid var(--primary);
+    border-radius: var(--radius);
+}
+
+.tech-country-indicator i {
+    color: var(--primary);
+}
+
+.tech-country-indicator span {
+    color: var(--text-secondary);
+    font-size: 0.95em;
+}
+
+.tech-country-indicator strong {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.btn-change-country {
+    margin-left: auto;
+    padding: 8px 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-change-country:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-change-country i {
+    font-size: 0.9em;
+}
+
 /* Темная тема */
 body.dark-mode .tech-connection-line {
     stroke: var(--border);
@@ -717,4 +835,13 @@ body.dark-mode .tech-connection-line {
 
 body.dark-mode .tech-node.researched {
     box-shadow: 0 0 25px rgba(129, 140, 248, 0.4);
+}
+
+body.dark-mode .country-card {
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+
+body.dark-mode .country-card:hover {
+    border-color: var(--primary);
 }
