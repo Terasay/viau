@@ -339,67 +339,13 @@ function calculateTechPositions(technologies) {
         const techs = levelGroups[level];
         const y = parseInt(level) * verticalSpacing + headerOffset;
         
-        // Сортируем технологии по средней X-координате родителей
-        techs.sort((a, b) => {
-            const aParents = a.requires.filter(reqId => techMap[reqId] && positions[reqId]);
-            const bParents = b.requires.filter(reqId => techMap[reqId] && positions[reqId]);
-            
-            const aAvg = aParents.length > 0 
-                ? aParents.reduce((sum, reqId) => sum + positions[reqId].x, 0) / aParents.length
-                : a.year || 0; // Если нет родителей, сортируем по году
-            const bAvg = bParents.length > 0
-                ? bParents.reduce((sum, reqId) => sum + positions[reqId].x, 0) / bParents.length
-                : b.year || 0;
-            
-            return aAvg - bAvg;
-        });
-        
-        // Вычисляем общую ширину для центрирования
+        // Вычисляем общую ширину всех технологий на уровне
         const totalWidth = techs.length * nodeWidth;
         const startX = Math.max(50, (1400 - totalWidth) / 2); // Центрируем, но не меньше 50px
         
-        // Массив для отслеживания занятых позиций на этом уровне
-        const occupiedRanges = [];
-        
-        // Распределяем технологии по горизонтали
+        // Простое равномерное распределение без проверки конфликтов
         techs.forEach((tech, index) => {
-            let x;
-            
-            // Если есть родители в этой линии, центрируем относительно них
-            if (tech.requires && tech.requires.length > 0) {
-                const parentPositions = tech.requires
-                    .filter(reqId => techMap[reqId] && positions[reqId])
-                    .map(reqId => positions[reqId].x);
-                
-                if (parentPositions.length > 0) {
-                    // Центрируем между родителями
-                    x = parentPositions.reduce((a, b) => a + b, 0) / parentPositions.length;
-                } else {
-                    // Если родители не в этой линии, используем равномерное распределение
-                    x = startX + index * nodeWidth;
-                }
-            } else {
-                // Корневые узлы - равномерное распределение с центрированием
-                x = startX + index * nodeWidth;
-            }
-            
-            // Проверяем конфликты и корректируем позицию
-            let adjusted = false;
-            for (const range of occupiedRanges) {
-                // Если текущая позиция пересекается с занятой
-                if (x < range.end && x + nodeWidth > range.start) {
-                    // Смещаем вправо от конца занятого диапазона
-                    x = range.end;
-                    adjusted = true;
-                    break;
-                }
-            }
-            
-            // Добавляем текущий диапазон в список занятых
-            occupiedRanges.push({ start: x, end: x + nodeWidth });
-            // Сортируем для правильной проверки следующих
-            occupiedRanges.sort((a, b) => a.start - b.start);
-            
+            const x = startX + index * nodeWidth;
             positions[tech.id] = { x, y };
         });
     });
