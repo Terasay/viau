@@ -90,12 +90,17 @@ def migrate_existing_players():
                 ruler_first_name=app['first_name'],
                 ruler_last_name=app['last_name'],
                 country_name=country_name,
-                currency='Золото'
+                currency='Золото',
+                conn=conn,  # Передаём существующее соединение
+                cursor=cursor  # Передаём существующий курсор
             )
             
             if success:
                 countries_created += 1
                 print(f"[+] Created country {country_name} for player {app['username']}")
+        
+        # Коммитим все изменения
+        conn.commit()
         
         if countries_created > 0:
             print(f"Migration complete: {countries_created} countries created")
@@ -106,6 +111,7 @@ def migrate_existing_players():
         
     except Exception as e:
         print(f"Error during migration: {e}")
+        conn.rollback()
         return 0
     finally:
         conn.close()
@@ -121,10 +127,25 @@ async def check_admin(request: Request):
         return None
     return user
 
-def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler_last_name: str, country_name: str, currency: str = 'Золото'):
-    """Создание новой страны в БД"""
-    conn = get_db()
-    cursor = conn.cursor()
+def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler_last_name: str, country_name: str, currency: str = 'Золото', conn=None, cursor=None):
+    """Создание новой страны в БД
+    
+    Args:
+        country_id: ID страны
+        player_id: ID игрока
+        ruler_first_name: Имя правителя
+        ruler_last_name: Фамилия правителя
+        country_name: Название страны
+        currency: Валюта
+        conn: Существующее соединение с БД (опционально)
+        cursor: Существующий курсор (опционально)
+    """
+    # Если соединение не передано, создаём новое
+    own_connection = False
+    if conn is None:
+        conn = get_db()
+        cursor = conn.cursor()
+        own_connection = True
     
     try:
         now = datetime.now().isoformat()
@@ -146,16 +167,24 @@ def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler
             now
         ))
         
-        conn.commit()
+        # Коммитим только если создали своё соединение
+        if own_connection:
+            conn.commit()
         return True
     except sqlite3.IntegrityError as e:
         print(f"Country already exists or integrity error: {e}")
+        if own_connection:
+            conn.rollback()
         return False
     except Exception as e:
         print(f"Error creating country: {e}")
+        if own_connection:
+            conn.rollback()
         return False
     finally:
-        conn.close()
+        # Закрываем только если создали своё соединение
+        if own_connection:
+            conn.close()
 
 @router.get("/countries")
 async def get_all_countries(request: Request):

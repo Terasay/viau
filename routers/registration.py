@@ -678,11 +678,19 @@ async def approve_application(data: ApproveApplicationData, request: Request):
             ruler_first_name=data.first_name,
             ruler_last_name=data.last_name,
             country_name=country_name,
-            currency='Золото'  # Валюта по умолчанию
+            currency='Золото',  # Валюта по умолчанию
+            conn=conn,  # Передаём существующее соединение
+            cursor=cursor  # Передаём существующий курсор
         )
         
         if not country_created:
             print(f"Warning: Failed to create country record for {data.assigned_country}")
+            # Откатываем всю транзакцию, так как создание страны не удалось
+            conn.rollback()
+            return JSONResponse({
+                "success": False,
+                "error": "Не удалось создать запись страны"
+            }, status_code=500)
         
         conn.commit()
         
