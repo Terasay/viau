@@ -83,7 +83,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadUsers();
 
-    // Действия со странами игроков
     const countryActionForm = document.getElementById('country-action-form');
     const countryActionResult = document.getElementById('country-action-result');
     
@@ -158,7 +157,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // === ЗАЯВКИ ===
     let currentApplicationsFilter = 'pending';
     let allApplications = [];
 
@@ -291,7 +289,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         applicationsList.innerHTML = html;
     }
 
-    // Фильтры заявок
     const filterBtns = document.querySelectorAll('.filter-btn');
     filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -302,16 +299,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Модальное окно одобрения с редактированием
     window.showApproveModal = async function(appId, username) {
-        // Находим заявку в массиве
         const app = allApplications.find(a => a.id === appId);
         if (!app) {
             alert('Заявка не найдена');
             return;
         }
 
-        // Загружаем актуальный список стран из countries.json
         let countriesOptions = '<option value="">-- Выберите страну --</option>';
         try {
             const resp = await fetch('/api/settings/countries', {
@@ -320,7 +314,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await resp.json();
             if (data.success && data.countries) {
                 for (const country of data.countries) {
-                    // Сравниваем с id, т.к. в заявке хранится id страны
                     const selected = app.country === country.id ? 'selected' : '';
                     countriesOptions += `<option value="${country.id}" ${selected}>${country.name}</option>`;
                 }
@@ -396,9 +389,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.appendChild(modal);
     };
 
-    // Одобрение заявки
     window.approveApplication = async function(appId) {
-        // Получаем данные из формы
         const firstName = document.getElementById('approve-first-name')?.value.trim();
         const lastName = document.getElementById('approve-last-name')?.value.trim();
         const countryOrigin = document.getElementById('approve-country-origin')?.value.trim();
@@ -409,7 +400,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const referralCode = document.getElementById('approve-referral')?.value.trim();
         const relatives = document.getElementById('approve-relatives')?.value.trim();
 
-        // Валидация
         if (!firstName || !lastName || !countryOrigin || !age || !country) {
             alert('Заполните все обязательные поля');
             return;
@@ -454,7 +444,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // Модальное окно отклонения
     window.showRejectModal = function(appId) {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay-admin active';
@@ -483,7 +472,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.appendChild(modal);
     };
 
-    // Отклонение заявки
     window.rejectApplication = async function(appId) {
         const reason = document.getElementById('reject-reason').value.trim();
         if (!reason) {
@@ -722,7 +710,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         resourcesList.innerHTML = html;
     }
 
-    // Добавление ресурса
     const addResourceForm = document.getElementById('add-resource-form');
     const addResourceResult = document.getElementById('add-resource-result');
 
@@ -837,7 +824,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // === ПЕРСОНАЖИ ===
     const charactersList = document.getElementById('characters-list');
 
     async function loadCharacters() {
@@ -927,7 +913,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (!char) return;
             
-            // Заполняем форму редактирования
             document.getElementById('char-id-edit').value = char.id;
             document.getElementById('char-first-name-edit').value = char.first_name;
             document.getElementById('char-last-name-edit').value = char.last_name;
@@ -946,7 +931,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('char-user-id-edit').value = char.user_id || '';
             document.getElementById('char-country-edit').value = char.country || '';
             
-            // Показываем форму
             document.getElementById('edit-character-form').style.display = 'block';
             document.getElementById('edit-character-form').scrollIntoView({ behavior: 'smooth' });
         } catch (e) {
@@ -954,7 +938,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // Добавление персонажа
     const addCharacterForm = document.getElementById('add-character-form');
     const addCharacterResult = document.getElementById('add-character-result');
 
@@ -1007,7 +990,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Редактирование персонажа
     const editCharacterForm = document.getElementById('edit-character-form');
     const editCharacterResult = document.getElementById('edit-character-result');
 
@@ -1060,7 +1042,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Удаление персонажа
     document.getElementById('delete-character-btn').addEventListener('click', async () => {
         const charId = document.getElementById('char-id-edit').value;
         
@@ -1095,13 +1076,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // === НАСТРОЙКИ ===
     async function loadSettings() {
         await loadRules();
         await loadCountries();
     }
 
-    // === СТРАНЫ (ЭКОНОМИКА) ===
     async function loadCountriesEconomic() {
         const countriesList = document.getElementById('countries-economic-list');
         countriesList.innerHTML = '<div class="loading-msg">Загрузка стран...</div>';
@@ -1124,7 +1103,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Кнопка миграции существующих игроков
     const migrateCountriesBtn = document.getElementById('migrate-countries-btn');
     const migrateResult = document.getElementById('migrate-result');
 
@@ -1211,7 +1189,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         countriesList.innerHTML = html;
     }
 
-    // Добавление секретных монет
     const addCoinsForm = document.getElementById('add-coins-form');
     const addCoinsResult = document.getElementById('add-coins-result');
 
@@ -1253,7 +1230,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Изменение валюты страны
     const updateCurrencyCountryForm = document.getElementById('update-currency-form');
     const updateCurrencyCountryResult = document.getElementById('update-currency-result');
 
@@ -1296,13 +1272,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // === НАСТРОЙКИ ===
     async function loadSettings() {
         await loadRules();
         await loadCountries();
     }
 
-    // Правила
     const rulesContent = document.getElementById('rules-content');
     const editRulesForm = document.getElementById('edit-rules-form');
     const editRulesResult = document.getElementById('edit-rules-result');
@@ -1352,7 +1326,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Страны
     const countriesListSettings = document.getElementById('countries-list');
 
     async function loadCountries() {
@@ -1408,13 +1381,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (!country) return;
             
-            // Заполняем форму редактирования
             document.getElementById('country-id-edit-old').value = country.id;
             document.getElementById('country-id-edit').value = country.id;
             document.getElementById('country-name-edit').value = country.name;
             document.getElementById('country-available-edit').checked = country.available;
             
-            // Показываем форму
             document.getElementById('edit-country-form').style.display = 'flex';
             document.getElementById('country-edit-placeholder').style.display = 'none';
             document.getElementById('edit-country-form').scrollIntoView({ behavior: 'smooth' });
@@ -1423,7 +1394,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // Добавление страны
     const addCountryForm = document.getElementById('add-country-form');
     const addCountryResult = document.getElementById('add-country-result');
 
@@ -1464,7 +1434,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Редактирование страны
     const editCountryForm = document.getElementById('edit-country-form');
     const editCountryResult = document.getElementById('edit-country-result');
 
@@ -1504,7 +1473,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Удаление страны
     document.getElementById('delete-country-btn').addEventListener('click', async () => {
         const countryId = document.getElementById('country-id-edit-old').value;
         const countryName = document.getElementById('country-name-edit').value;

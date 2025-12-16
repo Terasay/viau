@@ -36,7 +36,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Вызываем инициализацию при импорте модуля
 init_db()
 
 def migrate_existing_players():
@@ -46,7 +45,6 @@ def migrate_existing_players():
     cursor = conn.cursor()
     
     try:
-        # Получаем все одобренные заявки
         cursor.execute('''
             SELECT 
                 pa.id,
@@ -63,7 +61,6 @@ def migrate_existing_players():
         approved_apps = cursor.fetchall()
         countries_created = 0
         
-        # Загружаем countries.json для получения названий
         countries_path = 'data/countries.json'
         country_names = {}
         try:
@@ -75,10 +72,9 @@ def migrate_existing_players():
             print(f"Warning: Could not load countries.json: {e}")
         
         for app in approved_apps:
-            # Проверяем, есть ли уже запись о стране
             cursor.execute("SELECT id FROM countries WHERE player_id = ?", (app['user_id'],))
             if cursor.fetchone():
-                continue  # Страна уже существует
+                continue
             
             # Создаём страну
             country_id = app['country']
@@ -91,15 +87,14 @@ def migrate_existing_players():
                 ruler_last_name=app['last_name'],
                 country_name=country_name,
                 currency='Золото',
-                conn=conn,  # Передаём существующее соединение
-                cursor=cursor  # Передаём существующий курсор
+                conn=conn,
+                cursor=cursor
             )
             
             if success:
                 countries_created += 1
                 print(f"[+] Created country {country_name} for player {app['username']}")
         
-        # Коммитим все изменения
         conn.commit()
         
         if countries_created > 0:
@@ -140,7 +135,6 @@ def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler
         conn: Существующее соединение с БД (опционально)
         cursor: Существующий курсор (опционально)
     """
-    # Если соединение не передано, создаём новое
     own_connection = False
     if conn is None:
         conn = get_db()
@@ -162,12 +156,11 @@ def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler
             ruler_last_name,
             country_name,
             currency,
-            0,  # secret_coins начинаются с 0
+            0,
             now,
             now
         ))
         
-        # Коммитим только если создали своё соединение
         if own_connection:
             conn.commit()
         return True
@@ -182,7 +175,6 @@ def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler
             conn.rollback()
         return False
     finally:
-        # Закрываем только если создали своё соединение
         if own_connection:
             conn.close()
 
@@ -201,7 +193,6 @@ async def get_all_countries(request: Request):
     cursor = conn.cursor()
     
     try:
-        # Если админ - показываем все страны, если игрок - только его страну
         if user.get('role') == 'admin':
             cursor.execute('''
                 SELECT 
@@ -220,7 +211,6 @@ async def get_all_countries(request: Request):
                 ORDER BY c.created_at DESC
             ''')
         else:
-            # Для обычных игроков - только их страна
             cursor.execute('''
                 SELECT 
                     c.id,
@@ -332,12 +322,10 @@ async def update_country(country_id: str, data: UpdateCountryData, request: Requ
     try:
         now = datetime.now().isoformat()
         
-        # Проверяем существование страны
         cursor.execute("SELECT id FROM countries WHERE id = ?", (country_id,))
         if not cursor.fetchone():
             return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
         
-        # Обновляем только переданные поля
         updates = []
         params = []
         

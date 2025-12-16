@@ -2,7 +2,6 @@ let currentUser = null;
 let currentCountry = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Применяем сохраненную тему
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.body.classList.add('dark-mode');
@@ -17,14 +16,12 @@ async function initGame() {
     const gameContainer = document.getElementById('game-container');
 
     try {
-        // Проверка авторизации
         const token = localStorage.getItem('token');
         if (!token) {
             showAccessDenied();
             return;
         }
 
-        // Получение данных пользователя
         const userResponse = await fetch('/me', {
             headers: { 'Authorization': token }
         });
@@ -43,22 +40,18 @@ async function initGame() {
 
         currentUser = userData;
 
-        // Проверка роли (должен быть player, moderator или admin)
         const allowedRoles = ['player', 'moderator', 'admin'];
         if (!allowedRoles.includes(currentUser.role)) {
             showAccessDenied();
             return;
         }
 
-        // Для админов и модераторов не загружаем страну (у них нет своей страны)
         if (currentUser.role === 'player') {
             await loadCountryData();
         }
 
-        // Инициализация интерфейса
         initInterface();
 
-        // Скрываем загрузку, показываем игру
         loadingScreen.style.display = 'none';
         gameContainer.style.display = 'flex';
 
@@ -77,7 +70,6 @@ async function loadCountryData() {
     const token = localStorage.getItem('token');
 
     try {
-        // Получаем список всех стран (для админов) или только свою страну
         const response = await fetch('/api/economic/countries', {
             headers: { 'Authorization': token }
         });
@@ -92,11 +84,9 @@ async function loadCountryData() {
             throw new Error('No country data available');
         }
 
-        // Ищем страну текущего пользователя (только для игроков)
         const userCountry = data.countries.find(c => c.player_id === currentUser.id);
 
         if (!userCountry) {
-            // Если у игрока нет страны - редирект на регистрацию
             alert('У вас нет зарегистрированной страны. Пожалуйста, заполните заявку.');
             window.location.href = '/registration';
             return;
@@ -113,22 +103,17 @@ async function loadCountryData() {
 }
 
 function initInterface() {
-    // Заполняем информацию в шапке
     if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
-        // Для админов и модераторов показываем специальную панель
         document.getElementById('country-name').textContent = currentUser.role === 'admin' ? 'Панель администратора' : 'Панель модератора';
         document.getElementById('ruler-name').textContent = 'Управление игрой';
         document.getElementById('currency-name').textContent = '-';
         document.getElementById('secret-coins').textContent = '-';
     } else if (currentCountry) {
-        // Для игроков показываем данные страны (только если страна загружена)
         document.getElementById('country-name').textContent = currentCountry.country_name;
         document.getElementById('ruler-name').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
         document.getElementById('currency-name').textContent = currentCountry.currency;
         document.getElementById('secret-coins').textContent = currentCountry.secret_coins || 0;
-
-        // Заполняем секцию обзора
         document.getElementById('overview-country').textContent = currentCountry.country_name;
         document.getElementById('overview-ruler').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
@@ -138,7 +123,6 @@ function initInterface() {
 
     document.getElementById('username').textContent = currentUser.username;
 
-    // Обновляем секцию обзора для админов/модераторов
     if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
         const overviewSection = document.getElementById('overview-section');
         overviewSection.innerHTML = `
@@ -184,10 +168,8 @@ function initInterface() {
         `;
     }
 
-    // Настройка навигации
     setupNavigation();
 
-    // Переключатель темы
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
         updateThemeIcon();
@@ -199,7 +181,6 @@ function initInterface() {
         });
     }
 
-    // Кнопка выхода
     document.getElementById('home-btn').addEventListener('click', goToHome);
 }
 
@@ -220,15 +201,12 @@ function setupNavigation() {
         btn.addEventListener('click', () => {
             const sectionName = btn.dataset.section;
 
-            // Убираем активные классы
             navBtns.forEach(b => b.classList.remove('active'));
             sections.forEach(s => s.classList.remove('active'));
 
-            // Добавляем активные классы
             btn.classList.add('active');
             document.getElementById(`${sectionName}-section`).classList.add('active');
             
-            // Инициализируем технологии при первом открытии
             if (sectionName === 'technologies' && window.techModule) {
                 window.techModule.init();
             }
@@ -247,16 +225,13 @@ function logout() {
     }
 }
 
-// Функции для работы с данными страны (будут расширяться)
 async function updateCountryData() {
-    // Перезагрузка данных страны с сервера (только для игроков)
     if (currentUser.role === 'player') {
         await loadCountryData();
     }
     initInterface();
 }
 
-// Глобальный доступ к данным для других модулей
 window.gameState = {
     getUser: () => currentUser,
     getCountry: () => currentCountry,

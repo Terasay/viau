@@ -69,7 +69,6 @@ async function loadCurrencyRates() {
 		if (data.success) {
 			currencyRates = data.rates;
 			
-			// Загружаем полные данные с названиями из публичного эндпоинта
 			const fullDataResp = await fetch('/api/converter/data');
 			
 			if (fullDataResp.ok) {

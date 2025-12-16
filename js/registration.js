@@ -3,7 +3,7 @@ let hasApplication = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     initTheme();
-    await checkAuth(); // checkAuth внутри вызовет loadCountries с правильными параметрами
+    await checkAuth();
     await loadRules();
     setupEventListeners();
     setupReferralCodeInput();
@@ -58,10 +58,8 @@ async function checkAuth() {
         
         currentUser = data;
         
-        // Обновляем информацию о пользователе
         document.querySelector('#userInfo span').textContent = currentUser.username;
         
-        // Проверяем есть ли уже заявка
         await checkExistingApplication();
         
     } catch (error) {
@@ -72,7 +70,6 @@ async function checkAuth() {
 
 async function loadCountries(userCountry = null) {
     try {
-        // Загружаем страны через API settings для актуальных данных
         const response = await fetch('/api/settings/countries');
         const data = await response.json();
         
@@ -84,7 +81,6 @@ async function loadCountries(userCountry = null) {
         const countrySelect = document.getElementById('country');
         countrySelect.innerHTML = '<option value="">Выберите страну</option>';
         
-        // Получаем занятые страны
         const token = localStorage.getItem('token');
         let occupiedCountries = [];
         
@@ -103,7 +99,6 @@ async function loadCountries(userCountry = null) {
         }
         
         countries.forEach(country => {
-            // Показываем страну если она доступна И не занята, ИЛИ это страна текущего пользователя
             if ((country.available && !occupiedCountries.includes(country.id)) || country.id === userCountry) {
                 const option = document.createElement('option');
                 option.value = country.id;
@@ -112,7 +107,6 @@ async function loadCountries(userCountry = null) {
             }
         });
         
-        // Если передана страна пользователя, устанавливаем её
         if (userCountry) {
             countrySelect.value = userCountry;
         }
@@ -141,7 +135,6 @@ function closeRulesModal() {
     document.getElementById('rulesModal').classList.remove('active');
 }
 
-// Делаем функцию глобальной для onclick
 window.closeRulesModal = closeRulesModal;
 
 async function checkExistingApplication() {
@@ -158,27 +151,22 @@ async function checkExistingApplication() {
             const data = await response.json();
             if (data.application) {
                 hasApplication = true;
-                // Перезагружаем страны с учётом страны пользователя, затем показываем заявку
                 await loadCountries(data.application.country);
                 showExistingApplication(data.application);
             } else {
-                // Если заявки нет, загружаем страны без особых параметров
                 await loadCountries();
             }
         }
     } catch (error) {
         console.error('Error checking application:', error);
-        // В случае ошибки всё равно загружаем страны
         await loadCountries();
     }
 }
 
 function showExistingApplication(application) {
-    // Показываем статус заявки
     const statusBlock = document.getElementById('applicationStatus');
     statusBlock.style.display = 'flex';
     
-    // Обновляем статус
     const statusIcon = statusBlock.querySelector('.status-icon i');
     const statusTitle = statusBlock.querySelector('h3');
     const statusText = statusBlock.querySelector('p');
@@ -201,10 +189,8 @@ function showExistingApplication(application) {
         statusBlock.querySelector('.status-icon').style.color = 'var(--danger)';
     }
     
-    // Заполняем форму данными из заявки
     fillFormWithApplication(application);
     
-    // Блокируем форму если заявка на рассмотрении или одобрена
     if (application.status === 'pending' || application.status === 'approved') {
         disableForm();
     }
@@ -213,7 +199,6 @@ function fillFormWithApplication(app) {
     document.getElementById('lastName').value = app.last_name || '';
     document.getElementById('countryOrigin').value = app.country_origin || '';
     document.getElementById('age').value = app.age || '';
-    // Страна уже установлена в loadCountries()
     document.getElementById('country').value = app.country || '';
     document.getElementById('religion').value = app.religion || '';
     document.getElementById('ethnicity').value = app.ethnicity || '';
@@ -244,18 +229,14 @@ function enableForm() {
 }
 
 function setupEventListeners() {
-    // Кнопка назад
     document.getElementById('backBtn').addEventListener('click', () => {
         window.location.href = '/';
     });
     
-    // Переключатель темы
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
     
-    // Кнопка отправки формы
     document.getElementById('submitBtn').addEventListener('click', handleSubmit);
     
-    // Кнопка очистки формы
     document.getElementById('resetBtn').addEventListener('click', () => {
         if (confirm('Вы уверены что хотите очистить форму?')) {
             const form = document.getElementById('applicationForm');
@@ -268,16 +249,13 @@ function setupEventListeners() {
         }
     });
     
-    // Кнопка редактирования заявки
     document.getElementById('editApplicationBtn').addEventListener('click', () => {
         enableForm();
         document.getElementById('applicationStatus').style.display = 'none';
     });
     
-    // Кнопка отзыва заявки
     document.getElementById('cancelApplicationBtn').addEventListener('click', handleCancelApplication);
     
-    // Ссылка на правила
     document.getElementById('rulesLink').addEventListener('click', (e) => {
         e.preventDefault();
         showRulesModal();
@@ -287,17 +265,14 @@ function setupEventListeners() {
 function setupReferralCodeInput() {
     const referralInput = document.getElementById('referralCode');
     referralInput.addEventListener('input', (e) => {
-        // Приводим к верхнему регистру и оставляем только латинские буквы
         e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').substring(0, 4);
     });
 }
 
 function setupCharCounters() {
-    // Больше не используется, но оставим для обратной совместимости
 }
 
 async function handleSubmit() {
-    // Валидация формы
     const firstName = document.getElementById('firstName').value.trim();
     const lastName = document.getElementById('lastName').value.trim();
     const countryOrigin = document.getElementById('countryOrigin').value.trim();

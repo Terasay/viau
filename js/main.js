@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		if (data.success) {
 			sessionToken = data.token;
 			localStorage.setItem('token', sessionToken);
-			isAdmin = (typeof data.role !== 'undefined' && data.role === 'admin'); // Проверка на админа по строке
+			isAdmin = (typeof data.role !== 'undefined' && data.role === 'admin');
 			showWelcome(data.username, isAdmin);
 		} else {
 			if (data.error && data.error.startsWith('Аккаунт забанен до ')) {

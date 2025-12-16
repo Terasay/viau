@@ -1,13 +1,10 @@
-// Модуль для работы с древом технологий
-
 let techData = null;
-let allTechData = {}; // Хранит все категории для межкатегориальных связей
+let allTechData = {};
 let playerProgress = null;
 let selectedTech = null;
 let isInitialized = false;
 let currentCategory = 'land_forces';
 
-// Инициализация модуля технологий
 async function initTechnologies(category = 'land_forces') {
     console.log('Initializing tech tree for category:', category);
     currentCategory = category;
@@ -15,10 +12,8 @@ async function initTechnologies(category = 'land_forces') {
     try {
         const token = localStorage.getItem('token');
         
-        // Загружаем ВСЕ категории технологий для межкатегориальных требований
         const categories = ['land_forces', 'navy', 'industry', 'education', 'infrastructure', 'economy'];
         
-        // Загружаем все категории параллельно для скорости
         const promises = categories.map(cat => 
             fetch(`/api/tech/tree/${cat}`, {
                 headers: { 'Authorization': token }
@@ -33,7 +28,6 @@ async function initTechnologies(category = 'land_forces') {
             }
         });
         
-        // Устанавливаем текущую категорию
         if (allTechData[category]) {
             techData = allTechData[category];
             console.log('Tech data loaded:', techData);
@@ -43,7 +37,6 @@ async function initTechnologies(category = 'land_forces') {
             return;
         }
         
-        // Загружаем прогресс игрока
         const progressResponse = await fetch('/api/tech/player/progress', {
             headers: { 'Authorization': token }
         });
@@ -56,7 +49,6 @@ async function initTechnologies(category = 'land_forces') {
             }
         }
         
-        // Отрисовываем древо
         renderTechTree();
         isInitialized = true;
         console.log('Tech tree initialized successfully');
@@ -66,7 +58,6 @@ async function initTechnologies(category = 'land_forces') {
     }
 }
 
-// Отрисовка древа технологий
 function renderTechTree() {
     console.log('Rendering tech tree...');
     const container = document.getElementById('tech-tree-content');
@@ -83,7 +74,6 @@ function renderTechTree() {
     console.log('Container found, clearing content');
     container.innerHTML = '';
     
-    // Заголовок категории
     const header = document.createElement('div');
     header.className = 'tech-category-header';
     header.innerHTML = `
@@ -95,17 +85,14 @@ function renderTechTree() {
     container.appendChild(header);
     console.log('Header added');
     
-    // Контейнер линий
     const linesContainer = document.createElement('div');
     linesContainer.className = 'tech-lines-container';
     
-    // Wrapper для контента с прокруткой
     const wrapper = document.createElement('div');
     wrapper.className = 'tech-lines-wrapper';
     
     console.log('Rendering', techData.lines.length, 'tech lines');
     
-    // Отрисовываем каждую линию технологий горизонтально
     techData.lines.forEach((line, index) => {
         console.log(`Rendering line ${index + 1}:`, line.name);
         const lineElement = renderTechLine(line, index);
@@ -114,10 +101,8 @@ function renderTechTree() {
     
     linesContainer.appendChild(wrapper);
     
-    // Добавляем drag-to-scroll
     setupDragScroll(linesContainer);
     
-    // Индикатор зума
     const zoomIndicator = document.createElement('div');
     zoomIndicator.className = 'tech-zoom-indicator';
     zoomIndicator.textContent = '100%';
@@ -126,7 +111,6 @@ function renderTechTree() {
     container.appendChild(linesContainer);
     console.log('Lines container added');
     
-    // Легенда
     const legend = document.createElement('div');
     legend.className = 'tech-legend';
     legend.innerHTML = `
@@ -147,7 +131,6 @@ function renderTechTree() {
     console.log('Legend added. Render complete!');
 }
 
-// Настройка drag-to-scroll
 function setupDragScroll(element) {
     let isDragging = false;
     let startX, startY, scrollLeft, scrollTop;
@@ -224,7 +207,6 @@ function setupDragScroll(element) {
     }, { passive: false });
 }
 
-// Отрисовка одной линии технологий
 function renderTechLine(line, lineIndex) {
     const lineDiv = document.createElement('div');
     lineDiv.className = 'tech-line';
@@ -232,7 +214,6 @@ function renderTechLine(line, lineIndex) {
     const lineHorizontalOffset = lineIndex * 1600;
     lineDiv.style.left = `${lineHorizontalOffset}px`;
     
-    // Заголовок линии
     const header = document.createElement('div');
     header.className = 'tech-line-header';
     header.innerHTML = `
@@ -240,26 +221,21 @@ function renderTechLine(line, lineIndex) {
     `;
     lineDiv.appendChild(header);
     
-    // Контейнер для узлов
     const nodesContainer = document.createElement('div');
     nodesContainer.className = 'tech-nodes-container';
     nodesContainer.id = `tech-line-${line.id}`;
     
-    // Создаем SVG для связей
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.classList.add('tech-connections');
     nodesContainer.appendChild(svg);
     
-    // Вычисляем позиции для технологий с учетом минимизации пересечений
     const positions = calculateTechPositionsOptimized(line.technologies);
-    
-    // Обновляем высоту контейнера
+
     const maxY = Math.max(...Object.values(positions).map(p => p.y));
     const maxX = Math.max(...Object.values(positions).map(p => p.x));
     nodesContainer.style.minHeight = `${maxY + 200}px`;
     nodesContainer.style.minWidth = `${maxX + 300}px`;
     
-    // Отрисовываем узлы с вычисленными позициями
     const nodeElements = {};
     line.technologies.forEach(tech => {
         const node = createTechNode(tech);
@@ -272,7 +248,6 @@ function renderTechLine(line, lineIndex) {
     
     lineDiv.appendChild(nodesContainer);
     
-    // Рисуем связи после того, как элементы добавлены в DOM
     setTimeout(() => {
         drawConnectionsOptimized(line.technologies, nodeElements, svg, positions);
     }, 50);
@@ -280,8 +255,6 @@ function renderTechLine(line, lineIndex) {
     return lineDiv;
 }
 
-// Оптимизированное вычисление позиций технологий
-// Оптимизированное вычисление позиций технологий с учётом основной цепочки
 function calculateTechPositionsOptimized(technologies) {
     const positions = {};
     const nodeWidth = 260;
@@ -289,17 +262,15 @@ function calculateTechPositionsOptimized(technologies) {
     const verticalSpacing = 140;
     const horizontalSpacing = 60;
     const headerOffset = 80;
-    const centerX = 600; // Центральная линия для основной цепочки
+    const centerX = 600;
     
-    // Создаем карту технологий
     const techMap = {};
     technologies.forEach(tech => {
         techMap[tech.id] = tech;
     });
     
-    // Строим граф зависимостей (только внутри линии)
-    const children = {}; // родитель -> дети
-    const parents = {};  // ребенок -> родители
+    const children = {};
+    const parents = {};
     
     technologies.forEach(tech => {
         children[tech.id] = [];
@@ -317,7 +288,6 @@ function calculateTechPositionsOptimized(technologies) {
         }
     });
     
-    // Вычисляем "вес" каждой технологии - количество потомков
     const descendantCount = {};
     const calculateDescendants = (techId, visited = new Set()) => {
         if (descendantCount[techId] !== undefined) return descendantCount[techId];
@@ -341,7 +311,6 @@ function calculateTechPositionsOptimized(technologies) {
     
     technologies.forEach(tech => calculateDescendants(tech.id));
     
-    // Вычисляем уровни (глубину) для каждой технологии
     const levels = {};
     const calculateLevel = (techId, visited = new Set()) => {
         if (levels[techId] !== undefined) return levels[techId];
@@ -361,7 +330,6 @@ function calculateTechPositionsOptimized(technologies) {
     
     technologies.forEach(tech => calculateLevel(tech.id));
     
-    // Группируем по уровням
     const levelGroups = {};
     technologies.forEach(tech => {
         const level = levels[tech.id];
@@ -369,8 +337,7 @@ function calculateTechPositionsOptimized(technologies) {
         levelGroups[level].push(tech);
     });
     
-    // Отслеживаем занятые позиции на каждом уровне
-    const occupiedPositions = {}; // level -> [{x, width}]
+    const occupiedPositions = {};
     
     const isPositionFree = (level, x, width = nodeWidth) => {
         if (!occupiedPositions[level]) return true;
@@ -389,27 +356,23 @@ function calculateTechPositionsOptimized(technologies) {
         occupiedPositions[level].push({ x, width });
     };
     
-    // Позиционируем технологии
     const sortedLevels = Object.keys(levelGroups).map(Number).sort((a, b) => a - b);
     
     sortedLevels.forEach(level => {
         const techs = levelGroups[level];
         const y = level * verticalSpacing + headerOffset;
         
-        // Группируем технологии по их родителям для оптимального размещения
         const techsByParentGroup = new Map();
         
         techs.forEach(tech => {
             const techParents = parents[tech.id].filter(p => positions[p]);
             
             if (techParents.length === 0) {
-                // Технологии без родителей - корневая группа
                 if (!techsByParentGroup.has('root')) {
                     techsByParentGroup.set('root', []);
                 }
                 techsByParentGroup.get('root').push(tech);
             } else {
-                // Создаем ключ группы на основе родителей (сортируем для консистентности)
                 const parentKey = techParents.sort().join(',');
                 if (!techsByParentGroup.has(parentKey)) {
                     techsByParentGroup.set(parentKey, []);
@@ -418,7 +381,6 @@ function calculateTechPositionsOptimized(technologies) {
             }
         });
         
-        // Сортируем группы по средней X-позиции их родителей
         const sortedGroups = Array.from(techsByParentGroup.entries()).sort((a, b) => {
             const [keyA, techsA] = a;
             const [keyB, techsB] = b;
@@ -435,10 +397,8 @@ function calculateTechPositionsOptimized(technologies) {
             return avgXA - avgXB;
         });
         
-        // Размещаем технологии по группам
         sortedGroups.forEach(([parentKey, groupTechs]) => {
             if (parentKey === 'root') {
-                // Корневые технологии размещаем слева направо от начала
                 let currentX = 50;
                 groupTechs.forEach(tech => {
                     while (!isPositionFree(level, currentX)) {
@@ -453,24 +413,18 @@ function calculateTechPositionsOptimized(technologies) {
                 const parentPositions = parentIds.map(p => positions[p]).filter(Boolean);
                 
                 if (parentPositions.length > 0) {
-                    // Вычисляем диапазон родителей
                     const parentXs = parentPositions.map(p => p.x);
                     const minParentX = Math.min(...parentXs);
                     const maxParentX = Math.max(...parentXs);
                     const avgParentX = parentXs.reduce((a, b) => a + b, 0) / parentXs.length;
                     
-                    // Вычисляем ширину группы
                     const groupWidth = groupTechs.length * (nodeWidth + horizontalSpacing) - horizontalSpacing;
                     
-                    // Находим оптимальную стартовую позицию
-                    // Пытаемся разместить группу так, чтобы она была ближе к родителям
                     let idealStartX = avgParentX - groupWidth / 2;
                     
-                    // Ищем первую свободную область, куда поместится вся группа
                     let startX = 50;
                     let foundPosition = false;
                     
-                    // Проверяем, можем ли разместить группу начиная с idealStartX
                     if (idealStartX >= 50) {
                         let canPlaceHere = true;
                         for (let i = 0; i < groupTechs.length; i++) {
@@ -486,9 +440,7 @@ function calculateTechPositionsOptimized(technologies) {
                         }
                     }
                     
-                    // Если идеальная позиция занята, ищем ближайшую свободную
                     if (!foundPosition) {
-                        // Проверяем позиции слева от родителей
                         let testX = Math.max(50, minParentX - groupWidth - horizontalSpacing);
                         while (testX < maxParentX + nodeWidth + horizontalSpacing) {
                             let canPlaceHere = true;
@@ -510,7 +462,6 @@ function calculateTechPositionsOptimized(technologies) {
                         }
                     }
                     
-                    // Если все еще не нашли, размещаем справа
                     if (!foundPosition) {
                         startX = maxParentX + nodeWidth + horizontalSpacing;
                         while (!isPositionFree(level, startX)) {
@@ -518,7 +469,6 @@ function calculateTechPositionsOptimized(technologies) {
                         }
                     }
                     
-                    // Размещаем группу
                     groupTechs.forEach((tech, index) => {
                         const x = startX + index * (nodeWidth + horizontalSpacing);
                         positions[tech.id] = { x, y };
@@ -529,7 +479,6 @@ function calculateTechPositionsOptimized(technologies) {
         });
     });
     
-    // Второй проход: оптимизируем позиции родителей относительно детей
     for (let iteration = 0; iteration < 2; iteration++) {
         sortedLevels.forEach(level => {
             const techs = levelGroups[level];
@@ -538,21 +487,17 @@ function calculateTechPositionsOptimized(technologies) {
                 const techChildren = children[tech.id].filter(c => positions[c]);
                 if (techChildren.length === 0) return;
                 
-                // Вычисляем центр всех детей
                 const childXs = techChildren.map(c => positions[c].x);
                 const minChildX = Math.min(...childXs);
                 const maxChildX = Math.max(...childXs);
                 const avgChildX = (minChildX + maxChildX) / 2;
                 
-                // Пробуем переместить к центру детей
                 const currentX = positions[tech.id].x;
                 const targetX = avgChildX;
                 
-                // Двигаемся постепенно к целевой позиции
                 const moveStep = (targetX - currentX) * 0.3;
                 const newX = currentX + moveStep;
                 
-                // Проверяем, не конфликтует ли новая позиция
                 const sameLevelTechs = techs.filter(t => t.id !== tech.id);
                 let canMove = true;
                 
@@ -571,7 +516,6 @@ function calculateTechPositionsOptimized(technologies) {
         });
     }
     
-    // Нормализация: сдвигаем всё влево, убирая лишнее пространство
     const minX = Math.min(...Object.values(positions).map(p => p.x));
     const offsetX = minX - 50;
     
@@ -585,20 +529,17 @@ function calculateTechPositionsOptimized(technologies) {
 }
 
 
-// Оптимизированное рисование связей
 function drawConnectionsOptimized(technologies, elements, svg, positions) {
     svg.innerHTML = '';
     
     const nodeWidth = 240;
     
-    // Получаем реальные высоты узлов из DOM
     const nodeHeights = {};
     Object.keys(elements).forEach(techId => {
         const element = elements[techId];
-        nodeHeights[techId] = element.offsetHeight || 70; // 70 как fallback
+        nodeHeights[techId] = element.offsetHeight || 70;
     });
     
-    // Устанавливаем размеры SVG
     const maxX = Math.max(...Object.values(positions).map(p => p.x)) + 400;
     const maxY = Math.max(...Object.values(positions).map(p => p.y)) + 250;
     svg.setAttribute('width', maxX);
@@ -609,18 +550,15 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
     svg.style.pointerEvents = 'none';
     svg.style.overflow = 'visible';
     
-    // Создаем карту технологий для быстрого доступа
     const techMap = {};
     technologies.forEach(tech => {
         techMap[tech.id] = tech;
     });
     
-    // Собираем все связи
     const connections = [];
     technologies.forEach(tech => {
         if (tech.requires && tech.requires.length > 0) {
             tech.requires.forEach(reqId => {
-                // Рисуем только связи внутри линии
                 if (techMap[reqId] && positions[reqId] && positions[tech.id]) {
                     connections.push({
                         from: reqId,
@@ -633,7 +571,6 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
         }
     });
     
-    // Группируем связи по точкам выхода для распределения
     const exitPoints = {};
     connections.forEach(conn => {
         const key = conn.from;
@@ -641,7 +578,6 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
         exitPoints[key].push(conn);
     });
     
-    // Группируем связи по точкам входа
     const entryPoints = {};
     connections.forEach(conn => {
         const key = conn.to;
@@ -649,15 +585,13 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
         entryPoints[key].push(conn);
     });
     
-    // Определяем уровни для каждой технологии
     const techLevels = {};
     Object.keys(positions).forEach(techId => {
         const yPos = positions[techId].y;
-        const level = Math.round((yPos - 80) / 140); // 80 - headerOffset, 140 - verticalSpacing
+        const level = Math.round((yPos - 80) / 140);
         techLevels[techId] = level;
     });
     
-    // Группируем технологии по уровням для определения препятствий
     const techsByLevel = {};
     Object.keys(positions).forEach(techId => {
         const level = techLevels[techId];
@@ -669,27 +603,23 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
         });
     });
     
-    // Рисуем связи
     connections.forEach(conn => {
         const fromPos = conn.fromPos;
         const toPos = conn.toPos;
         
-        // Точка выхода (снизу родителя) - всегда по центру, без смещения
         const fromHeight = nodeHeights[conn.from] || 70;
         const x1 = fromPos.x + nodeWidth / 2;
         const y1 = fromPos.y + fromHeight;
         
-        // Точка входа (сверху ребенка) - всегда по центру, без смещения
         const x2 = toPos.x + nodeWidth / 2;
         const y2 = toPos.y;
         
-        // Создаем путь
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         
         const verticalDist = y2 - y1;
         const horizontalDist = Math.abs(x2 - x1);
         
-        // Определяем уровни родителя и ребенка
+
         const fromLevel = techLevels[conn.from];
         const toLevel = techLevels[conn.to];
         const levelDiff = toLevel - fromLevel;
@@ -697,11 +627,9 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
         let d;
         
         if (verticalDist > 0) {
-            // Проверяем, есть ли промежуточные уровни с технологиями
+
             if (levelDiff > 1) {
-                // Связь проходит через несколько уровней - нужно обходить блоки
-                
-                // Находим все технологии на промежуточных уровнях
+
                 let minObstacleX = Infinity;
                 let maxObstacleX = -Infinity;
                 
@@ -714,13 +642,11 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
                         }
                     });
                 }
-                
-                // Определяем, идти слева или справа от препятствий
+               
                 let corridorX;
-                const margin = 30; // Отступ от блоков
+                const margin = 30;
                 
                 if (minObstacleX === Infinity) {
-                    // Нет препятствий - обычная кривая
                     const controlOffset = Math.min(verticalDist * 0.3, 40);
                     const midY = y1 + verticalDist / 2;
                     d = `M ${x1} ${y1} 
@@ -730,18 +656,15 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
                          S ${x2} ${y2 - controlOffset}, 
                            ${x2} ${y2}`;
                 } else {
-                    // Есть препятствия - обходим
                     const distToLeft = Math.abs(x1 - (minObstacleX - margin));
                     const distToRight = Math.abs(x1 - (maxObstacleX + margin));
                     
-                    // Выбираем ближайшую сторону
                     if (distToLeft < distToRight && minObstacleX > 50) {
                         corridorX = minObstacleX - margin;
                     } else {
                         corridorX = maxObstacleX + margin;
                     }
                     
-                    // Строим путь с обходом
                     const step1Y = y1 + 30;
                     const step2Y = y2 - 30;
                     
@@ -757,10 +680,8 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
                          L ${x2} ${y2}`;
                 }
             } else if (horizontalDist < 20) {
-                // Почти вертикальная линия
                 d = `M ${x1} ${y1} L ${x2} ${y2}`;
             } else {
-                // Обычная S-образная кривая для соседних уровней
                 const controlOffset = Math.min(verticalDist * 0.3, 40);
                 const midY = y1 + verticalDist / 2;
                 d = `M ${x1} ${y1} 
@@ -771,7 +692,6 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
                        ${x2} ${y2}`;
             }
         } else {
-            // Редкий случай: нужно обойти
             const bendY = Math.min(y1, y2) - 50;
             d = `M ${x1} ${y1} 
                  L ${x1} ${bendY} 
@@ -782,7 +702,6 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
         path.setAttribute('d', d);
         path.classList.add('tech-connection-line');
         
-        // Подсвечиваем если обе технологии изучены
         const fromStatus = getTechStatus({ id: conn.from, requires: [] });
         const toTech = techMap[conn.to];
         const toStatus = getTechStatus(toTech);
@@ -795,7 +714,6 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
     });
 }
 
-// Создание узла технологии
 function createTechNode(tech) {
     const node = document.createElement('div');
     node.className = 'tech-node';
@@ -823,7 +741,6 @@ function createTechNode(tech) {
     return node;
 }
 
-// Определение статуса технологии
 function getTechStatus(tech) {
     if (!playerProgress || !playerProgress.researched) {
         return 'locked';
@@ -844,7 +761,6 @@ function getTechStatus(tech) {
     return 'locked';
 }
 
-// Показ информации о технологии
 function showTechInfo(tech) {
     selectedTech = tech;
     
@@ -868,7 +784,6 @@ function showTechInfo(tech) {
         statusClass = 'available';
     }
     
-    // Получаем требования с указанием категории для межкатегориальных
     let requirementsHTML = '';
     if (tech.requires && tech.requires.length > 0) {
         const reqTechs = tech.requires.map(reqId => {
@@ -882,7 +797,6 @@ function showTechInfo(tech) {
             
             if (reqTech) {
                 techName = reqTech.name;
-                // Проверяем, из другой ли это категории
                 const techCategory = findTechCategory(reqId);
                 if (techCategory && techCategory !== currentCategory) {
                     const categoryNames = {
@@ -939,7 +853,6 @@ function showTechInfo(tech) {
     infoPanel.classList.add('visible');
 }
 
-// Найти категорию технологии
 function findTechCategory(techId) {
     for (const category in allTechData) {
         const catData = allTechData[category];
@@ -951,9 +864,7 @@ function findTechCategory(techId) {
     return null;
 }
 
-// Найти технологию по ID во всех категориях
 function findTechById(techId) {
-    // Сначала ищем в текущей категории
     if (techData) {
         for (const line of techData.lines) {
             const tech = line.technologies.find(t => t.id === techId);
@@ -961,7 +872,6 @@ function findTechById(techId) {
         }
     }
     
-    // Если не нашли, ищем во всех категориях
     for (const category in allTechData) {
         const catData = allTechData[category];
         for (const line of catData.lines) {
@@ -973,7 +883,6 @@ function findTechById(techId) {
     return null;
 }
 
-// Закрыть панель информации
 function closeTechInfo() {
     const infoPanel = document.getElementById('tech-info-panel');
     if (infoPanel) {
@@ -981,13 +890,11 @@ function closeTechInfo() {
     }
 }
 
-// Начать исследование технологии
 function researchTechnology(techId) {
     console.log('Starting research for:', techId);
     alert('Функция исследования технологий будет доступна в следующих обновлениях');
 }
 
-// Функция для отображения ошибки
 function showError(message) {
     const container = document.getElementById('tech-tree-content');
     if (container) {
@@ -1001,7 +908,6 @@ function showError(message) {
     }
 }
 
-// Переключение категории технологий
 async function switchCategory(category) {
     console.log('Switching to category:', category);
     
@@ -1032,7 +938,6 @@ async function switchCategory(category) {
     }
 }
 
-// Инициализация обработчиков событий
 function initEventHandlers() {
     document.querySelectorAll('.tech-category-tab').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -1044,12 +949,10 @@ function initEventHandlers() {
     });
 }
 
-// Инициализация при загрузке страницы
 setTimeout(() => {
     initEventHandlers();
 }, 100);
 
-// Экспортируем функции
 window.techModule = {
     init: initTechnologies,
     showInfo: showTechInfo,

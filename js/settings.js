@@ -1,7 +1,5 @@
-// Состояние приложения
 let currentUser = null;
 
-// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
     setupEventListeners();
@@ -9,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTheme();
 });
 
-// Инициализация приложения
 function initializeApp() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -18,9 +15,7 @@ function initializeApp() {
     }
 }
 
-// Настройка обработчиков событий
 function setupEventListeners() {
-    // Навигация по разделам
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
@@ -183,7 +178,6 @@ async function handleAvatarUpload(e) {
             displayAvatar(data.avatar_url);
             showToast('Аватар успешно загружен', 'success');
             
-            // Обновляем данные пользователя
             if (currentUser) {
                 currentUser.avatar = data.avatar_url;
             }
