@@ -355,12 +355,10 @@ function calculateTechPositions(technologies) {
         });
         
         // Распределяем технологии по горизонтали
-        let nextX = 50; // Начальное смещение
-        
         techs.forEach((tech, index) => {
             let x;
             
-            // Если есть родители, пытаемся центрировать относительно них
+            // Если есть родители, центрируем относительно них
             if (tech.requires && tech.requires.length > 0) {
                 const parentPositions = tech.requires
                     .filter(reqId => techMap[reqId] && positions[reqId])
@@ -369,19 +367,25 @@ function calculateTechPositions(technologies) {
                 if (parentPositions.length > 0) {
                     // Центрируем между родителями
                     x = parentPositions.reduce((a, b) => a + b, 0) / parentPositions.length;
-                    
-                    // Проверяем, не слишком ли близко к предыдущему узлу
-                    x = Math.max(x, nextX);
                 } else {
-                    x = nextX;
+                    // Если родители не в этой линии, используем равномерное распределение
+                    x = 50 + index * nodeWidth;
                 }
             } else {
-                // Корневые узлы
-                x = nextX;
+                // Корневые узлы - равномерное распределение
+                x = 50 + index * nodeWidth;
+            }
+            
+            // Проверяем конфликты с уже размещенными узлами на этом уровне
+            const sameLevel = Object.entries(positions).filter(([id, pos]) => pos.y === y);
+            for (const [id, pos] of sameLevel) {
+                if (Math.abs(pos.x - x) < nodeWidth * 0.9) {
+                    // Смещаем вправо, если есть конфликт
+                    x = pos.x + nodeWidth;
+                }
             }
             
             positions[tech.id] = { x, y };
-            nextX = x + nodeWidth; // Следующая позиция
         });
     });
     
@@ -446,11 +450,15 @@ function getTechStatus(tech) {
 function drawConnections(technologies, elements, svg, positions) {
     svg.innerHTML = '';
     
-    // Устанавливаем размеры SVG
-    const maxX = Math.max(...Object.values(positions).map(p => p.x)) + 250;
-    const maxY = Math.max(...Object.values(positions).map(p => p.y)) + 150;
+    // Устанавливаем размеры SVG с запасом
+    const maxX = Math.max(...Object.values(positions).map(p => p.x)) + 400;
+    const maxY = Math.max(...Object.values(positions).map(p => p.y)) + 250;
     svg.setAttribute('width', maxX);
     svg.setAttribute('height', maxY);
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.pointerEvents = 'none';
     
     const nodeWidth = 240;
     const nodeHeight = 70; // примерная высота узла
