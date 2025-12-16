@@ -16,7 +16,7 @@ async function initTechnologies(category = 'land_forces') {
         const token = localStorage.getItem('token');
         
         // Загружаем ВСЕ категории технологий для межкатегориальных требований
-        const categories = ['land_forces', 'navy', 'aviation', 'industry', 'economy'];
+        const categories = ['land_forces', 'navy', 'industry', 'education', 'infrastructure', 'economy'];
         
         for (const cat of categories) {
             const response = await fetch(`/api/tech/tree/${cat}`, {
@@ -354,11 +354,15 @@ function calculateTechPositions(technologies) {
             return aAvg - bAvg;
         });
         
+        // Вычисляем общую ширину для центрирования
+        const totalWidth = techs.length * nodeWidth;
+        const startX = Math.max(50, (1400 - totalWidth) / 2); // Центрируем, но не меньше 50px
+        
         // Распределяем технологии по горизонтали
         techs.forEach((tech, index) => {
             let x;
             
-            // Если есть родители, центрируем относительно них
+            // Если есть родители в этой линии, центрируем относительно них
             if (tech.requires && tech.requires.length > 0) {
                 const parentPositions = tech.requires
                     .filter(reqId => techMap[reqId] && positions[reqId])
@@ -369,20 +373,11 @@ function calculateTechPositions(technologies) {
                     x = parentPositions.reduce((a, b) => a + b, 0) / parentPositions.length;
                 } else {
                     // Если родители не в этой линии, используем равномерное распределение
-                    x = 50 + index * nodeWidth;
+                    x = startX + index * nodeWidth;
                 }
             } else {
-                // Корневые узлы - равномерное распределение
-                x = 50 + index * nodeWidth;
-            }
-            
-            // Проверяем конфликты с уже размещенными узлами на этом уровне
-            const sameLevel = Object.entries(positions).filter(([id, pos]) => pos.y === y);
-            for (const [id, pos] of sameLevel) {
-                if (Math.abs(pos.x - x) < nodeWidth * 0.9) {
-                    // Смещаем вправо, если есть конфликт
-                    x = pos.x + nodeWidth;
-                }
+                // Корневые узлы - равномерное распределение с центрированием
+                x = startX + index * nodeWidth;
             }
             
             positions[tech.id] = { x, y };
