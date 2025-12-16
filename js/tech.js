@@ -663,22 +663,13 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
             ? (exitIndex - (exitCount - 1) / 2) * (exitSpread / exitCount)
             : 0;
         
-        // Вычисляем смещение для точки входа (если несколько родителей)
-        const entryGroup = entryPoints[conn.to];
-        const entryIndex = entryGroup.indexOf(conn);
-        const entryCount = entryGroup.length;
-        const entrySpread = Math.min(nodeWidth * 0.6, entryCount * 30);
-        const entryOffset = entryCount > 1 
-            ? (entryIndex - (entryCount - 1) / 2) * (entrySpread / entryCount)
-            : 0;
-        
         // Точка выхода (снизу родителя) - используем реальную высоту
         const fromHeight = nodeHeights[conn.from] || 70;
         const x1 = fromPos.x + nodeWidth / 2 + exitOffset;
         const y1 = fromPos.y + fromHeight;
         
-        // Точка входа (сверху ребенка)
-        const x2 = toPos.x + nodeWidth / 2 + entryOffset;
+        // Точка входа (сверху ребенка) - всегда по центру, без смещения
+        const x2 = toPos.x + nodeWidth / 2;
         const y2 = toPos.y;
         
         // Создаем путь
