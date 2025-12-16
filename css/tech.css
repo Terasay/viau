@@ -108,6 +108,31 @@
     font-weight: 800;
 }
 
+.btn-edit-rp {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 6px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 4px;
+}
+
+.btn-edit-rp:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-edit-rp i {
+    font-size: 1em;
+}
+
 /* Контейнер для линий технологий */
 .tech-lines-container {
     background: var(--bg-secondary);

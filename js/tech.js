@@ -953,7 +953,7 @@ async function researchTechnology(techId) {
     console.log('Starting research for:', techId);
     
     if (!viewingCountryId) {
-        alert('Ошибка: страна не выбрана');
+        showError('Страна не выбрана');
         return;
     }
     
@@ -962,7 +962,7 @@ async function researchTechnology(techId) {
     const isAdmin = user && (user.role === 'admin' || user.role === 'moderator');
     
     if (!isAdmin && viewingCountryId !== currentCountryId) {
-        alert('Вы можете изучать технологии только для своей страны');
+        showError('Вы можете изучать технологии только для своей страны');
         return;
     }
     
@@ -970,7 +970,7 @@ async function researchTechnology(techId) {
     if (!isAdmin && selectedTech) {
         const cost = selectedTech.year || 0;
         if (currentResearchPoints < cost) {
-            alert(`Недостаточно очков исследований!\nТребуется: ${cost} ОИ\nДоступно: ${currentResearchPoints} ОИ`);
+            showError(`Недостаточно очков исследований!<br/><strong>Требуется:</strong> ${cost} ОИ<br/><strong>Доступно:</strong> ${currentResearchPoints} ОИ`);
             return;
         }
     }
@@ -998,10 +998,8 @@ async function researchTechnology(techId) {
             if (data.research_points_remaining !== undefined) {
                 currentResearchPoints = data.research_points_remaining;
                 updateResearchPointsDisplay();
-                message += `\nПотрачено: ${data.research_points_spent} ОИ\nОсталось: ${currentResearchPoints} ОИ`;
+                message += `<br/><strong>Потрачено:</strong> ${data.research_points_spent} ОИ<br/><strong>Осталось:</strong> ${currentResearchPoints} ОИ`;
             }
-            
-            alert(message);
             
             // Обновляем прогресс
             if (!playerProgress.researched) {
@@ -1014,13 +1012,15 @@ async function researchTechnology(techId) {
             
             // Закрываем панель информации
             closeTechInfo();
+            
+            showSuccess(message);
         } else {
-            alert('Ошибка: ' + (data.error || 'Не удалось изучить технологию'));
+            showError(data.error || 'Не удалось изучить технологию');
         }
         
     } catch (error) {
         console.error('Error researching technology:', error);
-        alert('Произошла ошибка при изучении технологии');
+        showError('Произошла ошибка при изучении технологии');
     }
 }
 
@@ -1186,26 +1186,193 @@ function updateResearchPointsDisplay() {
     
     // Обновляем или создаем индикатор ОИ в заголовке категории
     let rpDisplay = document.querySelector('.tech-rp-display');
+    const header = document.querySelector('.tech-category-header');
     
-    if (!isAdmin) {
-        // Только для игроков показываем ОИ постоянно
-        const header = document.querySelector('.tech-category-header');
-        if (header && !rpDisplay) {
-            rpDisplay = document.createElement('div');
-            rpDisplay.className = 'tech-rp-display';
-            header.appendChild(rpDisplay);
-        }
-        
-        if (rpDisplay) {
+    if (header && !rpDisplay) {
+        rpDisplay = document.createElement('div');
+        rpDisplay.className = 'tech-rp-display';
+        header.appendChild(rpDisplay);
+    }
+    
+    if (rpDisplay) {
+        if (isAdmin) {
+            // Для админа - с кнопкой редактирования
+            rpDisplay.innerHTML = `
+                <i class="fas fa-flask"></i>
+                <span>ОИ страны: <strong>${currentResearchPoints}</strong></span>
+                <button class="btn-edit-rp" onclick="window.techModule.editResearchPoints()" title="Редактировать ОИ">
+                    <i class="fas fa-edit"></i>
+                </button>
+            `;
+        } else {
+            // Для игрока - просто отображение
             rpDisplay.innerHTML = `
                 <i class="fas fa-flask"></i>
                 <span>Очки исследований: <strong>${currentResearchPoints}</strong></span>
             `;
         }
-    } else if (rpDisplay) {
-        // Удаляем для админов
-        rpDisplay.remove();
     }
+}
+
+// Функция для редактирования ОИ админом
+async function editResearchPoints() {
+    const result = await showPrompt('Редактирование очков исследований', 'Введите новое количество ОИ:', currentResearchPoints.toString());
+    
+    if (result === null) return;
+    
+    const newPoints = parseInt(result);
+    if (isNaN(newPoints) || newPoints < 0) {
+        showError('Некорректное значение. Введите число больше или равно 0.');
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/admin/game/countries/${viewingCountryId}/research-points`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({ research_points: newPoints })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentResearchPoints = newPoints;
+            updateResearchPointsDisplay();
+            showSuccess(`Очки исследований успешно обновлены: ${newPoints} ОИ`);
+        } else {
+            showError('Ошибка: ' + (data.error || 'Не удалось обновить ОИ'));
+        }
+    } catch (error) {
+        console.error('Error updating research points:', error);
+        showError('Произошла ошибка при обновлении ОИ');
+    }
+}
+
+// Система модальных окон
+function showModal(title, message, type = 'info', buttons = ['OK']) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('modal-overlay');
+        const container = document.getElementById('modal-container');
+        const titleEl = document.getElementById('modal-title');
+        const messageEl = document.getElementById('modal-message');
+        const confirmBtn = document.getElementById('modal-confirm');
+        const cancelBtn = document.getElementById('modal-cancel');
+        const closeBtn = document.getElementById('modal-close');
+        
+        // Устанавливаем тип модалки
+        container.className = 'modal-container modal-' + type;
+        
+        // Устанавливаем содержимое
+        titleEl.textContent = title;
+        messageEl.innerHTML = message;
+        
+        // Настраиваем кнопки
+        confirmBtn.textContent = buttons[0] || 'OK';
+        confirmBtn.style.display = 'inline-flex';
+        
+        if (buttons.length > 1) {
+            cancelBtn.textContent = buttons[1];
+            cancelBtn.style.display = 'inline-flex';
+        } else {
+            cancelBtn.style.display = 'none';
+        }
+        
+        // Показываем модалку
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('visible'), 10);
+        
+        // Обработчики
+        const closeModal = (result) => {
+            overlay.classList.remove('visible');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
+            resolve(result);
+        };
+        
+        confirmBtn.onclick = () => closeModal(true);
+        cancelBtn.onclick = () => closeModal(false);
+        closeBtn.onclick = () => closeModal(false);
+        overlay.onclick = (e) => {
+            if (e.target === overlay) closeModal(false);
+        };
+    });
+}
+
+function showSuccess(message) {
+    return showModal('Успех!', `<i class="fas fa-check-circle"></i><p>${message}</p>`, 'success', ['OK']);
+}
+
+function showError(message) {
+    return showModal('Ошибка', `<i class="fas fa-exclamation-circle"></i><p>${message}</p>`, 'error', ['OK']);
+}
+
+function showConfirm(title, message) {
+    return showModal(title, `<i class="fas fa-question-circle"></i><p>${message}</p>`, 'confirm', ['OK', 'Отмена']);
+}
+
+function showPrompt(title, message, defaultValue = '') {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('modal-overlay');
+        const container = document.getElementById('modal-container');
+        const titleEl = document.getElementById('modal-title');
+        const messageEl = document.getElementById('modal-message');
+        const confirmBtn = document.getElementById('modal-confirm');
+        const cancelBtn = document.getElementById('modal-cancel');
+        const closeBtn = document.getElementById('modal-close');
+        
+        container.className = 'modal-container modal-prompt';
+        titleEl.textContent = title;
+        messageEl.innerHTML = `
+            <i class="fas fa-edit"></i>
+            <p>${message}</p>
+            <input type="text" id="modal-input" class="modal-input" value="${defaultValue}" />
+        `;
+        
+        confirmBtn.textContent = 'OK';
+        confirmBtn.style.display = 'inline-flex';
+        cancelBtn.textContent = 'Отмена';
+        cancelBtn.style.display = 'inline-flex';
+        
+        overlay.style.display = 'flex';
+        setTimeout(() => {
+            overlay.classList.add('visible');
+            const input = document.getElementById('modal-input');
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        }, 10);
+        
+        const closeModal = (result) => {
+            const input = document.getElementById('modal-input');
+            const value = result && input ? input.value : null;
+            overlay.classList.remove('visible');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
+            resolve(value);
+        };
+        
+        confirmBtn.onclick = () => closeModal(true);
+        cancelBtn.onclick = () => closeModal(false);
+        closeBtn.onclick = () => closeModal(false);
+        overlay.onclick = (e) => {
+            if (e.target === overlay) closeModal(false);
+        };
+        
+        // Enter для подтверждения
+        const input = document.getElementById('modal-input');
+        if (input) {
+            input.onkeypress = (e) => {
+                if (e.key === 'Enter') closeModal(true);
+            };
+        }
+    });
 }
 
 window.techModule = {
@@ -1214,5 +1381,6 @@ window.techModule = {
     closeInfo: closeTechInfo,
     switchCategory: switchCategory,
     showCountrySelector: showCountrySelector,
-    selectCountry: selectCountry
+    selectCountry: selectCountry,
+    editResearchPoints: editResearchPoints
 };
