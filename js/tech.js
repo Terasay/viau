@@ -358,6 +358,9 @@ function calculateTechPositions(technologies) {
         const totalWidth = techs.length * nodeWidth;
         const startX = Math.max(50, (1400 - totalWidth) / 2); // Центрируем, но не меньше 50px
         
+        // Массив для отслеживания занятых позиций на этом уровне
+        const occupiedRanges = [];
+        
         // Распределяем технологии по горизонтали
         techs.forEach((tech, index) => {
             let x;
@@ -379,6 +382,23 @@ function calculateTechPositions(technologies) {
                 // Корневые узлы - равномерное распределение с центрированием
                 x = startX + index * nodeWidth;
             }
+            
+            // Проверяем конфликты и корректируем позицию
+            let adjusted = false;
+            for (const range of occupiedRanges) {
+                // Если текущая позиция пересекается с занятой
+                if (x < range.end && x + nodeWidth > range.start) {
+                    // Смещаем вправо от конца занятого диапазона
+                    x = range.end;
+                    adjusted = true;
+                    break;
+                }
+            }
+            
+            // Добавляем текущий диапазон в список занятых
+            occupiedRanges.push({ start: x, end: x + nodeWidth });
+            // Сортируем для правильной проверки следующих
+            occupiedRanges.sort((a, b) => a.start - b.start);
             
             positions[tech.id] = { x, y };
         });
