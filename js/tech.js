@@ -12,18 +12,29 @@ async function initTechnologies(category = 'land_forces') {
     currentCategory = category;
     
     // Получаем данные о текущем пользователе и стране
-    if (!currentCountryId && window.gameState) {
+    if (!viewingCountryId && window.gameState) {
         const user = window.gameState.getUser();
         const country = window.gameState.getCountry();
         
         if (country) {
+            // Для обычного игрока
             currentCountryId = country.id;
             viewingCountryId = country.id;
         } else if (user && (user.role === 'admin' || user.role === 'moderator')) {
-            // Для админа показываем селектор стран
+            // Для админа показываем селектор стран только если не выбрана страна
             await showCountrySelector();
             return;
+        } else {
+            // Нет страны и не админ - ошибка
+            showError('Ошибка: страна не найдена');
+            return;
         }
+    }
+    
+    // Если страна уже выбрана, продолжаем загрузку
+    if (!viewingCountryId) {
+        console.error('No country selected for viewing');
+        return;
     }
     
     try {
