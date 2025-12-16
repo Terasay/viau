@@ -437,59 +437,95 @@ function calculateTechPositionsOptimized(technologies) {
         
         // Размещаем технологии по группам
         sortedGroups.forEach(([parentKey, groupTechs]) => {
-            // Вычисляем целевую X-позицию для группы
-            let targetX;
-            
             if (parentKey === 'root') {
-                targetX = centerX - (groupTechs.length * (nodeWidth + horizontalSpacing)) / 2;
+                // Корневые технологии размещаем слева направо от начала
+                let currentX = 50;
+                groupTechs.forEach(tech => {
+                    while (!isPositionFree(level, currentX)) {
+                        currentX += nodeWidth + horizontalSpacing;
+                    }
+                    positions[tech.id] = { x: currentX, y };
+                    occupyPosition(level, currentX);
+                    currentX += nodeWidth + horizontalSpacing;
+                });
             } else {
                 const parentIds = parentKey.split(',');
                 const parentPositions = parentIds.map(p => positions[p]).filter(Boolean);
                 
                 if (parentPositions.length > 0) {
-                    const avgParentX = parentPositions.reduce((sum, pos) => sum + pos.x, 0) / parentPositions.length;
-                    // Центрируем группу относительно среднего положения родителей
-                    targetX = avgParentX - (groupTechs.length * (nodeWidth + horizontalSpacing)) / 2 + nodeWidth / 2;
-                } else {
-                    targetX = centerX;
-                }
-            }
-            
-            // Размещаем технологии группы последовательно
-            groupTechs.forEach((tech, index) => {
-                let x = targetX + index * (nodeWidth + horizontalSpacing);
-                
-                // Ищем ближайшую свободную позицию
-                const searchRadius = 10;
-                let bestX = x;
-                let minDistance = Infinity;
-                
-                // Проверяем диапазон позиций вокруг целевой
-                for (let offset = 0; offset < searchRadius; offset++) {
-                    const candidates = [
-                        x + offset * (nodeWidth + horizontalSpacing),
-                        x - offset * (nodeWidth + horizontalSpacing)
-                    ];
+                    // Вычисляем диапазон родителей
+                    const parentXs = parentPositions.map(p => p.x);
+                    const minParentX = Math.min(...parentXs);
+                    const maxParentX = Math.max(...parentXs);
+                    const avgParentX = parentXs.reduce((a, b) => a + b, 0) / parentXs.length;
                     
-                    for (const candidateX of candidates) {
-                        if (candidateX < 50) continue; // Минимальная граница
-                        
-                        if (isPositionFree(level, candidateX)) {
-                            const distance = Math.abs(candidateX - x);
-                            if (distance < minDistance) {
-                                minDistance = distance;
-                                bestX = candidateX;
+                    // Вычисляем ширину группы
+                    const groupWidth = groupTechs.length * (nodeWidth + horizontalSpacing) - horizontalSpacing;
+                    
+                    // Находим оптимальную стартовую позицию
+                    // Пытаемся разместить группу так, чтобы она была ближе к родителям
+                    let idealStartX = avgParentX - groupWidth / 2;
+                    
+                    // Ищем первую свободную область, куда поместится вся группа
+                    let startX = 50;
+                    let foundPosition = false;
+                    
+                    // Проверяем, можем ли разместить группу начиная с idealStartX
+                    if (idealStartX >= 50) {
+                        let canPlaceHere = true;
+                        for (let i = 0; i < groupTechs.length; i++) {
+                            const testX = idealStartX + i * (nodeWidth + horizontalSpacing);
+                            if (!isPositionFree(level, testX)) {
+                                canPlaceHere = false;
+                                break;
                             }
-                            if (offset === 0) break; // Нашли идеальную позицию
+                        }
+                        if (canPlaceHere) {
+                            startX = idealStartX;
+                            foundPosition = true;
                         }
                     }
                     
-                    if (minDistance === 0) break; // Нашли идеальную позицию
+                    // Если идеальная позиция занята, ищем ближайшую свободную
+                    if (!foundPosition) {
+                        // Проверяем позиции слева от родителей
+                        let testX = Math.max(50, minParentX - groupWidth - horizontalSpacing);
+                        while (testX < maxParentX + nodeWidth + horizontalSpacing) {
+                            let canPlaceHere = true;
+                            for (let i = 0; i < groupTechs.length; i++) {
+                                const checkX = testX + i * (nodeWidth + horizontalSpacing);
+                                if (!isPositionFree(level, checkX)) {
+                                    canPlaceHere = false;
+                                    break;
+                                }
+                            }
+                            
+                            if (canPlaceHere) {
+                                startX = testX;
+                                foundPosition = true;
+                                break;
+                            }
+                            
+                            testX += horizontalSpacing;
+                        }
+                    }
+                    
+                    // Если все еще не нашли, размещаем справа
+                    if (!foundPosition) {
+                        startX = maxParentX + nodeWidth + horizontalSpacing;
+                        while (!isPositionFree(level, startX)) {
+                            startX += nodeWidth + horizontalSpacing;
+                        }
+                    }
+                    
+                    // Размещаем группу
+                    groupTechs.forEach((tech, index) => {
+                        const x = startX + index * (nodeWidth + horizontalSpacing);
+                        positions[tech.id] = { x, y };
+                        occupyPosition(level, x);
+                    });
                 }
-                
-                positions[tech.id] = { x: bestX, y };
-                occupyPosition(level, bestX);
-            });
+            }
         });
     });
     
