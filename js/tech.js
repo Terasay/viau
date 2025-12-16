@@ -649,6 +649,26 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
         entryPoints[key].push(conn);
     });
     
+    // Определяем уровни для каждой технологии
+    const techLevels = {};
+    Object.keys(positions).forEach(techId => {
+        const yPos = positions[techId].y;
+        const level = Math.round((yPos - 80) / 140); // 80 - headerOffset, 140 - verticalSpacing
+        techLevels[techId] = level;
+    });
+    
+    // Группируем технологии по уровням для определения препятствий
+    const techsByLevel = {};
+    Object.keys(positions).forEach(techId => {
+        const level = techLevels[techId];
+        if (!techsByLevel[level]) techsByLevel[level] = [];
+        techsByLevel[level].push({
+            id: techId,
+            x: positions[techId].x,
+            width: nodeWidth
+        });
+    });
+    
     // Рисуем связи
     connections.forEach(conn => {
         const fromPos = conn.fromPos;
@@ -669,19 +689,80 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
         const verticalDist = y2 - y1;
         const horizontalDist = Math.abs(x2 - x1);
         
+        // Определяем уровни родителя и ребенка
+        const fromLevel = techLevels[conn.from];
+        const toLevel = techLevels[conn.to];
+        const levelDiff = toLevel - fromLevel;
+        
         let d;
         
         if (verticalDist > 0) {
-            // Нормальный случай: ребенок ниже родителя
-            // Используем S-образную кривую
-            const midY = y1 + verticalDist / 2;
-            
-            if (horizontalDist < 20) {
+            // Проверяем, есть ли промежуточные уровни с технологиями
+            if (levelDiff > 1) {
+                // Связь проходит через несколько уровней - нужно обходить блоки
+                
+                // Находим все технологии на промежуточных уровнях
+                let minObstacleX = Infinity;
+                let maxObstacleX = -Infinity;
+                
+                for (let level = fromLevel + 1; level < toLevel; level++) {
+                    const levelTechs = techsByLevel[level] || [];
+                    levelTechs.forEach(tech => {
+                        if (tech.id !== conn.from && tech.id !== conn.to) {
+                            minObstacleX = Math.min(minObstacleX, tech.x);
+                            maxObstacleX = Math.max(maxObstacleX, tech.x + tech.width);
+                        }
+                    });
+                }
+                
+                // Определяем, идти слева или справа от препятствий
+                let corridorX;
+                const margin = 30; // Отступ от блоков
+                
+                if (minObstacleX === Infinity) {
+                    // Нет препятствий - обычная кривая
+                    const controlOffset = Math.min(verticalDist * 0.3, 40);
+                    const midY = y1 + verticalDist / 2;
+                    d = `M ${x1} ${y1} 
+                         C ${x1} ${y1 + controlOffset}, 
+                           ${x1} ${midY}, 
+                           ${(x1 + x2) / 2} ${midY}
+                         S ${x2} ${y2 - controlOffset}, 
+                           ${x2} ${y2}`;
+                } else {
+                    // Есть препятствия - обходим
+                    const distToLeft = Math.abs(x1 - (minObstacleX - margin));
+                    const distToRight = Math.abs(x1 - (maxObstacleX + margin));
+                    
+                    // Выбираем ближайшую сторону
+                    if (distToLeft < distToRight && minObstacleX > 50) {
+                        corridorX = minObstacleX - margin;
+                    } else {
+                        corridorX = maxObstacleX + margin;
+                    }
+                    
+                    // Строим путь с обходом
+                    const step1Y = y1 + 30;
+                    const step2Y = y2 - 30;
+                    
+                    d = `M ${x1} ${y1}
+                         L ${x1} ${step1Y}
+                         C ${x1} ${step1Y + 15},
+                           ${x1 + (corridorX - x1) * 0.5} ${step1Y + 20},
+                           ${corridorX} ${step1Y + 25}
+                         L ${corridorX} ${step2Y - 25}
+                         C ${corridorX} ${step2Y - 20},
+                           ${x2 - (x2 - corridorX) * 0.5} ${step2Y - 15},
+                           ${x2} ${step2Y}
+                         L ${x2} ${y2}`;
+                }
+            } else if (horizontalDist < 20) {
                 // Почти вертикальная линия
                 d = `M ${x1} ${y1} L ${x2} ${y2}`;
             } else {
-                // S-образная кривая
+                // Обычная S-образная кривая для соседних уровней
                 const controlOffset = Math.min(verticalDist * 0.3, 40);
+                const midY = y1 + verticalDist / 2;
                 d = `M ${x1} ${y1} 
                      C ${x1} ${y1 + controlOffset}, 
                        ${x1} ${midY}, 
