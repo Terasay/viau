@@ -126,14 +126,14 @@ function initInterface() {
         document.getElementById('ruler-name').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
         document.getElementById('currency-name').textContent = currentCountry.currency;
-        document.getElementById('secret-coins').textContent = currentCountry.secret_coins;
+        document.getElementById('secret-coins').textContent = currentCountry.secret_coins || 0;
 
         // Заполняем секцию обзора
         document.getElementById('overview-country').textContent = currentCountry.country_name;
         document.getElementById('overview-ruler').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
         document.getElementById('overview-currency').textContent = currentCountry.currency;
-        document.getElementById('overview-coins').textContent = currentCountry.secret_coins;
+        document.getElementById('overview-coins').textContent = currentCountry.secret_coins || 0;
     }
 
     document.getElementById('username').textContent = currentUser.username;

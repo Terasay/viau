@@ -343,12 +343,22 @@ body.dark-mode .game-header {
     color: var(--primary);
 }
 
+.resource-item .fa-gem {
+    color: var(--secondary);
+    filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.5));
+}
+
 .resource-label {
     color: var(--text-secondary);
 }
 
 .resource-value {
     color: var(--primary);
+    font-weight: 700;
+}
+
+.resource-item:has(.fa-gem) .resource-value {
+    color: var(--secondary);
     font-weight: 700;
 }
 

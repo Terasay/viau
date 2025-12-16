@@ -1183,7 +1183,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="item-name">ID: ${country.id}</div>
                         </div>
                         <div class="item-rate">
-                            <i class="fas fa-coins"></i> ${country.secret_coins} монет
+                            <i class="fas fa-gem"></i> ${country.secret_coins} секретных монет
                         </div>
                     </div>
                     <div class="application-details" style="margin-top:12px">

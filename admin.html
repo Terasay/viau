@@ -123,22 +123,28 @@
                 <div class="converter-admin-grid" style="margin-top: 24px;">
                     <div class="converter-admin-panel">
                         <h3>Управление секретными монетами</h3>
+                        <p style="color: #888; font-size: 0.9em; margin-bottom: 12px;">
+                            <i class="fas fa-gem"></i> Секретные монеты — внутриигровая валюта, не связанная с валютой страны
+                        </p>
                         <form id="add-coins-form" class="admin-form">
                             <label>
                                 ID страны:
                                 <input type="text" id="coins-country-id" required>
                             </label>
                             <label>
-                                Количество монет:
+                                Количество секретных монет:
                                 <input type="number" id="coins-amount" required>
                             </label>
-                            <button type="submit">Добавить монеты</button>
+                            <button type="submit">Добавить секретные монеты</button>
                             <div id="add-coins-result" class="form-result"></div>
                         </form>
                     </div>
 
                     <div class="converter-admin-panel">
                         <h3>Изменить валюту страны</h3>
+                        <p style="color: #888; font-size: 0.9em; margin-bottom: 12px;">
+                            <i class="fas fa-university"></i> Название валюты страны (золото, франки, рубли и т.д.)
+                        </p>
                         <form id="update-currency-form" class="admin-form">
                             <label>
                                 ID страны:
