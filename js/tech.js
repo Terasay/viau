@@ -18,18 +18,20 @@ async function initTechnologies(category = 'land_forces') {
         // Загружаем ВСЕ категории технологий для межкатегориальных требований
         const categories = ['land_forces', 'navy', 'industry', 'education', 'infrastructure', 'economy'];
         
-        for (const cat of categories) {
-            const response = await fetch(`/api/tech/tree/${cat}`, {
+        // Загружаем все категории параллельно для скорости
+        const promises = categories.map(cat => 
+            fetch(`/api/tech/tree/${cat}`, {
                 headers: { 'Authorization': token }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    allTechData[cat] = data.data;
-                }
+            }).then(res => res.ok ? res.json() : null)
+        );
+        
+        const results = await Promise.all(promises);
+        
+        results.forEach((data, index) => {
+            if (data && data.success) {
+                allTechData[categories[index]] = data.data;
             }
-        }
+        });
         
         // Устанавливаем текущую категорию
         if (allTechData[category]) {
@@ -157,7 +159,6 @@ function setupDragScroll(element) {
     const wrapper = element.querySelector('.tech-lines-wrapper');
     
     element.addEventListener('mousedown', (e) => {
-        // Игнорируем клики по узлам технологий
         if (e.target.closest('.tech-node')) return;
         
         isDragging = true;
@@ -189,7 +190,6 @@ function setupDragScroll(element) {
         element.scrollTop = scrollTop - walkY;
     });
     
-    // Зум колёсиком мыши
     element.addEventListener('wheel', (e) => {
         e.preventDefault();
         
@@ -197,25 +197,20 @@ function setupDragScroll(element) {
         const newZoom = Math.min(Math.max(currentZoom + delta, minZoom), maxZoom);
         
         if (newZoom !== currentZoom) {
-            // Получаем позицию курсора относительно контейнера
             const rect = element.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
-            // Вычисляем точку масштабирования
             const scrollX = element.scrollLeft + x;
             const scrollY = element.scrollTop + y;
             
-            // Применяем новый зум
             currentZoom = newZoom;
             wrapper.style.transform = `scale(${currentZoom})`;
             wrapper.style.transformOrigin = '0 0';
             
-            // Корректируем скролл чтобы зум был относительно курсора
             element.scrollLeft = scrollX * (newZoom / (currentZoom - delta)) - x;
             element.scrollTop = scrollY * (newZoom / (currentZoom - delta)) - y;
             
-            // Обновляем индикатор зума
             const indicator = element.querySelector('.tech-zoom-indicator');
             if (indicator) {
                 indicator.textContent = `${Math.round(currentZoom * 100)}%`;
@@ -234,7 +229,7 @@ function renderTechLine(line, lineIndex) {
     const lineDiv = document.createElement('div');
     lineDiv.className = 'tech-line';
     
-    const lineHorizontalOffset = lineIndex * 1600; // расстояние между линиями по горизонтали
+    const lineHorizontalOffset = lineIndex * 1600;
     lineDiv.style.left = `${lineHorizontalOffset}px`;
     
     // Заголовок линии
@@ -253,16 +248,16 @@ function renderTechLine(line, lineIndex) {
     // Создаем SVG для связей
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.classList.add('tech-connections');
-    svg.style.width = '100%';
-    svg.style.height = '100%';
     nodesContainer.appendChild(svg);
     
-    // Вычисляем позиции для технологий
-    const positions = calculateTechPositions(line.technologies);
+    // Вычисляем позиции для технологий с учетом минимизации пересечений
+    const positions = calculateTechPositionsOptimized(line.technologies);
     
     // Обновляем высоту контейнера
     const maxY = Math.max(...Object.values(positions).map(p => p.y));
+    const maxX = Math.max(...Object.values(positions).map(p => p.x));
     nodesContainer.style.minHeight = `${maxY + 200}px`;
+    nodesContainer.style.minWidth = `${maxX + 300}px`;
     
     // Отрисовываем узлы с вычисленными позициями
     const nodeElements = {};
@@ -279,18 +274,206 @@ function renderTechLine(line, lineIndex) {
     
     // Рисуем связи после того, как элементы добавлены в DOM
     setTimeout(() => {
-        drawConnections(line.technologies, nodeElements, svg, positions);
-    }, 100);
+        drawConnectionsOptimized(line.technologies, nodeElements, svg, positions);
+    }, 50);
     
     return lineDiv;
 }
 
-// Вычисление позиций технологий в виде древа по зависимостям
-function calculateTechPositions(technologies) {
+// Оптимизированное вычисление позиций технологий
+function calculateTechPositionsOptimized(technologies) {
     const positions = {};
-    const nodeWidth = 260; // ширина узла + отступ
-    const verticalSpacing = 150; // расстояние между уровнями по вертикали
-    const horizontalSpacing = 80; // минимальное расстояние между узлами
+    const nodeWidth = 260;
+    const nodeHeight = 80;
+    const verticalSpacing = 140;
+    const horizontalSpacing = 40;
+    const headerOffset = 80;
+    
+    // Создаем карту технологий
+    const techMap = {};
+    technologies.forEach(tech => {
+        techMap[tech.id] = tech;
+    });
+    
+    // Строим граф зависимостей (только внутри линии)
+    const children = {}; // родитель -> дети
+    const parents = {};  // ребенок -> родители
+    
+    technologies.forEach(tech => {
+        children[tech.id] = [];
+        parents[tech.id] = [];
+    });
+    
+    technologies.forEach(tech => {
+        if (tech.requires) {
+            tech.requires.forEach(reqId => {
+                if (techMap[reqId]) {
+                    children[reqId].push(tech.id);
+                    parents[tech.id].push(reqId);
+                }
+            });
+        }
+    });
+    
+    // Вычисляем уровни (глубину) для каждой технологии
+    const levels = {};
+    const calculateLevel = (techId, visited = new Set()) => {
+        if (levels[techId] !== undefined) return levels[techId];
+        if (visited.has(techId)) return 0;
+        visited.add(techId);
+        
+        const techParents = parents[techId].filter(p => techMap[p]);
+        if (techParents.length === 0) {
+            levels[techId] = 0;
+            return 0;
+        }
+        
+        const maxParentLevel = Math.max(...techParents.map(p => calculateLevel(p, new Set(visited))));
+        levels[techId] = maxParentLevel + 1;
+        return levels[techId];
+    };
+    
+    technologies.forEach(tech => calculateLevel(tech.id));
+    
+    // Группируем по уровням
+    const levelGroups = {};
+    technologies.forEach(tech => {
+        const level = levels[tech.id];
+        if (!levelGroups[level]) levelGroups[level] = [];
+        levelGroups[level].push(tech);
+    });
+    
+    // Сортируем технологии на каждом уровне для минимизации пересечений
+    const sortedLevels = Object.keys(levelGroups).map(Number).sort((a, b) => a - b);
+    
+    sortedLevels.forEach((level, levelIndex) => {
+        const techs = levelGroups[level];
+        
+        if (level === 0) {
+            // Корневые технологии - просто равномерно распределяем
+            techs.forEach((tech, index) => {
+                positions[tech.id] = {
+                    x: 50 + index * (nodeWidth + horizontalSpacing),
+                    y: headerOffset,
+                    order: index
+                };
+            });
+        } else {
+            // Сортируем по средней позиции родителей для минимизации пересечений
+            techs.sort((a, b) => {
+                const aParents = parents[a.id].filter(p => positions[p]);
+                const bParents = parents[b.id].filter(p => positions[p]);
+                
+                const aAvgX = aParents.length > 0 
+                    ? aParents.reduce((sum, p) => sum + positions[p].x, 0) / aParents.length 
+                    : 0;
+                const bAvgX = bParents.length > 0 
+                    ? bParents.reduce((sum, p) => sum + positions[p].x, 0) / bParents.length 
+                    : 0;
+                
+                return aAvgX - bAvgX;
+            });
+            
+            // Позиционируем технологии с учетом родителей
+            const y = level * verticalSpacing + headerOffset;
+            
+            techs.forEach((tech, index) => {
+                const techParents = parents[tech.id].filter(p => positions[p]);
+                
+                let targetX;
+                if (techParents.length > 0) {
+                    // Целевая позиция - среднее родителей
+                    targetX = techParents.reduce((sum, p) => sum + positions[p].x, 0) / techParents.length;
+                } else {
+                    targetX = 50 + index * (nodeWidth + horizontalSpacing);
+                }
+                
+                // Проверяем конфликты с уже размещенными технологиями на этом уровне
+                const placedOnLevel = techs.slice(0, index).map(t => positions[t.id]).filter(p => p);
+                
+                let finalX = targetX;
+                let attempts = 0;
+                const maxAttempts = 20;
+                
+                while (attempts < maxAttempts) {
+                    let hasConflict = false;
+                    for (const placed of placedOnLevel) {
+                        if (Math.abs(finalX - placed.x) < nodeWidth + horizontalSpacing) {
+                            hasConflict = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!hasConflict) break;
+                    
+                    // Смещаем вправо
+                    finalX += nodeWidth + horizontalSpacing;
+                    attempts++;
+                }
+                
+                // Убеждаемся что не вышли за левую границу
+                finalX = Math.max(50, finalX);
+                
+                positions[tech.id] = { x: finalX, y, order: index };
+            });
+        }
+    });
+    
+    // Второй проход: оптимизация для уменьшения длины связей
+    // Центрируем родителей относительно их детей
+    for (let i = 0; i < 3; i++) { // несколько итераций для сходимости
+        sortedLevels.forEach(level => {
+            const techs = levelGroups[level];
+            
+            techs.forEach(tech => {
+                const techChildren = children[tech.id].filter(c => positions[c]);
+                
+                if (techChildren.length > 0) {
+                    const avgChildX = techChildren.reduce((sum, c) => sum + positions[c].x, 0) / techChildren.length;
+                    const currentX = positions[tech.id].x;
+                    
+                    // Пробуем сместить к детям
+                    const newX = (currentX + avgChildX) / 2;
+                    
+                    // Проверяем конфликты
+                    const sameLevelTechs = techs.filter(t => t.id !== tech.id);
+                    let canMove = true;
+                    
+                    for (const other of sameLevelTechs) {
+                        if (Math.abs(newX - positions[other.id].x) < nodeWidth + horizontalSpacing) {
+                            canMove = false;
+                            break;
+                        }
+                    }
+                    
+                    if (canMove) {
+                        positions[tech.id].x = Math.max(50, newX);
+                    }
+                }
+            });
+        });
+    }
+    
+    return positions;
+}
+
+// Оптимизированное рисование связей
+function drawConnectionsOptimized(technologies, elements, svg, positions) {
+    svg.innerHTML = '';
+    
+    const nodeWidth = 240;
+    const nodeHeight = 70;
+    
+    // Устанавливаем размеры SVG
+    const maxX = Math.max(...Object.values(positions).map(p => p.x)) + 400;
+    const maxY = Math.max(...Object.values(positions).map(p => p.y)) + 250;
+    svg.setAttribute('width', maxX);
+    svg.setAttribute('height', maxY);
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.pointerEvents = 'none';
+    svg.style.overflow = 'visible';
     
     // Создаем карту технологий для быстрого доступа
     const techMap = {};
@@ -298,59 +481,120 @@ function calculateTechPositions(technologies) {
         techMap[tech.id] = tech;
     });
     
-    // Функция для расчета уровня (глубины) технологии в дереве
-    const calculateLevel = (techId, visited = new Set()) => {
-        if (visited.has(techId)) return 0; // защита от циклов
-        visited.add(techId);
+    // Собираем все связи
+    const connections = [];
+    technologies.forEach(tech => {
+        if (tech.requires && tech.requires.length > 0) {
+            tech.requires.forEach(reqId => {
+                // Рисуем только связи внутри линии
+                if (techMap[reqId] && positions[reqId] && positions[tech.id]) {
+                    connections.push({
+                        from: reqId,
+                        to: tech.id,
+                        fromPos: positions[reqId],
+                        toPos: positions[tech.id]
+                    });
+                }
+            });
+        }
+    });
+    
+    // Группируем связи по точкам выхода для распределения
+    const exitPoints = {};
+    connections.forEach(conn => {
+        const key = conn.from;
+        if (!exitPoints[key]) exitPoints[key] = [];
+        exitPoints[key].push(conn);
+    });
+    
+    // Группируем связи по точкам входа
+    const entryPoints = {};
+    connections.forEach(conn => {
+        const key = conn.to;
+        if (!entryPoints[key]) entryPoints[key] = [];
+        entryPoints[key].push(conn);
+    });
+    
+    // Рисуем связи
+    connections.forEach(conn => {
+        const fromPos = conn.fromPos;
+        const toPos = conn.toPos;
         
-        const tech = techMap[techId];
-        if (!tech || !tech.requires || tech.requires.length === 0) {
-            return 0; // корневая технология
+        // Вычисляем смещение для точки выхода (если несколько детей)
+        const exitGroup = exitPoints[conn.from];
+        const exitIndex = exitGroup.indexOf(conn);
+        const exitCount = exitGroup.length;
+        const exitSpread = Math.min(nodeWidth * 0.6, exitCount * 30);
+        const exitOffset = exitCount > 1 
+            ? (exitIndex - (exitCount - 1) / 2) * (exitSpread / exitCount)
+            : 0;
+        
+        // Вычисляем смещение для точки входа (если несколько родителей)
+        const entryGroup = entryPoints[conn.to];
+        const entryIndex = entryGroup.indexOf(conn);
+        const entryCount = entryGroup.length;
+        const entrySpread = Math.min(nodeWidth * 0.6, entryCount * 30);
+        const entryOffset = entryCount > 1 
+            ? (entryIndex - (entryCount - 1) / 2) * (entrySpread / entryCount)
+            : 0;
+        
+        // Точка выхода (снизу родителя)
+        const x1 = fromPos.x + nodeWidth / 2 + exitOffset;
+        const y1 = fromPos.y + nodeHeight;
+        
+        // Точка входа (сверху ребенка)
+        const x2 = toPos.x + nodeWidth / 2 + entryOffset;
+        const y2 = toPos.y;
+        
+        // Создаем путь
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        
+        const verticalDist = y2 - y1;
+        const horizontalDist = Math.abs(x2 - x1);
+        
+        let d;
+        
+        if (verticalDist > 0) {
+            // Нормальный случай: ребенок ниже родителя
+            // Используем S-образную кривую
+            const midY = y1 + verticalDist / 2;
+            
+            if (horizontalDist < 20) {
+                // Почти вертикальная линия
+                d = `M ${x1} ${y1} L ${x2} ${y2}`;
+            } else {
+                // S-образная кривая
+                const controlOffset = Math.min(verticalDist * 0.3, 40);
+                d = `M ${x1} ${y1} 
+                     C ${x1} ${y1 + controlOffset}, 
+                       ${x1} ${midY}, 
+                       ${(x1 + x2) / 2} ${midY}
+                     S ${x2} ${y2 - controlOffset}, 
+                       ${x2} ${y2}`;
+            }
+        } else {
+            // Редкий случай: нужно обойти
+            const bendY = Math.min(y1, y2) - 50;
+            d = `M ${x1} ${y1} 
+                 L ${x1} ${bendY} 
+                 L ${x2} ${bendY} 
+                 L ${x2} ${y2}`;
         }
         
-        // Уровень = максимальный уровень родителей + 1
-        const parentLevels = tech.requires
-            .filter(reqId => techMap[reqId]) // только технологии из этой линии
-            .map(reqId => calculateLevel(reqId, new Set(visited)));
+        path.setAttribute('d', d);
+        path.classList.add('tech-connection-line');
         
-        return parentLevels.length > 0 ? Math.max(...parentLevels) + 1 : 0;
-    };
-    
-    // Вычисляем уровни для всех технологий
-    const levels = {};
-    technologies.forEach(tech => {
-        levels[tech.id] = calculateLevel(tech.id);
-    });
-    
-    // Группируем по уровням
-    const levelGroups = {};
-    technologies.forEach(tech => {
-        const level = levels[tech.id];
-        if (!levelGroups[level]) {
-            levelGroups[level] = [];
+        // Подсвечиваем если обе технологии изучены
+        const fromStatus = getTechStatus({ id: conn.from, requires: [] });
+        const toTech = techMap[conn.to];
+        const toStatus = getTechStatus(toTech);
+        
+        if (fromStatus === 'researched' && toStatus === 'researched') {
+            path.classList.add('active');
         }
-        levelGroups[level].push(tech);
-    });
-    
-    // Позиционируем технологии по уровням
-    const headerOffset = 100; // Отступ для заголовка линии
-    
-    Object.keys(levelGroups).sort((a, b) => parseInt(a) - parseInt(b)).forEach(level => {
-        const techs = levelGroups[level];
-        const y = parseInt(level) * verticalSpacing + headerOffset;
         
-        // Вычисляем общую ширину всех технологий на уровне
-        const totalWidth = techs.length * nodeWidth;
-        const startX = Math.max(50, (1400 - totalWidth) / 2); // Центрируем, но не меньше 50px
-        
-        // Простое равномерное распределение без проверки конфликтов
-        techs.forEach((tech, index) => {
-            const x = startX + index * nodeWidth;
-            positions[tech.id] = { x, y };
-        });
+        svg.appendChild(path);
     });
-    
-    return positions;
 }
 
 // Создание узла технологии
@@ -359,11 +603,9 @@ function createTechNode(tech) {
     node.className = 'tech-node';
     node.dataset.techId = tech.id;
     
-    // Определяем статус технологии
     const status = getTechStatus(tech);
     node.classList.add(status);
     
-    // Иконка в зависимости от статуса
     let icon = 'fa-lock';
     if (status === 'researched') icon = 'fa-check-circle';
     else if (status === 'available') icon = 'fa-circle';
@@ -376,7 +618,6 @@ function createTechNode(tech) {
         <div class="tech-node-year">${tech.year} г.</div>
     `;
     
-    // Клик по узлу - показываем информацию
     node.addEventListener('click', () => {
         showTechInfo(tech);
     });
@@ -390,12 +631,10 @@ function getTechStatus(tech) {
         return 'locked';
     }
     
-    // Проверяем, изучена ли технология
     if (playerProgress.researched.includes(tech.id)) {
         return 'researched';
     }
     
-    // Проверяем, доступна ли для изучения
     const requirementsMet = tech.requires.every(reqId => 
         playerProgress.researched.includes(reqId)
     );
@@ -405,74 +644,6 @@ function getTechStatus(tech) {
     }
     
     return 'locked';
-}
-
-// Рисование связей между технологиями
-function drawConnections(technologies, elements, svg, positions) {
-    svg.innerHTML = '';
-    
-    // Устанавливаем размеры SVG с запасом
-    const maxX = Math.max(...Object.values(positions).map(p => p.x)) + 400;
-    const maxY = Math.max(...Object.values(positions).map(p => p.y)) + 250;
-    svg.setAttribute('width', maxX);
-    svg.setAttribute('height', maxY);
-    svg.style.position = 'absolute';
-    svg.style.top = '0';
-    svg.style.left = '0';
-    svg.style.pointerEvents = 'none';
-    
-    const nodeWidth = 240;
-    const nodeHeight = 70; // примерная высота узла
-    
-    technologies.forEach(tech => {
-        if (tech.requires && tech.requires.length > 0) {
-            tech.requires.forEach(reqId => {
-                const fromNode = elements[reqId];
-                const toNode = elements[tech.id];
-                
-                if (fromNode && toNode && positions[reqId] && positions[tech.id]) {
-                    const fromPos = positions[reqId];
-                    const toPos = positions[tech.id];
-                    
-                    // Точка выхода из родительского блока (снизу, центр)
-                    const x1 = fromPos.x + nodeWidth / 2;
-                    const y1 = fromPos.y + nodeHeight;
-                    
-                    // Точка входа в дочерний блок (сверху, центр)
-                    const x2 = toPos.x + nodeWidth / 2;
-                    const y2 = toPos.y;
-                    
-                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                    
-                    // Рассчитываем контрольные точки для кривой Безье
-                    const verticalDistance = y2 - y1;
-                    const horizontalDistance = Math.abs(x2 - x1);
-                    
-                    // Используем кривую Безье с учетом расстояния
-                    const controlOffset = Math.min(verticalDistance * 0.4, 60);
-                    const cx1 = x1;
-                    const cy1 = y1 + controlOffset;
-                    const cx2 = x2;
-                    const cy2 = y2 - controlOffset;
-                    
-                    const d = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
-                    
-                    line.setAttribute('d', d);
-                    line.classList.add('tech-connection-line');
-                    
-                    // Подсвечиваем линию, если обе технологии изучены
-                    const fromTech = { id: reqId, requires: [] };
-                    const fromStatus = getTechStatus(fromTech);
-                    const toStatus = getTechStatus(tech);
-                    if (fromStatus === 'researched' && toStatus === 'researched') {
-                        line.classList.add('active');
-                    }
-                    
-                    svg.appendChild(line);
-                }
-            });
-        }
-    });
 }
 
 // Показ информации о технологии
@@ -499,24 +670,46 @@ function showTechInfo(tech) {
         statusClass = 'available';
     }
     
-    // Получаем требования
+    // Получаем требования с указанием категории для межкатегориальных
     let requirementsHTML = '';
     if (tech.requires && tech.requires.length > 0) {
         const reqTechs = tech.requires.map(reqId => {
             const reqTech = findTechById(reqId);
             const reqStatus = getTechStatus({ id: reqId, requires: [] });
             const checkIcon = reqStatus === 'researched' ? '✓' : '✗';
-            return `<li>${checkIcon} ${reqTech ? reqTech.name : reqId}</li>`;
+            const checkClass = reqStatus === 'researched' ? 'req-met' : 'req-unmet';
+            
+            let techName = reqId;
+            let categoryHint = '';
+            
+            if (reqTech) {
+                techName = reqTech.name;
+                // Проверяем, из другой ли это категории
+                const techCategory = findTechCategory(reqId);
+                if (techCategory && techCategory !== currentCategory) {
+                    const categoryNames = {
+                        'land_forces': 'Сухопутные войска',
+                        'navy': 'Флот',
+                        'industry': 'Промышленность',
+                        'education': 'Образование',
+                        'infrastructure': 'Инфраструктура',
+                        'economy': 'Экономика'
+                    };
+                    categoryHint = ` <span class="req-category">(${categoryNames[techCategory] || techCategory})</span>`;
+                }
+            }
+            
+            return `<li class="${checkClass}"><span class="req-check">${checkIcon}</span> ${techName}${categoryHint}</li>`;
         }).join('');
+        
         requirementsHTML = `
             <div class="tech-info-section">
                 <h4>Требования</h4>
-                <ul>${reqTechs}</ul>
+                <ul class="tech-requirements-list">${reqTechs}</ul>
             </div>
         `;
     }
     
-    // Кнопка исследования
     let researchButton = '';
     if (status === 'available') {
         researchButton = `
@@ -539,13 +732,25 @@ function showTechInfo(tech) {
         </div>
         <div class="tech-info-status ${statusClass}">${statusText}</div>
         <div class="tech-info-description">
-            Технология позволяет улучшить военные возможности вашего государства.
+            Технология позволяет улучшить возможности вашего государства.
         </div>
         ${requirementsHTML}
         ${researchButton}
     `;
     
     infoPanel.classList.add('visible');
+}
+
+// Найти категорию технологии
+function findTechCategory(techId) {
+    for (const category in allTechData) {
+        const catData = allTechData[category];
+        for (const line of catData.lines) {
+            const tech = line.technologies.find(t => t.id === techId);
+            if (tech) return category;
+        }
+    }
+    return null;
 }
 
 // Найти технологию по ID во всех категориях
@@ -581,7 +786,6 @@ function closeTechInfo() {
 // Начать исследование технологии
 function researchTechnology(techId) {
     console.log('Starting research for:', techId);
-    // TODO: Реализовать отправку запроса на сервер
     alert('Функция исследования технологий будет доступна в следующих обновлениях');
 }
 
@@ -603,7 +807,6 @@ function showError(message) {
 async function switchCategory(category) {
     console.log('Switching to category:', category);
     
-    // Обновляем активную вкладку
     document.querySelectorAll('.tech-category-tab').forEach(tab => {
         tab.classList.remove('active');
         if (tab.dataset.category === category) {
@@ -611,13 +814,11 @@ async function switchCategory(category) {
         }
     });
     
-    // Если данные уже загружены, просто переключаемся
     if (allTechData[category]) {
         currentCategory = category;
         techData = allTechData[category];
         renderTechTree();
     } else {
-        // Показываем загрузку
         const container = document.getElementById('tech-tree-content');
         if (container) {
             container.innerHTML = `
@@ -629,14 +830,12 @@ async function switchCategory(category) {
             `;
         }
         
-        // Загружаем новую категорию
         await initTechnologies(category);
     }
 }
 
 // Инициализация обработчиков событий
 function initEventHandlers() {
-    // Обработчики для вкладок категорий
     document.querySelectorAll('.tech-category-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             const category = tab.dataset.category;
@@ -652,7 +851,7 @@ setTimeout(() => {
     initEventHandlers();
 }, 100);
 
-// Экспортируем функции для использования в game.js
+// Экспортируем функции
 window.techModule = {
     init: initTechnologies,
     showInfo: showTechInfo,

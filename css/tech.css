@@ -132,6 +132,68 @@ body:not(.dark-mode) .tech-zoom-indicator {
     opacity: 1;
 }
 
+.tech-requirements-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tech-requirements-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    margin: 4px 0;
+    border-radius: var(--radius);
+    font-size: 0.9em;
+    transition: background 0.2s ease;
+}
+
+.tech-requirements-list li.req-met {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.tech-requirements-list li.req-unmet {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.tech-requirements-list li::before {
+    display: none; /* убираем старый стиль */
+}
+
+.req-check {
+    font-weight: bold;
+    min-width: 16px;
+}
+
+.req-category {
+    font-size: 0.8em;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* Улучшенные линии связей */
+.tech-connection-line {
+    stroke: var(--border);
+    stroke-width: 2;
+    fill: none;
+    transition: stroke 0.3s ease, stroke-width 0.3s ease;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.tech-connection-line.active {
+    stroke: var(--primary);
+    stroke-width: 3;
+}
+
+/* Анимация для связей при наведении на узел */
+.tech-node:hover ~ .tech-connections .tech-connection-line {
+    opacity: 0.5;
+}
+
 /* Стилизация скроллбаров */
 .tech-lines-container::-webkit-scrollbar {
     width: 12px;
