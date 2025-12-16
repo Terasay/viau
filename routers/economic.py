@@ -27,11 +27,18 @@ def init_db():
             country_name TEXT NOT NULL,
             currency TEXT DEFAULT 'Золото',
             secret_coins INTEGER DEFAULT 0,
+            research_points INTEGER DEFAULT 100,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             FOREIGN KEY (player_id) REFERENCES users (id)
         )
     ''')
+    
+    # Добавляем поле research_points в существующую таблицу, если его нет
+    cursor.execute("PRAGMA table_info(countries)")
+    columns = [column[1] for column in cursor.fetchall()]
+    if 'research_points' not in columns:
+        cursor.execute('ALTER TABLE countries ADD COLUMN research_points INTEGER DEFAULT 100')
     
     conn.commit()
     conn.close()
@@ -147,8 +154,8 @@ def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler
         cursor.execute('''
             INSERT INTO countries (
                 id, player_id, ruler_first_name, ruler_last_name,
-                country_name, currency, secret_coins, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                country_name, currency, secret_coins, research_points, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             country_id,
             player_id,
@@ -157,6 +164,7 @@ def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler
             country_name,
             currency,
             0,
+            100,  # Начальное количество очков исследований
             now,
             now
         ))

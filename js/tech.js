@@ -6,6 +6,7 @@ let isInitialized = false;
 let currentCategory = 'land_forces';
 let currentCountryId = null;
 let viewingCountryId = null; // Для админа - какую страну просматривает
+let currentResearchPoints = 0; // Текущее количество очков исследований
 
 async function initTechnologies(category = 'land_forces') {
     console.log('Initializing tech tree for category:', category);
@@ -83,12 +84,28 @@ async function initTechnologies(category = 'land_forces') {
                     };
                 }
             }
+            
+            // Загружаем очки исследований
+            console.log('Fetching research points for:', viewingCountryId);
+            const rpResponse = await fetch(`/api/game/research-points/${viewingCountryId}`, {
+                headers: { 'Authorization': token }
+            });
+            
+            if (rpResponse.ok) {
+                const rpData = await rpResponse.json();
+                console.log('Research points:', rpData);
+                if (rpData.success) {
+                    currentResearchPoints = rpData.research_points || 0;
+                    updateResearchPointsDisplay();
+                }
+            }
         } else {
             playerProgress = {
                 researched: [],
                 researching: null,
                 progress: 0
             };
+            currentResearchPoints = 0;
         }
         
         renderTechTree();
@@ -773,7 +790,7 @@ function createTechNode(tech) {
             <h5 class="tech-node-name">${tech.name}</h5>
             <i class="fas ${icon} tech-node-icon"></i>
         </div>
-        <div class="tech-node-year">${tech.year} г.</div>
+        <div class="tech-node-year"><i class="fas fa-flask"></i> ${tech.year} ОИ</div>
     `;
     
     node.addEventListener('click', () => {
@@ -878,7 +895,7 @@ function showTechInfo(tech) {
         <div class="tech-info-header">
             <div class="tech-info-title">
                 <h3>${tech.name}</h3>
-                <div class="tech-year">${tech.year} г.</div>
+                <div class="tech-year"><i class="fas fa-flask"></i> Стоимость: ${tech.year} ОИ</div>
             </div>
             <button class="tech-info-close" onclick="closeTechInfo()">
                 <i class="fas fa-times"></i>
@@ -949,6 +966,15 @@ async function researchTechnology(techId) {
         return;
     }
     
+    // Проверяем стоимость технологии для игроков (админы изучают бесплатно)
+    if (!isAdmin && selectedTech) {
+        const cost = selectedTech.year || 0;
+        if (currentResearchPoints < cost) {
+            alert(`Недостаточно очков исследований!\nТребуется: ${cost} ОИ\nДоступно: ${currentResearchPoints} ОИ`);
+            return;
+        }
+    }
+    
     try {
         const token = localStorage.getItem('token');
         const response = await fetch('/api/tech/research', {
@@ -966,7 +992,16 @@ async function researchTechnology(techId) {
         const data = await response.json();
         
         if (data.success) {
-            alert('Технология успешно изучена!');
+            let message = 'Технология успешно изучена!';
+            
+            // Обновляем ОИ для игроков
+            if (data.research_points_remaining !== undefined) {
+                currentResearchPoints = data.research_points_remaining;
+                updateResearchPointsDisplay();
+                message += `\nПотрачено: ${data.research_points_spent} ОИ\nОсталось: ${currentResearchPoints} ОИ`;
+            }
+            
+            alert(message);
             
             // Обновляем прогресс
             if (!playerProgress.researched) {
@@ -1142,6 +1177,35 @@ function updateCountryIndicator(countryName) {
             <i class="fas fa-exchange-alt"></i> Сменить страну
         </button>
     `;
+}
+
+// Функция для обновления отображения ОИ
+function updateResearchPointsDisplay() {
+    const user = window.gameState?.getUser();
+    const isAdmin = user && (user.role === 'admin' || user.role === 'moderator');
+    
+    // Обновляем или создаем индикатор ОИ в заголовке категории
+    let rpDisplay = document.querySelector('.tech-rp-display');
+    
+    if (!isAdmin) {
+        // Только для игроков показываем ОИ постоянно
+        const header = document.querySelector('.tech-category-header');
+        if (header && !rpDisplay) {
+            rpDisplay = document.createElement('div');
+            rpDisplay.className = 'tech-rp-display';
+            header.appendChild(rpDisplay);
+        }
+        
+        if (rpDisplay) {
+            rpDisplay.innerHTML = `
+                <i class="fas fa-flask"></i>
+                <span>Очки исследований: <strong>${currentResearchPoints}</strong></span>
+            `;
+        }
+    } else if (rpDisplay) {
+        // Удаляем для админов
+        rpDisplay.remove();
+    }
 }
 
 window.techModule = {

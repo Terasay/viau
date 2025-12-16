@@ -59,6 +59,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -82,6 +84,28 @@
     font-size: 1.4em;
     font-weight: 700;
     margin: 0;
+}
+
+/* Индикатор очков исследований */
+.tech-rp-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: var(--radius-full);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(109, 40, 217, 0.3);
+}
+
+.tech-rp-display i {
+    font-size: 1.2em;
+}
+
+.tech-rp-display strong {
+    font-size: 1.1em;
+    font-weight: 800;
 }
 
 /* Контейнер для линий технологий */

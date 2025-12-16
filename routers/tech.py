@@ -960,6 +960,16 @@ INFRASTRUCTURE_TECH = {
     ]
 }
 
+# Словарь всех технологий для упрощенного доступа
+TECHNOLOGIES = {
+    'land_forces': LAND_FORCES_TECH,
+    'navy': NAVY_TECH,
+    'education': EDUCATION_TECH,
+    'economy': ECONOMY_TECH,
+    'industry': INDUSTRY_TECH,
+    'infrastructure': INFRASTRUCTURE_TECH
+}
+
 @router.get("/categories")
 async def get_tech_categories():
     """Получить список всех доступных категорий технологий"""
@@ -1089,7 +1099,7 @@ async def research_technology(data: ResearchTechData, request: Request):
     cursor = conn.cursor()
     
     try:
-        cursor.execute("SELECT player_id FROM countries WHERE id = ?", (data.country_id,))
+        cursor.execute("SELECT player_id, research_points FROM countries WHERE id = ?", (data.country_id,))
         country = cursor.fetchone()
         
         if not country:
@@ -1098,7 +1108,9 @@ async def research_technology(data: ResearchTechData, request: Request):
                 "error": "Страна не найдена"
             }, status_code=404)
         
-        if user.get('role') not in ['admin', 'moderator']:
+        is_admin = user.get('role') in ['admin', 'moderator']
+        
+        if not is_admin:
             if country['player_id'] != user['id']:
                 return JSONResponse({
                     "success": False,
@@ -1117,6 +1129,45 @@ async def research_technology(data: ResearchTechData, request: Request):
                 "error": "Технология уже изучена"
             }, status_code=400)
         
+        # Для игроков проверяем и списываем ОИ (админы могут изучать бесплатно)
+        tech_cost = 0
+        if not is_admin:
+            # Находим технологию и её стоимость (year используется как стоимость в ОИ)
+            tech_found = None
+            for category_key in TECHNOLOGIES.keys():
+                category_data = TECHNOLOGIES[category_key]
+                for line in category_data.get('lines', []):
+                    for tech in line.get('technologies', []):
+                        if tech['id'] == data.tech_id:
+                            tech_cost = tech.get('year', 0)
+                            tech_found = tech
+                            break
+                    if tech_found:
+                        break
+                if tech_found:
+                    break
+            
+            if not tech_found:
+                return JSONResponse({
+                    "success": False,
+                    "error": "Технология не найдена"
+                }, status_code=404)
+            
+            # Проверяем достаточно ли ОИ
+            current_points = country['research_points']
+            if current_points < tech_cost:
+                return JSONResponse({
+                    "success": False,
+                    "error": f"Недостаточно очков исследований. Требуется: {tech_cost}, доступно: {current_points}"
+                }, status_code=400)
+            
+            # Списываем ОИ
+            new_points = current_points - tech_cost
+            cursor.execute(
+                'UPDATE countries SET research_points = ? WHERE id = ?',
+                (new_points, data.country_id)
+            )
+        
         # Добавляем изученную технологию
         now = datetime.now().isoformat()
         cursor.execute('''
@@ -1126,12 +1177,19 @@ async def research_technology(data: ResearchTechData, request: Request):
         
         conn.commit()
         
-        return JSONResponse({
+        response_data = {
             "success": True,
             "message": "Технология изучена",
             "tech_id": data.tech_id,
             "researched_at": now
-        })
+        }
+        
+        # Добавляем информацию об ОИ для игроков
+        if not is_admin:
+            response_data["research_points_spent"] = tech_cost
+            response_data["research_points_remaining"] = new_points
+        
+        return JSONResponse(response_data)
         
     except Exception as e:
         conn.rollback()
