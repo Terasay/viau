@@ -339,14 +339,75 @@ function calculateTechPositions(technologies) {
         const techs = levelGroups[level];
         const y = parseInt(level) * verticalSpacing + headerOffset;
         
-        // Вычисляем общую ширину всех технологий на уровне
-        const totalWidth = techs.length * nodeWidth;
-        const startX = Math.max(50, (1400 - totalWidth) / 2); // Центрируем, но не меньше 50px
+        // Сортируем технологии по средней X-координате их родителей
+        techs.sort((a, b) => {
+            const aParents = a.requires.filter(reqId => techMap[reqId] && positions[reqId]);
+            const bParents = b.requires.filter(reqId => techMap[reqId] && positions[reqId]);
+            
+            const aAvg = aParents.length > 0 
+                ? aParents.reduce((sum, reqId) => sum + positions[reqId].x, 0) / aParents.length
+                : a.year || 0;
+            const bAvg = bParents.length > 0
+                ? bParents.reduce((sum, reqId) => sum + positions[reqId].x, 0) / bParents.length
+                : b.year || 0;
+            
+            return aAvg - bAvg;
+        });
         
-        // Простое равномерное распределение без проверки конфликтов
-        techs.forEach((tech, index) => {
-            const x = startX + index * nodeWidth;
+        // Массив уже размещенных технологий на этом уровне
+        const placedTechs = [];
+        
+        // Распределяем технологии, выравнивая по родителям
+        techs.forEach(tech => {
+            let x;
+            
+            // Если есть родители, центрируем между ними
+            if (tech.requires && tech.requires.length > 0) {
+                const parentPositions = tech.requires
+                    .filter(reqId => techMap[reqId] && positions[reqId])
+                    .map(reqId => positions[reqId].x);
+                
+                if (parentPositions.length > 0) {
+                    x = parentPositions.reduce((a, b) => a + b, 0) / parentPositions.length;
+                } else {
+                    // Если родителей нет в этой линии, размещаем справа от последней технологии
+                    x = placedTechs.length > 0 
+                        ? placedTechs[placedTechs.length - 1].x + nodeWidth
+                        : 50;
+                }
+            } else {
+                // Корневые узлы - размещаем слева направо
+                x = placedTechs.length > 0 
+                    ? placedTechs[placedTechs.length - 1].x + nodeWidth
+                    : 50;
+            }
+            
+            // Проверяем конфликты с уже размещенными технологиями
+            let hasConflict = true;
+            let attempts = 0;
+            while (hasConflict && attempts < 50) {
+                hasConflict = false;
+                for (const placed of placedTechs) {
+                    const distance = Math.abs(x - placed.x);
+                    if (distance < nodeWidth - horizontalSpacing) {
+                        // Смещаем в сторону от конфликтующей технологии
+                        if (x < placed.x) {
+                            x = placed.x - nodeWidth;
+                        } else {
+                            x = placed.x + nodeWidth;
+                        }
+                        hasConflict = true;
+                        break;
+                    }
+                }
+                attempts++;
+            }
+            
+            // Не даём уйти слишком далеко влево
+            x = Math.max(50, x);
+            
             positions[tech.id] = { x, y };
+            placedTechs.push({ x, y, id: tech.id });
         });
     });
     
