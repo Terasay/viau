@@ -590,7 +590,13 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
     svg.innerHTML = '';
     
     const nodeWidth = 240;
-    const nodeHeight = 70;
+    
+    // Получаем реальные высоты узлов из DOM
+    const nodeHeights = {};
+    Object.keys(elements).forEach(techId => {
+        const element = elements[techId];
+        nodeHeights[techId] = element.offsetHeight || 70; // 70 как fallback
+    });
     
     // Устанавливаем размеры SVG
     const maxX = Math.max(...Object.values(positions).map(p => p.x)) + 400;
@@ -666,9 +672,10 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
             ? (entryIndex - (entryCount - 1) / 2) * (entrySpread / entryCount)
             : 0;
         
-        // Точка выхода (снизу родителя)
+        // Точка выхода (снизу родителя) - используем реальную высоту
+        const fromHeight = nodeHeights[conn.from] || 70;
         const x1 = fromPos.x + nodeWidth / 2 + exitOffset;
-        const y1 = fromPos.y + nodeHeight;
+        const y1 = fromPos.y + fromHeight;
         
         // Точка входа (сверху ребенка)
         const x2 = toPos.x + nodeWidth / 2 + entryOffset;
