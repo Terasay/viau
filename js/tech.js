@@ -654,18 +654,9 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
         const fromPos = conn.fromPos;
         const toPos = conn.toPos;
         
-        // Вычисляем смещение для точки выхода (если несколько детей)
-        const exitGroup = exitPoints[conn.from];
-        const exitIndex = exitGroup.indexOf(conn);
-        const exitCount = exitGroup.length;
-        const exitSpread = Math.min(nodeWidth * 0.6, exitCount * 30);
-        const exitOffset = exitCount > 1 
-            ? (exitIndex - (exitCount - 1) / 2) * (exitSpread / exitCount)
-            : 0;
-        
-        // Точка выхода (снизу родителя) - используем реальную высоту
+        // Точка выхода (снизу родителя) - всегда по центру, без смещения
         const fromHeight = nodeHeights[conn.from] || 70;
-        const x1 = fromPos.x + nodeWidth / 2 + exitOffset;
+        const x1 = fromPos.x + nodeWidth / 2;
         const y1 = fromPos.y + fromHeight;
         
         // Точка входа (сверху ребенка) - всегда по центру, без смещения
