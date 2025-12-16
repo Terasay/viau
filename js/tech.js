@@ -341,41 +341,6 @@ function calculateTechPositionsOptimized(technologies) {
     
     technologies.forEach(tech => calculateDescendants(tech.id));
     
-    // Определяем "основную цепочку" - путь с максимальным количеством потомков
-    const mainChain = new Set();
-    const findMainChain = () => {
-        // Находим корневые технологии (без родителей внутри линии)
-        const roots = technologies.filter(tech => 
-            parents[tech.id].length === 0
-        );
-        
-        // Для каждого корня строим основную цепочку
-        roots.forEach(root => {
-            let current = root.id;
-            mainChain.add(current);
-            
-            while (children[current] && children[current].length > 0) {
-                // Выбираем ребенка с максимальным количеством потомков
-                const childrenList = children[current];
-                let bestChild = childrenList[0];
-                let bestCount = descendantCount[bestChild] || 0;
-                
-                childrenList.forEach(childId => {
-                    const count = descendantCount[childId] || 0;
-                    if (count > bestCount) {
-                        bestCount = count;
-                        bestChild = childId;
-                    }
-                });
-                
-                mainChain.add(bestChild);
-                current = bestChild;
-            }
-        });
-    };
-    
-    findMainChain();
-    
     // Вычисляем уровни (глубину) для каждой технологии
     const levels = {};
     const calculateLevel = (techId, visited = new Set()) => {
@@ -404,42 +369,6 @@ function calculateTechPositionsOptimized(technologies) {
         levelGroups[level].push(tech);
     });
     
-    // Определяем боковые ветви (не основная цепочка)
-    const getBranchSide = (techId) => {
-        if (mainChain.has(techId)) return 'center';
-        
-        // Ищем ближайшего предка из основной цепочки
-        let current = techId;
-        let visited = new Set();
-        
-        while (current && !visited.has(current)) {
-            visited.add(current);
-            const techParents = parents[current];
-            
-            for (const parentId of techParents) {
-                if (mainChain.has(parentId)) {
-                    // Определяем, это левая или правая ветвь
-                    const parentChildren = children[parentId];
-                    const mainChild = parentChildren.find(c => mainChain.has(c));
-                    const branchIndex = parentChildren.indexOf(techId);
-                    const mainIndex = parentChildren.indexOf(mainChild);
-                    
-                    // Если технология идёт раньше основной - влево, позже - вправо
-                    if (branchIndex < mainIndex || mainIndex === -1) {
-                        return 'left';
-                    } else {
-                        return 'right';
-                    }
-                }
-            }
-            
-            // Переходим к родителю
-            current = techParents[0];
-        }
-        
-        return 'left'; // по умолчанию влево
-    };
-    
     // Отслеживаем занятые позиции на каждом уровне
     const occupiedPositions = {}; // level -> [{x, width}]
     
@@ -467,143 +396,139 @@ function calculateTechPositionsOptimized(technologies) {
         const techs = levelGroups[level];
         const y = level * verticalSpacing + headerOffset;
         
-        // Разделяем на центр, левые и правые
-        const centerTechs = [];
-        const leftTechs = [];
-        const rightTechs = [];
+        // Группируем технологии по их родителям для оптимального размещения
+        const techsByParentGroup = new Map();
         
         techs.forEach(tech => {
-            const side = getBranchSide(tech.id);
-            if (side === 'center') centerTechs.push(tech);
-            else if (side === 'left') leftTechs.push(tech);
-            else rightTechs.push(tech);
+            const techParents = parents[tech.id].filter(p => positions[p]);
+            
+            if (techParents.length === 0) {
+                // Технологии без родителей - корневая группа
+                if (!techsByParentGroup.has('root')) {
+                    techsByParentGroup.set('root', []);
+                }
+                techsByParentGroup.get('root').push(tech);
+            } else {
+                // Создаем ключ группы на основе родителей (сортируем для консистентности)
+                const parentKey = techParents.sort().join(',');
+                if (!techsByParentGroup.has(parentKey)) {
+                    techsByParentGroup.set(parentKey, []);
+                }
+                techsByParentGroup.get(parentKey).push(tech);
+            }
         });
         
-        // Сортируем боковые ветви по позиции их родителей
-        const sortBySideAndParent = (techList, direction) => {
-            return techList.sort((a, b) => {
-                const aParents = parents[a.id].filter(p => positions[p]);
-                const bParents = parents[b.id].filter(p => positions[p]);
+        // Сортируем группы по средней X-позиции их родителей
+        const sortedGroups = Array.from(techsByParentGroup.entries()).sort((a, b) => {
+            const [keyA, techsA] = a;
+            const [keyB, techsB] = b;
+            
+            if (keyA === 'root') return -1;
+            if (keyB === 'root') return 1;
+            
+            const parentsA = keyA.split(',');
+            const parentsB = keyB.split(',');
+            
+            const avgXA = parentsA.reduce((sum, p) => sum + (positions[p]?.x || centerX), 0) / parentsA.length;
+            const avgXB = parentsB.reduce((sum, p) => sum + (positions[p]?.x || centerX), 0) / parentsB.length;
+            
+            return avgXA - avgXB;
+        });
+        
+        // Размещаем технологии по группам
+        sortedGroups.forEach(([parentKey, groupTechs]) => {
+            // Вычисляем целевую X-позицию для группы
+            let targetX;
+            
+            if (parentKey === 'root') {
+                targetX = centerX - (groupTechs.length * (nodeWidth + horizontalSpacing)) / 2;
+            } else {
+                const parentIds = parentKey.split(',');
+                const parentPositions = parentIds.map(p => positions[p]).filter(Boolean);
                 
-                const aAvgX = aParents.length > 0 
-                    ? aParents.reduce((sum, p) => sum + positions[p].x, 0) / aParents.length 
-                    : centerX;
-                const bAvgX = bParents.length > 0 
-                    ? bParents.reduce((sum, p) => sum + positions[p].x, 0) / bParents.length 
-                    : centerX;
+                if (parentPositions.length > 0) {
+                    const avgParentX = parentPositions.reduce((sum, pos) => sum + pos.x, 0) / parentPositions.length;
+                    // Центрируем группу относительно среднего положения родителей
+                    targetX = avgParentX - (groupTechs.length * (nodeWidth + horizontalSpacing)) / 2 + nodeWidth / 2;
+                } else {
+                    targetX = centerX;
+                }
+            }
+            
+            // Размещаем технологии группы последовательно
+            groupTechs.forEach((tech, index) => {
+                let x = targetX + index * (nodeWidth + horizontalSpacing);
                 
-                return direction === 'left' ? aAvgX - bAvgX : bAvgX - aAvgX;
+                // Ищем ближайшую свободную позицию
+                const searchRadius = 10;
+                let bestX = x;
+                let minDistance = Infinity;
+                
+                // Проверяем диапазон позиций вокруг целевой
+                for (let offset = 0; offset < searchRadius; offset++) {
+                    const candidates = [
+                        x + offset * (nodeWidth + horizontalSpacing),
+                        x - offset * (nodeWidth + horizontalSpacing)
+                    ];
+                    
+                    for (const candidateX of candidates) {
+                        if (candidateX < 50) continue; // Минимальная граница
+                        
+                        if (isPositionFree(level, candidateX)) {
+                            const distance = Math.abs(candidateX - x);
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                bestX = candidateX;
+                            }
+                            if (offset === 0) break; // Нашли идеальную позицию
+                        }
+                    }
+                    
+                    if (minDistance === 0) break; // Нашли идеальную позицию
+                }
+                
+                positions[tech.id] = { x: bestX, y };
+                occupyPosition(level, bestX);
             });
-        };
-        
-        sortBySideAndParent(leftTechs, 'left');
-        sortBySideAndParent(rightTechs, 'right');
-        
-        // Размещаем центральные (основная цепочка)
-        centerTechs.forEach(tech => {
-            let x = centerX - nodeWidth / 2;
-            
-            // Если у технологии есть родитель на основной цепочке, выравниваемся по нему
-            const techParents = parents[tech.id].filter(p => positions[p] && mainChain.has(p));
-            if (techParents.length > 0) {
-                x = positions[techParents[0]].x;
-            }
-            
-            // Проверяем, свободна ли позиция
-            while (!isPositionFree(level, x)) {
-                x += nodeWidth + horizontalSpacing;
-            }
-            
-            positions[tech.id] = { x, y };
-            occupyPosition(level, x);
-        });
-        
-        // Размещаем левые ветви
-        leftTechs.forEach(tech => {
-            const techParents = parents[tech.id].filter(p => positions[p]);
-            let targetX;
-            
-            if (techParents.length > 0) {
-                // Целевая позиция - слева от родителя
-                const parentX = Math.min(...techParents.map(p => positions[p].x));
-                targetX = parentX - nodeWidth - horizontalSpacing;
-            } else {
-                targetX = centerX - nodeWidth * 2;
-            }
-            
-            // Ищем свободную позицию, двигаясь влево
-            let x = targetX;
-            while (!isPositionFree(level, x)) {
-                x -= nodeWidth + horizontalSpacing;
-            }
-            
-            // Минимальная граница
-            x = Math.max(50, x);
-            
-            // Если после ограничения снова конфликт, двигаемся вправо
-            while (!isPositionFree(level, x)) {
-                x += nodeWidth + horizontalSpacing;
-            }
-            
-            positions[tech.id] = { x, y };
-            occupyPosition(level, x);
-        });
-        
-        // Размещаем правые ветви
-        rightTechs.forEach(tech => {
-            const techParents = parents[tech.id].filter(p => positions[p]);
-            let targetX;
-            
-            if (techParents.length > 0) {
-                // Целевая позиция - справа от родителя
-                const parentX = Math.max(...techParents.map(p => positions[p].x));
-                targetX = parentX + nodeWidth + horizontalSpacing;
-            } else {
-                targetX = centerX + nodeWidth;
-            }
-            
-            // Ищем свободную позицию, двигаясь вправо
-            let x = targetX;
-            while (!isPositionFree(level, x)) {
-                x += nodeWidth + horizontalSpacing;
-            }
-            
-            positions[tech.id] = { x, y };
-            occupyPosition(level, x);
         });
     });
     
-    // Второй проход: подтягиваем родителей к центру их детей
-    for (let iteration = 0; iteration < 3; iteration++) {
+    // Второй проход: оптимизируем позиции родителей относительно детей
+    for (let iteration = 0; iteration < 2; iteration++) {
         sortedLevels.forEach(level => {
             const techs = levelGroups[level];
             
             techs.forEach(tech => {
-                // Только для технологий на основной цепочке с несколькими детьми
-                if (!mainChain.has(tech.id)) return;
-                
                 const techChildren = children[tech.id].filter(c => positions[c]);
-                if (techChildren.length <= 1) return;
+                if (techChildren.length === 0) return;
                 
                 // Вычисляем центр всех детей
                 const childXs = techChildren.map(c => positions[c].x);
-                const avgChildX = childXs.reduce((a, b) => a + b, 0) / childXs.length;
+                const minChildX = Math.min(...childXs);
+                const maxChildX = Math.max(...childXs);
+                const avgChildX = (minChildX + maxChildX) / 2;
                 
                 // Пробуем переместить к центру детей
-                const newX = avgChildX;
+                const currentX = positions[tech.id].x;
+                const targetX = avgChildX;
+                
+                // Двигаемся постепенно к целевой позиции
+                const moveStep = (targetX - currentX) * 0.3;
+                const newX = currentX + moveStep;
                 
                 // Проверяем, не конфликтует ли новая позиция
                 const sameLevelTechs = techs.filter(t => t.id !== tech.id);
                 let canMove = true;
                 
                 for (const other of sameLevelTechs) {
-                    if (Math.abs(newX - positions[other.id].x) < nodeWidth + horizontalSpacing) {
+                    const otherX = positions[other.id].x;
+                    if (Math.abs(newX - otherX) < nodeWidth + horizontalSpacing) {
                         canMove = false;
                         break;
                     }
                 }
                 
-                if (canMove) {
+                if (canMove && Math.abs(moveStep) > 5) {
                     positions[tech.id].x = newX;
                 }
             });
