@@ -673,21 +673,34 @@ function drawConnectionsOptimized(technologies, elements, svg, positions) {
         
         if (verticalDist > 0) {
             // Нормальный случай: ребенок ниже родителя
-            // Используем S-образную кривую
-            const midY = y1 + verticalDist / 2;
             
             if (horizontalDist < 20) {
                 // Почти вертикальная линия
                 d = `M ${x1} ${y1} L ${x2} ${y2}`;
             } else {
-                // S-образная кривая
-                const controlOffset = Math.min(verticalDist * 0.3, 40);
-                d = `M ${x1} ${y1} 
-                     C ${x1} ${y1 + controlOffset}, 
-                       ${x1} ${midY}, 
-                       ${(x1 + x2) / 2} ${midY}
-                     S ${x2} ${y2 - controlOffset}, 
-                       ${x2} ${y2}`;
+                // Используем путь, который обходит блоки:
+                // 1. Вниз от родителя
+                // 2. Горизонтально к позиции ребенка
+                // 3. Вниз к ребенку
+                
+                const verticalOffset = Math.min(40, verticalDist * 0.15);
+                const approachY = y2 - Math.min(40, verticalDist * 0.15);
+                
+                // Определяем промежуточные точки
+                const y1_control = y1 + verticalOffset;
+                const y2_control = approachY;
+                
+                // Путь с плавными изгибами, избегающий пересечений с блоками
+                d = `M ${x1} ${y1}
+                     L ${x1} ${y1_control}
+                     C ${x1} ${y1_control + 20},
+                       ${x1} ${y1_control + 30},
+                       ${x1 + (x2 - x1) * 0.5} ${y1_control + 40}
+                     L ${x1 + (x2 - x1) * 0.5} ${y2_control - 40}
+                     C ${x1 + (x2 - x1) * 0.5} ${y2_control - 30},
+                       ${x2} ${y2_control - 20},
+                       ${x2} ${y2_control}
+                     L ${x2} ${y2}`;
             }
         } else {
             // Редкий случай: нужно обойти

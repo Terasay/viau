@@ -95,7 +95,7 @@ LAND_FORCES_TECH = {
                 {"id": "standing_army_1", "name": "Постоянная армия", "year": 1555, "requires": ["militia_levies", "state_treasury"]},
                 {"id": "military_uniform", "name": "Военная униформа", "year": 1580, "requires": ["standing_army_1", "dyeing"]},
                 {"id": "regimental_system", "name": "Полковая система", "year": 1600, "requires": ["military_uniform"]},
-                {"id": "line_infantry", "name": "Линейная пехота", "year": 1620, "requires": ["regimental_system", "flintlock_musket_1"]},
+                {"id": "line_infantry", "name": "Линейная пехота", "year": 1620, "requires": ["regimental_system", "flintlock_musket_1", "military_discipline_1"]},
                 {"id": "pike_and_shot", "name": "Пикинеры и мушкетеры", "year": 1635, "requires": ["line_infantry"]},
                 {"id": "volley_fire", "name": "Залповый огонь", "year": 1655, "requires": ["regimental_system", "paper_cartridges"]},
                 {"id": "battalion_system", "name": "Батальонная система", "year": 1675, "requires": ["volley_fire"]},
