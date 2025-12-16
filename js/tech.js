@@ -1,6 +1,7 @@
 // Модуль для работы с древом технологий
 
 let techData = null;
+let allTechData = {}; // Хранит все категории для межкатегориальных связей
 let playerProgress = null;
 let selectedTech = null;
 let isInitialized = false;
@@ -14,28 +15,31 @@ async function initTechnologies(category = 'land_forces') {
     try {
         const token = localStorage.getItem('token');
         
-        // Загружаем данные древа технологий
-        const treeResponse = await fetch(`/api/tech/tree/${category}`, {
-            headers: { 'Authorization': token }
-        });
+        // Загружаем ВСЕ категории технологий для межкатегориальных требований
+        const categories = ['land_forces', 'navy', 'aviation', 'industry', 'economy'];
         
-        if (!treeResponse.ok) {
-            console.error('Failed to load tech tree:', treeResponse.status);
+        for (const cat of categories) {
+            const response = await fetch(`/api/tech/tree/${cat}`, {
+                headers: { 'Authorization': token }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    allTechData[cat] = data.data;
+                }
+            }
+        }
+        
+        // Устанавливаем текущую категорию
+        if (allTechData[category]) {
+            techData = allTechData[category];
+            console.log('Tech data loaded:', techData);
+        } else {
+            console.error('Failed to load tech tree for category:', category);
             showError('Не удалось загрузить древо технологий');
             return;
         }
-        
-        const treeData = await treeResponse.json();
-        console.log('Tech tree response:', treeData);
-        
-        if (!treeData.success) {
-            console.error('Tech tree error:', treeData.error);
-            showError(treeData.error || 'Ошибка загрузки технологий');
-            return;
-        }
-        
-        techData = treeData.data;
-        console.log('Tech data loaded:', techData);
         
         // Загружаем прогресс игрока
         const progressResponse = await fetch('/api/tech/player/progress', {
@@ -286,6 +290,7 @@ function calculateTechPositions(technologies) {
     const positions = {};
     const nodeWidth = 260; // ширина узла + отступ
     const verticalSpacing = 150; // расстояние между уровнями по вертикали
+    const horizontalSpacing = 80; // минимальное расстояние между узлами
     
     // Создаем карту технологий для быстрого доступа
     const techMap = {};
@@ -327,22 +332,56 @@ function calculateTechPositions(technologies) {
         levelGroups[level].push(tech);
     });
     
-    // Позиционируем технологии
+    // Позиционируем технологии по уровням
     const headerOffset = 100; // Отступ для заголовка линии
-    Object.keys(levelGroups).forEach(level => {
+    
+    Object.keys(levelGroups).sort((a, b) => parseInt(a) - parseInt(b)).forEach(level => {
         const techs = levelGroups[level];
         const y = parseInt(level) * verticalSpacing + headerOffset;
         
-        // Вычисляем общую ширину для центрирования
-        const totalWidth = techs.length * nodeWidth;
-        const centerOffset = (1400 - totalWidth) / 2; // 1400 - ширина линии
+        // Сортируем технологии по средней X-координате родителей
+        techs.sort((a, b) => {
+            const aParents = a.requires.filter(reqId => techMap[reqId] && positions[reqId]);
+            const bParents = b.requires.filter(reqId => techMap[reqId] && positions[reqId]);
+            
+            const aAvg = aParents.length > 0 
+                ? aParents.reduce((sum, reqId) => sum + positions[reqId].x, 0) / aParents.length
+                : a.year || 0; // Если нет родителей, сортируем по году
+            const bAvg = bParents.length > 0
+                ? bParents.reduce((sum, reqId) => sum + positions[reqId].x, 0) / bParents.length
+                : b.year || 0;
+            
+            return aAvg - bAvg;
+        });
         
-        // Распределяем горизонтально с центрированием
+        // Распределяем технологии по горизонтали
+        let nextX = 50; // Начальное смещение
+        
         techs.forEach((tech, index) => {
-            positions[tech.id] = {
-                x: centerOffset + (index * nodeWidth),
-                y: y
-            };
+            let x;
+            
+            // Если есть родители, пытаемся центрировать относительно них
+            if (tech.requires && tech.requires.length > 0) {
+                const parentPositions = tech.requires
+                    .filter(reqId => techMap[reqId] && positions[reqId])
+                    .map(reqId => positions[reqId].x);
+                
+                if (parentPositions.length > 0) {
+                    // Центрируем между родителями
+                    x = parentPositions.reduce((a, b) => a + b, 0) / parentPositions.length;
+                    
+                    // Проверяем, не слишком ли близко к предыдущему узлу
+                    x = Math.max(x, nextX);
+                } else {
+                    x = nextX;
+                }
+            } else {
+                // Корневые узлы
+                x = nextX;
+            }
+            
+            positions[tech.id] = { x, y };
+            nextX = x + nodeWidth; // Следующая позиция
         });
     });
     
@@ -413,6 +452,9 @@ function drawConnections(technologies, elements, svg, positions) {
     svg.setAttribute('width', maxX);
     svg.setAttribute('height', maxY);
     
+    const nodeWidth = 240;
+    const nodeHeight = 70; // примерная высота узла
+    
     technologies.forEach(tech => {
         if (tech.requires && tech.requires.length > 0) {
             tech.requires.forEach(reqId => {
@@ -423,23 +465,35 @@ function drawConnections(technologies, elements, svg, positions) {
                     const fromPos = positions[reqId];
                     const toPos = positions[tech.id];
                     
-                    // Координаты для вертикального древа
-                    const x1 = fromPos.x + 100; // центр узла (200px / 2)
-                    const y1 = fromPos.y + 90; // низ узла
-                    const x2 = toPos.x + 100;
-                    const y2 = toPos.y; // верх следующего узла
+                    // Точка выхода из родительского блока (снизу, центр)
+                    const x1 = fromPos.x + nodeWidth / 2;
+                    const y1 = fromPos.y + nodeHeight;
+                    
+                    // Точка входа в дочерний блок (сверху, центр)
+                    const x2 = toPos.x + nodeWidth / 2;
+                    const y2 = toPos.y;
                     
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                     
-                    // Рисуем вертикальную кривую
-                    const midY = (y1 + y2) / 2;
-                    const d = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+                    // Рассчитываем контрольные точки для кривой Безье
+                    const verticalDistance = y2 - y1;
+                    const horizontalDistance = Math.abs(x2 - x1);
+                    
+                    // Используем кривую Безье с учетом расстояния
+                    const controlOffset = Math.min(verticalDistance * 0.4, 60);
+                    const cx1 = x1;
+                    const cy1 = y1 + controlOffset;
+                    const cx2 = x2;
+                    const cy2 = y2 - controlOffset;
+                    
+                    const d = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
                     
                     line.setAttribute('d', d);
                     line.classList.add('tech-connection-line');
                     
                     // Подсвечиваем линию, если обе технологии изучены
-                    const fromStatus = getTechStatus({ id: reqId, requires: [] });
+                    const fromTech = { id: reqId, requires: [] };
+                    const fromStatus = getTechStatus(fromTech);
                     const toStatus = getTechStatus(tech);
                     if (fromStatus === 'researched' && toStatus === 'researched') {
                         line.classList.add('active');
@@ -525,14 +579,25 @@ function showTechInfo(tech) {
     infoPanel.classList.add('visible');
 }
 
-// Найти технологию по ID
+// Найти технологию по ID во всех категориях
 function findTechById(techId) {
-    if (!techData) return null;
-    
-    for (const line of techData.lines) {
-        const tech = line.technologies.find(t => t.id === techId);
-        if (tech) return tech;
+    // Сначала ищем в текущей категории
+    if (techData) {
+        for (const line of techData.lines) {
+            const tech = line.technologies.find(t => t.id === techId);
+            if (tech) return tech;
+        }
     }
+    
+    // Если не нашли, ищем во всех категориях
+    for (const category in allTechData) {
+        const catData = allTechData[category];
+        for (const line of catData.lines) {
+            const tech = line.technologies.find(t => t.id === techId);
+            if (tech) return tech;
+        }
+    }
+    
     return null;
 }
 
@@ -577,20 +642,27 @@ async function switchCategory(category) {
         }
     });
     
-    // Показываем загрузку
-    const container = document.getElementById('tech-tree-content');
-    if (container) {
-        container.innerHTML = `
-            <div class="loading-content">
-                <i class="fas fa-flask fa-3x"></i>
-                <h3>Загрузка древа технологий...</h3>
-                <div class="loading-spinner"></div>
-            </div>
-        `;
+    // Если данные уже загружены, просто переключаемся
+    if (allTechData[category]) {
+        currentCategory = category;
+        techData = allTechData[category];
+        renderTechTree();
+    } else {
+        // Показываем загрузку
+        const container = document.getElementById('tech-tree-content');
+        if (container) {
+            container.innerHTML = `
+                <div class="loading-content">
+                    <i class="fas fa-flask fa-3x"></i>
+                    <h3>Загрузка древа технологий...</h3>
+                    <div class="loading-spinner"></div>
+                </div>
+            `;
+        }
+        
+        // Загружаем новую категорию
+        await initTechnologies(category);
     }
-    
-    // Загружаем новую категорию
-    await initTechnologies(category);
 }
 
 // Инициализация обработчиков событий
