@@ -280,15 +280,8 @@ function updateGameStateDisplay() {
 }
 
 async function nextTurn() {
-    if (!window.showModal) {
-        if (!confirm('Перейти к следующему ходу?')) return;
-    } else {
-        const confirmed = await window.showModal({
-            title: 'Подтверждение',
-            body: 'Вы уверены, что хотите перейти к следующему ходу?',
-            type: 'confirm'
-        });
-        if (!confirmed) return;
+    if (!confirm('Перейти к следующему ходу?')) {
+        return;
     }
     
     const token = localStorage.getItem('token');
@@ -304,47 +297,26 @@ async function nextTurn() {
         if (data.success) {
             gameState.current_turn = data.current_turn;
             updateGameStateDisplay();
-            
-            if (window.showSuccess) {
-                window.showSuccess(data.message || 'Ход успешно изменён');
-            } else {
-                alert(data.message || 'Ход успешно изменён');
-            }
+            alert(data.message || 'Ход успешно изменён');
         } else {
-            if (window.showError) {
-                window.showError(data.error || 'Ошибка при изменении хода');
-            } else {
-                alert(data.error || 'Ошибка при изменении хода');
-            }
+            alert('Ошибка: ' + (data.error || 'Не удалось изменить ход'));
         }
     } catch (error) {
         console.error('Error advancing turn:', error);
-        if (window.showError) {
-            window.showError('Ошибка при изменении хода');
-        } else {
-            alert('Ошибка при изменении хода');
-        }
+        alert('Ошибка при изменении хода');
     }
 }
 
 async function setTurn() {
-    let turnNumber;
+    const turnNumber = prompt('Введите номер хода:', gameState?.current_turn || 1);
     
-    if (!window.showPrompt) {
-        turnNumber = prompt('Введите номер хода:');
-        if (!turnNumber) return;
-    } else {
-        turnNumber = await window.showPrompt('Введите номер хода:', gameState?.current_turn || 1);
-        if (!turnNumber) return;
+    if (!turnNumber) {
+        return;
     }
     
-    turnNumber = parseInt(turnNumber);
-    if (isNaN(turnNumber) || turnNumber < 1) {
-        if (window.showError) {
-            window.showError('Некорректный номер хода');
-        } else {
-            alert('Некорректный номер хода');
-        }
+    const turn = parseInt(turnNumber);
+    if (isNaN(turn) || turn < 1) {
+        alert('Некорректный номер хода');
         return;
     }
     
@@ -357,7 +329,7 @@ async function setTurn() {
                 'Authorization': token,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ turn: turnNumber })
+            body: JSON.stringify({ turn: turn })
         });
         
         const data = await response.json();
@@ -365,26 +337,13 @@ async function setTurn() {
         if (data.success) {
             gameState.current_turn = data.current_turn;
             updateGameStateDisplay();
-            
-            if (window.showSuccess) {
-                window.showSuccess(data.message || 'Ход успешно установлен');
-            } else {
-                alert(data.message || 'Ход успешно установлен');
-            }
+            alert(data.message || 'Ход успешно установлен');
         } else {
-            if (window.showError) {
-                window.showError(data.error || 'Ошибка при установке хода');
-            } else {
-                alert(data.error || 'Ошибка при установке хода');
-            }
+            alert('Ошибка: ' + (data.error || 'Не удалось установить ход'));
         }
     } catch (error) {
         console.error('Error setting turn:', error);
-        if (window.showError) {
-            window.showError('Ошибка при установке хода');
-        } else {
-            alert('Ошибка при установке хода');
-        }
+        alert('Ошибка при установке хода');
     }
 }
 
