@@ -482,7 +482,7 @@ ECONOMY_TECH = {
             "technologies": [
                 {"id": "usury", "name": "Ростовщичество", "year": 1500, "requires": []},
                 {"id": "money_changing", "name": "Меняльное дело", "year": 1500, "requires": []},
-                {"id": "early_banks", "name": "Ранние банки", "year": 1530, "requires": ["usury", "money_changing", "usury"]},
+                {"id": "early_banks", "name": "Ранние банки", "year": 1530, "requires": ["usury", "money_changing"]},
                 {"id": "bills_of_exchange", "name": "Вексели", "year": 1545, "requires": ["early_banks"]},
                 {"id": "lending", "name": "Кредитование", "year": 1560, "requires": ["early_banks"]},
                 {"id": "merchant_banks", "name": "Торговые банки", "year": 1580, "requires": ["early_banks"]},

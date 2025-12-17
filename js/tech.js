@@ -332,7 +332,9 @@ function calculateTechPositionsOptimized(technologies) {
     
     technologies.forEach(tech => {
         if (tech.requires) {
+            // Фильтруем только те зависимости, которые существуют в текущей линии
             tech.requires.forEach(reqId => {
+                // Обрабатываем только зависимости внутри текущей линии
                 if (techMap[reqId]) {
                     children[reqId].push(tech.id);
                     parents[tech.id].push(reqId);
