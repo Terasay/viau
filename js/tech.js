@@ -780,7 +780,6 @@ function createTechNode(tech) {
     node.className = 'tech-node';
     node.dataset.techId = tech.id;
     
-    // Проверяем, скрыта ли технология
     if (tech.hidden) {
         node.classList.add('hidden');
         node.innerHTML = `
@@ -788,7 +787,7 @@ function createTechNode(tech) {
                 <h5 class="tech-node-name">???</h5>
                 <i class="fas fa-question tech-node-icon"></i>
             </div>
-            <div class="tech-node-year"></div>
+            <div class="tech-node-year" style="visibility: hidden;"><i class="fas fa-flask"></i> ${tech.year} ОИ</div>
         `;
         
         // Скрытые технологии не кликабельны

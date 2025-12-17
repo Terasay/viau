@@ -1125,21 +1125,18 @@ async def get_tech_tree(category: str, request: Request):
             
             for tech in line['technologies']:
                 if tech['id'] in visible_tech_ids:
-                    # Технология видна - отдаем полные данные, но с замененными ID в requires
-                    visible_tech = {
-                        'id': tech['id'],
-                        'name': tech['name'],
-                        'year': tech['year'],
-                        'requires': replace_ids_in_requires(tech.get('requires', []))
-                    }
+                    # Технология видна - копируем все поля и заменяем ID в requires
+                    visible_tech = tech.copy()
+                    visible_tech['requires'] = replace_ids_in_requires(tech.get('requires', []))
                     filtered_line['technologies'].append(visible_tech)
                 else:
-                    # Технология скрыта - отдаем placeholder с фейковым ID
+                    # Технология скрыта - сохраняем оригинальный year для правильного размещения
+                    # но скрываем название и заменяем ID
                     fake_id = real_to_fake_id[tech['id']]
                     hidden_tech = {
                         'id': fake_id,
                         'name': '???',
-                        'year': 0,
+                        'year': tech['year'],  # Сохраняем оригинальный year для алгоритма размещения
                         'requires': replace_ids_in_requires(tech.get('requires', [])),
                         'hidden': True
                     }
