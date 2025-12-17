@@ -1086,7 +1086,17 @@ async def get_tech_tree(category: str, request: Request):
         return JSONResponse({"success": False, "error": "Unknown category"}, status_code=404)
     
     if user.get('role') in ['admin', 'moderator']:
-        return JSONResponse({"success": True, "data": tech_data})
+        # Сортируем технологии для админов/модераторов тоже
+        sorted_tech_data = {
+            'id': tech_data['id'],
+            'name': tech_data['name'],
+            'lines': []
+        }
+        for line in tech_data['lines']:
+            sorted_line = line.copy()
+            sorted_line['technologies'] = sorted(line['technologies'], key=lambda t: (t['year'], t['id']))
+            sorted_tech_data['lines'].append(sorted_line)
+        return JSONResponse({"success": True, "data": sorted_tech_data})
     
     conn = get_db()
     cursor = conn.cursor()
@@ -1157,6 +1167,10 @@ async def get_tech_tree(category: str, request: Request):
                         'hidden': True
                     }
                     filtered_line['technologies'].append(hidden_tech)
+            
+            # КРИТИЧНО: Сортируем технологии по year и id для детерминированного порядка
+            # Это гарантирует одинаковый порядок для всех пользователей
+            filtered_line['technologies'].sort(key=lambda t: (t['year'], t['id']))
             
             filtered_data['lines'].append(filtered_line)
         
