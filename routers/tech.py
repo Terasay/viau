@@ -1115,17 +1115,10 @@ async def get_tech_tree(category: str, request: Request):
                     # Технология видна - отдаем полные данные
                     filtered_line['technologies'].append(tech)
                 else:
-                    # Технология скрыта - отдаем placeholder с отфильтрованными requires
-                    # Оставляем только те requires, которые видимы
-                    filtered_requires = [req for req in tech.get('requires', []) if req in visible_tech_ids]
-                    hidden_tech = {
-                        'id': tech['id'],
-                        'name': '???',
-                        'year': 0,
-                        'requires': filtered_requires,
-                        'hidden': True
-                    }
-                    filtered_line['technologies'].append(hidden_tech)
+                    # Технология скрыта - отдаем placeholder
+                    # Важно: сохраняем оригинальные requires для правильного построения дерева
+                    # Это безопасно, т.к. ID не раскрывают секретную информацию
+                    filtered_line['technologies'].append(hide_tech_data(tech, tech['id']))
             
             filtered_data['lines'].append(filtered_line)
         
