@@ -988,14 +988,14 @@ async def get_tech_categories():
         ]
     })
 
-def get_visible_technologies(tech_data, researched_techs, country_id):
+def get_visible_technologies(tech_data, researched_techs, country_id, all_tech_ids_in_category):
     """
     Определяет какие технологии видны для страны.
     Технология видна если:
     1. Она изучена
-    2. Изучена хотя бы одна из требуемых технологий (requires)
+    2. Изучена хотя бы одна из требуемых технологий (requires) - только в пределах категории
     3. Изучена технология, которая требует данную технологию (обратная зависимость)
-    4. Технология не имеет требований (начальная)
+    4. Технология не имеет требований (начальная) - в пределах категории
     """
     # Собираем все технологии и строим карту зависимостей
     all_techs = {}
@@ -1006,10 +1006,11 @@ def get_visible_technologies(tech_data, researched_techs, country_id):
             all_techs[tech['id']] = tech
             tech_children[tech['id']] = []
     
-    # Строим обратные зависимости
+    # Строим обратные зависимости (только в пределах категории)
     for line in tech_data['lines']:
         for tech in line['technologies']:
             for req in tech.get('requires', []):
+                # Учитываем только зависимости внутри категории
                 if req in tech_children:
                     tech_children[req].append(tech['id'])
     
@@ -1021,14 +1022,15 @@ def get_visible_technologies(tech_data, researched_techs, country_id):
             visible_techs.add(tech_id)
             continue
         
-        # 2. Не имеет требований (начальная)
-        requires = tech.get('requires', [])
-        if not requires:
+        # 2. Не имеет требований в пределах категории (начальная)
+        # Фильтруем только зависимости внутри категории
+        requires_in_category = [req for req in tech.get('requires', []) if req in all_tech_ids_in_category]
+        if not requires_in_category:
             visible_techs.add(tech_id)
             continue
         
-        # 3. Изучена хотя бы одна из требуемых технологий
-        if any(req in researched_techs for req in requires):
+        # 3. Изучена хотя бы одна из требуемых технологий (в пределах категории)
+        if any(req in researched_techs for req in requires_in_category):
             visible_techs.add(tech_id)
             continue
         
@@ -1097,14 +1099,14 @@ async def get_tech_tree(category: str, request: Request):
         researched_techs = [row['tech_id'] for row in cursor.fetchall()]
         conn.close()
     
-    # Определяем видимые технологии
-    visible_techs = get_visible_technologies(tech_data, researched_techs, country_id)
-    
     # Собираем все ID технологий из текущей категории для фильтрации cross-category зависимостей
     all_tech_ids_in_category = set()
     for line in tech_data['lines']:
         for tech in line['technologies']:
             all_tech_ids_in_category.add(tech['id'])
+    
+    # Определяем видимые технологии
+    visible_techs = get_visible_technologies(tech_data, researched_techs, country_id, all_tech_ids_in_category)
     
     # Формируем ответ с фильтрацией невидимых технологий
     sorted_tech_data = {

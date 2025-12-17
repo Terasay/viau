@@ -177,6 +177,10 @@ function renderTechTree() {
             <div class="tech-legend-box locked"></div>
             <span>Заблокировано</span>
         </div>
+        <div class="tech-legend-item">
+            <div class="tech-legend-box hidden"></div>
+            <span>Скрыто</span>
+        </div>
     `;
     container.appendChild(legend);
     console.log('Legend added. Render complete!');
