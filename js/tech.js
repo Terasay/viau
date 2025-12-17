@@ -96,7 +96,6 @@ async function initTechnologies(category = 'land_forces') {
                 console.log('Research points:', rpData);
                 if (rpData.success) {
                     currentResearchPoints = rpData.research_points || 0;
-                    updateResearchPointsDisplay();
                 }
             }
         } else {
@@ -188,6 +187,9 @@ function renderTechTree() {
     `;
     container.appendChild(legend);
     console.log('Legend added. Render complete!');
+    
+    // Обновляем отображение ОИ после создания header
+    updateResearchPointsDisplay();
 }
 
 function setupDragScroll(element) {
@@ -1051,6 +1053,7 @@ async function switchCategory(category) {
         currentCategory = category;
         techData = allTechData[category];
         renderTechTree();
+        updateResearchPointsDisplay();
     } else {
         const container = document.getElementById('tech-tree-content');
         if (container) {
