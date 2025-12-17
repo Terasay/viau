@@ -13,6 +13,11 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+async def get_current_user(request: Request):
+    """Получение текущего пользователя из токена"""
+    from main import get_current_user as main_get_current_user
+    return await main_get_current_user(request)
+
 def init_tech_db():
     """Инициализация таблицы прогресса технологий"""
     conn = get_db()
