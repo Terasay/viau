@@ -280,7 +280,8 @@ function updateGameStateDisplay() {
 }
 
 async function nextTurn() {
-    if (!confirm('Перейти к следующему ходу?')) {
+    const confirmed = await showConfirm('Подтверждение', 'Вы уверены, что хотите перейти к следующему ходу?');
+    if (!confirmed) {
         return;
     }
     
@@ -297,26 +298,26 @@ async function nextTurn() {
         if (data.success) {
             gameState.current_turn = data.current_turn;
             updateGameStateDisplay();
-            alert(data.message || 'Ход успешно изменён');
+            await showSuccess(data.message || 'Ход успешно изменён');
         } else {
-            alert('Ошибка: ' + (data.error || 'Не удалось изменить ход'));
+            await showError(data.error || 'Не удалось изменить ход');
         }
     } catch (error) {
         console.error('Error advancing turn:', error);
-        alert('Ошибка при изменении хода');
+        await showError('Произошла ошибка при изменении хода');
     }
 }
 
 async function setTurn() {
-    const turnNumber = prompt('Введите номер хода:', gameState?.current_turn || 1);
+    const turnNumber = await showPrompt('Установка хода', 'Введите номер хода:', (gameState?.current_turn || 1).toString());
     
-    if (!turnNumber) {
+    if (turnNumber === null) {
         return;
     }
     
     const turn = parseInt(turnNumber);
     if (isNaN(turn) || turn < 1) {
-        alert('Некорректный номер хода');
+        await showError('Некорректный номер хода. Введите число больше или равно 1.');
         return;
     }
     
@@ -337,13 +338,13 @@ async function setTurn() {
         if (data.success) {
             gameState.current_turn = data.current_turn;
             updateGameStateDisplay();
-            alert(data.message || 'Ход успешно установлен');
+            await showSuccess(data.message || 'Ход успешно установлен');
         } else {
-            alert('Ошибка: ' + (data.error || 'Не удалось установить ход'));
+            await showError(data.error || 'Не удалось установить ход');
         }
     } catch (error) {
         console.error('Error setting turn:', error);
-        alert('Ошибка при установке хода');
+        await showError('Произошла ошибка при установке хода');
     }
 }
 
