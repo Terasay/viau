@@ -317,20 +317,27 @@ function calculateTechPositionsOptimized(technologies) {
     const headerOffset = 80;
     const centerX = 600;
     
+    // КРИТИЧНО: Сортируем все технологии по year в начале для детерминированного порядка
+    // Это гарантирует, что admin и player обрабатывают технологии в одинаковом порядке
+    const sortedTechnologies = [...technologies].sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return a.id.localeCompare(b.id);
+    });
+    
     const techMap = {};
-    technologies.forEach(tech => {
+    sortedTechnologies.forEach(tech => {
         techMap[tech.id] = tech;
     });
     
     const children = {};
     const parents = {};
     
-    technologies.forEach(tech => {
+    sortedTechnologies.forEach(tech => {
         children[tech.id] = [];
         parents[tech.id] = [];
     });
     
-    technologies.forEach(tech => {
+    sortedTechnologies.forEach(tech => {
         if (tech.requires) {
             // Фильтруем только те зависимости, которые существуют в текущей линии
             tech.requires.forEach(reqId => {
@@ -364,7 +371,7 @@ function calculateTechPositionsOptimized(technologies) {
         return count;
     };
     
-    technologies.forEach(tech => calculateDescendants(tech.id));
+    sortedTechnologies.forEach(tech => calculateDescendants(tech.id));
     
     const levels = {};
     const calculateLevel = (techId, visited = new Set()) => {
@@ -383,10 +390,10 @@ function calculateTechPositionsOptimized(technologies) {
         return levels[techId];
     };
     
-    technologies.forEach(tech => calculateLevel(tech.id));
+    sortedTechnologies.forEach(tech => calculateLevel(tech.id));
     
     const levelGroups = {};
-    technologies.forEach(tech => {
+    sortedTechnologies.forEach(tech => {
         const level = levels[tech.id];
         if (!levelGroups[level]) levelGroups[level] = [];
         levelGroups[level].push(tech);
