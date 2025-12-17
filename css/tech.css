@@ -976,6 +976,32 @@ body.dark-mode .tech-node.hidden {
     font-size: 0.9em;
 }
 
+/* Кнопка переключения скрытых технологий для админа */
+.btn-toggle-hidden {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    border: 1px solid #d68910;
+    border-radius: var(--radius-full);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+}
+
+.btn-toggle-hidden:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
+}
+
+.btn-toggle-hidden i {
+    font-size: 1.1em;
+}
+
 /* Темная тема */
 body.dark-mode .tech-connection-line {
     stroke: var(--border);
@@ -992,4 +1018,9 @@ body.dark-mode .country-card {
 
 body.dark-mode .country-card:hover {
     border-color: var(--primary);
+}
+
+body.dark-mode .btn-toggle-hidden {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    border-color: #c0511f;
 }

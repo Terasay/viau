@@ -7,6 +7,8 @@ let currentCategory = 'land_forces';
 let currentCountryId = null;
 let viewingCountryId = null;
 let currentResearchPoints = 0;
+let showHiddenTechs = false;
+let isAdminView = false;
 
 async function initTechnologies(category = 'land_forces') {
     console.log('Initializing tech tree for category:', category);
@@ -16,10 +18,12 @@ async function initTechnologies(category = 'land_forces') {
         const user = window.gameState.getUser();
         const country = window.gameState.getCountry();
         
+        isAdminView = user && (user.role === 'admin' || user.role === 'moderator');
+        
         if (country) {
             currentCountryId = country.id;
             viewingCountryId = country.id;
-        } else if (user && (user.role === 'admin' || user.role === 'moderator')) {
+        } else if (isAdminView) {
             await showCountrySelector();
             return;
         } else {
@@ -39,7 +43,7 @@ async function initTechnologies(category = 'land_forces') {
         const categories = ['land_forces', 'navy', 'industry', 'education', 'infrastructure', 'economy'];
         
         const promises = categories.map(cat => 
-            fetch(`/api/tech/tree/${cat}`, {
+            fetch(`/api/tech/tree/${cat}?country_id=${viewingCountryId}&show_hidden=${showHiddenTechs}`, {
                 headers: { 'Authorization': token }
             }).then(res => res.ok ? res.json() : null)
         );
@@ -127,12 +131,25 @@ function renderTechTree() {
     
     const header = document.createElement('div');
     header.className = 'tech-category-header';
-    header.innerHTML = `
+    
+    let headerHTML = `
         <div class="tech-category-title">
             <i class="fas fa-flag"></i>
             <h3>${techData.name}</h3>
         </div>
     `;
+    
+    // Добавляем кнопку переключения видимости скрытых технологий для админа
+    if (isAdminView && viewingCountryId) {
+        headerHTML += `
+            <button class="btn-toggle-hidden" onclick="window.techModule.toggleHiddenTechs()" title="${showHiddenTechs ? 'Скрыть закрытые технологии' : 'Показать закрытые технологии'}">
+                <i class="fas fa-${showHiddenTechs ? 'eye-slash' : 'eye'}"></i>
+                <span>${showHiddenTechs ? 'Скрыть закрытые' : 'Показать закрытые'}</span>
+            </button>
+        `;
+    }
+    
+    header.innerHTML = headerHTML;
     container.appendChild(header);
     console.log('Header added');
     
@@ -790,6 +807,11 @@ function createTechNode(tech) {
     const status = getTechStatus(tech);
     node.classList.add(status);
     
+    // Если технология помечена как hidden (только для админа в режиме show_hidden), добавляем класс
+    if (tech.hidden) {
+        node.classList.add('hidden');
+    }
+    
     let icon = 'fa-lock';
     if (status === 'researched') icon = 'fa-check-circle';
     else if (status === 'available') icon = 'fa-circle';
@@ -1361,6 +1383,14 @@ function showPrompt(title, message, defaultValue = '') {
     });
 }
 
+async function toggleHiddenTechs() {
+    showHiddenTechs = !showHiddenTechs;
+    console.log('Toggling hidden techs:', showHiddenTechs);
+    
+    // Перезагружаем данные с новым параметром
+    await initTechnologies(currentCategory);
+}
+
 window.techModule = {
     init: initTechnologies,
     showInfo: showTechInfo,
@@ -1368,5 +1398,6 @@ window.techModule = {
     switchCategory: switchCategory,
     showCountrySelector: showCountrySelector,
     selectCountry: selectCountry,
-    editResearchPoints: editResearchPoints
+    editResearchPoints: editResearchPoints,
+    toggleHiddenTechs: toggleHiddenTechs
 };
