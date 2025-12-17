@@ -321,9 +321,9 @@ function calculateTechPositionsOptimized(technologies) {
     const nodeWidth = 260;
     const nodeHeight = 80;
     const verticalSpacing = 140;
-    const horizontalSpacing = 60;
+    const horizontalSpacing = 100;
     const headerOffset = 80;
-    const centerX = 600;
+    const startX = 50;
     
     const techMap = {};
     technologies.forEach(tech => {
@@ -419,163 +419,46 @@ function calculateTechPositionsOptimized(technologies) {
     
     const sortedLevels = Object.keys(levelGroups).map(Number).sort((a, b) => a - b);
     
+    // Простой алгоритм: размещаем технологии на их уровне по порядку, 
+    // стараясь центрировать относительно родителей
     sortedLevels.forEach(level => {
         const techs = levelGroups[level];
         const y = level * verticalSpacing + headerOffset;
         
-        const techsByParentGroup = new Map();
-        
-        techs.forEach(tech => {
+        // Сортируем технологии по среднему X родителей
+        const techsWithData = techs.map(tech => {
             const techParents = parents[tech.id].filter(p => positions[p]);
+            let targetX = startX;
             
-            if (techParents.length === 0) {
-                if (!techsByParentGroup.has('root')) {
-                    techsByParentGroup.set('root', []);
-                }
-                techsByParentGroup.get('root').push(tech);
-            } else {
-                const parentKey = techParents.sort().join(',');
-                if (!techsByParentGroup.has(parentKey)) {
-                    techsByParentGroup.set(parentKey, []);
-                }
-                techsByParentGroup.get(parentKey).push(tech);
+            if (techParents.length > 0) {
+                const parentXs = techParents.map(p => positions[p].x);
+                targetX = parentXs.reduce((a, b) => a + b, 0) / parentXs.length;
             }
+            
+            return { tech, targetX };
         });
         
-        const sortedGroups = Array.from(techsByParentGroup.entries()).sort((a, b) => {
-            const [keyA, techsA] = a;
-            const [keyB, techsB] = b;
-            
-            if (keyA === 'root') return -1;
-            if (keyB === 'root') return 1;
-            
-            const parentsA = keyA.split(',');
-            const parentsB = keyB.split(',');
-            
-            const avgXA = parentsA.reduce((sum, p) => sum + (positions[p]?.x || centerX), 0) / parentsA.length;
-            const avgXB = parentsB.reduce((sum, p) => sum + (positions[p]?.x || centerX), 0) / parentsB.length;
-            
-            return avgXA - avgXB;
-        });
+        // Сортируем по целевой X позиции
+        techsWithData.sort((a, b) => a.targetX - b.targetX);
         
-        sortedGroups.forEach(([parentKey, groupTechs]) => {
-            if (parentKey === 'root') {
-                let currentX = 50;
-                groupTechs.forEach(tech => {
-                    while (!isPositionFree(level, currentX)) {
-                        currentX += nodeWidth + horizontalSpacing;
-                    }
-                    positions[tech.id] = { x: currentX, y };
-                    occupyPosition(level, currentX);
-                    currentX += nodeWidth + horizontalSpacing;
-                });
-            } else {
-                const parentIds = parentKey.split(',');
-                const parentPositions = parentIds.map(p => positions[p]).filter(Boolean);
-                
-                if (parentPositions.length > 0) {
-                    const parentXs = parentPositions.map(p => p.x);
-                    const minParentX = Math.min(...parentXs);
-                    const maxParentX = Math.max(...parentXs);
-                    const avgParentX = parentXs.reduce((a, b) => a + b, 0) / parentXs.length;
-                    
-                    const groupWidth = groupTechs.length * (nodeWidth + horizontalSpacing) - horizontalSpacing;
-                    
-                    let idealStartX = avgParentX - groupWidth / 2;
-                    
-                    let startX = 50;
-                    let foundPosition = false;
-                    
-                    if (idealStartX >= 50) {
-                        let canPlaceHere = true;
-                        for (let i = 0; i < groupTechs.length; i++) {
-                            const testX = idealStartX + i * (nodeWidth + horizontalSpacing);
-                            if (!isPositionFree(level, testX)) {
-                                canPlaceHere = false;
-                                break;
-                            }
-                        }
-                        if (canPlaceHere) {
-                            startX = idealStartX;
-                            foundPosition = true;
-                        }
-                    }
-                    
-                    if (!foundPosition) {
-                        let testX = Math.max(50, minParentX - groupWidth - horizontalSpacing);
-                        while (testX < maxParentX + nodeWidth + horizontalSpacing) {
-                            let canPlaceHere = true;
-                            for (let i = 0; i < groupTechs.length; i++) {
-                                const checkX = testX + i * (nodeWidth + horizontalSpacing);
-                                if (!isPositionFree(level, checkX)) {
-                                    canPlaceHere = false;
-                                    break;
-                                }
-                            }
-                            
-                            if (canPlaceHere) {
-                                startX = testX;
-                                foundPosition = true;
-                                break;
-                            }
-                            
-                            testX += horizontalSpacing;
-                        }
-                    }
-                    
-                    if (!foundPosition) {
-                        startX = maxParentX + nodeWidth + horizontalSpacing;
-                        while (!isPositionFree(level, startX)) {
-                            startX += nodeWidth + horizontalSpacing;
-                        }
-                    }
-                    
-                    groupTechs.forEach((tech, index) => {
-                        const x = startX + index * (nodeWidth + horizontalSpacing);
-                        positions[tech.id] = { x, y };
-                        occupyPosition(level, x);
-                    });
-                }
+        // Размещаем последовательно
+        let currentX = startX;
+        techsWithData.forEach(({ tech, targetX }) => {
+            // Пытаемся разместить ближе к целевой позиции
+            let x = Math.max(currentX, targetX - nodeWidth / 2);
+            
+            // Проверяем не занята ли позиция
+            while (!isPositionFree(level, x)) {
+                x += horizontalSpacing;
             }
+            
+            positions[tech.id] = { x, y };
+            occupyPosition(level, x);
+            currentX = x + nodeWidth + horizontalSpacing;
         });
     });
     
-    for (let iteration = 0; iteration < 2; iteration++) {
-        sortedLevels.forEach(level => {
-            const techs = levelGroups[level];
-            
-            techs.forEach(tech => {
-                const techChildren = children[tech.id].filter(c => positions[c]);
-                if (techChildren.length === 0) return;
-                
-                const childXs = techChildren.map(c => positions[c].x);
-                const minChildX = Math.min(...childXs);
-                const maxChildX = Math.max(...childXs);
-                const avgChildX = (minChildX + maxChildX) / 2;
-                
-                const currentX = positions[tech.id].x;
-                const targetX = avgChildX;
-                
-                const moveStep = (targetX - currentX) * 0.3;
-                const newX = currentX + moveStep;
-                
-                const sameLevelTechs = techs.filter(t => t.id !== tech.id);
-                let canMove = true;
-                
-                for (const other of sameLevelTechs) {
-                    const otherX = positions[other.id].x;
-                    if (Math.abs(newX - otherX) < nodeWidth + horizontalSpacing) {
-                        canMove = false;
-                        break;
-                    }
-                }
-                
-                if (canMove && Math.abs(moveStep) > 5) {
-                    positions[tech.id].x = newX;
-                }
-            });
-        });
-    }
+    // Центрирование удалено для стабильности и предсказуемости размещения
     
     const minX = Math.min(...Object.values(positions).map(p => p.x));
     const offsetX = minX - 50;
@@ -788,7 +671,7 @@ function createTechNode(tech) {
                 <h5 class="tech-node-name">???</h5>
                 <i class="fas fa-question tech-node-icon"></i>
             </div>
-            <div class="tech-node-year"></div>
+            <div class="tech-node-year"><i class="fas fa-flask"></i> ??? ОИ</div>
         `;
         
         // Скрытые технологии не кликабельны
