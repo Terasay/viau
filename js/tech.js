@@ -787,20 +787,6 @@ function createTechNode(tech) {
     node.className = 'tech-node';
     node.dataset.techId = tech.id;
     
-    if (tech.hidden) {
-        node.classList.add('hidden');
-        node.innerHTML = `
-            <div class="tech-node-header">
-                <h5 class="tech-node-name">???</h5>
-                <i class="fas fa-question tech-node-icon"></i>
-            </div>
-            <div class="tech-node-year" style="visibility: hidden;"><i class="fas fa-flask"></i> ${tech.year} ОИ</div>
-        `;
-        
-        node.style.cursor = 'default';
-        return node;
-    }
-    
     const status = getTechStatus(tech);
     node.classList.add(status);
     
@@ -845,10 +831,6 @@ function getTechStatus(tech) {
 
 function showTechInfo(tech) {
     selectedTech = tech;
-    
-    if (tech.hidden) {
-        return;
-    }
     
     let infoPanel = document.getElementById('tech-info-panel');
     if (!infoPanel) {

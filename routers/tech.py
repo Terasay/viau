@@ -988,84 +988,6 @@ async def get_tech_categories():
         ]
     })
 
-def get_visible_tech_ids(researched_techs: list, all_techs_in_category: list) -> set:
-    """Технология видна если:
-    0. У неё нет требований (начальная технология - всегда видна)
-    1. Она изучена
-    2. Изучена хотя бы одна из требуемых технологий (из requires)
-    3. Изучена технология, которая требует данную (обратная связь)
-    """
-    visible = set(researched_techs)
-    
-    for tech in all_techs_in_category:
-        if not tech.get('requires') or len(tech.get('requires', [])) == 0:
-            visible.add(tech['id'])
-    
-    required_by = {}
-    for tech in all_techs_in_category:
-        for req_id in tech.get('requires', []):
-            if req_id not in required_by:
-                required_by[req_id] = []
-            required_by[req_id].append(tech['id'])
-    
-    for tech in all_techs_in_category:
-        if tech['id'] in visible:
-            continue
-        for req_id in tech.get('requires', []):
-            if req_id in researched_techs:
-                visible.add(tech['id'])
-                break
-    
-    for researched_id in researched_techs:
-        tech = next((t for t in all_techs_in_category if t['id'] == researched_id), None)
-        if tech:
-            for req_id in tech.get('requires', []):
-                visible.add(req_id)
-    
-    return visible
-
-
-def create_global_fake_id_mapping(researched_tech_ids: list) -> dict:
-    real_to_fake_id = {}
-    fake_counter = 1
-    
-    print("\n=== СОЗДАНИЕ ГЛОБАЛЬНОГО МАППИНГА ФЕЙКОВЫХ ID ===")
-    print(f"Изученные технологии: {researched_tech_ids}")
-    
-    for category_key, tech_data in TECHNOLOGIES.items():
-        all_techs_in_category = []
-        for line in tech_data['lines']:
-            all_techs_in_category.extend(line['technologies'])
-        
-        # КРИТИЧНО: Сортируем технологии ПЕРЕД созданием fake ID mapping
-        # Это гарантирует, что fake IDs присваиваются в том же порядке, что и при отправке
-        all_techs_in_category.sort(key=lambda t: (t['year'], t['id']))
-        
-        visible_tech_ids = get_visible_tech_ids(researched_tech_ids, all_techs_in_category)
-        
-        print(f"\n--- Категория: {category_key} ---")
-        print(f"Всего технологий: {len(all_techs_in_category)}, Видимых: {len(visible_tech_ids)}")
-        
-        for tech in all_techs_in_category:
-            if tech['id'] not in visible_tech_ids:
-                fake_id = f"hidden_{fake_counter}"
-                real_to_fake_id[tech['id']] = fake_id
-                print(f"  {tech['id']} -> {fake_id}")
-                fake_counter += 1
-    
-    print(f"\n=== ВСЕГО СОЗДАНО ФЕЙКОВЫХ ID: {len(real_to_fake_id)} ===\n")
-    
-    return real_to_fake_id
-
-def hide_tech_data(tech: dict, tech_id: str) -> dict:
-    return {
-        'id': tech_id,
-        'name': '???',
-        'year': 0,
-        'requires': tech.get('requires', []),
-        'hidden': True
-    }
-
 @router.get("/tree/{category}")
 async def get_tech_tree(category: str, request: Request):
     user = await get_current_user(request)
@@ -1089,105 +1011,38 @@ async def get_tech_tree(category: str, request: Request):
     if not tech_data:
         return JSONResponse({"success": False, "error": "Unknown category"}, status_code=404)
     
-    if user.get('role') in ['admin', 'moderator']:
-        # Сортируем технологии для админов/модераторов тоже
-        sorted_tech_data = {
-            'id': tech_data['id'],
-            'name': tech_data['name'],
-            'lines': []
-        }
-        for line in tech_data['lines']:
-            sorted_line = line.copy()
-            sorted_line['technologies'] = sorted(line['technologies'], key=lambda t: (t['year'], t['id']))
-            sorted_tech_data['lines'].append(sorted_line)
-        return JSONResponse({"success": True, "data": sorted_tech_data})
+    # Собираем все ID технологий из текущей категории для фильтрации cross-category зависимостей
+    all_tech_ids_in_category = set()
+    for line in tech_data['lines']:
+        for tech in line['technologies']:
+            all_tech_ids_in_category.add(tech['id'])
     
-    conn = get_db()
-    cursor = conn.cursor()
+    # Все пользователи (и админы, и игроки) получают одинаковые данные
+    sorted_tech_data = {
+        'id': tech_data['id'],
+        'name': tech_data['name'],
+        'lines': []
+    }
     
-    try:
-        cursor.execute('SELECT id FROM countries WHERE player_id = ?', (user['id'],))
-        country = cursor.fetchone()
-        
-        if not country:
-            return JSONResponse({'success': False, 'error': 'У вас нет страны'}, status_code=404)
-        
-        country_id = country['id']
-        
-        cursor.execute('''
-            SELECT tech_id FROM country_technologies
-            WHERE country_id = ?
-        ''', (country_id,))
-        
-        researched_tech_ids = [row['tech_id'] for row in cursor.fetchall()]
-        
-        all_techs_in_category = []
-        for line in tech_data['lines']:
-            all_techs_in_category.extend(line['technologies'])
-        
-        visible_tech_ids = get_visible_tech_ids(researched_tech_ids, all_techs_in_category)
-        
-        real_to_fake_id = create_global_fake_id_mapping(researched_tech_ids)
-        
-        print(f"\n=== ОБРАБОТКА КАТЕГОРИИ: {category} ===")
-        
-        def replace_ids_in_requires(requires_list):
-            result = [real_to_fake_id.get(req_id, req_id) for req_id in requires_list]
-            if requires_list != result:
-                print(f"  Замена requires: {requires_list} -> {result}")
-            return result
-        
-        filtered_data = {
-            'id': tech_data['id'],
-            'name': tech_data['name'],
-            'lines': []
+    for line in tech_data['lines']:
+        sorted_line = {
+            'id': line['id'],
+            'name': line['name'],
+            'technologies': []
         }
         
-        for line in tech_data['lines']:
-            filtered_line = {
-                'id': line['id'],
-                'name': line['name'],
-                'technologies': []
-            }
-            
-            for tech in line['technologies']:
-                if tech['id'] in visible_tech_ids:
-                    visible_tech = tech.copy()
-                    original_requires = tech.get('requires', [])
-                    visible_tech['requires'] = replace_ids_in_requires(original_requires)
-                    if original_requires:
-                        print(f"ВИДИМАЯ: {tech['id']} requires {original_requires} -> {visible_tech['requires']}")
-                    filtered_line['technologies'].append(visible_tech)
-                else:
-                    fake_id = real_to_fake_id[tech['id']]
-                    original_requires = tech.get('requires', [])
-                    replaced_requires = replace_ids_in_requires(original_requires)
-                    print(f"СКРЫТАЯ: {tech['id']} ({fake_id}) requires {original_requires} -> {replaced_requires}")
-                    hidden_tech = {
-                        'id': fake_id,
-                        'name': '???',
-                        'year': tech['year'],
-                        'requires': replaced_requires,
-                        'hidden': True
-                    }
-                    filtered_line['technologies'].append(hidden_tech)
-            
-            # КРИТИЧНО: Сортируем технологии по year и id для детерминированного порядка
-            # Это гарантирует одинаковый порядок для всех пользователей
-            filtered_line['technologies'].sort(key=lambda t: (t['year'], t['id']))
-            
-            filtered_data['lines'].append(filtered_line)
+        for tech in line['technologies']:
+            tech_copy = tech.copy()
+            # Фильтруем cross-category зависимости для корректного отображения дерева
+            if tech.get('requires'):
+                tech_copy['requires'] = [req for req in tech['requires'] if req in all_tech_ids_in_category]
+            sorted_line['technologies'].append(tech_copy)
         
-        return JSONResponse({
-            "success": True,
-            "data": filtered_data
-        })
+        # Сортируем для детерминированного порядка
+        sorted_line['technologies'].sort(key=lambda t: (t['year'], t['id']))
+        sorted_tech_data['lines'].append(sorted_line)
     
-    except Exception as e:
-        print(f"Error getting tech tree: {e}")
-        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
-    finally:
-        conn.close()
+    return JSONResponse({"success": True, "data": sorted_tech_data})
 
 @router.get("/player/progress")
 async def get_player_tech_progress():
@@ -1273,12 +1128,6 @@ async def research_technology(data: ResearchTechData, request: Request):
             "success": False,
             "error": "Требуется авторизация"
         }, status_code=401)
-    
-    if data.tech_id.startswith('hidden_'):
-        return JSONResponse({
-            "success": False,
-            "error": "Невозможно изучить скрытую технологию"
-        }, status_code=400)
     
     conn = get_db()
     cursor = conn.cursor()
