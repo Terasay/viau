@@ -1037,6 +1037,10 @@ def create_global_fake_id_mapping(researched_tech_ids: list) -> dict:
         for line in tech_data['lines']:
             all_techs_in_category.extend(line['technologies'])
         
+        # КРИТИЧНО: Сортируем технологии ПЕРЕД созданием fake ID mapping
+        # Это гарантирует, что fake IDs присваиваются в том же порядке, что и при отправке
+        all_techs_in_category.sort(key=lambda t: (t['year'], t['id']))
+        
         visible_tech_ids = get_visible_tech_ids(researched_tech_ids, all_techs_in_category)
         
         print(f"\n--- Категория: {category_key} ---")
