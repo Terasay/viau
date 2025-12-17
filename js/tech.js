@@ -39,7 +39,7 @@ async function initTechnologies(category = 'land_forces') {
         const categories = ['land_forces', 'navy', 'industry', 'education', 'infrastructure', 'economy'];
         
         const promises = categories.map(cat => 
-            fetch(`/api/tech/tree/${cat}`, {
+            fetch(`/api/tech/tree/${cat}?country_id=${viewingCountryId}`, {
                 headers: { 'Authorization': token }
             }).then(res => res.ok ? res.json() : null)
         );
@@ -787,6 +787,30 @@ function createTechNode(tech) {
     node.className = 'tech-node';
     node.dataset.techId = tech.id;
     
+    // Проверяем, скрыта ли технология
+    if (tech.hidden) {
+        node.classList.add('hidden');
+        node.innerHTML = `
+            <div class="tech-fog-overlay">
+                <i class="fas fa-cloud"></i>
+                <i class="fas fa-cloud"></i>
+                <i class="fas fa-cloud"></i>
+            </div>
+            <div class="tech-node-header">
+                <h5 class="tech-node-name">???</h5>
+                <i class="fas fa-question tech-node-icon"></i>
+            </div>
+            <div class="tech-node-year"><i class="fas fa-flask"></i> ??? ОИ</div>
+        `;
+        
+        // Блокируем клик на скрытых технологиях
+        node.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
+        return node;
+    }
+    
     const status = getTechStatus(tech);
     node.classList.add(status);
     
@@ -810,6 +834,11 @@ function createTechNode(tech) {
 }
 
 function getTechStatus(tech) {
+    // Скрытые технологии всегда locked
+    if (tech.hidden) {
+        return 'locked';
+    }
+    
     if (!playerProgress || !playerProgress.researched) {
         return 'locked';
     }
@@ -830,6 +859,11 @@ function getTechStatus(tech) {
 }
 
 function showTechInfo(tech) {
+    // Защита от просмотра скрытых технологий
+    if (tech.hidden) {
+        return;
+    }
+    
     selectedTech = tech;
     
     let infoPanel = document.getElementById('tech-info-panel');
@@ -960,6 +994,12 @@ function closeTechInfo() {
 
 async function researchTechnology(techId) {
     console.log('Starting research for:', techId);
+    
+    // Защита от исследования скрытых технологий
+    if (techId && techId.startsWith('hidden_')) {
+        showError('Эта технология недоступна для изучения');
+        return;
+    }
     
     if (!viewingCountryId) {
         showError('Страна не выбрана');

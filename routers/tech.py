@@ -988,6 +988,57 @@ async def get_tech_categories():
         ]
     })
 
+def get_visible_technologies(tech_data, researched_techs, country_id):
+    """
+    Определяет какие технологии видны для страны.
+    Технология видна если:
+    1. Она изучена
+    2. Изучена хотя бы одна из требуемых технологий (requires)
+    3. Изучена технология, которая требует данную технологию (обратная зависимость)
+    4. Технология не имеет требований (начальная)
+    """
+    # Собираем все технологии и строим карту зависимостей
+    all_techs = {}
+    tech_children = {}  # Для обратных зависимостей
+    
+    for line in tech_data['lines']:
+        for tech in line['technologies']:
+            all_techs[tech['id']] = tech
+            tech_children[tech['id']] = []
+    
+    # Строим обратные зависимости
+    for line in tech_data['lines']:
+        for tech in line['technologies']:
+            for req in tech.get('requires', []):
+                if req in tech_children:
+                    tech_children[req].append(tech['id'])
+    
+    visible_techs = set()
+    
+    for tech_id, tech in all_techs.items():
+        # 1. Изучена
+        if tech_id in researched_techs:
+            visible_techs.add(tech_id)
+            continue
+        
+        # 2. Не имеет требований (начальная)
+        requires = tech.get('requires', [])
+        if not requires:
+            visible_techs.add(tech_id)
+            continue
+        
+        # 3. Изучена хотя бы одна из требуемых технологий
+        if any(req in researched_techs for req in requires):
+            visible_techs.add(tech_id)
+            continue
+        
+        # 4. Изучена технология-потомок
+        if any(child in researched_techs for child in tech_children.get(tech_id, [])):
+            visible_techs.add(tech_id)
+            continue
+    
+    return visible_techs
+
 @router.get("/tree/{category}")
 async def get_tech_tree(category: str, request: Request):
     user = await get_current_user(request)
@@ -1011,19 +1062,58 @@ async def get_tech_tree(category: str, request: Request):
     if not tech_data:
         return JSONResponse({"success": False, "error": "Unknown category"}, status_code=404)
     
+    # Получаем изученные технологии для текущего пользователя/страны
+    researched_techs = []
+    country_id = None
+    
+    # Определяем country_id
+    if user.get('role') in ['admin', 'moderator']:
+        # Для админов берем параметр из запроса или используем первую страну
+        country_id = request.query_params.get('country_id')
+        if not country_id:
+            # Если не указана страна, возвращаем все технологии (режим админа)
+            conn = get_db()
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM countries LIMIT 1")
+            result = cursor.fetchone()
+            conn.close()
+            if result:
+                country_id = result['id']
+    else:
+        # Для игроков получаем их страну
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM countries WHERE player_id = ?", (user['id'],))
+        result = cursor.fetchone()
+        conn.close()
+        if result:
+            country_id = result['id']
+    
+    # Получаем изученные технологии
+    if country_id:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT tech_id FROM country_technologies WHERE country_id = ?", (country_id,))
+        researched_techs = [row['tech_id'] for row in cursor.fetchall()]
+        conn.close()
+    
+    # Определяем видимые технологии
+    visible_techs = get_visible_technologies(tech_data, researched_techs, country_id)
+    
     # Собираем все ID технологий из текущей категории для фильтрации cross-category зависимостей
     all_tech_ids_in_category = set()
     for line in tech_data['lines']:
         for tech in line['technologies']:
             all_tech_ids_in_category.add(tech['id'])
     
-    # Все пользователи (и админы, и игроки) получают одинаковые данные
+    # Формируем ответ с фильтрацией невидимых технологий
     sorted_tech_data = {
         'id': tech_data['id'],
         'name': tech_data['name'],
         'lines': []
     }
     
+    hidden_counter = 0
     for line in tech_data['lines']:
         sorted_line = {
             'id': line['id'],
@@ -1032,11 +1122,23 @@ async def get_tech_tree(category: str, request: Request):
         }
         
         for tech in line['technologies']:
-            tech_copy = tech.copy()
-            # Фильтруем cross-category зависимости для корректного отображения дерева
-            if tech.get('requires'):
-                tech_copy['requires'] = [req for req in tech['requires'] if req in all_tech_ids_in_category]
-            sorted_line['technologies'].append(tech_copy)
+            if tech['id'] in visible_techs:
+                # Видимая технология - отправляем с полными данными
+                tech_copy = tech.copy()
+                # Фильтруем cross-category зависимости для корректного отображения дерева
+                if tech.get('requires'):
+                    tech_copy['requires'] = [req for req in tech['requires'] if req in all_tech_ids_in_category]
+                sorted_line['technologies'].append(tech_copy)
+            else:
+                # Скрытая технология - отправляем заглушку
+                hidden_counter += 1
+                sorted_line['technologies'].append({
+                    'id': f'hidden_{hidden_counter}',
+                    'name': '???',
+                    'year': tech['year'],  # Год оставляем для правильного позиционирования
+                    'requires': [],
+                    'hidden': True
+                })
         
         # Сортируем для детерминированного порядка
         sorted_line['technologies'].sort(key=lambda t: (t['year'], t['id']))
@@ -1128,6 +1230,13 @@ async def research_technology(data: ResearchTechData, request: Request):
             "success": False,
             "error": "Требуется авторизация"
         }, status_code=401)
+    
+    # Защита от исследования скрытых технологий
+    if data.tech_id.startswith('hidden_'):
+        return JSONResponse({
+            "success": False,
+            "error": "Недопустимый ID технологии"
+        }, status_code=400)
     
     conn = get_db()
     cursor = conn.cursor()
