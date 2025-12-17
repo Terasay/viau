@@ -419,7 +419,13 @@ function calculateTechPositionsOptimized(technologies) {
         
         const techsByParentGroup = new Map();
         
-        techs.forEach(tech => {
+        // Сортируем технологии по year для детерминированного порядка
+        const sortedTechs = [...techs].sort((a, b) => {
+            if (a.year !== b.year) return a.year - b.year;
+            return a.id.localeCompare(b.id); // Если year одинаковый, сортируем по ID
+        });
+        
+        sortedTechs.forEach(tech => {
             const techParents = parents[tech.id].filter(p => positions[p]);
             
             if (techParents.length === 0) {
