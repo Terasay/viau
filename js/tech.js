@@ -366,24 +366,26 @@ function calculateTechPositionsOptimized(technologies) {
     
     technologies.forEach(tech => calculateDescendants(tech.id));
     
+    // Используем year для определения уровня, чтобы у админа и игрока была идентичная структура
     const levels = {};
-    const calculateLevel = (techId, visited = new Set()) => {
-        if (levels[techId] !== undefined) return levels[techId];
-        if (visited.has(techId)) return 0;
-        visited.add(techId);
+    const yearToLevel = new Map();
+    
+    // Сортируем технологии по году и группируем по декадам
+    const sortedByYear = [...technologies].sort((a, b) => a.year - b.year);
+    let currentLevel = 0;
+    let lastYearGroup = -1;
+    
+    sortedByYear.forEach(tech => {
+        // Группируем по интервалам ~15-20 лет для каждого уровня
+        const yearGroup = Math.floor((tech.year - 1500) / 15);
         
-        const techParents = parents[techId].filter(p => techMap[p]);
-        if (techParents.length === 0) {
-            levels[techId] = 0;
-            return 0;
+        if (yearGroup > lastYearGroup) {
+            currentLevel++;
+            lastYearGroup = yearGroup;
         }
         
-        const maxParentLevel = Math.max(...techParents.map(p => calculateLevel(p, new Set(visited))));
-        levels[techId] = maxParentLevel + 1;
-        return levels[techId];
-    };
-    
-    technologies.forEach(tech => calculateLevel(tech.id));
+        levels[tech.id] = currentLevel;
+    });
     
     const levelGroups = {};
     technologies.forEach(tech => {
