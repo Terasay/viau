@@ -841,6 +841,11 @@ function getTechStatus(tech) {
 function showTechInfo(tech) {
     selectedTech = tech;
     
+    // Не показываем панель для скрытых технологий
+    if (tech.hidden) {
+        return;
+    }
+    
     let infoPanel = document.getElementById('tech-info-panel');
     if (!infoPanel) {
         infoPanel = document.createElement('div');

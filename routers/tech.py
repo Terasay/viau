@@ -1096,7 +1096,20 @@ async def get_tech_tree(category: str, request: Request):
         # Определяем видимые технологии
         visible_tech_ids = get_visible_tech_ids(researched_tech_ids, all_techs_in_category)
         
-        # Создаем копию данных с скрытыми технологиями
+        # Создаем маппинг реальных ID -> фейковых ID для скрытых технологий
+        real_to_fake_id = {}
+        fake_counter = 1
+        
+        for tech in all_techs_in_category:
+            if tech['id'] not in visible_tech_ids:
+                real_to_fake_id[tech['id']] = f"hidden_{fake_counter}"
+                fake_counter += 1
+        
+        # Функция для замены реальных ID на фейковые в массиве requires
+        def replace_ids_in_requires(requires_list):
+            return [real_to_fake_id.get(req_id, req_id) for req_id in requires_list]
+        
+        # Создаем копию данных с фейковыми ID для скрытых технологий
         filtered_data = {
             'id': tech_data['id'],
             'name': tech_data['name'],
@@ -1112,13 +1125,25 @@ async def get_tech_tree(category: str, request: Request):
             
             for tech in line['technologies']:
                 if tech['id'] in visible_tech_ids:
-                    # Технология видна - отдаем полные данные
-                    filtered_line['technologies'].append(tech)
+                    # Технология видна - отдаем полные данные, но с замененными ID в requires
+                    visible_tech = {
+                        'id': tech['id'],
+                        'name': tech['name'],
+                        'year': tech['year'],
+                        'requires': replace_ids_in_requires(tech.get('requires', []))
+                    }
+                    filtered_line['technologies'].append(visible_tech)
                 else:
-                    # Технология скрыта - отдаем placeholder
-                    # Важно: сохраняем оригинальные requires для правильного построения дерева
-                    # Это безопасно, т.к. ID не раскрывают секретную информацию
-                    filtered_line['technologies'].append(hide_tech_data(tech, tech['id']))
+                    # Технология скрыта - отдаем placeholder с фейковым ID
+                    fake_id = real_to_fake_id[tech['id']]
+                    hidden_tech = {
+                        'id': fake_id,
+                        'name': '???',
+                        'year': 0,
+                        'requires': replace_ids_in_requires(tech.get('requires', [])),
+                        'hidden': True
+                    }
+                    filtered_line['technologies'].append(hidden_tech)
             
             filtered_data['lines'].append(filtered_line)
         
@@ -1223,6 +1248,13 @@ async def research_technology(data: ResearchTechData, request: Request):
             "success": False,
             "error": "Требуется авторизация"
         }, status_code=401)
+    
+    # Защита от попытки изучить технологию по фейковому ID
+    if data.tech_id.startswith('hidden_'):
+        return JSONResponse({
+            "success": False,
+            "error": "Невозможно изучить скрытую технологию"
+        }, status_code=400)
     
     # Проверяем права: игрок может изучать только для своей страны, админ - для любой
     conn = get_db()
