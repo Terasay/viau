@@ -994,11 +994,17 @@ def get_visible_tech_ids(researched_techs: list, all_techs_in_category: list) ->
     """Определяет какие технологии должны быть видны игроку
     
     Технология видна если:
+    0. У неё нет требований (начальная технология - всегда видна)
     1. Она изучена
     2. Изучена хотя бы одна из требуемых технологий (из requires)
     3. Изучена технология, которая требует данную (обратная связь)
     """
     visible = set(researched_techs)  # Изученные всегда видны
+    
+    # Добавляем все начальные технологии (без требований)
+    for tech in all_techs_in_category:
+        if not tech.get('requires') or len(tech.get('requires', [])) == 0:
+            visible.add(tech['id'])
     
     # Создаем карту "кто кого требует" для обратного поиска
     required_by = {}  # tech_id -> [tech_ids that require it]
@@ -1026,6 +1032,34 @@ def get_visible_tech_ids(researched_techs: list, all_techs_in_category: list) ->
                 visible.add(req_id)
     
     return visible
+
+
+def create_global_fake_id_mapping(researched_tech_ids: list) -> dict:
+    """Создает глобальный маппинг реальных ID -> фейковых ID для всех скрытых технологий во всех категориях
+    
+    Это необходимо для корректной работы межкатегориальных зависимостей (когда технология из одной категории
+    требует технологию из другой категории).
+    """
+    real_to_fake_id = {}
+    fake_counter = 1
+    
+    # Проходим по всем категориям
+    for category_key, tech_data in TECHNOLOGIES.items():
+        # Собираем все технологии из категории
+        all_techs_in_category = []
+        for line in tech_data['lines']:
+            all_techs_in_category.extend(line['technologies'])
+        
+        # Определяем видимые технологии в этой категории
+        visible_tech_ids = get_visible_tech_ids(researched_tech_ids, all_techs_in_category)
+        
+        # Создаем фейковые ID для скрытых технологий
+        for tech in all_techs_in_category:
+            if tech['id'] not in visible_tech_ids:
+                real_to_fake_id[tech['id']] = f"hidden_{fake_counter}"
+                fake_counter += 1
+    
+    return real_to_fake_id
 
 def hide_tech_data(tech: dict, tech_id: str) -> dict:
     """Скрывает данные технологии, оставляя только ID и placeholder"""
@@ -1096,14 +1130,9 @@ async def get_tech_tree(category: str, request: Request):
         # Определяем видимые технологии
         visible_tech_ids = get_visible_tech_ids(researched_tech_ids, all_techs_in_category)
         
-        # Создаем маппинг реальных ID -> фейковых ID для скрытых технологий
-        real_to_fake_id = {}
-        fake_counter = 1
-        
-        for tech in all_techs_in_category:
-            if tech['id'] not in visible_tech_ids:
-                real_to_fake_id[tech['id']] = f"hidden_{fake_counter}"
-                fake_counter += 1
+        # Создаем глобальный маппинг реальных ID -> фейковых ID для всех категорий
+        # Это необходимо для корректной работы межкатегориальных зависимостей
+        real_to_fake_id = create_global_fake_id_mapping(researched_tech_ids)
         
         # Функция для замены реальных ID на фейковые в массиве requires
         def replace_ids_in_requires(requires_list):
