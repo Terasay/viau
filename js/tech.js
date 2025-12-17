@@ -5,34 +5,29 @@ let selectedTech = null;
 let isInitialized = false;
 let currentCategory = 'land_forces';
 let currentCountryId = null;
-let viewingCountryId = null; // Для админа - какую страну просматривает
-let currentResearchPoints = 0; // Текущее количество очков исследований
+let viewingCountryId = null;
+let currentResearchPoints = 0;
 
 async function initTechnologies(category = 'land_forces') {
     console.log('Initializing tech tree for category:', category);
     currentCategory = category;
     
-    // Получаем данные о текущем пользователе и стране
     if (!viewingCountryId && window.gameState) {
         const user = window.gameState.getUser();
         const country = window.gameState.getCountry();
         
         if (country) {
-            // Для обычного игрока
             currentCountryId = country.id;
             viewingCountryId = country.id;
         } else if (user && (user.role === 'admin' || user.role === 'moderator')) {
-            // Для админа показываем селектор стран только если не выбрана страна
             await showCountrySelector();
             return;
         } else {
-            // Нет страны и не админ - ошибка
             showError('Ошибка: страна не найдена');
             return;
         }
     }
     
-    // Если страна уже выбрана, продолжаем загрузку
     if (!viewingCountryId) {
         console.error('No country selected for viewing');
         return;
@@ -66,7 +61,6 @@ async function initTechnologies(category = 'land_forces') {
             return;
         }
         
-        // Загружаем прогресс страны
         if (viewingCountryId) {
             console.log('Fetching country progress for:', viewingCountryId);
             const progressResponse = await fetch(`/api/tech/country/${viewingCountryId}/progress`, {
@@ -85,7 +79,6 @@ async function initTechnologies(category = 'land_forces') {
                 }
             }
             
-            // Загружаем очки исследований
             console.log('Fetching research points for:', viewingCountryId);
             const rpResponse = await fetch(`/api/game/research-points/${viewingCountryId}`, {
                 headers: { 'Authorization': token }
@@ -188,7 +181,6 @@ function renderTechTree() {
     container.appendChild(legend);
     console.log('Legend added. Render complete!');
     
-    // Обновляем отображение ОИ после создания header
     updateResearchPointsDisplay();
 }
 
@@ -790,7 +782,6 @@ function createTechNode(tech) {
             <div class="tech-node-year" style="visibility: hidden;"><i class="fas fa-flask"></i> ${tech.year} ОИ</div>
         `;
         
-        // Скрытые технологии не кликабельны
         node.style.cursor = 'default';
         return node;
     }
@@ -840,7 +831,6 @@ function getTechStatus(tech) {
 function showTechInfo(tech) {
     selectedTech = tech;
     
-    // Не показываем панель для скрытых технологий
     if (tech.hidden) {
         return;
     }
@@ -979,7 +969,6 @@ async function researchTechnology(techId) {
         return;
     }
     
-    // Проверяем права: админ может изучать для любой страны
     const user = window.gameState?.getUser();
     const isAdmin = user && (user.role === 'admin' || user.role === 'moderator');
     
@@ -988,7 +977,6 @@ async function researchTechnology(techId) {
         return;
     }
     
-    // Проверяем стоимость технологии для игроков (админы изучают бесплатно)
     if (!isAdmin && selectedTech) {
         const cost = selectedTech.year || 0;
         if (currentResearchPoints < cost) {
@@ -1016,23 +1004,19 @@ async function researchTechnology(techId) {
         if (data.success) {
             let message = 'Технология успешно изучена!';
             
-            // Обновляем ОИ для игроков
             if (data.research_points_remaining !== undefined) {
                 currentResearchPoints = data.research_points_remaining;
                 updateResearchPointsDisplay();
                 message += `<br/><strong>Потрачено:</strong> ${data.research_points_spent} ОИ<br/><strong>Осталось:</strong> ${currentResearchPoints} ОИ`;
             }
             
-            // Обновляем прогресс
             if (!playerProgress.researched) {
                 playerProgress.researched = [];
             }
             playerProgress.researched.push(techId);
             
-            // Перерисовываем древо
             renderTechTree();
             
-            // Закрываем панель информации
             closeTechInfo();
             
             showSuccess(message);
@@ -1105,7 +1089,6 @@ setTimeout(() => {
     initEventHandlers();
 }, 100);
 
-// Функция для отображения селектора стран (для админа)
 async function showCountrySelector() {
     const container = document.getElementById('tech-tree-content');
     if (!container) return;
@@ -1168,24 +1151,19 @@ async function showCountrySelector() {
     }
 }
 
-// Выбор страны для просмотра (для админа)
 async function selectCountry(countryId, countryName) {
     console.log('Selected country:', countryId, countryName);
     viewingCountryId = countryId;
     
-    // Показываем индикатор выбранной страны
     updateCountryIndicator(countryName);
     
-    // Загружаем технологии для выбранной страны
     await initTechnologies(currentCategory);
 }
 
-// Обновление индикатора выбранной страны
 function updateCountryIndicator(countryName) {
     const header = document.querySelector('.tech-category-header');
     if (!header) return;
     
-    // Проверяем, есть ли уже индикатор
     let indicator = document.querySelector('.tech-country-indicator');
     if (!indicator) {
         indicator = document.createElement('div');
@@ -1202,12 +1180,10 @@ function updateCountryIndicator(countryName) {
     `;
 }
 
-// Функция для обновления отображения ОИ
 function updateResearchPointsDisplay() {
     const user = window.gameState?.getUser();
     const isAdmin = user && (user.role === 'admin' || user.role === 'moderator');
     
-    // Обновляем или создаем индикатор ОИ в заголовке категории
     let rpDisplay = document.querySelector('.tech-rp-display');
     const header = document.querySelector('.tech-category-header');
     
@@ -1219,7 +1195,6 @@ function updateResearchPointsDisplay() {
     
     if (rpDisplay) {
         if (isAdmin) {
-            // Для админа - с кнопкой редактирования
             rpDisplay.innerHTML = `
                 <i class="fas fa-flask"></i>
                 <span>ОИ страны: <strong>${currentResearchPoints}</strong></span>
@@ -1228,7 +1203,6 @@ function updateResearchPointsDisplay() {
                 </button>
             `;
         } else {
-            // Для игрока - просто отображение
             rpDisplay.innerHTML = `
                 <i class="fas fa-flask"></i>
                 <span>Очки исследований: <strong>${currentResearchPoints}</strong></span>
@@ -1237,7 +1211,6 @@ function updateResearchPointsDisplay() {
     }
 }
 
-// Функция для редактирования ОИ админом
 async function editResearchPoints() {
     const result = await showPrompt('Редактирование очков исследований', 'Введите новое количество ОИ:', currentResearchPoints.toString());
     
@@ -1275,7 +1248,6 @@ async function editResearchPoints() {
     }
 }
 
-// Система модальных окон
 function showModal(title, message, type = 'info', buttons = ['OK']) {
     return new Promise((resolve) => {
         const overlay = document.getElementById('modal-overlay');
@@ -1286,14 +1258,11 @@ function showModal(title, message, type = 'info', buttons = ['OK']) {
         const cancelBtn = document.getElementById('modal-cancel');
         const closeBtn = document.getElementById('modal-close');
         
-        // Устанавливаем тип модалки
         container.className = 'modal-container modal-' + type;
         
-        // Устанавливаем содержимое
         titleEl.textContent = title;
         messageEl.innerHTML = message;
         
-        // Настраиваем кнопки
         confirmBtn.textContent = buttons[0] || 'OK';
         confirmBtn.style.display = 'inline-flex';
         
@@ -1304,11 +1273,9 @@ function showModal(title, message, type = 'info', buttons = ['OK']) {
             cancelBtn.style.display = 'none';
         }
         
-        // Показываем модалку
         overlay.style.display = 'flex';
         setTimeout(() => overlay.classList.add('visible'), 10);
         
-        // Обработчики
         const closeModal = (result) => {
             overlay.classList.remove('visible');
             setTimeout(() => {
@@ -1388,7 +1355,6 @@ function showPrompt(title, message, defaultValue = '') {
             if (e.target === overlay) closeModal(false);
         };
         
-        // Enter для подтверждения
         const input = document.getElementById('modal-input');
         if (input) {
             input.onkeypress = (e) => {

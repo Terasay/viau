@@ -37,7 +37,6 @@ def init_tech_db():
     conn.commit()
     conn.close()
 
-# Вызываем инициализацию при импорте модуля
 init_tech_db()
 
 # СУХОПУТНЫЕ ВОЙСКА
@@ -965,7 +964,6 @@ INFRASTRUCTURE_TECH = {
     ]
 }
 
-# Словарь всех технологий для упрощенного доступа
 TECHNOLOGIES = {
     'land_forces': LAND_FORCES_TECH,
     'navy': NAVY_TECH,
@@ -991,40 +989,33 @@ async def get_tech_categories():
     })
 
 def get_visible_tech_ids(researched_techs: list, all_techs_in_category: list) -> set:
-    """Определяет какие технологии должны быть видны игроку
-    
-    Технология видна если:
+    """Технология видна если:
     0. У неё нет требований (начальная технология - всегда видна)
     1. Она изучена
     2. Изучена хотя бы одна из требуемых технологий (из requires)
     3. Изучена технология, которая требует данную (обратная связь)
     """
-    visible = set(researched_techs)  # Изученные всегда видны
+    visible = set(researched_techs)
     
-    # Добавляем все начальные технологии (без требований)
     for tech in all_techs_in_category:
         if not tech.get('requires') or len(tech.get('requires', [])) == 0:
             visible.add(tech['id'])
     
-    # Создаем карту "кто кого требует" для обратного поиска
-    required_by = {}  # tech_id -> [tech_ids that require it]
+    required_by = {}
     for tech in all_techs_in_category:
         for req_id in tech.get('requires', []):
             if req_id not in required_by:
                 required_by[req_id] = []
             required_by[req_id].append(tech['id'])
     
-    # Добавляем технологии, у которых изучена хотя бы одна требуемая
     for tech in all_techs_in_category:
         if tech['id'] in visible:
             continue
-        # Проверяем, изучена ли хотя бы одна требуемая технология
         for req_id in tech.get('requires', []):
             if req_id in researched_techs:
                 visible.add(tech['id'])
                 break
     
-    # Добавляем технологии, которые требуются изученными технологиями
     for researched_id in researched_techs:
         tech = next((t for t in all_techs_in_category if t['id'] == researched_id), None)
         if tech:
@@ -1035,34 +1026,34 @@ def get_visible_tech_ids(researched_techs: list, all_techs_in_category: list) ->
 
 
 def create_global_fake_id_mapping(researched_tech_ids: list) -> dict:
-    """Создает глобальный маппинг реальных ID -> фейковых ID для всех скрытых технологий во всех категориях
-    
-    Это необходимо для корректной работы межкатегориальных зависимостей (когда технология из одной категории
-    требует технологию из другой категории).
-    """
     real_to_fake_id = {}
     fake_counter = 1
     
-    # Проходим по всем категориям
+    print("\n=== СОЗДАНИЕ ГЛОБАЛЬНОГО МАППИНГА ФЕЙКОВЫХ ID ===")
+    print(f"Изученные технологии: {researched_tech_ids}")
+    
     for category_key, tech_data in TECHNOLOGIES.items():
-        # Собираем все технологии из категории
         all_techs_in_category = []
         for line in tech_data['lines']:
             all_techs_in_category.extend(line['technologies'])
         
-        # Определяем видимые технологии в этой категории
         visible_tech_ids = get_visible_tech_ids(researched_tech_ids, all_techs_in_category)
         
-        # Создаем фейковые ID для скрытых технологий
+        print(f"\n--- Категория: {category_key} ---")
+        print(f"Всего технологий: {len(all_techs_in_category)}, Видимых: {len(visible_tech_ids)}")
+        
         for tech in all_techs_in_category:
             if tech['id'] not in visible_tech_ids:
-                real_to_fake_id[tech['id']] = f"hidden_{fake_counter}"
+                fake_id = f"hidden_{fake_counter}"
+                real_to_fake_id[tech['id']] = fake_id
+                print(f"  {tech['id']} -> {fake_id}")
                 fake_counter += 1
+    
+    print(f"\n=== ВСЕГО СОЗДАНО ФЕЙКОВЫХ ID: {len(real_to_fake_id)} ===\n")
     
     return real_to_fake_id
 
 def hide_tech_data(tech: dict, tech_id: str) -> dict:
-    """Скрывает данные технологии, оставляя только ID и placeholder"""
     return {
         'id': tech_id,
         'name': '???',
@@ -1073,12 +1064,10 @@ def hide_tech_data(tech: dict, tech_id: str) -> dict:
 
 @router.get("/tree/{category}")
 async def get_tech_tree(category: str, request: Request):
-    """Получить древо технологий для указанной категории с учетом видимости"""
     user = await get_current_user(request)
     if not user:
         return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
     
-    # Выбираем категорию
     tech_data = None
     if category == "land_forces":
         tech_data = LAND_FORCES_TECH
@@ -1096,16 +1085,13 @@ async def get_tech_tree(category: str, request: Request):
     if not tech_data:
         return JSONResponse({"success": False, "error": "Unknown category"}, status_code=404)
     
-    # Для админов/модераторов показываем все технологии
     if user.get('role') in ['admin', 'moderator']:
         return JSONResponse({"success": True, "data": tech_data})
     
-    # Для игроков применяем скрытие технологий
     conn = get_db()
     cursor = conn.cursor()
     
     try:
-        # Получаем страну игрока
         cursor.execute('SELECT id FROM countries WHERE player_id = ?', (user['id'],))
         country = cursor.fetchone()
         
@@ -1114,7 +1100,6 @@ async def get_tech_tree(category: str, request: Request):
         
         country_id = country['id']
         
-        # Получаем изученные технологии
         cursor.execute('''
             SELECT tech_id FROM country_technologies
             WHERE country_id = ?
@@ -1122,23 +1107,22 @@ async def get_tech_tree(category: str, request: Request):
         
         researched_tech_ids = [row['tech_id'] for row in cursor.fetchall()]
         
-        # Собираем все технологии из категории
         all_techs_in_category = []
         for line in tech_data['lines']:
             all_techs_in_category.extend(line['technologies'])
         
-        # Определяем видимые технологии
         visible_tech_ids = get_visible_tech_ids(researched_tech_ids, all_techs_in_category)
         
-        # Создаем глобальный маппинг реальных ID -> фейковых ID для всех категорий
-        # Это необходимо для корректной работы межкатегориальных зависимостей
         real_to_fake_id = create_global_fake_id_mapping(researched_tech_ids)
         
-        # Функция для замены реальных ID на фейковые в массиве requires
-        def replace_ids_in_requires(requires_list):
-            return [real_to_fake_id.get(req_id, req_id) for req_id in requires_list]
+        print(f"\n=== ОБРАБОТКА КАТЕГОРИИ: {category} ===")
         
-        # Создаем копию данных с фейковыми ID для скрытых технологий
+        def replace_ids_in_requires(requires_list):
+            result = [real_to_fake_id.get(req_id, req_id) for req_id in requires_list]
+            if requires_list != result:
+                print(f"  Замена requires: {requires_list} -> {result}")
+            return result
+        
         filtered_data = {
             'id': tech_data['id'],
             'name': tech_data['name'],
@@ -1154,19 +1138,22 @@ async def get_tech_tree(category: str, request: Request):
             
             for tech in line['technologies']:
                 if tech['id'] in visible_tech_ids:
-                    # Технология видна - копируем все поля и заменяем ID в requires
                     visible_tech = tech.copy()
-                    visible_tech['requires'] = replace_ids_in_requires(tech.get('requires', []))
+                    original_requires = tech.get('requires', [])
+                    visible_tech['requires'] = replace_ids_in_requires(original_requires)
+                    if original_requires:
+                        print(f"ВИДИМАЯ: {tech['id']} requires {original_requires} -> {visible_tech['requires']}")
                     filtered_line['technologies'].append(visible_tech)
                 else:
-                    # Технология скрыта - сохраняем оригинальный year для правильного размещения
-                    # но скрываем название и заменяем ID
                     fake_id = real_to_fake_id[tech['id']]
+                    original_requires = tech.get('requires', [])
+                    replaced_requires = replace_ids_in_requires(original_requires)
+                    print(f"СКРЫТАЯ: {tech['id']} ({fake_id}) requires {original_requires} -> {replaced_requires}")
                     hidden_tech = {
                         'id': fake_id,
                         'name': '???',
-                        'year': tech['year'],  # Сохраняем оригинальный year для алгоритма размещения
-                        'requires': replace_ids_in_requires(tech.get('requires', [])),
+                        'year': tech['year'],
+                        'requires': replaced_requires,
                         'hidden': True
                     }
                     filtered_line['technologies'].append(hidden_tech)
@@ -1186,7 +1173,6 @@ async def get_tech_tree(category: str, request: Request):
 
 @router.get("/player/progress")
 async def get_player_tech_progress():
-    """Получить прогресс игрока по технологиям (deprecated - использовать /country/{country_id}/progress)"""
     # TODO: Оставлено для совместимости, позже удалить
     return JSONResponse({
         "success": True,
@@ -1194,8 +1180,6 @@ async def get_player_tech_progress():
         "researching": None,
         "research_progress": 0
     })
-
-# ===== НОВЫЕ ЭНДПОИНТЫ ДЛЯ РАБОТЫ С ТЕХНОЛОГИЯМИ СТРАН =====
 
 @router.get("/country/{country_id}/progress")
 async def get_country_tech_progress(country_id: str, request: Request):
@@ -1210,9 +1194,7 @@ async def get_country_tech_progress(country_id: str, request: Request):
             "error": "Требуется авторизация"
         }, status_code=401)
     
-    # Проверяем права: игрок может видеть только свою страну, админ - любую
     if user.get('role') not in ['admin', 'moderator']:
-        # Проверяем что это страна игрока
         conn = get_db()
         cursor = conn.cursor()
         try:
@@ -1226,7 +1208,6 @@ async def get_country_tech_progress(country_id: str, request: Request):
         finally:
             conn.close()
     
-    # Получаем изученные технологии
     conn = get_db()
     cursor = conn.cursor()
     
@@ -1245,7 +1226,7 @@ async def get_country_tech_progress(country_id: str, request: Request):
             "success": True,
             "country_id": country_id,
             "researched": researched_ids,
-            "researching": None,  # Пока нет системы исследования в реальном времени
+            "researching": None,
             "research_progress": 0
         })
         
@@ -1275,14 +1256,12 @@ async def research_technology(data: ResearchTechData, request: Request):
             "error": "Требуется авторизация"
         }, status_code=401)
     
-    # Защита от попытки изучить технологию по фейковому ID
     if data.tech_id.startswith('hidden_'):
         return JSONResponse({
             "success": False,
             "error": "Невозможно изучить скрытую технологию"
         }, status_code=400)
     
-    # Проверяем права: игрок может изучать только для своей страны, админ - для любой
     conn = get_db()
     cursor = conn.cursor()
     
@@ -1305,7 +1284,6 @@ async def research_technology(data: ResearchTechData, request: Request):
                     "error": "Нет доступа к этой стране"
                 }, status_code=403)
         
-        # Проверяем, не изучена ли уже технология
         cursor.execute('''
             SELECT id FROM country_technologies 
             WHERE country_id = ? AND tech_id = ?
@@ -1317,10 +1295,8 @@ async def research_technology(data: ResearchTechData, request: Request):
                 "error": "Технология уже изучена"
             }, status_code=400)
         
-        # Для игроков проверяем и списываем ОИ (админы могут изучать бесплатно)
         tech_cost = 0
         if not is_admin:
-            # Находим технологию и её стоимость (year используется как стоимость в ОИ)
             tech_found = None
             for category_key in TECHNOLOGIES.keys():
                 category_data = TECHNOLOGIES[category_key]
@@ -1341,7 +1317,6 @@ async def research_technology(data: ResearchTechData, request: Request):
                     "error": "Технология не найдена"
                 }, status_code=404)
             
-            # Проверяем достаточно ли ОИ
             current_points = country['research_points']
             if current_points < tech_cost:
                 return JSONResponse({
@@ -1349,14 +1324,12 @@ async def research_technology(data: ResearchTechData, request: Request):
                     "error": f"Недостаточно очков исследований. Требуется: {tech_cost}, доступно: {current_points}"
                 }, status_code=400)
             
-            # Списываем ОИ
             new_points = current_points - tech_cost
             cursor.execute(
                 'UPDATE countries SET research_points = ? WHERE id = ?',
                 (new_points, data.country_id)
             )
         
-        # Добавляем изученную технологию
         now = datetime.now().isoformat()
         cursor.execute('''
             INSERT INTO country_technologies (country_id, tech_id, researched_at)
@@ -1372,7 +1345,6 @@ async def research_technology(data: ResearchTechData, request: Request):
             "researched_at": now
         }
         
-        # Добавляем информацию об ОИ для игроков
         if not is_admin:
             response_data["research_points_spent"] = tech_cost
             response_data["research_points_remaining"] = new_points
@@ -1391,7 +1363,6 @@ async def research_technology(data: ResearchTechData, request: Request):
 
 @router.get("/admin/countries")
 async def get_countries_for_tech_view(request: Request):
-    """Получить список стран для админа (для выбора страны в просмотре технологий)"""
     sys.path.append('..')
     from main import get_current_user
     
