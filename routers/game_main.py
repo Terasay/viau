@@ -11,6 +11,37 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+def init_game_state():
+    """Инициализация таблицы глобального состояния игры"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS game_state (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            current_turn INTEGER NOT NULL DEFAULT 1,
+            game_date TEXT NOT NULL DEFAULT '1 января 1516 г.',
+            is_paused INTEGER DEFAULT 0,
+            updated_at TEXT NOT NULL
+        )
+    ''')
+    
+    # Создаем запись, если её нет
+    cursor.execute('SELECT id FROM game_state WHERE id = 1')
+    if not cursor.fetchone():
+        from datetime import datetime
+        now = datetime.now().isoformat()
+        cursor.execute('''
+            INSERT INTO game_state (id, current_turn, game_date, is_paused, updated_at)
+            VALUES (1, 1, '1 января 1516 г.', 0, ?)
+        ''', (now,))
+        conn.commit()
+    
+    conn.close()
+
+# Инициализируем при загрузке модуля
+init_game_state()
+
 async def get_current_user(request: Request):
     """Получение текущего пользователя из токена"""
     from main import get_current_user as main_get_current_user
@@ -105,6 +136,32 @@ async def deduct_research_points(request: Request):
     except Exception as e:
         print(f"Error deducting research points: {e}")
         conn.rollback()
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.get("/turn")
+async def get_game_turn():
+    """Получение текущего хода игры (доступно всем)"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('SELECT current_turn, game_date, is_paused FROM game_state WHERE id = 1')
+        state = cursor.fetchone()
+        
+        if not state:
+            return JSONResponse({'success': False, 'error': 'Состояние игры не найдено'}, status_code=404)
+        
+        return JSONResponse({
+            'success': True,
+            'current_turn': state['current_turn'],
+            'game_date': state['game_date'],
+            'is_paused': bool(state['is_paused'])
+        })
+    
+    except Exception as e:
+        print(f"Error getting game turn: {e}")
         return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
     finally:
         conn.close()

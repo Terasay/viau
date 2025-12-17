@@ -109,3 +109,127 @@ async def update_research_points(country_id: str, request: Request):
         return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
     finally:
         conn.close()
+
+@router.post("/next-turn")
+async def next_turn(request: Request):
+    """Переход к следующему ходу (только для админа)"""
+    admin = await check_admin(request)
+    if not admin:
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        from datetime import datetime
+        
+        # Получаем текущий ход
+        cursor.execute('SELECT current_turn FROM game_state WHERE id = 1')
+        state = cursor.fetchone()
+        
+        if not state:
+            return JSONResponse({'success': False, 'error': 'Состояние игры не найдено'}, status_code=404)
+        
+        new_turn = state['current_turn'] + 1
+        now = datetime.now().isoformat()
+        
+        # Обновляем ход
+        cursor.execute(
+            'UPDATE game_state SET current_turn = ?, updated_at = ? WHERE id = 1',
+            (new_turn, now)
+        )
+        conn.commit()
+        
+        return JSONResponse({
+            'success': True,
+            'current_turn': new_turn,
+            'message': f'Ход успешно изменён на {new_turn}'
+        })
+    
+    except Exception as e:
+        print(f"Error advancing turn: {e}")
+        conn.rollback()
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.post("/set-turn")
+async def set_turn(request: Request):
+    """Установить конкретный ход (только для админа)"""
+    admin = await check_admin(request)
+    if not admin:
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    
+    data = await request.json()
+    turn_number = data.get('turn')
+    
+    if turn_number is None or turn_number < 1:
+        return JSONResponse({'success': False, 'error': 'Некорректный номер хода'}, status_code=400)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        from datetime import datetime
+        now = datetime.now().isoformat()
+        
+        # Устанавливаем ход
+        cursor.execute(
+            'UPDATE game_state SET current_turn = ?, updated_at = ? WHERE id = 1',
+            (turn_number, now)
+        )
+        conn.commit()
+        
+        return JSONResponse({
+            'success': True,
+            'current_turn': turn_number,
+            'message': f'Ход установлен на {turn_number}'
+        })
+    
+    except Exception as e:
+        print(f"Error setting turn: {e}")
+        conn.rollback()
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.post("/toggle-pause")
+async def toggle_pause(request: Request):
+    """Приостановить/возобновить игру (только для админа)"""
+    admin = await check_admin(request)
+    if not admin:
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        from datetime import datetime
+        
+        cursor.execute('SELECT is_paused FROM game_state WHERE id = 1')
+        state = cursor.fetchone()
+        
+        if not state:
+            return JSONResponse({'success': False, 'error': 'Состояние игры не найдено'}, status_code=404)
+        
+        new_paused = 0 if state['is_paused'] else 1
+        now = datetime.now().isoformat()
+        
+        cursor.execute(
+            'UPDATE game_state SET is_paused = ?, updated_at = ? WHERE id = 1',
+            (new_paused, now)
+        )
+        conn.commit()
+        
+        return JSONResponse({
+            'success': True,
+            'is_paused': bool(new_paused),
+            'message': 'Игра приостановлена' if new_paused else 'Игра возобновлена'
+        })
+    
+    except Exception as e:
+        print(f"Error toggling pause: {e}")
+        conn.rollback()
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()

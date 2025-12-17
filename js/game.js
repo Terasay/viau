@@ -1,5 +1,21 @@
 let currentUser = null;
 let currentCountry = null;
+let gameState = null;
+
+// Экспортируем состояние для других модулей
+window.gameState = {
+    getUser: () => currentUser,
+    getCountry: () => currentCountry,
+    getGameState: () => gameState,
+    updateCountry: (newCountry) => {
+        currentCountry = newCountry;
+        initInterface();
+    },
+    updateGameState: (newState) => {
+        gameState = newState;
+        updateGameStateDisplay();
+    }
+};
 
 document.addEventListener('DOMContentLoaded', async () => {
     const savedTheme = localStorage.getItem('theme');
@@ -50,7 +66,11 @@ async function initGame() {
             await loadCountryData();
         }
 
+        // Загружаем состояние игры
+        await loadGameState();
+
         initInterface();
+        updateGameStateDisplay();
 
         loadingScreen.style.display = 'none';
         gameContainer.style.display = 'flex';
@@ -157,6 +177,23 @@ function initInterface() {
                         </button>
                     </div>
                 </div>
+                ${currentUser.role === 'admin' ? `
+                <div class="info-card">
+                    <h3><i class="fas fa-hourglass-half"></i> Управление ходами</h3>
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span>Текущий ход:</span>
+                            <strong id="admin-current-turn">-</strong>
+                        </div>
+                        <button class="btn-primary" onclick="nextTurn()">
+                            <i class="fas fa-forward"></i> Следующий ход
+                        </button>
+                        <button class="btn-secondary" onclick="setTurn()">
+                            <i class="fas fa-edit"></i> Установить ход
+                        </button>
+                    </div>
+                </div>
+                ` : ''}
             </div>
             <div style="margin-top: 24px;">
                 <div class="placeholder-card">
@@ -212,6 +249,143 @@ function setupNavigation() {
             }
         });
     });
+}
+
+async function loadGameState() {
+    try {
+        const response = await fetch('/api/game/turn');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                gameState = data;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading game state:', error);
+    }
+}
+
+function updateGameStateDisplay() {
+    if (!gameState) return;
+    
+    const turnElement = document.getElementById('game-turn');
+    if (turnElement) {
+        turnElement.textContent = gameState.current_turn;
+    }
+    
+    const adminTurnElement = document.getElementById('admin-current-turn');
+    if (adminTurnElement) {
+        adminTurnElement.textContent = gameState.current_turn;
+    }
+}
+
+async function nextTurn() {
+    if (!window.showModal) {
+        if (!confirm('Перейти к следующему ходу?')) return;
+    } else {
+        const confirmed = await window.showModal({
+            title: 'Подтверждение',
+            body: 'Вы уверены, что хотите перейти к следующему ходу?',
+            type: 'confirm'
+        });
+        if (!confirmed) return;
+    }
+    
+    const token = localStorage.getItem('token');
+    
+    try {
+        const response = await fetch('/api/admin/game/next-turn', {
+            method: 'POST',
+            headers: { 'Authorization': token }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            gameState.current_turn = data.current_turn;
+            updateGameStateDisplay();
+            
+            if (window.showSuccess) {
+                window.showSuccess(data.message || 'Ход успешно изменён');
+            } else {
+                alert(data.message || 'Ход успешно изменён');
+            }
+        } else {
+            if (window.showError) {
+                window.showError(data.error || 'Ошибка при изменении хода');
+            } else {
+                alert(data.error || 'Ошибка при изменении хода');
+            }
+        }
+    } catch (error) {
+        console.error('Error advancing turn:', error);
+        if (window.showError) {
+            window.showError('Ошибка при изменении хода');
+        } else {
+            alert('Ошибка при изменении хода');
+        }
+    }
+}
+
+async function setTurn() {
+    let turnNumber;
+    
+    if (!window.showPrompt) {
+        turnNumber = prompt('Введите номер хода:');
+        if (!turnNumber) return;
+    } else {
+        turnNumber = await window.showPrompt('Введите номер хода:', gameState?.current_turn || 1);
+        if (!turnNumber) return;
+    }
+    
+    turnNumber = parseInt(turnNumber);
+    if (isNaN(turnNumber) || turnNumber < 1) {
+        if (window.showError) {
+            window.showError('Некорректный номер хода');
+        } else {
+            alert('Некорректный номер хода');
+        }
+        return;
+    }
+    
+    const token = localStorage.getItem('token');
+    
+    try {
+        const response = await fetch('/api/admin/game/set-turn', {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ turn: turnNumber })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            gameState.current_turn = data.current_turn;
+            updateGameStateDisplay();
+            
+            if (window.showSuccess) {
+                window.showSuccess(data.message || 'Ход успешно установлен');
+            } else {
+                alert(data.message || 'Ход успешно установлен');
+            }
+        } else {
+            if (window.showError) {
+                window.showError(data.error || 'Ошибка при установке хода');
+            } else {
+                alert(data.error || 'Ошибка при установке хода');
+            }
+        }
+    } catch (error) {
+        console.error('Error setting turn:', error);
+        if (window.showError) {
+            window.showError('Ошибка при установке хода');
+        } else {
+            alert('Ошибка при установке хода');
+        }
+    }
 }
 
 function goToHome() {
