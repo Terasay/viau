@@ -985,23 +985,146 @@ async def get_tech_categories():
         ]
     })
 
+def get_visible_tech_ids(researched_techs: list, all_techs_in_category: list) -> set:
+    """Определяет какие технологии должны быть видны игроку
+    
+    Технология видна если:
+    1. Она изучена
+    2. Изучена хотя бы одна из требуемых технологий (из requires)
+    3. Изучена технология, которая требует данную (обратная связь)
+    """
+    visible = set(researched_techs)  # Изученные всегда видны
+    
+    # Создаем карту "кто кого требует" для обратного поиска
+    required_by = {}  # tech_id -> [tech_ids that require it]
+    for tech in all_techs_in_category:
+        for req_id in tech.get('requires', []):
+            if req_id not in required_by:
+                required_by[req_id] = []
+            required_by[req_id].append(tech['id'])
+    
+    # Добавляем технологии, у которых изучена хотя бы одна требуемая
+    for tech in all_techs_in_category:
+        if tech['id'] in visible:
+            continue
+        # Проверяем, изучена ли хотя бы одна требуемая технология
+        for req_id in tech.get('requires', []):
+            if req_id in researched_techs:
+                visible.add(tech['id'])
+                break
+    
+    # Добавляем технологии, которые требуются изученными технологиями
+    for researched_id in researched_techs:
+        tech = next((t for t in all_techs_in_category if t['id'] == researched_id), None)
+        if tech:
+            for req_id in tech.get('requires', []):
+                visible.add(req_id)
+    
+    return visible
+
+def hide_tech_data(tech: dict, tech_id: str) -> dict:
+    """Скрывает данные технологии, оставляя только ID и placeholder"""
+    return {
+        'id': tech_id,
+        'name': '???',
+        'year': 0,
+        'requires': tech.get('requires', []),
+        'hidden': True
+    }
+
 @router.get("/tree/{category}")
-async def get_tech_tree(category: str):
-    """Получить древо технологий для указанной категории"""
+async def get_tech_tree(category: str, request: Request):
+    """Получить древо технологий для указанной категории с учетом видимости"""
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    # Выбираем категорию
+    tech_data = None
     if category == "land_forces":
-        return JSONResponse({"success": True, "data": LAND_FORCES_TECH})
+        tech_data = LAND_FORCES_TECH
     elif category == "navy":
-        return JSONResponse({"success": True, "data": NAVY_TECH})
+        tech_data = NAVY_TECH
     elif category == "education":
-        return JSONResponse({"success": True, "data": EDUCATION_TECH})
+        tech_data = EDUCATION_TECH
     elif category == "economy":
-        return JSONResponse({"success": True, "data": ECONOMY_TECH})
+        tech_data = ECONOMY_TECH
     elif category == "industry":
-        return JSONResponse({"success": True, "data": INDUSTRY_TECH})
+        tech_data = INDUSTRY_TECH
     elif category == "infrastructure":
-        return JSONResponse({"success": True, "data": INFRASTRUCTURE_TECH})
-    else:
+        tech_data = INFRASTRUCTURE_TECH
+    
+    if not tech_data:
         return JSONResponse({"success": False, "error": "Unknown category"}, status_code=404)
+    
+    # Для админов/модераторов показываем все технологии
+    if user.get('role') in ['admin', 'moderator']:
+        return JSONResponse({"success": True, "data": tech_data})
+    
+    # Для игроков применяем скрытие технологий
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Получаем страну игрока
+        cursor.execute('SELECT id FROM countries WHERE player_id = ?', (user['id'],))
+        country = cursor.fetchone()
+        
+        if not country:
+            return JSONResponse({'success': False, 'error': 'У вас нет страны'}, status_code=404)
+        
+        country_id = country['id']
+        
+        # Получаем изученные технологии
+        cursor.execute('''
+            SELECT tech_id FROM country_technologies
+            WHERE country_id = ?
+        ''', (country_id,))
+        
+        researched_tech_ids = [row['tech_id'] for row in cursor.fetchall()]
+        
+        # Собираем все технологии из категории
+        all_techs_in_category = []
+        for line in tech_data['lines']:
+            all_techs_in_category.extend(line['technologies'])
+        
+        # Определяем видимые технологии
+        visible_tech_ids = get_visible_tech_ids(researched_tech_ids, all_techs_in_category)
+        
+        # Создаем копию данных с скрытыми технологиями
+        filtered_data = {
+            'id': tech_data['id'],
+            'name': tech_data['name'],
+            'lines': []
+        }
+        
+        for line in tech_data['lines']:
+            filtered_line = {
+                'id': line['id'],
+                'name': line['name'],
+                'technologies': []
+            }
+            
+            for tech in line['technologies']:
+                if tech['id'] in visible_tech_ids:
+                    # Технология видна - отдаем полные данные
+                    filtered_line['technologies'].append(tech)
+                else:
+                    # Технология скрыта - отдаем placeholder
+                    filtered_line['technologies'].append(hide_tech_data(tech, tech['id']))
+            
+            filtered_data['lines'].append(filtered_line)
+        
+        return JSONResponse({
+            "success": True,
+            "data": filtered_data
+        })
+    
+    except Exception as e:
+        print(f"Error getting tech tree: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
 
 @router.get("/player/progress")
 async def get_player_tech_progress():

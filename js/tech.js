@@ -780,6 +780,22 @@ function createTechNode(tech) {
     node.className = 'tech-node';
     node.dataset.techId = tech.id;
     
+    // Проверяем, скрыта ли технология
+    if (tech.hidden) {
+        node.classList.add('hidden');
+        node.innerHTML = `
+            <div class="tech-node-header">
+                <h5 class="tech-node-name">???</h5>
+                <i class="fas fa-question tech-node-icon"></i>
+            </div>
+            <div class="tech-node-year"></div>
+        `;
+        
+        // Скрытые технологии не кликабельны
+        node.style.cursor = 'default';
+        return node;
+    }
+    
     const status = getTechStatus(tech);
     node.classList.add(status);
     
