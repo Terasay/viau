@@ -244,11 +244,23 @@ function setupNavigation() {
             btn.classList.add('active');
             document.getElementById(`${sectionName}-section`).classList.add('active');
             
+            // Сохраняем текущий раздел
+            localStorage.setItem('activeSection', sectionName);
+            
             if (sectionName === 'technologies' && window.techModule) {
                 window.techModule.init();
             }
         });
     });
+    
+    // Восстанавливаем последний активный раздел
+    const savedSection = localStorage.getItem('activeSection');
+    if (savedSection) {
+        const savedBtn = document.querySelector(`[data-section="${savedSection}"]`);
+        if (savedBtn) {
+            savedBtn.click();
+        }
+    }
 }
 
 async function loadGameState() {

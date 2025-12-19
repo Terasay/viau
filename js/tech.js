@@ -3,11 +3,11 @@ let allTechData = {};
 let playerProgress = null;
 let selectedTech = null;
 let isInitialized = false;
-let currentCategory = 'land_forces';
+let currentCategory = localStorage.getItem('techCategory') || 'land_forces';
 let currentCountryId = null;
 let viewingCountryId = null;
 let currentResearchPoints = 0;
-let showHiddenTechs = false;
+let showHiddenTechs = localStorage.getItem('showHiddenTechs') === 'true';
 let isAdminView = false;
 
 async function initTechnologies(category = 'land_forces') {
@@ -1060,6 +1060,9 @@ function showError(message) {
 async function switchCategory(category) {
     console.log('Switching to category:', category);
     
+    currentCategory = category;
+    localStorage.setItem('techCategory', category);
+    
     document.querySelectorAll('.tech-category-tab').forEach(tab => {
         tab.classList.remove('active');
         if (tab.dataset.category === category) {
@@ -1068,7 +1071,6 @@ async function switchCategory(category) {
     });
     
     if (allTechData[category]) {
-        currentCategory = category;
         techData = allTechData[category];
         renderTechTree();
         updateResearchPointsDisplay();
@@ -1380,6 +1382,7 @@ function showPrompt(title, message, defaultValue = '') {
 
 async function toggleHiddenTechs() {
     showHiddenTechs = !showHiddenTechs;
+    localStorage.setItem('showHiddenTechs', showHiddenTechs.toString());
     console.log('Toggling hidden techs:', showHiddenTechs);
     
     // Перезагружаем данные с новым параметром
