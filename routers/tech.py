@@ -1109,10 +1109,6 @@ async def get_tech_tree(category: str, request: Request, country_id: str = None,
             if tech.get('requires'):
                 tech_copy['requires'] = [req for req in tech['requires'] if req in all_tech_ids_in_category]
             
-            # Добавляем флаг hidden для админа, если он смотрит со show_hidden=True
-            if is_admin and show_hidden:
-                tech_copy['hidden'] = not is_tech_visible(tech['id'], researched_ids, all_techs_map, all_tech_ids_in_category)
-            
             sorted_line['technologies'].append(tech_copy)
         
         # Сортируем для детерминированного порядка

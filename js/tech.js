@@ -807,11 +807,6 @@ function createTechNode(tech) {
     const status = getTechStatus(tech);
     node.classList.add(status);
     
-    // Если технология помечена как hidden (только для админа в режиме show_hidden), добавляем класс
-    if (tech.hidden) {
-        node.classList.add('hidden');
-    }
-    
     let icon = 'fa-lock';
     if (status === 'researched') icon = 'fa-check-circle';
     else if (status === 'available') icon = 'fa-circle';
