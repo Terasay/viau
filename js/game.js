@@ -450,8 +450,8 @@ window.showCountrySelectionModal = async function(sectionType = 'technologies') 
 
         if (!data.success || !data.countries || data.countries.length === 0) {
             modalBody.innerHTML = '<p>Нет доступных стран</p>';
-            modalFooter.innerHTML = '<button class="modal-btn-secondary" onclick="closeModal()">Закрыть</button>';
-            modal.classList.add('active');
+            modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
+            modal.classList.add('visible');
             return;
         }
 
@@ -481,21 +481,21 @@ window.showCountrySelectionModal = async function(sectionType = 'technologies') 
 
         html += '</div></div>';
         modalBody.innerHTML = html;
-        modalFooter.innerHTML = '<button class="modal-btn-secondary" onclick="closeModal()">Отмена</button>';
-        modal.classList.add('active');
+        modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Отмена</button>';
+        modal.classList.add('visible');
 
     } catch (error) {
         console.error('Error loading countries:', error);
         modalBody.innerHTML = '<p style="color: #ff4444;">Ошибка загрузки списка стран</p>';
-        modalFooter.innerHTML = '<button class="modal-btn-secondary" onclick="closeModal()">Закрыть</button>';
-        modal.classList.add('active');
+        modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
+        modal.classList.add('visible');
     }
 };
 
 function closeModal() {
     const modal = document.getElementById('modal-overlay');
     if (modal) {
-        modal.classList.remove('active');
+        modal.classList.remove('visible');
     }
 }
 
