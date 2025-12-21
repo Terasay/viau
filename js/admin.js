@@ -1081,10 +1081,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadCountries();
     }
 
-    let availableCurrencies = {};
-    let availableResources = {};
+    // Глобальные переменные для хранения данных валют и ресурсов
+    window.availableCurrencies = {};
+    window.availableResources = {};
 
-    async function loadAvailableData() {
+    window.loadAvailableData = async function() {
         try {
             const [currResponse, resResponse] = await Promise.all([
                 fetch('/api/economic/available-currencies'),
@@ -1094,15 +1095,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const currData = await currResponse.json();
             const resData = await resResponse.json();
             
-            if (currData.success) availableCurrencies = currData.currencies;
-            if (resData.success) availableResources = resData.resources;
+            if (currData.success) window.availableCurrencies = currData.currencies;
+            if (resData.success) window.availableResources = resData.resources;
         } catch (e) {
             console.error('Ошибка загрузки валют/ресурсов:', e);
         }
     }
 
     async function loadCountriesEconomic() {
-        await loadAvailableData();
+        await window.loadAvailableData();
         
         const countriesList = document.getElementById('countries-economic-list');
         countriesList.innerHTML = '<div class="loading-msg">Загрузка стран...</div>';
@@ -1553,6 +1554,11 @@ window.manageCountryResources = async function(countryId, countryName) {
 
     modalTitle.textContent = `Управление ресурсами: ${countryName}`;
     
+    // Загружаем данные валют и ресурсов, если они еще не загружены
+    if (Object.keys(window.availableCurrencies).length === 0 || Object.keys(window.availableResources).length === 0) {
+        await window.loadAvailableData();
+    }
+    
     try {
         const token = localStorage.getItem('token');
         const response = await fetch(`/api/economic/country/${countryId}/resources`, {
@@ -1572,7 +1578,7 @@ window.manageCountryResources = async function(countryId, countryName) {
         formHtml += '<div style="margin-bottom: 20px; padding: 16px; background: #232323; border-radius: 8px;">';
         formHtml += '<h3 style="margin: 0 0 12px 0; color: #00ffc6;"><i class="fas fa-coins"></i> Основная валюта</h3>';
         formHtml += '<select id="main-currency-select" style="width: 100%;">';
-        for (const [code, info] of Object.entries(availableCurrencies)) {
+        for (const [code, info] of Object.entries(window.availableCurrencies)) {
             const selected = code === data.main_currency ? 'selected' : '';
             formHtml += `<option value="${code}" ${selected}>${info.name} (${code})</option>`;
         }
@@ -1583,7 +1589,7 @@ window.manageCountryResources = async function(countryId, countryName) {
         // Валюты
         formHtml += '<div style="margin-bottom: 20px;">';
         formHtml += '<h3 style="margin: 0 0 12px 0; color: #00ffc6;"><i class="fas fa-money-bill-wave"></i> Валюты</h3>';
-        for (const [code, info] of Object.entries(availableCurrencies)) {
+        for (const [code, info] of Object.entries(window.availableCurrencies)) {
             const amount = data.currencies[code] || 0;
             formHtml += `
                 <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
@@ -1600,7 +1606,7 @@ window.manageCountryResources = async function(countryId, countryName) {
         // Ресурсы
         formHtml += '<div>';
         formHtml += '<h3 style="margin: 0 0 12px 0; color: #00ffc6;"><i class="fas fa-box"></i> Ресурсы</h3>';
-        for (const [code, info] of Object.entries(availableResources)) {
+        for (const [code, info] of Object.entries(window.availableResources)) {
             const amount = data.resources[code] || 0;
             formHtml += `
                 <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">

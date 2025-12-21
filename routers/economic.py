@@ -526,7 +526,7 @@ async def get_country_resources(country_id: str, request: Request):
         
         return JSONResponse({
             'success': True,
-            'main_currency': country[6],  # main_currency
+            'main_currency': country['main_currency'],
             'resources': resources,
             'currencies': currencies
         })
