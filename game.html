@@ -6,6 +6,7 @@
     <title>Игра - VIAU</title>
     <link rel="stylesheet" href="/css/game.css">
     <link rel="stylesheet" href="/css/tech.css">
+    <link rel="stylesheet" href="/css/economic.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -151,11 +152,8 @@
             </section>
 
             <section id="economy-section" class="game-section" style="display: none;">
-                <h2><i class="fas fa-chart-line"></i> Экономика</h2>
-                <div class="placeholder-card">
-                    <i class="fas fa-hammer fa-3x"></i>
-                    <h3>Раздел в разработке</h3>
-                    <p>Управление экономикой страны будет доступно в следующих обновлениях</p>
+                <div id="economy-content">
+                    <div class="loading-msg">Загрузка экономики...</div>
                 </div>
             </section>
 
@@ -257,5 +255,6 @@
 
     <script src="/js/game.js"></script>
     <script src="/js/tech.js"></script>
+    <script src="/js/economic.js"></script>
 </body>
 </html>

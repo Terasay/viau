@@ -250,6 +250,11 @@ function setupNavigation() {
             if (sectionName === 'technologies' && window.techModule) {
                 window.techModule.init();
             }
+            
+            // Инициализация экономики
+            if (sectionName === 'economy' && window.economicModule && currentCountry) {
+                window.economicModule.init(currentCountry.id);
+            }
         });
     });
     

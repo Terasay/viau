@@ -1,0 +1,282 @@
+/* Экономика - основные стили */
+.economy-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 255, 198, 0.2);
+}
+
+.economy-header h2 {
+    margin: 0;
+    color: #00ffc6;
+    font-size: 1.8em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.main-currency-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: rgba(0, 255, 198, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 198, 0.3);
+}
+
+.main-currency-display i {
+    color: #ffd700;
+    font-size: 1.2em;
+}
+
+.main-currency-display span {
+    color: #e0e0e0;
+    font-size: 1.1em;
+}
+
+.main-currency-display strong {
+    color: #00ffc6;
+}
+
+/* Сетка экономики */
+.economy-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.economy-section {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 255, 198, 0.2);
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(0, 255, 198, 0.3);
+}
+
+.section-header i {
+    color: #00ffc6;
+    font-size: 1.4em;
+}
+
+.section-header h3 {
+    margin: 0;
+    color: #00ffc6;
+    font-size: 1.4em;
+}
+
+/* Список ресурсов */
+.resources-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.resource-item:hover {
+    background: rgba(0, 255, 198, 0.1);
+    border-color: rgba(0, 255, 198, 0.3);
+    transform: translateX(4px);
+}
+
+.resource-item.main-currency {
+    background: rgba(255, 215, 0, 0.1);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+}
+
+.resource-item.main-currency:hover {
+    background: rgba(255, 215, 0, 0.15);
+    border-color: rgba(255, 215, 0, 0.6);
+}
+
+.resource-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 255, 198, 0.15);
+    border-radius: 8px;
+    font-size: 1.5em;
+    color: #00ffc6;
+    flex-shrink: 0;
+}
+
+.resource-item.main-currency .resource-icon {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+}
+
+.resource-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.resource-name {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.resource-code {
+    font-size: 0.9em;
+    color: #888;
+    font-family: 'Fira Mono', monospace;
+}
+
+.resource-amount {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: #00ffc6;
+    font-family: 'Fira Mono', monospace;
+    white-space: nowrap;
+}
+
+.resource-item.main-currency .resource-amount {
+    color: #ffd700;
+}
+
+/* Бейдж основной валюты */
+.badge-main {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(255, 215, 0, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    border-radius: 4px;
+    font-size: 0.75em;
+    color: #ffd700;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Футер */
+.economy-footer {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.btn-refresh {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #00ffc6 0%, #00d9a8 100%);
+    color: #0a0e27;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 255, 198, 0.3);
+}
+
+.btn-refresh:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 255, 198, 0.4);
+}
+
+.btn-refresh:active {
+    transform: translateY(0);
+}
+
+/* Скроллбар */
+.resources-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.resources-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.resources-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 198, 0.3);
+    border-radius: 4px;
+}
+
+.resources-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 198, 0.5);
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .economy-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .economy-header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+
+    .economy-header h2 {
+        font-size: 1.5em;
+    }
+
+    .main-currency-display {
+        justify-content: center;
+    }
+
+    .resource-item {
+        padding: 12px;
+    }
+
+    .resource-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2em;
+    }
+
+    .resource-name {
+        font-size: 1em;
+    }
+
+    .resource-amount {
+        font-size: 1.1em;
+    }
+}
+
+/* Сообщения загрузки */
+.loading-msg {
+    text-align: center;
+    padding: 40px;
+    color: #888;
+    font-size: 1.2em;
+}

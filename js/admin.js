@@ -1081,7 +1081,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadCountries();
     }
 
+    let availableCurrencies = {};
+    let availableResources = {};
+
+    async function loadAvailableData() {
+        try {
+            const [currResponse, resResponse] = await Promise.all([
+                fetch('/api/economic/available-currencies'),
+                fetch('/api/economic/available-resources')
+            ]);
+            
+            const currData = await currResponse.json();
+            const resData = await resResponse.json();
+            
+            if (currData.success) availableCurrencies = currData.currencies;
+            if (resData.success) availableResources = resData.resources;
+        } catch (e) {
+            console.error('Ошибка загрузки валют/ресурсов:', e);
+        }
+    }
+
     async function loadCountriesEconomic() {
+        await loadAvailableData();
+        
         const countriesList = document.getElementById('countries-economic-list');
         countriesList.innerHTML = '<div class="loading-msg">Загрузка стран...</div>';
 
@@ -1153,6 +1175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         let html = '';
         for (const country of countries) {
+            const mainCurrencyName = availableCurrencies[country.main_currency]?.name || country.main_currency;
             html += `
                 <div class="item-card">
                     <div class="item-header">
@@ -1174,13 +1197,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <span class="detail-value">${country.player_username || 'N/A'} (ID: ${country.player_id})</span>
                         </div>
                         <div class="detail-item">
-                            <span class="detail-label">Валюта</span>
-                            <span class="detail-value">${country.currency}</span>
+                            <span class="detail-label">Основная валюта</span>
+                            <span class="detail-value">${mainCurrencyName} (${country.main_currency})</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Создана</span>
                             <span class="detail-value">${new Date(country.created_at).toLocaleString('ru-RU')}</span>
                         </div>
+                    </div>
+                    <div style="margin-top: 12px; display: flex; gap: 8px;">
+                        <button onclick="manageCountryResources('${country.id}', '${country.country_name}')" class="btn-view">
+                            <i class="fas fa-boxes"></i> Управление ресурсами
+                        </button>
                     </div>
                 </div>
             `;
@@ -1509,6 +1537,163 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 });
+
+// Функция управления ресурсами страны
+window.manageCountryResources = async function(countryId, countryName) {
+    const modalOverlay = document.querySelector('.modal-overlay-admin');
+    const modalContent = document.querySelector('.modal-content-admin');
+    const modalTitle = document.querySelector('.modal-title');
+    const modalForm = document.querySelector('.modal-form');
+
+    modalTitle.textContent = `Управление ресурсами: ${countryName}`;
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/economic/country/${countryId}/resources`, {
+            headers: { 'Authorization': token }
+        });
+        const data = await response.json();
+        
+        if (!data.success) {
+            alert('Ошибка загрузки ресурсов');
+            return;
+        }
+
+        // Формируем HTML для управления валютами и ресурсами
+        let formHtml = '<div style="max-height: 500px; overflow-y: auto;">';
+        
+        // Выбор основной валюты
+        formHtml += '<div style="margin-bottom: 20px; padding: 16px; background: #232323; border-radius: 8px;">';
+        formHtml += '<h3 style="margin: 0 0 12px 0; color: #00ffc6;"><i class="fas fa-coins"></i> Основная валюта</h3>';
+        formHtml += '<select id="main-currency-select" style="width: 100%;">';
+        for (const [code, info] of Object.entries(availableCurrencies)) {
+            const selected = code === data.main_currency ? 'selected' : '';
+            formHtml += `<option value="${code}" ${selected}>${info.name} (${code})</option>`;
+        }
+        formHtml += '</select>';
+        formHtml += '<button onclick="updateMainCurrency(\'' + countryId + '\')" style="margin-top: 8px; width: 100%;" class="btn-approve">Обновить основную валюту</button>';
+        formHtml += '</div>';
+        
+        // Валюты
+        formHtml += '<div style="margin-bottom: 20px;">';
+        formHtml += '<h3 style="margin: 0 0 12px 0; color: #00ffc6;"><i class="fas fa-money-bill-wave"></i> Валюты</h3>';
+        for (const [code, info] of Object.entries(availableCurrencies)) {
+            const amount = data.currencies[code] || 0;
+            formHtml += `
+                <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+                    <label style="flex: 1; margin: 0;">${info.name} (${code})</label>
+                    <input type="number" id="currency-${code}" value="${amount}" style="width: 120px;" />
+                    <button onclick="updateCountryCurrency('${countryId}', '${code}')" class="btn-approve" style="padding: 6px 12px;">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            `;
+        }
+        formHtml += '</div>';
+        
+        // Ресурсы
+        formHtml += '<div>';
+        formHtml += '<h3 style="margin: 0 0 12px 0; color: #00ffc6;"><i class="fas fa-box"></i> Ресурсы</h3>';
+        for (const [code, info] of Object.entries(availableResources)) {
+            const amount = data.resources[code] || 0;
+            formHtml += `
+                <div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">
+                    <label style="flex: 1; margin: 0;">${info.name} (${code})</label>
+                    <input type="number" id="resource-${code}" value="${amount}" style="width: 120px;" />
+                    <button onclick="updateCountryResource('${countryId}', '${code}')" class="btn-approve" style="padding: 6px 12px;">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            `;
+        }
+        formHtml += '</div>';
+        formHtml += '</div>';
+
+        modalForm.innerHTML = formHtml;
+        modalOverlay.classList.add('active');
+    } catch (e) {
+        alert('Ошибка: ' + e.message);
+    }
+};
+
+window.updateMainCurrency = async function(countryId) {
+    const currencyCode = document.getElementById('main-currency-select').value;
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/economic/country/${countryId}/update-main-currency`, {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ main_currency: currencyCode })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Основная валюта обновлена!');
+            await loadCountriesEconomic();
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    } catch (e) {
+        alert('Ошибка: ' + e.message);
+    }
+};
+
+window.updateCountryCurrency = async function(countryId, currencyCode) {
+    const amount = parseInt(document.getElementById(`currency-${currencyCode}`).value) || 0;
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/economic/country/${countryId}/update-currency`, {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ currency_code: currencyCode, amount })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Валюта обновлена!');
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    } catch (e) {
+        alert('Ошибка: ' + e.message);
+    }
+};
+
+window.updateCountryResource = async function(countryId, resourceCode) {
+    const amount = parseInt(document.getElementById(`resource-${resourceCode}`).value) || 0;
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/economic/country/${countryId}/update-resource`, {
+            method: 'POST',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ resource_code: resourceCode, amount })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Ресурс обновлён!');
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    } catch (e) {
+        alert('Ошибка: ' + e.message);
+    }
+};
 
 function formatUsers(users) {
     if (!users || users.length === 0) return 'Нет пользователей.';

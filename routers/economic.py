@@ -26,6 +26,7 @@ def init_db():
             ruler_last_name TEXT NOT NULL,
             country_name TEXT NOT NULL,
             currency TEXT DEFAULT 'Золото',
+            main_currency TEXT DEFAULT 'HOM',
             secret_coins INTEGER DEFAULT 0,
             research_points INTEGER DEFAULT 100,
             created_at TEXT NOT NULL,
@@ -34,11 +35,41 @@ def init_db():
         )
     ''')
     
-    # Добавляем поле research_points в существующую таблицу, если его нет
+    # Добавляем поля в существующую таблицу, если их нет
     cursor.execute("PRAGMA table_info(countries)")
     columns = [column[1] for column in cursor.fetchall()]
     if 'research_points' not in columns:
         cursor.execute('ALTER TABLE countries ADD COLUMN research_points INTEGER DEFAULT 100')
+    if 'main_currency' not in columns:
+        cursor.execute('ALTER TABLE countries ADD COLUMN main_currency TEXT DEFAULT "HOM"')
+    
+    # Создаём таблицу для хранения ресурсов стран
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS country_resources (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            country_id TEXT NOT NULL,
+            resource_code TEXT NOT NULL,
+            amount INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (country_id) REFERENCES countries (id) ON DELETE CASCADE,
+            UNIQUE(country_id, resource_code)
+        )
+    ''')
+    
+    # Создаём таблицу для хранения валют стран
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS country_currencies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            country_id TEXT NOT NULL,
+            currency_code TEXT NOT NULL,
+            amount INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (country_id) REFERENCES countries (id) ON DELETE CASCADE,
+            UNIQUE(country_id, currency_code)
+        )
+    ''')
     
     conn.commit()
     conn.close()
@@ -428,6 +459,172 @@ async def delete_country(country_id: str, request: Request):
 
 @router.post("/migrate-existing-players")
 async def migrate_existing_players_endpoint(request: Request):
+    """Мигрировать существующих игроков"""
+    user = await check_admin(request)
+    if not user:
+        return JSONResponse({'success': False, 'message': 'Доступ запрещён'}, status_code=403)
+    
+    count = migrate_existing_players()
+    return JSONResponse({'success': True, 'message': f'Создано стран: {count}'})
+
+@router.get("/available-currencies")
+async def get_available_currencies():
+    """Получить список всех доступных валют из converter_data.json"""
+    try:
+        import json
+        with open('data/converter_data.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return JSONResponse({'success': True, 'currencies': data.get('currencies', {})})
+    except Exception as e:
+        return JSONResponse({'success': False, 'message': str(e)}, status_code=500)
+
+@router.get("/available-resources")
+async def get_available_resources():
+    """Получить список всех доступных ресурсов из converter_data.json"""
+    try:
+        import json
+        with open('data/converter_data.json', 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return JSONResponse({'success': True, 'resources': data.get('resources', {})})
+    except Exception as e:
+        return JSONResponse({'success': False, 'message': str(e)}, status_code=500)
+
+@router.get("/country/{country_id}/resources")
+async def get_country_resources(country_id: str, request: Request):
+    """Получить все ресурсы страны"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Получаем информацию о стране
+        cursor.execute('SELECT * FROM countries WHERE id = ?', (country_id,))
+        country = cursor.fetchone()
+        if not country:
+            return JSONResponse({'success': False, 'message': 'Страна не найдена'}, status_code=404)
+        
+        # Получаем ресурсы
+        cursor.execute('''
+            SELECT resource_code, amount 
+            FROM country_resources 
+            WHERE country_id = ?
+        ''', (country_id,))
+        resources = {row[0]: row[1] for row in cursor.fetchall()}
+        
+        # Получаем валюты
+        cursor.execute('''
+            SELECT currency_code, amount 
+            FROM country_currencies 
+            WHERE country_id = ?
+        ''', (country_id,))
+        currencies = {row[0]: row[1] for row in cursor.fetchall()}
+        
+        return JSONResponse({
+            'success': True,
+            'main_currency': country[6],  # main_currency
+            'resources': resources,
+            'currencies': currencies
+        })
+    finally:
+        conn.close()
+
+@router.post("/country/{country_id}/update-main-currency")
+async def update_main_currency(country_id: str, request: Request):
+    """Обновить основную валюту страны (только админ)"""
+    user = await check_admin(request)
+    if not user:
+        return JSONResponse({'success': False, 'message': 'Доступ запрещён'}, status_code=403)
+    
+    data = await request.json()
+    new_currency = data.get('main_currency')
+    
+    if not new_currency:
+        return JSONResponse({'success': False, 'message': 'Не указана валюта'}, status_code=400)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('''
+            UPDATE countries 
+            SET main_currency = ?, updated_at = ? 
+            WHERE id = ?
+        ''', (new_currency, datetime.now().isoformat(), country_id))
+        
+        if cursor.rowcount == 0:
+            return JSONResponse({'success': False, 'message': 'Страна не найдена'}, status_code=404)
+        
+        conn.commit()
+        return JSONResponse({'success': True, 'message': 'Валюта обновлена'})
+    finally:
+        conn.close()
+
+@router.post("/country/{country_id}/update-resource")
+async def update_country_resource(country_id: str, request: Request):
+    """Обновить количество ресурса страны (только админ)"""
+    user = await check_admin(request)
+    if not user:
+        return JSONResponse({'success': False, 'message': 'Доступ запрещён'}, status_code=403)
+    
+    data = await request.json()
+    resource_code = data.get('resource_code')
+    amount = data.get('amount', 0)
+    
+    if not resource_code:
+        return JSONResponse({'success': False, 'message': 'Не указан код ресурса'}, status_code=400)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        now = datetime.now().isoformat()
+        
+        cursor.execute('''
+            INSERT INTO country_resources (country_id, resource_code, amount, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(country_id, resource_code) 
+            DO UPDATE SET amount = ?, updated_at = ?
+        ''', (country_id, resource_code, amount, now, now, amount, now))
+        
+        conn.commit()
+        return JSONResponse({'success': True, 'message': 'Ресурс обновлён'})
+    except Exception as e:
+        return JSONResponse({'success': False, 'message': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.post("/country/{country_id}/update-currency")
+async def update_country_currency(country_id: str, request: Request):
+    """Обновить количество валюты страны (только админ)"""
+    user = await check_admin(request)
+    if not user:
+        return JSONResponse({'success': False, 'message': 'Доступ запрещён'}, status_code=403)
+    
+    data = await request.json()
+    currency_code = data.get('currency_code')
+    amount = data.get('amount', 0)
+    
+    if not currency_code:
+        return JSONResponse({'success': False, 'message': 'Не указан код валюты'}, status_code=400)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        now = datetime.now().isoformat()
+        
+        cursor.execute('''
+            INSERT INTO country_currencies (country_id, currency_code, amount, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(country_id, currency_code) 
+            DO UPDATE SET amount = ?, updated_at = ?
+        ''', (country_id, currency_code, amount, now, now, amount, now))
+        
+        conn.commit()
+        return JSONResponse({'success': True, 'message': 'Валюта обновлена'})
+    except Exception as e:
+        return JSONResponse({'success': False, 'message': str(e)}, status_code=500)
+    finally:
+        conn.close()
     """Создаёт страны для всех одобренных заявок без стран (только админ)"""
     user = await check_admin(request)
     if not user:
