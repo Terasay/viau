@@ -42,6 +42,8 @@ def init_db():
         cursor.execute('ALTER TABLE countries ADD COLUMN research_points INTEGER DEFAULT 100')
     if 'main_currency' not in columns:
         cursor.execute('ALTER TABLE countries ADD COLUMN main_currency TEXT DEFAULT "HOM"')
+        # Обновляем существующие записи
+        cursor.execute('UPDATE countries SET main_currency = "HOM" WHERE main_currency IS NULL')
     
     # Создаём таблицу для хранения ресурсов стран
     cursor.execute('''
@@ -185,8 +187,8 @@ def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler
         cursor.execute('''
             INSERT INTO countries (
                 id, player_id, ruler_first_name, ruler_last_name,
-                country_name, currency, secret_coins, research_points, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                country_name, currency, main_currency, secret_coins, research_points, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             country_id,
             player_id,
@@ -194,6 +196,7 @@ def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler
             ruler_last_name,
             country_name,
             currency,
+            'HOM',  # Основная валюта по умолчанию
             0,
             100,  # Начальное количество очков исследований
             now,
@@ -241,6 +244,7 @@ async def get_all_countries(request: Request):
                     c.ruler_last_name,
                     c.country_name,
                     c.currency,
+                    c.main_currency,
                     c.secret_coins,
                     c.created_at,
                     c.updated_at,
@@ -258,6 +262,7 @@ async def get_all_countries(request: Request):
                     c.ruler_last_name,
                     c.country_name,
                     c.currency,
+                    c.main_currency,
                     c.secret_coins,
                     c.created_at,
                     c.updated_at,
@@ -277,6 +282,7 @@ async def get_all_countries(request: Request):
                 'ruler_last_name': row['ruler_last_name'],
                 'country_name': row['country_name'],
                 'currency': row['currency'],
+                'main_currency': row['main_currency'],
                 'secret_coins': row['secret_coins'],
                 'created_at': row['created_at'],
                 'updated_at': row['updated_at']

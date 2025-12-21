@@ -132,12 +132,16 @@ function initInterface() {
         document.getElementById('country-name').textContent = currentCountry.country_name;
         document.getElementById('ruler-name').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
-        document.getElementById('currency-name').textContent = currentCountry.currency;
+        
+        // Отображаем основную валюту
+        const mainCurrency = currentCountry.main_currency || 'HOM';
+        document.getElementById('currency-name').textContent = mainCurrency;
+        
         document.getElementById('secret-coins').textContent = currentCountry.secret_coins || 0;
         document.getElementById('overview-country').textContent = currentCountry.country_name;
         document.getElementById('overview-ruler').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
-        document.getElementById('overview-currency').textContent = currentCountry.currency;
+        document.getElementById('overview-currency').textContent = mainCurrency;
         document.getElementById('overview-coins').textContent = currentCountry.secret_coins || 0;
     }
 
@@ -253,9 +257,9 @@ function setupNavigation() {
             
             // Инициализация экономики
             if (sectionName === 'economy' && window.economicModule) {
-                if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
+                if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'moderator')) {
                     // Админам показываем окно выбора страны
-                    showCountrySelectionModal('economy');
+                    window.showCountrySelectionModal('economy');
                 } else if (currentCountry) {
                     window.economicModule.init(currentCountry.id, currentCountry.country_name);
                 }
@@ -412,7 +416,7 @@ window.selectCountryForEconomy = function(countryId, countryName) {
 };
 
 // Функция показа модального окна выбора страны
-async function showCountrySelectionModal(sectionType = 'technologies') {
+window.showCountrySelectionModal = async function(sectionType = 'technologies') {
     const modal = document.getElementById('modal-overlay');
     const modalBody = document.getElementById('modal-body');
     const modalTitle = document.getElementById('modal-title');
@@ -471,6 +475,13 @@ async function showCountrySelectionModal(sectionType = 'technologies') {
         modalBody.innerHTML = '<p style="color: #ff4444;">Ошибка загрузки списка стран</p>';
         modalFooter.innerHTML = '<button class="modal-btn-secondary" onclick="closeModal()">Закрыть</button>';
         modal.classList.add('active');
+    }
+};
+
+function closeModal() {
+    const modal = document.getElementById('modal-overlay');
+    if (modal) {
+        modal.classList.remove('active');
     }
 }
 
