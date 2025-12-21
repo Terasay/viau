@@ -7,6 +7,7 @@ const economicModule = (function() {
     let countryData = null;
 
     async function init(playerCountryId, playerCountryName = '') {
+        console.log('economicModule.init вызван с параметрами:', { playerCountryId, playerCountryName });
         countryId = playerCountryId;
         countryName = playerCountryName;
         await loadAvailableData();
@@ -50,14 +51,20 @@ const economicModule = (function() {
     }
 
     function renderEconomyView() {
+        console.log('renderEconomyView вызвана', { countryData, countryId, countryName });
         const container = document.getElementById('economy-content');
-        if (!container) return;
+        if (!container) {
+            console.error('Контейнер #economy-content не найден!');
+            return;
+        }
 
         if (!countryData) {
+            console.log('countryData не загружены, показываем загрузку');
             container.innerHTML = '<div class="loading-msg">Загрузка данных...</div>';
             return;
         }
 
+        console.log('Рендеринг экономики для страны:', countryData);
         const mainCurrencyInfo = availableCurrencies[countryData.main_currency];
         const mainCurrencyName = mainCurrencyInfo ? mainCurrencyInfo.name : countryData.main_currency;
 

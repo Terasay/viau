@@ -256,7 +256,11 @@ function setupNavigation() {
             }
             
             // Инициализация экономики
-            if (sectionName === 'economy' && window.economicModule) {
+            if (sectionName === 'economy') {
+                if (!window.economicModule) {
+                    console.error('economicModule не загружен');
+                    return;
+                }
                 if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'moderator')) {
                     // Админам показываем окно выбора страны
                     window.showCountrySelectionModal('economy');
@@ -409,18 +413,28 @@ window.selectCountryForTech = function(countryId, countryName) {
 
 // Функция выбора страны для просмотра экономики (для админа)
 window.selectCountryForEconomy = function(countryId, countryName) {
+    console.log('selectCountryForEconomy вызвана:', { countryId, countryName });
     closeModal();
     if (window.economicModule) {
+        console.log('Вызов economicModule.init');
         window.economicModule.init(countryId, countryName);
+    } else {
+        console.error('economicModule не загружен!');
     }
 };
 
 // Функция показа модального окна выбора страны
 window.showCountrySelectionModal = async function(sectionType = 'technologies') {
+    console.log('showCountrySelectionModal вызвана с типом:', sectionType);
     const modal = document.getElementById('modal-overlay');
     const modalBody = document.getElementById('modal-body');
     const modalTitle = document.getElementById('modal-title');
     const modalFooter = document.getElementById('modal-footer');
+
+    if (!modal || !modalBody || !modalTitle || !modalFooter) {
+        console.error('Модальные элементы не найдены:', { modal, modalBody, modalTitle, modalFooter });
+        return;
+    }
 
     const titleText = sectionType === 'economy' 
         ? 'Выбор страны для просмотра экономики' 

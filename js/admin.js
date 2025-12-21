@@ -1542,11 +1542,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 window.manageCountryResources = async function(countryId, countryName) {
     const modalOverlay = document.querySelector('.modal-overlay-admin');
     const modalContent = document.querySelector('.modal-content-admin');
-    const modalTitle = document.querySelector('.modal-overlay-admin .modal-title');
-    const modalForm = document.querySelector('.modal-overlay-admin .modal-form');
+    const modalTitle = modalContent.querySelector('.modal-title');
+    const modalForm = modalContent.querySelector('.modal-form');
 
     if (!modalTitle || !modalForm) {
-        console.error('Модальное окно не найдено');
+        console.error('Модальное окно не найдено', { modalTitle, modalForm, modalContent });
         alert('Ошибка: не удалось открыть модальное окно');
         return;
     }
