@@ -490,12 +490,15 @@ window.showCountrySelectionModal = async function(sectionType = 'technologies') 
         modalBody.innerHTML = html;
         modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Отмена</button>';
         modal.classList.add('visible');
+        console.log('Модальное окно открыто, классы:', modal.className);
+        console.log('Стили модального окна:', window.getComputedStyle(modal).display);
 
     } catch (error) {
         console.error('Error loading countries:', error);
         modalBody.innerHTML = '<p style="color: #ff4444;">Ошибка загрузки списка стран</p>';
         modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
         modal.classList.add('visible');
+        console.log('Модальное окно открыто (ошибка), классы:', modal.className);
     }
 };
 
