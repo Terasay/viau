@@ -1,12 +1,14 @@
 // Модуль экономики
 const economicModule = (function() {
     let countryId = null;
+    let countryName = '';
     let availableCurrencies = {};
     let availableResources = {};
     let countryData = null;
 
-    async function init(playerCountryId) {
+    async function init(playerCountryId, playerCountryName = '') {
         countryId = playerCountryId;
+        countryName = playerCountryName;
         await loadAvailableData();
         await loadCountryResources();
         renderEconomyView();
@@ -59,9 +61,13 @@ const economicModule = (function() {
         const mainCurrencyInfo = availableCurrencies[countryData.main_currency];
         const mainCurrencyName = mainCurrencyInfo ? mainCurrencyInfo.name : countryData.main_currency;
 
+        const headerTitle = countryName 
+            ? `Экономика страны: ${countryName}` 
+            : 'Экономика страны';
+
         let html = `
             <div class="economy-header">
-                <h2><i class="fas fa-chart-line"></i> Экономика страны</h2>
+                <h2><i class="fas fa-chart-line"></i> ${headerTitle}</h2>
                 <div class="main-currency-display">
                     <i class="fas fa-coins"></i>
                     <span>Основная валюта: <strong>${mainCurrencyName}</strong></span>

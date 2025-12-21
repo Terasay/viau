@@ -569,6 +569,20 @@
             <button id="admin-exit-btn" style="margin-top:24px;padding:10px 24px;font-size:1em;border-radius:8px;background:#00ffc6;color:#181818;border:none;cursor:pointer;">На главную</button>
         </div>
     </div>
+
+    <!-- Модальное окно для управления ресурсами -->
+    <div class="modal-overlay-admin">
+        <div class="modal-content-admin">
+            <button class="modal-close-btn" onclick="document.querySelector('.modal-overlay-admin').classList.remove('active')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="modal-title">Управление ресурсами</h2>
+            <form class="modal-form">
+                <!-- Контент будет динамически загружен -->
+            </form>
+        </div>
+    </div>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </body>
 </html>

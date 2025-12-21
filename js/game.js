@@ -252,8 +252,13 @@ function setupNavigation() {
             }
             
             // Инициализация экономики
-            if (sectionName === 'economy' && window.economicModule && currentCountry) {
-                window.economicModule.init(currentCountry.id);
+            if (sectionName === 'economy' && window.economicModule) {
+                if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
+                    // Админам показываем окно выбора страны
+                    showCountrySelectionModal('economy');
+                } else if (currentCountry) {
+                    window.economicModule.init(currentCountry.id, currentCountry.country_name);
+                }
             }
         });
     });
@@ -388,3 +393,85 @@ window.gameState = {
     getCountry: () => currentCountry,
     updateCountry: updateCountryData
 };
+
+// Функция выбора страны для просмотра технологий (для админа)
+window.selectCountryForTech = function(countryId, countryName) {
+    closeModal();
+    if (window.techModule) {
+        window.techModule.setViewingCountry(countryId, countryName);
+        window.techModule.init();
+    }
+};
+
+// Функция выбора страны для просмотра экономики (для админа)
+window.selectCountryForEconomy = function(countryId, countryName) {
+    closeModal();
+    if (window.economicModule) {
+        window.economicModule.init(countryId, countryName);
+    }
+};
+
+// Функция показа модального окна выбора страны
+async function showCountrySelectionModal(sectionType = 'technologies') {
+    const modal = document.getElementById('modal-overlay');
+    const modalBody = document.getElementById('modal-body');
+    const modalTitle = document.getElementById('modal-title');
+    const modalFooter = document.getElementById('modal-footer');
+
+    const titleText = sectionType === 'economy' 
+        ? 'Выбор страны для просмотра экономики' 
+        : 'Выбор страны для управления технологиями';
+    modalTitle.textContent = titleText;
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/economic/countries', {
+            headers: { 'Authorization': token }
+        });
+        const data = await response.json();
+
+        if (!data.success || !data.countries || data.countries.length === 0) {
+            modalBody.innerHTML = '<p>Нет доступных стран</p>';
+            modalFooter.innerHTML = '<button class="modal-btn-secondary" onclick="closeModal()">Закрыть</button>';
+            modal.classList.add('active');
+            return;
+        }
+
+        let html = '<div style="max-height: 400px; overflow-y: auto;">';
+        html += '<div style="display: grid; gap: 12px;">';
+
+        data.countries.forEach(country => {
+            const functionName = sectionType === 'economy' ? 'selectCountryForEconomy' : 'selectCountryForTech';
+            html += `
+                <div class="country-select-card" onclick="${functionName}('${country.id}', '${country.country_name}')" style="
+                    padding: 16px;
+                    background: rgba(0, 255, 198, 0.1);
+                    border: 1px solid rgba(0, 255, 198, 0.3);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                ">
+                    <div style="font-weight: 600; font-size: 1.1em; color: #00ffc6; margin-bottom: 4px;">
+                        ${country.country_name}
+                    </div>
+                    <div style="color: #888; font-size: 0.9em;">
+                        ${country.ruler_first_name} ${country.ruler_last_name}
+                    </div>
+                </div>
+            `;
+        });
+
+        html += '</div></div>';
+        modalBody.innerHTML = html;
+        modalFooter.innerHTML = '<button class="modal-btn-secondary" onclick="closeModal()">Отмена</button>';
+        modal.classList.add('active');
+
+    } catch (error) {
+        console.error('Error loading countries:', error);
+        modalBody.innerHTML = '<p style="color: #ff4444;">Ошибка загрузки списка стран</p>';
+        modalFooter.innerHTML = '<button class="modal-btn-secondary" onclick="closeModal()">Закрыть</button>';
+        modal.classList.add('active');
+    }
+}
+
+window.closeModal = closeModal;
