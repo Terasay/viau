@@ -431,6 +431,8 @@ window.showCountrySelectionModal = async function(sectionType = 'technologies') 
     const modalTitle = document.getElementById('modal-title');
     const modalFooter = document.getElementById('modal-footer');
 
+    console.log('Элементы модального окна:', { modal, modalBody, modalTitle, modalFooter });
+
     if (!modal || !modalBody || !modalTitle || !modalFooter) {
         console.error('Модальные элементы не найдены:', { modal, modalBody, modalTitle, modalFooter });
         return;
@@ -440,18 +442,23 @@ window.showCountrySelectionModal = async function(sectionType = 'technologies') 
         ? 'Выбор страны для просмотра экономики' 
         : 'Выбор страны для управления технологиями';
     modalTitle.textContent = titleText;
+    console.log('Заголовок модального окна установлен:', titleText);
 
     try {
+        console.log('Начинаем загрузку списка стран...');
         const token = localStorage.getItem('token');
         const response = await fetch('/api/economic/countries', {
             headers: { 'Authorization': token }
         });
         const data = await response.json();
+        console.log('Получены данные стран:', data);
 
         if (!data.success || !data.countries || data.countries.length === 0) {
+            console.log('Нет доступных стран');
             modalBody.innerHTML = '<p>Нет доступных стран</p>';
             modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
             modal.classList.add('visible');
+            console.log('Модальное окно должно быть видимым, классы:', modal.className);
             return;
         }
 
