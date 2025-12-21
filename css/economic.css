@@ -4,19 +4,24 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
-    padding: 20px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border-radius: 12px;
-    border: 1px solid rgba(0, 255, 198, 0.2);
+    padding: 20px 24px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
 }
 
 .economy-header h2 {
     margin: 0;
-    color: #00ffc6;
+    color: var(--text-primary);
     font-size: 1.8em;
     display: flex;
     align-items: center;
     gap: 12px;
+}
+
+.economy-header h2 i {
+    color: var(--primary);
 }
 
 .main-currency-display {
@@ -24,9 +29,9 @@
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    background: rgba(0, 255, 198, 0.1);
-    border-radius: 8px;
-    border: 1px solid rgba(0, 255, 198, 0.3);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border-radius: var(--radius);
+    border: 1px solid var(--primary);
 }
 
 .main-currency-display i {
@@ -35,12 +40,13 @@
 }
 
 .main-currency-display span {
-    color: #e0e0e0;
+    color: var(--text-secondary);
     font-size: 1.1em;
 }
 
 .main-currency-display strong {
-    color: #00ffc6;
+    color: var(--primary);
+    font-weight: 700;
 }
 
 /* Сетка экономики */
@@ -52,11 +58,16 @@
 }
 
 .economy-section {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border-radius: 12px;
-    border: 1px solid rgba(0, 255, 198, 0.2);
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.economy-section:hover {
+    box-shadow: var(--shadow-lg);
 }
 
 .section-header {
@@ -65,18 +76,19 @@
     gap: 12px;
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 2px solid rgba(0, 255, 198, 0.3);
+    border-bottom: 2px solid var(--border);
 }
 
 .section-header i {
-    color: #00ffc6;
+    color: var(--primary);
     font-size: 1.4em;
 }
 
 .section-header h3 {
     margin: 0;
-    color: #00ffc6;
+    color: var(--text-primary);
     font-size: 1.4em;
+    font-weight: 700;
 }
 
 /* Список ресурсов */
@@ -94,25 +106,27 @@
     align-items: center;
     gap: 16px;
     padding: 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
     transition: all 0.3s ease;
+    cursor: default;
 }
 
 .resource-item:hover {
-    background: rgba(0, 255, 198, 0.1);
-    border-color: rgba(0, 255, 198, 0.3);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border-color: var(--primary);
     transform: translateX(4px);
+    box-shadow: var(--shadow);
 }
 
 .resource-item.main-currency {
-    background: rgba(255, 215, 0, 0.1);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%);
     border: 2px solid rgba(255, 215, 0, 0.4);
 }
 
 .resource-item.main-currency:hover {
-    background: rgba(255, 215, 0, 0.15);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 193, 7, 0.15) 100%);
     border-color: rgba(255, 215, 0, 0.6);
 }
 
@@ -122,15 +136,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 255, 198, 0.15);
-    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    border-radius: var(--radius);
     font-size: 1.5em;
-    color: #00ffc6;
+    color: var(--primary);
     flex-shrink: 0;
 }
 
 .resource-item.main-currency .resource-icon {
-    background: rgba(255, 215, 0, 0.2);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 193, 7, 0.2) 100%);
     color: #ffd700;
 }
 
@@ -144,7 +158,7 @@
 .resource-name {
     font-size: 1.1em;
     font-weight: 600;
-    color: #e0e0e0;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -152,15 +166,15 @@
 
 .resource-code {
     font-size: 0.9em;
-    color: #888;
-    font-family: 'Fira Mono', monospace;
+    color: var(--text-tertiary);
+    font-family: 'Fira Mono', 'Courier New', monospace;
 }
 
 .resource-amount {
     font-size: 1.3em;
     font-weight: 700;
-    color: #00ffc6;
-    font-family: 'Fira Mono', monospace;
+    color: var(--primary);
+    font-family: 'Fira Mono', 'Courier New', monospace;
     white-space: nowrap;
 }
 
@@ -172,13 +186,14 @@
 .badge-main {
     display: inline-block;
     padding: 2px 8px;
-    background: rgba(255, 215, 0, 0.3);
+    background: rgba(255, 215, 0, 0.2);
     border: 1px solid rgba(255, 215, 0, 0.5);
-    border-radius: 4px;
+    border-radius: var(--radius);
     font-size: 0.75em;
     color: #ffd700;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Футер */
@@ -193,24 +208,28 @@
     align-items: center;
     gap: 8px;
     padding: 12px 32px;
-    background: linear-gradient(135deg, #00ffc6 0%, #00d9a8 100%);
-    color: #0a0e27;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-full);
     font-size: 1.1em;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 255, 198, 0.3);
+    box-shadow: var(--shadow);
 }
 
 .btn-refresh:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 255, 198, 0.4);
+    box-shadow: var(--shadow-lg);
 }
 
 .btn-refresh:active {
     transform: translateY(0);
+}
+
+.btn-refresh i {
+    font-size: 1.1em;
 }
 
 /* Скроллбар */
@@ -219,17 +238,24 @@
 }
 
 .resources-list::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-tertiary);
     border-radius: 4px;
 }
 
 .resources-list::-webkit-scrollbar-thumb {
-    background: rgba(0, 255, 198, 0.3);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     border-radius: 4px;
+    border: 2px solid var(--bg-tertiary);
 }
 
 .resources-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 255, 198, 0.5);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+}
+
+/* Для Firefox */
+.resources-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) var(--bg-tertiary);
 }
 
 /* Адаптивность */
@@ -277,6 +303,19 @@
 .loading-msg {
     text-align: center;
     padding: 40px;
-    color: #888;
+    color: var(--text-tertiary);
     font-size: 1.2em;
+}
+
+/* Темная тема */
+body.dark-mode .economy-section {
+    background: var(--bg-secondary);
+}
+
+body.dark-mode .resource-item {
+    background: var(--bg-tertiary);
+}
+
+body.dark-mode .resource-item:hover {
+    background: linear-gradient(135deg, rgba(129, 140, 248, 0.05) 0%, rgba(167, 139, 250, 0.05) 100%);
 }
