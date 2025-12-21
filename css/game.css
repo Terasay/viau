@@ -601,6 +601,7 @@ body.dark-mode .game-header {
 }
 
 .modal-overlay.visible {
+    display: flex !important;
     opacity: 1;
 }
 
