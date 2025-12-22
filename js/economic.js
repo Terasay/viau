@@ -126,13 +126,13 @@ const economicModule = (function() {
         // Ресурсы
         const resourceIcons = {
             'gold': 'fa-coins',
-            'silver': 'fa-medal',
-            'bronze': 'fa-certificate',
+            'silver': 'fa-ring',
+            'bronze': 'fa-shield',
             'iron': 'fa-hammer',
             'wood': 'fa-tree',
             'crystal': 'fa-gem',
             'tin': 'fa-cube',
-            'cuprum': 'fa-industry',
+            'cuprum': 'fa-plug',
             'oil': 'fa-oil-can',
             'coal': 'fa-fire'
         };
