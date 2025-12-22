@@ -125,16 +125,16 @@ const economicModule = (function() {
 
         // Ресурсы
         const resourceIcons = {
-            'gold': 'fa-coins',
-            'silver': 'fa-ring',
-            'bronze': 'fa-shield',
-            'iron': 'fa-hammer',
-            'wood': 'fa-tree',
-            'crystal': 'fa-gem',
-            'tin': 'fa-cube',
-            'cuprum': 'fa-plug',
-            'oil': 'fa-oil-can',
-            'coal': 'fa-fire'
+            'gold': 'fa-solid fa-warehouse',
+            'silver': 'fa-solid fa-warehouse',
+            'bronze': 'fa-solid fa-warehouse',
+            'iron': 'fa-solid fa-warehouse',
+            'wood': 'fa-solid fa-warehouse',
+            'crystal': 'fa-solid fa-warehouse',
+            'tin': 'fa-solid fa-warehouse',
+            'cuprum': 'fa-solid fa-warehouse',
+            'oil': 'fa-solid fa-warehouse',
+            'coal': 'fa-solid fa-warehouse'
         };
 
         for (const [code, info] of Object.entries(availableResources)) {
