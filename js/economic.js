@@ -130,8 +130,11 @@ const economicModule = (function() {
             'bronze': 'fa-certificate',
             'iron': 'fa-hammer',
             'wood': 'fa-tree',
-            'stone': 'fa-mountain',
-            'crystal': 'fa-gem'
+            'crystal': 'fa-gem',
+            'tin': 'fa-cube',
+            'cuprum': 'fa-industry',
+            'oil': 'fa-oil-can',
+            'coal': 'fa-fire'
         };
 
         for (const [code, info] of Object.entries(availableResources)) {
