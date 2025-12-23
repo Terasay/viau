@@ -30,7 +30,7 @@ async function loadMyCharacter() {
     try {
         const response = await fetch('/api/characters/my', {
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': token
             }
         });
 
@@ -163,7 +163,7 @@ async function upgradeSkill(skill) {
         const response = await fetch('/api/characters/upgrade-skill', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'Authorization': token,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ skill })
