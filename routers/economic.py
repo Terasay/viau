@@ -26,7 +26,7 @@ def init_db():
             ruler_last_name TEXT NOT NULL,
             country_name TEXT NOT NULL,
             currency TEXT DEFAULT 'Золото',
-            main_currency TEXT DEFAULT 'HOM',
+            main_currency TEXT DEFAULT 'ESC',
             secret_coins INTEGER DEFAULT 0,
             research_points INTEGER DEFAULT 100,
             created_at TEXT NOT NULL,
@@ -40,8 +40,8 @@ def init_db():
     if 'research_points' not in columns:
         cursor.execute('ALTER TABLE countries ADD COLUMN research_points INTEGER DEFAULT 100')
     if 'main_currency' not in columns:
-        cursor.execute('ALTER TABLE countries ADD COLUMN main_currency TEXT DEFAULT "HOM"')
-        cursor.execute('UPDATE countries SET main_currency = "HOM" WHERE main_currency IS NULL')
+        cursor.execute('ALTER TABLE countries ADD COLUMN main_currency TEXT DEFAULT "ESC"')
+        cursor.execute('UPDATE countries SET main_currency = "ESC" WHERE main_currency IS NULL')
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS country_resources (
@@ -191,7 +191,7 @@ def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler
             ruler_last_name,
             country_name,
             currency,
-            'HOM',
+            'ESC',
             0,
             100,
             now,
