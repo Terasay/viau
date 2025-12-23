@@ -174,3 +174,29 @@ async def delete_country(data: DeleteCountryData, request: Request):
         return JSONResponse({'success': True})
     except Exception as e:
         return JSONResponse({'success': False, 'error': str(e)})
+
+@router.get("/referral")
+async def get_referral_code(request: Request):
+    """Получение реферального кода пользователя"""
+    sys.path.append('..')
+    from main import get_current_user
+    
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Нет доступа'}, status_code=403)
+    
+    try:
+        import sqlite3
+        DB_FILE = 'users.db'
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute('SELECT referral_code FROM users WHERE username=?', (user['username'],))
+        result = c.fetchone()
+        conn.close()
+        
+        if result and result[0]:
+            return JSONResponse({'success': True, 'referral_code': result[0]})
+        else:
+            return JSONResponse({'success': False, 'error': 'Реферальный код не найден'})
+    except Exception as e:
+        return JSONResponse({'success': False, 'error': str(e)})

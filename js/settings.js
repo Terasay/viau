@@ -65,6 +65,7 @@ async function loadUserData() {
         if (data.logged_in) {
             currentUser = data;
             displayUserData(data);
+            loadReferralCode();
             if (data.avatar) {
                 displayAvatar(data.avatar);
             }
@@ -96,6 +97,28 @@ function displayUserData(user) {
 
     const initials = user.username.substring(0, 2).toUpperCase();
     document.getElementById('avatarInitials').textContent = initials;
+}
+
+async function loadReferralCode() {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/settings/referral', {
+            headers: {
+                'Authorization': token
+            }
+        });
+
+        const data = await response.json();
+        
+        if (data.success && data.referral_code) {
+            document.getElementById('referralCodeValue').textContent = data.referral_code;
+        } else {
+            document.getElementById('referralCodeValue').textContent = 'Не найден';
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки реферального кода:', error);
+        document.getElementById('referralCodeValue').textContent = 'Ошибка загрузки';
+    }
 }
 
 function formatDate(dateString) {

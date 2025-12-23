@@ -80,6 +80,18 @@ class LimitUploadSizeMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(LimitUploadSizeMiddleware, max_upload_size=100 * 1024 * 1024)
 
+def generate_referral_code() -> str:
+    """Генерирует уникальный 4-буквенный реферальный код из заглавных букв A-Z"""
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    
+    while True:
+        code = ''.join(random.choices(string.ascii_uppercase, k=4))
+        c.execute('SELECT id FROM users WHERE referral_code=?', (code,))
+        if not c.fetchone():
+            conn.close()
+            return code
+
 def hash_password(password: str) -> str:
     """Хеширует пароль с помощью bcrypt"""
     salt = bcrypt.gensalt()
@@ -159,6 +171,8 @@ def init_db():
     columns = [column[1] for column in c.fetchall()]
     if 'avatar' not in columns:
         c.execute('ALTER TABLE users ADD COLUMN avatar TEXT')
+    if 'referral_code' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN referral_code TEXT UNIQUE')
     
     c.execute('''CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -329,10 +343,11 @@ def create_user(username, password, email):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     hashed_password = hash_password(password)
+    referral_code = generate_referral_code()
     c.execute('''
-        INSERT INTO users (username, password, email, country, role, banned, muted)
-        VALUES (?, ?, ?, NULL, 'user', 0, 0)
-    ''', (username, hashed_password, email))
+        INSERT INTO users (username, password, email, country, role, banned, muted, referral_code)
+        VALUES (?, ?, ?, NULL, 'user', 0, 0, ?)
+    ''', (username, hashed_password, email, referral_code))
     conn.commit()
     conn.close()
 
@@ -409,6 +424,28 @@ def send_verification_code(email, code):
 		print(f"Ошибка Gmail API: {e}")
 		raise
 
+def generate_missing_referral_codes():
+    """Генерирует реферальные коды для пользователей, у которых их нет"""
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute('SELECT id FROM users WHERE referral_code IS NULL')
+    users_without_code = c.fetchall()
+    
+    generated_count = 0
+    for user in users_without_code:
+        user_id = user[0]
+        code = generate_referral_code()
+        c.execute('UPDATE users SET referral_code=? WHERE id=?', (code, user_id))
+        generated_count += 1
+    
+    conn.commit()
+    conn.close()
+    
+    if generated_count > 0:
+        print(f'Сгенерировано {generated_count} реферальных кодов для существующих пользователей')
+    else:
+        print('Все пользователи уже имеют реферальные коды')
+
 def migrate_plain_passwords():
     """Мигрирует все незахешированные пароли в bcrypt"""
     conn = sqlite3.connect(DB_FILE)
@@ -457,7 +494,8 @@ def send_reset_code(email, code):
 @app.on_event('startup')
 def startup():
     init_db()
-    migrate_plain_passwords()  
+    migrate_plain_passwords()
+    generate_missing_referral_codes()  
 
 @app.post('/login')
 async def login(request: Request):
