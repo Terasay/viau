@@ -600,34 +600,66 @@ async def approve_application(data: ApproveApplicationData, request: Request):
         # Расчёт стартовых очков: 10 базовых + 1 за каждые 10 лет жизни
         skill_points = 10 + (data.age // 10)
         
-        cursor.execute('''
-            INSERT INTO characters (
-                first_name, last_name, birth_year, position,
-                ethnicity, religion, relatives, friends, enemies,
-                military, administration, diplomacy, intrigue, knowledge,
-                skill_points, user_id, country, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            data.first_name,
-            data.last_name,
-            birth_year,
-            'Правитель',
-            data.ethnicity,
-            data.religion,
-            None,
-            None,
-            None,
-            1,
-            1,
-            1,
-            1,
-            1,
-            skill_points,
-            user_id,
-            data.assigned_country,
-            now,
-            now
-        ))
+        # Проверяем, существует ли уже персонаж для этого пользователя
+        cursor.execute('SELECT id FROM characters WHERE user_id = ?', (user_id,))
+        existing_character = cursor.fetchone()
+        
+        if existing_character:
+            # Обновляем существующего персонажа
+            cursor.execute('''
+                UPDATE characters SET
+                    first_name = ?,
+                    last_name = ?,
+                    birth_year = ?,
+                    position = ?,
+                    ethnicity = ?,
+                    religion = ?,
+                    skill_points = ?,
+                    country = ?,
+                    updated_at = ?
+                WHERE user_id = ?
+            ''', (
+                data.first_name,
+                data.last_name,
+                birth_year,
+                'Правитель',
+                data.ethnicity,
+                data.religion,
+                skill_points,
+                data.assigned_country,
+                now,
+                user_id
+            ))
+        else:
+            # Создаём нового персонажа
+            cursor.execute('''
+                INSERT INTO characters (
+                    first_name, last_name, birth_year, position,
+                    ethnicity, religion, relatives, friends, enemies,
+                    military, administration, diplomacy, intrigue, knowledge,
+                    skill_points, user_id, country, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                data.first_name,
+                data.last_name,
+                birth_year,
+                'Правитель',
+                data.ethnicity,
+                data.religion,
+                None,
+                None,
+                None,
+                1,
+                1,
+                1,
+                1,
+                1,
+                skill_points,
+                user_id,
+                data.assigned_country,
+                now,
+                now
+            ))
         
         import json
         countries_path = 'data/countries.json'
@@ -648,17 +680,42 @@ async def approve_application(data: ApproveApplicationData, request: Request):
         except Exception as e:
             print(f"Error loading country name from countries.json: {e}")
         
-        from routers.economic import create_country
-        country_created = create_country(
-            country_id=data.assigned_country,
-            player_id=user_id,
-            ruler_first_name=data.first_name,
-            ruler_last_name=data.last_name,
-            country_name=country_name,
-            currency='Золото',
-            conn=conn,
-            cursor=cursor
-        )
+        # Проверяем, существует ли уже страна для этого игрока
+        cursor.execute('SELECT id FROM countries WHERE player_id = ?', (user_id,))
+        existing_country = cursor.fetchone()
+        
+        if existing_country:
+            # Обновляем существующую страну
+            cursor.execute('''
+                UPDATE countries SET
+                    id = ?,
+                    country_name = ?,
+                    ruler_first_name = ?,
+                    ruler_last_name = ?,
+                    main_currency = ?
+                WHERE player_id = ?
+            ''', (
+                data.assigned_country,
+                country_name,
+                data.first_name,
+                data.last_name,
+                'Золото',
+                user_id
+            ))
+            country_created = True
+        else:
+            # Создаём новую страну
+            from routers.economic import create_country
+            country_created = create_country(
+                country_id=data.assigned_country,
+                player_id=user_id,
+                ruler_first_name=data.first_name,
+                ruler_last_name=data.last_name,
+                country_name=country_name,
+                currency='Золото',
+                conn=conn,
+                cursor=cursor
+            )
         
         if not country_created:
             print(f"Warning: Failed to create country record for {data.assigned_country}")
