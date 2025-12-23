@@ -48,6 +48,10 @@
 				<i class="fas fa-coins"></i>
 				Ресурсы
 			</button>
+			<button class="converter-tab" data-tab="mixed">
+				<i class="fas fa-exchange-alt"></i>
+				Валюта ⇄ Ресурсы
+			</button>
 		</div>
 
 		<div class="converter-content">
@@ -194,6 +198,52 @@
 							<p>Загрузка курсов...</p>
 						</div>
 					</div>
+				</div>
+			</div>
+
+			<div class="converter-panel" id="mixed-panel">
+				<div class="converter-card">
+					<div class="converter-grid">
+						<div class="converter-input-section">
+							<label class="converter-label">
+								<i class="fas fa-money-bill-wave"></i>
+								У вас есть
+							</label>
+							<div class="converter-input-group">
+								<input type="number" id="mixed-amount-from" class="converter-input" placeholder="0" value="1" min="0" step="0.01">
+								<select id="mixed-currency-from" class="converter-select">
+								</select>
+							</div>
+						</div>
+
+						<div class="converter-swap">
+							<button class="swap-btn" id="mixed-swap">
+								<i class="fas fa-exchange-alt"></i>
+							</button>
+						</div>
+
+						<div class="converter-input-section">
+							<label class="converter-label">
+								<i class="fas fa-box"></i>
+								Получите
+							</label>
+							<div class="converter-input-group">
+								<input type="number" id="mixed-amount-to" class="converter-input" placeholder="0" readonly>
+								<select id="mixed-resource-to" class="converter-select">
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<div class="converter-rate-info" id="mixed-rate-info">
+						<i class="fas fa-info-circle"></i>
+						<span>Выберите валюту и ресурс</span>
+					</div>
+
+					<button class="converter-btn" id="mixed-convert-btn">
+						<i class="fas fa-calculator"></i>
+						Конвертировать
+					</button>
 				</div>
 			</div>
 		</div>

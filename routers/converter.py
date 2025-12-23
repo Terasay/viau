@@ -168,6 +168,82 @@ async def convert_resource(request: Request):
         'rate': rate
     })
 
+@router.post('/convert-mixed')
+async def convert_mixed(request: Request):
+    """Конвертация между валютой и ресурсами"""
+    req_data = await request.json()
+    
+    amount = req_data.get('amount')
+    from_item = req_data.get('from')
+    to_item = req_data.get('to')
+    from_type = req_data.get('from_type')  # 'currency' или 'resource'
+    to_type = req_data.get('to_type')  # 'currency' или 'resource'
+    
+    if not all([amount is not None, from_item, to_item, from_type, to_type]):
+        return JSONResponse({
+            'success': False,
+            'error': 'Все поля обязательны'
+        }, status_code=400)
+    
+    data = load_data()
+    currencies = data['currencies']
+    resources = data['resources']
+    
+    # Проверяем существование элементов
+    if from_type == 'currency' and from_item not in currencies:
+        return JSONResponse({
+            'success': False,
+            'error': 'Неизвестная валюта'
+        }, status_code=400)
+    
+    if from_type == 'resource' and from_item not in resources:
+        return JSONResponse({
+            'success': False,
+            'error': 'Неизвестный ресурс'
+        }, status_code=400)
+    
+    if to_type == 'currency' and to_item not in currencies:
+        return JSONResponse({
+            'success': False,
+            'error': 'Неизвестная валюта'
+        }, status_code=400)
+    
+    if to_type == 'resource' and to_item not in resources:
+        return JSONResponse({
+            'success': False,
+            'error': 'Неизвестный ресурс'
+        }, status_code=400)
+    
+    # Конвертация в золото (базовая единица)
+    if from_type == 'currency':
+        amount_in_gold = amount / currencies[from_item]['rate']
+    else:
+        amount_in_gold = amount / resources[from_item]['rate']
+    
+    # Конвертация из золота в целевую единицу
+    if to_type == 'currency':
+        result = round(amount_in_gold * currencies[to_item]['rate'], 2)
+        rate_value = currencies[to_item]['rate']
+        if from_type == 'currency':
+            rate_value = currencies[to_item]['rate'] / currencies[from_item]['rate']
+        else:
+            rate_value = currencies[to_item]['rate'] / resources[from_item]['rate']
+        rate = round(rate_value, 2)
+    else:
+        result = int(amount_in_gold * resources[to_item]['rate'])
+        rate_value = resources[to_item]['rate']
+        if from_type == 'currency':
+            rate_value = resources[to_item]['rate'] / currencies[from_item]['rate']
+        else:
+            rate_value = resources[to_item]['rate'] / resources[from_item]['rate']
+        rate = round(rate_value, 2)
+    
+    return JSONResponse({
+        'success': True,
+        'result': result,
+        'rate': rate
+    })
+
 @router.get('/admin/all-data')
 async def get_all_converter_data(request: Request):
     """Получить все данные для админ-панели"""

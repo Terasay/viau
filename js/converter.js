@@ -29,8 +29,10 @@ converterTabs.forEach(tab => {
 		
 		if (targetTab === 'currency') {
 			loadCurrencyRates();
-		} else {
+		} else if (targetTab === 'resources') {
 			loadResourceRates();
+		} else if (targetTab === 'mixed') {
+			loadMixedConverter();
 		}
 	});
 });
@@ -52,6 +54,14 @@ const resourceSwapBtn = document.getElementById('resource-swap');
 const resourceConvertBtn = document.getElementById('resource-convert-btn');
 const resourceRateInfo = document.getElementById('resource-rate-info');
 const resourceRatesTable = document.getElementById('resource-rates-table');
+
+const mixedAmountFrom = document.getElementById('mixed-amount-from');
+const mixedAmountTo = document.getElementById('mixed-amount-to');
+const mixedCurrencyFrom = document.getElementById('mixed-currency-from');
+const mixedResourceTo = document.getElementById('mixed-resource-to');
+const mixedSwapBtn = document.getElementById('mixed-swap');
+const mixedConvertBtn = document.getElementById('mixed-convert-btn');
+const mixedRateInfo = document.getElementById('mixed-rate-info');
 
 const historyList = document.getElementById('history-list');
 const clearHistoryBtn = document.getElementById('clear-history-btn');
@@ -120,24 +130,20 @@ function populateCurrencySelects() {
 }
 
 function displayCurrencyRates() {
-	const baseCurrency = Object.keys(currencyRates)[0];
 	let html = '';
 	
 	for (const [currency, rate] of Object.entries(currencyRates)) {
-		if (currency !== baseCurrency) {
-			const baseName = currencyData[baseCurrency]?.name || baseCurrency;
-			const name = currencyData[currency]?.name || currency;
-			html += `
-				<div class="rate-item">
-					<div class="rate-from-to">
-						<span>1 ${baseCurrency}</span>
-						<i class="fas fa-arrow-right rate-arrow"></i>
-						<span>${currency} (${name})</span>
-					</div>
-					<div class="rate-value">${rate.toFixed(4)}</div>
+		const name = currencyData[currency]?.name || currency;
+		html += `
+			<div class="rate-item">
+				<div class="rate-from-to">
+					<span>1 Золото</span>
+					<i class="fas fa-arrow-right rate-arrow"></i>
+					<span>${rate} ${currency} (${name})</span>
 				</div>
-			`;
-		}
+				<div class="rate-value">${rate}</div>
+			</div>
+		`;
 	}
 	
 	currencyRatesTable.innerHTML = html;
@@ -232,6 +238,57 @@ function getResourceName(resource) {
 
 function getCurrencyName(currency) {
 	return currencyData[currency]?.name || currency;
+}
+
+async function convertCurrencyToResource() {
+	const amount = parseFloat(document.getElementById('mixed-amount-from').value);
+	const currency = document.getElementById('mixed-currency-from').value;
+	const resource = document.getElementById('mixed-resource-to').value;
+	
+	if (isNaN(amount) || amount <= 0) {
+		alert('Введите корректную сумму');
+		return;
+	}
+	
+	try {
+		const response = await fetch('/api/converter/convert-mixed', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ 
+				amount, 
+				from: currency, 
+				to: resource,
+				from_type: 'currency',
+				to_type: 'resource'
+			})
+		});
+		
+		const data = await response.json();
+		
+		if (data.success) {
+			document.getElementById('mixed-amount-to').value = data.result;
+			updateMixedRateInfo(currency, resource, data.rate, 'currency', 'resource');
+			addToHistory('mixed', amount, currency, data.result, resource);
+		}
+	} catch (error) {
+		console.error('Ошибка конвертации:', error);
+		alert('Ошибка конвертации');
+	}
+}
+
+function updateMixedRateInfo(from, to, rate, fromType, toType) {
+	const fromName = fromType === 'currency' ? getCurrencyName(from) : getResourceName(from);
+	const toName = toType === 'currency' ? getCurrencyName(to) : getResourceName(to);
+	const mixedRateInfo = document.getElementById('mixed-rate-info');
+	
+	if (mixedRateInfo) {
+		mixedRateInfo.innerHTML = `
+			<i class="fas fa-info-circle"></i>
+			<span>1 ${fromName} = ${rate} ${toName}</span>
+		`;
+	}
 }
 
 async function convertCurrency() {
@@ -480,6 +537,198 @@ clearHistoryBtn.addEventListener('click', () => {
 	if (confirm('Вы уверены, что хотите очистить историю конвертаций?')) {
 		localStorage.removeItem('converterHistory');
 		displayHistory();
+	}
+});
+
+async function loadMixedConverter() {
+	if (Object.keys(currencyRates).length === 0) {
+		await loadCurrencyRates();
+	}
+	if (Object.keys(resourceRates).length === 0) {
+		await loadResourceRates();
+	}
+	
+	populateMixedSelects();
+	updateMixedConversion();
+}
+
+function populateMixedSelects() {
+	const currencyCodes = Object.keys(currencyRates).sort();
+	const resourceCodes = Object.keys(resourceRates).sort();
+	
+	mixedCurrencyFrom.innerHTML = '';
+	mixedResourceTo.innerHTML = '';
+	
+	currencyCodes.forEach(code => {
+		const name = currencyData[code]?.name || code;
+		const option = document.createElement('option');
+		option.value = code;
+		option.textContent = `${code} - ${name}`;
+		mixedCurrencyFrom.appendChild(option);
+	});
+	
+	resourceCodes.forEach(code => {
+		const name = resourceData[code]?.name || code;
+		const option = document.createElement('option');
+		option.value = code;
+		option.textContent = name;
+		mixedResourceTo.appendChild(option);
+	});
+}
+
+async function updateMixedConversion() {
+	const amount = parseFloat(mixedAmountFrom.value);
+	const currency = mixedCurrencyFrom.value;
+	const resource = mixedResourceTo.value;
+	
+	if (isNaN(amount) || amount <= 0 || !currency || !resource) {
+		mixedAmountTo.value = '';
+		return;
+	}
+	
+	try {
+		const response = await fetch('/api/converter/convert-mixed', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ 
+				amount, 
+				from: currency, 
+				to: resource,
+				from_type: 'currency',
+				to_type: 'resource'
+			})
+		});
+		
+		const data = await response.json();
+		
+		if (data.success) {
+			mixedAmountTo.value = data.result;
+			updateMixedRateInfo(currency, resource, data.rate, 'currency', 'resource');
+		}
+	} catch (error) {
+		console.error('Ошибка конвертации:', error);
+	}
+}
+
+mixedAmountFrom.addEventListener('input', updateMixedConversion);
+mixedCurrencyFrom.addEventListener('change', updateMixedConversion);
+mixedResourceTo.addEventListener('change', updateMixedConversion);
+
+mixedSwapBtn.addEventListener('click', () => {
+	const currencyValue = mixedCurrencyFrom.value;
+	const resourceValue = mixedResourceTo.value;
+	
+	// Меняем местами селекты
+	mixedCurrencyFrom.innerHTML = '';
+	mixedResourceTo.innerHTML = '';
+	
+	// Заполняем наоборот
+	const resourceCodes = Object.keys(resourceRates).sort();
+	const currencyCodes = Object.keys(currencyRates).sort();
+	
+	resourceCodes.forEach(code => {
+		const name = resourceData[code]?.name || code;
+		const option = document.createElement('option');
+		option.value = code;
+		option.textContent = name;
+		mixedCurrencyFrom.appendChild(option);
+	});
+	
+	currencyCodes.forEach(code => {
+		const name = currencyData[code]?.name || code;
+		const option = document.createElement('option');
+		option.value = code;
+		option.textContent = `${code} - ${name}`;
+		mixedResourceTo.appendChild(option);
+	});
+	
+	// Устанавливаем старые значения
+	if (resourceValue) mixedCurrencyFrom.value = resourceValue;
+	if (currencyValue) mixedResourceTo.value = currencyValue;
+	
+	const tempAmount = mixedAmountFrom.value;
+	mixedAmountFrom.value = mixedAmountTo.value || tempAmount;
+	
+	updateMixedConversionReverse();
+});
+
+async function updateMixedConversionReverse() {
+	const amount = parseFloat(mixedAmountFrom.value);
+	const resource = mixedCurrencyFrom.value;
+	const currency = mixedResourceTo.value;
+	
+	if (isNaN(amount) || amount <= 0 || !resource || !currency) {
+		mixedAmountTo.value = '';
+		return;
+	}
+	
+	try {
+		const response = await fetch('/api/converter/convert-mixed', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ 
+				amount, 
+				from: resource, 
+				to: currency,
+				from_type: 'resource',
+				to_type: 'currency'
+			})
+		});
+		
+		const data = await response.json();
+		
+		if (data.success) {
+			mixedAmountTo.value = data.result;
+			updateMixedRateInfo(resource, currency, data.rate, 'resource', 'currency');
+		}
+	} catch (error) {
+		console.error('Ошибка конвертации:', error);
+	}
+}
+
+mixedConvertBtn.addEventListener('click', async () => {
+	const amount = parseFloat(mixedAmountFrom.value);
+	const fromItem = mixedCurrencyFrom.value;
+	const toItem = mixedResourceTo.value;
+	
+	if (isNaN(amount) || amount <= 0) {
+		alert('Введите корректную сумму');
+		return;
+	}
+	
+	// Определяем типы
+	const fromType = Object.keys(currencyRates).includes(fromItem) ? 'currency' : 'resource';
+	const toType = Object.keys(currencyRates).includes(toItem) ? 'currency' : 'resource';
+	
+	try {
+		const response = await fetch('/api/converter/convert-mixed', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ 
+				amount, 
+				from: fromItem, 
+				to: toItem,
+				from_type: fromType,
+				to_type: toType
+			})
+		});
+		
+		const data = await response.json();
+		
+		if (data.success) {
+			mixedAmountTo.value = data.result;
+			updateMixedRateInfo(fromItem, toItem, data.rate, fromType, toType);
+			addToHistory('mixed', amount, fromItem, data.result, toItem);
+		}
+	} catch (error) {
+		console.error('Ошибка конвертации:', error);
+		alert('Ошибка конвертации');
 	}
 });
 
