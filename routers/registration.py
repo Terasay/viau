@@ -664,16 +664,49 @@ async def approve_application(data: ApproveApplicationData, request: Request):
                 "error": "Не удалось создать запись страны"
             }, status_code=500)
         
+        if data.referral_code:
+            try:
+                cursor.execute(
+                    'SELECT id, username FROM users WHERE referral_code = ?',
+                    (data.referral_code,)
+                )
+                referrer = cursor.fetchone()
+                
+                if referrer:
+                    referrer_id = referrer['id']
+                    
+                    cursor.execute(
+                        'SELECT id FROM countries WHERE player_id = ?',
+                        (referrer_id,)
+                    )
+                    referrer_country = cursor.fetchone()
+                    
+                    if referrer_country:
+                        cursor.execute('''
+                            UPDATE countries 
+                            SET secret_coins = secret_coins + 200 
+                            WHERE player_id = ?
+                        ''', (referrer_id,))
+                        
+                        print(f"Referral reward: +200 secret coins to user {referrer['username']} (referrer)")
+                    
+                    cursor.execute('''
+                        UPDATE countries 
+                        SET secret_coins = secret_coins + 50 
+                        WHERE player_id = ?
+                    ''', (user_id,))
+                    
+                    print(f"Referral reward: +50 secret coins to new player (referred by {referrer['username']})")
+                else:
+                    print(f"Warning: Referral code {data.referral_code} not found")
+            except Exception as e:
+                print(f"Error processing referral rewards: {e}")
+        
         conn.commit()
         
         return JSONResponse({
             "success": True,
             "message": "Заявка одобрена, пользователь получил роль player"
-        })
-        
-        return JSONResponse({
-            "success": True,
-            "message": "Заявка одобрена"
         })
         
     except Exception as e:
