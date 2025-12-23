@@ -251,6 +251,10 @@ function setupNavigation() {
                 window.techModule.init();
             }
             
+            if (sectionName === 'my-character' && window.charModule) {
+                window.charModule.loadMyCharacter();
+            }
+            
             if (sectionName === 'economy') {
                 if (!window.economicModule) {
                     console.error('economicModule не загружен');

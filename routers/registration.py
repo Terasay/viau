@@ -597,13 +597,16 @@ async def approve_application(data: ApproveApplicationData, request: Request):
         from routers.characters import calculate_birth_year
         birth_year = calculate_birth_year(data.age)
         
+        # Расчёт стартовых очков: 10 базовых + 1 за каждые 10 лет жизни
+        skill_points = 10 + (data.age // 10)
+        
         cursor.execute('''
             INSERT INTO characters (
                 first_name, last_name, birth_year, position,
                 ethnicity, religion, relatives, friends, enemies,
                 military, administration, diplomacy, intrigue, knowledge,
-                user_id, country, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                skill_points, user_id, country, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data.first_name,
             data.last_name,
@@ -619,6 +622,7 @@ async def approve_application(data: ApproveApplicationData, request: Request):
             1,
             1,
             1,
+            skill_points,
             user_id,
             data.assigned_country,
             now,

@@ -45,6 +45,18 @@ def init_characters_db():
         )
     ''')
     
+    # Добавление поля skill_points если его нет
+    cursor.execute("PRAGMA table_info(characters)")
+    columns = [column[1] for column in cursor.fetchall()]
+    
+    if 'skill_points' not in columns:
+        try:
+            cursor.execute('ALTER TABLE characters ADD COLUMN skill_points INTEGER DEFAULT 0')
+            conn.commit()
+            print("Added skill_points column to characters table")
+        except Exception as e:
+            print(f"Error adding skill_points column: {e}")
+    
     conn.commit()
     conn.close()
 
@@ -296,6 +308,145 @@ async def delete_character(request: Request):
         
     except Exception as e:
         print(f"Error deleting character: {e}")
+        return JSONResponse({
+            "success": False,
+            "error": str(e)
+        }, status_code=500)
+    finally:
+        conn.close()
+
+@router.get("/my")
+async def get_my_character(request: Request):
+    """Получение персонажа текущего игрока"""
+    sys.path.append('..')
+    from main import get_current_user
+    
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({
+            "success": False,
+            "error": "Требуется авторизация"
+        }, status_code=401)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('''
+            SELECT * FROM characters 
+            WHERE user_id = ?
+        ''', (user['id'],))
+        
+        character = cursor.fetchone()
+        
+        if not character:
+            return JSONResponse({
+                "success": False,
+                "error": "Персонаж не найден"
+            }, status_code=404)
+        
+        # Вычисляем возраст
+        game_start_year = 1516
+        age = game_start_year - character['birth_year']
+        
+        return JSONResponse({
+            "success": True,
+            "character": {
+                **dict(character),
+                "age": age
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error getting my character: {e}")
+        return JSONResponse({
+            "success": False,
+            "error": str(e)
+        }, status_code=500)
+    finally:
+        conn.close()
+
+@router.post("/upgrade-skill")
+async def upgrade_skill(request: Request):
+    """Прокачка навыка персонажа"""
+    sys.path.append('..')
+    from main import get_current_user
+    
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({
+            "success": False,
+            "error": "Требуется авторизация"
+        }, status_code=401)
+    
+    data = await request.json()
+    skill = data.get('skill')
+    
+    valid_skills = ['military', 'administration', 'diplomacy', 'intrigue', 'knowledge']
+    if skill not in valid_skills:
+        return JSONResponse({
+            "success": False,
+            "error": "Неверный навык"
+        }, status_code=400)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Получаем персонажа
+        cursor.execute('''
+            SELECT * FROM characters 
+            WHERE user_id = ?
+        ''', (user['id'],))
+        
+        character = cursor.fetchone()
+        
+        if not character:
+            return JSONResponse({
+                "success": False,
+                "error": "Персонаж не найден"
+            }, status_code=404)
+        
+        # Проверяем наличие очков
+        if character['skill_points'] <= 0:
+            return JSONResponse({
+                "success": False,
+                "error": "Недостаточно очков навыков"
+            }, status_code=400)
+        
+        # Проверяем, не достигнут ли максимум
+        current_value = character[skill]
+        if current_value >= 10:
+            return JSONResponse({
+                "success": False,
+                "error": "Навык уже на максимуме"
+            }, status_code=400)
+        
+        # Обновляем навык и очки
+        now = datetime.now().isoformat()
+        cursor.execute(f'''
+            UPDATE characters 
+            SET {skill} = {skill} + 1, 
+                skill_points = skill_points - 1,
+                updated_at = ?
+            WHERE user_id = ?
+        ''', (now, user['id']))
+        
+        conn.commit()
+        
+        # Возвращаем обновленного персонажа
+        cursor.execute('SELECT * FROM characters WHERE user_id = ?', (user['id'],))
+        updated_character = cursor.fetchone()
+        
+        return JSONResponse({
+            "success": True,
+            "character": dict(updated_character),
+            "message": f"Навык повышен до {current_value + 1}"
+        })
+        
+    except Exception as e:
+        print(f"Error upgrading skill: {e}")
+        conn.rollback()
         return JSONResponse({
             "success": False,
             "error": str(e)

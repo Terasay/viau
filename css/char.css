@@ -1,0 +1,365 @@
+/* Стили для вкладки персонажа */
+
+.character-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.character-header {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.character-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: white;
+    box-shadow: var(--shadow-lg);
+    flex-shrink: 0;
+}
+
+.character-main-info {
+    flex: 1;
+}
+
+.character-name {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.character-name i {
+    color: var(--warning);
+}
+
+.character-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.character-meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.character-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.character-meta-item i {
+    color: var(--primary);
+}
+
+.character-meta-item strong {
+    color: var(--text-primary);
+}
+
+.skill-points-badge {
+    background: linear-gradient(135deg, var(--warning), #f97316);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.skill-points-badge i {
+    font-size: 1.3rem;
+}
+
+.character-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.character-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.character-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.character-card h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.character-card h3 i {
+    color: var(--primary);
+}
+
+.character-info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.character-info-row:last-child {
+    border-bottom: none;
+}
+
+.character-info-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.character-info-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Стили для навыков */
+.skills-section {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.skills-section h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.skills-section h3 i {
+    color: var(--primary);
+}
+
+.skills-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.skill-item {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.skill-item:hover {
+    background: var(--bg-secondary);
+    box-shadow: var(--shadow);
+}
+
+.skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.skill-name {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.skill-name i {
+    font-size: 1.3rem;
+}
+
+.skill-name i.fa-fist-raised {
+    color: #ef4444;
+}
+
+.skill-name i.fa-landmark {
+    color: #8b5cf6;
+}
+
+.skill-name i.fa-handshake {
+    color: #10b981;
+}
+
+.skill-name i.fa-user-secret {
+    color: #f59e0b;
+}
+
+.skill-name i.fa-book {
+    color: #3b82f6;
+}
+
+.skill-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.skill-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    min-width: 50px;
+    text-align: center;
+}
+
+.skill-upgrade-btn {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.skill-upgrade-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
+    transform: scale(1.05);
+    box-shadow: var(--shadow);
+}
+
+.skill-upgrade-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.skill-bar-container {
+    position: relative;
+    height: 12px;
+    background: var(--border);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.skill-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: var(--radius-full);
+    transition: width 0.5s ease;
+    position: relative;
+}
+
+.skill-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.skill-max {
+    color: var(--success);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.no-points-notice {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+}
+
+.no-points-notice i {
+    font-size: 1.3rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .character-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .character-meta {
+        justify-content: center;
+    }
+
+    .character-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .skill-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .skill-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+body.dark-mode .skill-item {
+    background: var(--bg-tertiary);
+}
+
+body.dark-mode .skill-item:hover {
+    background: #475569;
+}
+
+body.dark-mode .no-points-notice {
+    background: linear-gradient(135deg, #451a03, #78350f);
+    color: #fde68a;
+}

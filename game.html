@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/css/game.css">
     <link rel="stylesheet" href="/css/tech.css">
     <link rel="stylesheet" href="/css/economic.css">
+    <link rel="stylesheet" href="/css/char.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -94,6 +95,10 @@
                 <i class="fas fa-home"></i>
                 <span>Обзор</span>
             </button>
+            <button class="nav-btn" data-section="my-character">
+                <i class="fas fa-user-circle"></i>
+                <span>Мой персонаж</span>
+            </button>
             <button class="nav-btn" data-section="economy">
                 <i class="fas fa-chart-line"></i>
                 <span>Экономика</span>
@@ -147,6 +152,64 @@
                     <div class="info-card">
                         <h3><i class="fas fa-chart-pie"></i> Статистика</h3>
                         <p class="placeholder-text">Здесь будет отображаться статистика страны</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="my-character-section" class="game-section" style="display: none;">
+                <div class="character-container">
+                    <div class="character-header">
+                        <div class="character-avatar">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div class="character-main-info">
+                            <h1 class="character-name">
+                                <i class="fas fa-crown"></i>
+                                <span id="char-first-name">-</span> <span id="char-last-name">-</span>
+                            </h1>
+                            <div class="character-subtitle">
+                                <span id="char-position">Правитель</span>
+                            </div>
+                            <div class="character-meta">
+                                <div class="character-meta-item">
+                                    <i class="fas fa-birthday-cake"></i>
+                                    <span>Возраст: <strong id="char-age">-</strong> лет</span>
+                                </div>
+                                <div class="character-meta-item">
+                                    <i class="fas fa-flag"></i>
+                                    <span>Страна: <strong id="char-country">-</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="skill-points-badge">
+                            <i class="fas fa-star"></i>
+                            <span>Очков: <strong id="char-skill-points">0</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="character-grid">
+                        <div class="character-card">
+                            <h3><i class="fas fa-info-circle"></i> Личная информация</h3>
+                            <div class="character-info-row">
+                                <span class="character-info-label">Этнос:</span>
+                                <span id="char-ethnicity" class="character-info-value">-</span>
+                            </div>
+                            <div class="character-info-row">
+                                <span class="character-info-label">Религия:</span>
+                                <span id="char-religion" class="character-info-value">-</span>
+                            </div>
+                            <div class="character-info-row">
+                                <span class="character-info-label">Родственники:</span>
+                                <span id="char-relatives" class="character-info-value">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="skills-section">
+                        <h3><i class="fas fa-chart-line"></i> Навыки персонажа</h3>
+                        <div class="skills-grid">
+                            <!-- Навыки будут загружены динамически через char.js -->
+                        </div>
                     </div>
                 </div>
             </section>
@@ -255,5 +318,6 @@
     <script src="/js/game.js"></script>
     <script src="/js/tech.js"></script>
     <script src="/js/economic.js"></script>
+    <script src="/js/char.js"></script>
 </body>
 </html>
