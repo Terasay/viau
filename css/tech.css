@@ -1,5 +1,3 @@
-/* Технологии - стили для древа технологий */
-
 .tech-container {
     width: 100%;
     height: 100%;
@@ -8,7 +6,6 @@
     gap: 16px;
 }
 
-/* Вкладки категорий */
 .tech-category-tabs {
     display: flex;
     gap: 12px;
@@ -49,7 +46,6 @@
     font-size: 1.1em;
 }
 
-/* Заголовок категории */
 .tech-category-header {
     background: var(--bg-secondary);
     padding: 20px 24px;
@@ -86,7 +82,6 @@
     margin: 0;
 }
 
-/* Индикатор очков исследований */
 .tech-rp-display {
     display: flex;
     align-items: center;
@@ -133,7 +128,6 @@
     font-size: 1em;
 }
 
-/* Контейнер для линий технологий */
 .tech-lines-container {
     background: var(--bg-secondary);
     border-radius: var(--radius-lg);
@@ -153,7 +147,6 @@
     user-select: none;
 }
 
-/* Индикатор зума */
 .tech-zoom-indicator {
     position: absolute;
     top: 20px;
@@ -209,7 +202,7 @@ body:not(.dark-mode) .tech-zoom-indicator {
 }
 
 .tech-requirements-list li::before {
-    display: none; /* убираем старый стиль */
+    display: none;
 }
 
 .req-check {
@@ -223,7 +216,6 @@ body:not(.dark-mode) .tech-zoom-indicator {
     font-style: italic;
 }
 
-/* Улучшенные линии связей */
 .tech-connection-line {
     stroke: var(--border);
     stroke-width: 2;
@@ -238,12 +230,10 @@ body:not(.dark-mode) .tech-zoom-indicator {
     stroke-width: 3;
 }
 
-/* Анимация для связей при наведении на узел */
 .tech-node:hover ~ .tech-connections .tech-connection-line {
     opacity: 0.5;
 }
 
-/* Стилизация скроллбаров */
 .tech-lines-container::-webkit-scrollbar {
     width: 12px;
     height: 12px;
@@ -268,7 +258,6 @@ body:not(.dark-mode) .tech-zoom-indicator {
     background: var(--bg-tertiary);
 }
 
-/* Для Firefox */
 .tech-lines-container {
     scrollbar-width: thin;
     scrollbar-color: var(--primary) var(--bg-tertiary);
@@ -283,7 +272,6 @@ body:not(.dark-mode) .tech-zoom-indicator {
     transition: transform 0.1s ease-out;
 }
 
-/* Отдельная линия технологий */
 .tech-line {
     position: absolute;
     top: 0;
@@ -332,7 +320,6 @@ body:not(.dark-mode) .tech-line-header {
     color: var(--primary);
 }
 
-/* Контейнер для узлов технологий */
 .tech-nodes-container {
     position: relative;
     min-height: 100%;
@@ -340,7 +327,6 @@ body:not(.dark-mode) .tech-line-header {
     padding-top: 100px;
 }
 
-/* Группа технологий (тир) - теперь вертикально */
 .tech-tier {
     position: absolute;
     display: flex;
@@ -349,7 +335,6 @@ body:not(.dark-mode) .tech-line-header {
     align-items: flex-start;
 }
 
-/* SVG для связей */
 .tech-connections {
     position: absolute;
     top: 0;
@@ -372,7 +357,6 @@ body:not(.dark-mode) .tech-line-header {
     stroke-width: 3;
 }
 
-/* Узел технологии */
 .tech-node {
     background: var(--bg-tertiary);
     border: 2px solid var(--border);
@@ -464,7 +448,6 @@ body:not(.dark-mode) .tech-line-header {
     color: var(--primary);
 }
 
-/* Информационная панель технологии */
 .tech-info-panel {
     position: fixed;
     top: 50%;
@@ -638,7 +621,6 @@ body:not(.dark-mode) .tech-line-header {
     cursor: not-allowed;
 }
 
-/* Легенда */
 .tech-legend {
     display: flex;
     gap: 16px;
@@ -684,7 +666,6 @@ body:not(.dark-mode) .tech-line-header {
     opacity: 0.6;
 }
 
-/* Сообщения об ошибках */
 .error-message {
     display: flex;
     flex-direction: column;
@@ -712,7 +693,6 @@ body:not(.dark-mode) .tech-line-header {
     margin: 0;
 }
 
-/* Адаптивность */
 @media (max-width: 1400px) {
     .tech-info-panel {
         position: relative;
@@ -759,7 +739,6 @@ body:not(.dark-mode) .tech-line-header {
     }
 }
 
-/* Селектор стран для админа */
 .tech-country-selector {
     padding: 24px;
 }
@@ -826,7 +805,6 @@ body:not(.dark-mode) .tech-line-header {
     color: var(--primary);
 }
 
-/* Индикатор выбранной страны */
 .tech-country-indicator {
     display: flex;
     align-items: center;
@@ -877,7 +855,6 @@ body:not(.dark-mode) .tech-line-header {
     font-size: 0.9em;
 }
 
-/* Кнопка переключения скрытых технологий для админа */
 .btn-toggle-hidden {
     display: flex;
     align-items: center;
@@ -903,7 +880,6 @@ body:not(.dark-mode) .tech-line-header {
     font-size: 1.1em;
 }
 
-/* Темная тема */
 body.dark-mode .tech-connection-line {
     stroke: var(--border);
 }

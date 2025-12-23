@@ -14,7 +14,6 @@
             <p>У вас нет доступа к этой странице.</p>
         </div>
         <div id="admin-content" style="display:none">
-            <!-- Навигация по разделам -->
             <div class="admin-tabs">
                 <button class="admin-tab active" data-section="users">
                     <i class="fas fa-users"></i> Пользователи
@@ -39,7 +38,6 @@
                 </button>
             </div>
 
-            <!-- Раздел пользователей -->
             <section id="users-section" class="terminal admin-section active">
                 <h2>Пользователи</h2>
                 <pre id="users-list" class="terminal-output">Загрузка...</pre>
@@ -78,7 +76,6 @@
                 </div>
             </section>
 
-            <!-- Раздел заявок -->
             <section id="applications-section" class="terminal admin-section" style="display:none">
                 <h2>Заявки на регистрацию игроков</h2>
                 
@@ -99,7 +96,6 @@
                 </div>
             </section>
 
-            <!-- Раздел стран -->
             <section id="countries-economic-section" class="terminal admin-section" style="display:none">
                 <h2>Экономика стран</h2>
                 
@@ -161,7 +157,6 @@
                 </div>
             </section>
 
-            <!-- Раздел валют -->
             <section id="currencies-section" class="terminal admin-section" style="display:none">
                 <h2>Управление валютами</h2>
                 
@@ -223,7 +218,6 @@
                 </div>
             </section>
 
-            <!-- Раздел ресурсов -->
             <section id="resources-section" class="terminal admin-section" style="display:none">
                 <h2>Управление ресурсами</h2>
                 
@@ -285,7 +279,6 @@
                 </div>
             </section>
 
-            <!-- Раздел персонажей -->
             <section id="characters-section" class="terminal admin-section" style="display:none">
                 <h2>База данных персонажей</h2>
                 
@@ -491,12 +484,10 @@
                 </div>
             </section>
 
-            <!-- Раздел настроек -->
             <section id="settings-section" class="terminal admin-section" style="display:none">
                 <h2>Настройки игры</h2>
                 
                 <div class="converter-admin-grid">
-                    <!-- Редактор правил -->
                     <div class="converter-admin-panel" style="grid-column: 1 / -1;">
                         <h3>Правила игры (rules.txt)</h3>
                         <form id="edit-rules-form" class="admin-form">
@@ -506,7 +497,6 @@
                         </form>
                     </div>
 
-                    <!-- Управление странами -->
                     <div class="converter-admin-panel" style="grid-column: 1 / -1;">
                         <h3>Управление странами (countries.json)</h3>
                         
@@ -515,7 +505,6 @@
                         </div>
 
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-                            <!-- Добавление страны -->
                             <div>
                                 <h4 style="color:#00ffc6;margin-bottom:12px;">Добавить страну</h4>
                                 <form id="add-country-form" class="admin-form">
@@ -536,7 +525,6 @@
                                 </form>
                             </div>
 
-                            <!-- Редактирование страны -->
                             <div>
                                 <h4 style="color:#00ffc6;margin-bottom:12px;">Редактировать страну</h4>
                                 <form id="edit-country-form" class="admin-form" style="display:none;">
@@ -570,7 +558,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно для управления ресурсами -->
     <div class="modal-overlay-admin">
         <div class="modal-content-admin">
             <button class="modal-close-btn" onclick="document.querySelector('.modal-overlay-admin').classList.remove('active')">
@@ -578,7 +565,6 @@
             </button>
             <h2 class="modal-title">Управление ресурсами</h2>
             <form class="modal-form">
-                <!-- Контент будет динамически загружен -->
             </form>
         </div>
     </div>

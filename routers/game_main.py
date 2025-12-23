@@ -26,7 +26,6 @@ def init_game_state():
         )
     ''')
     
-    # Создаем запись, если её нет
     cursor.execute('SELECT id FROM game_state WHERE id = 1')
     if not cursor.fetchone():
         from datetime import datetime
@@ -39,7 +38,6 @@ def init_game_state():
     
     conn.close()
 
-# Инициализируем при загрузке модуля
 init_game_state()
 
 async def get_current_user(request: Request):
@@ -58,14 +56,12 @@ async def get_research_points(country_id: str, request: Request):
     cursor = conn.cursor()
     
     try:
-        # Проверяем права доступа
         cursor.execute('SELECT player_id, research_points FROM countries WHERE id = ?', (country_id,))
         country = cursor.fetchone()
         
         if not country:
             return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
         
-        # Игроки могут видеть только свою страну, админы - любую
         if user['role'] not in ['admin', 'moderator']:
             if country['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Доступ запрещён'}, status_code=403)
@@ -99,27 +95,23 @@ async def deduct_research_points(request: Request):
     cursor = conn.cursor()
     
     try:
-        # Получаем текущее количество ОИ
         cursor.execute('SELECT player_id, research_points FROM countries WHERE id = ?', (country_id,))
         country = cursor.fetchone()
         
         if not country:
             return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
         
-        # Проверяем права доступа (только владелец страны может списывать ОИ)
         if user['role'] != 'admin' and country['player_id'] != user['id']:
             return JSONResponse({'success': False, 'error': 'Доступ запрещён'}, status_code=403)
         
         current_points = country['research_points']
         
-        # Проверяем достаточно ли ОИ
         if current_points < cost:
             return JSONResponse({
                 'success': False,
                 'error': f'Недостаточно очков исследований. Требуется: {cost}, доступно: {current_points}'
             }, status_code=400)
         
-        # Списываем ОИ
         new_points = current_points - cost
         cursor.execute(
             'UPDATE countries SET research_points = ? WHERE id = ?',

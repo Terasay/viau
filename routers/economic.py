@@ -35,17 +35,14 @@ def init_db():
         )
     ''')
     
-    # Добавляем поля в существующую таблицу, если их нет
     cursor.execute("PRAGMA table_info(countries)")
     columns = [column[1] for column in cursor.fetchall()]
     if 'research_points' not in columns:
         cursor.execute('ALTER TABLE countries ADD COLUMN research_points INTEGER DEFAULT 100')
     if 'main_currency' not in columns:
         cursor.execute('ALTER TABLE countries ADD COLUMN main_currency TEXT DEFAULT "HOM"')
-        # Обновляем существующие записи
         cursor.execute('UPDATE countries SET main_currency = "HOM" WHERE main_currency IS NULL')
     
-    # Создаём таблицу для хранения ресурсов стран
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS country_resources (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,7 +56,6 @@ def init_db():
         )
     ''')
     
-    # Создаём таблицу для хранения валют стран
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS country_currencies (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -116,7 +112,6 @@ def migrate_existing_players():
             if cursor.fetchone():
                 continue
             
-            # Создаём страну
             country_id = app['country']
             country_name = country_names.get(country_id, country_id)
             
@@ -196,9 +191,9 @@ def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler
             ruler_last_name,
             country_name,
             currency,
-            'HOM',  # Основная валюта по умолчанию
+            'HOM',
             0,
-            100,  # Начальное количество очков исследований
+            100,
             now,
             now
         ))
@@ -324,7 +319,6 @@ async def get_country(country_id: str, request: Request):
         if not country:
             return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
         
-        # Игрок может видеть только свою страну, админ - все
         if user.get('role') != 'admin' and user.get('id') != country['player_id']:
             return JSONResponse({'success': False, 'error': 'Нет доступа'}, status_code=403)
         
@@ -502,13 +496,11 @@ async def get_country_resources(country_id: str, request: Request):
     cursor = conn.cursor()
     
     try:
-        # Получаем информацию о стране
         cursor.execute('SELECT * FROM countries WHERE id = ?', (country_id,))
         country = cursor.fetchone()
         if not country:
             return JSONResponse({'success': False, 'message': 'Страна не найдена'}, status_code=404)
         
-        # Получаем ресурсы
         cursor.execute('''
             SELECT resource_code, amount 
             FROM country_resources 
@@ -516,7 +508,6 @@ async def get_country_resources(country_id: str, request: Request):
         ''', (country_id,))
         resources = {row[0]: row[1] for row in cursor.fetchall()}
         
-        # Получаем валюты
         cursor.execute('''
             SELECT currency_code, amount 
             FROM country_currencies 

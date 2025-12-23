@@ -1081,7 +1081,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadCountries();
     }
 
-    // Глобальные переменные для хранения данных валют и ресурсов
     window.availableCurrencies = {};
     window.availableResources = {};
 
@@ -1539,7 +1538,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
-// Функция управления ресурсами страны
 window.manageCountryResources = async function(countryId, countryName) {
     const modalOverlay = document.querySelector('.modal-overlay-admin');
     const modalContent = document.querySelector('.modal-content-admin');
@@ -1554,7 +1552,6 @@ window.manageCountryResources = async function(countryId, countryName) {
 
     modalTitle.textContent = `Управление ресурсами: ${countryName}`;
     
-    // Загружаем данные валют и ресурсов, если они еще не загружены
     if (Object.keys(window.availableCurrencies).length === 0 || Object.keys(window.availableResources).length === 0) {
         await window.loadAvailableData();
     }
@@ -1571,10 +1568,8 @@ window.manageCountryResources = async function(countryId, countryName) {
             return;
         }
 
-        // Формируем HTML для управления валютами и ресурсами
         let formHtml = '<div style="max-height: 500px; overflow-y: auto;">';
         
-        // Выбор основной валюты
         formHtml += '<div style="margin-bottom: 20px; padding: 16px; background: #232323; border-radius: 8px;">';
         formHtml += '<h3 style="margin: 0 0 12px 0; color: #00ffc6;"><i class="fas fa-coins"></i> Основная валюта</h3>';
         formHtml += '<select id="main-currency-select" style="width: 100%;">';
@@ -1586,7 +1581,6 @@ window.manageCountryResources = async function(countryId, countryName) {
         formHtml += '<button onclick="updateMainCurrency(\'' + countryId + '\')" style="margin-top: 8px; width: 100%;" class="btn-approve">Обновить основную валюту</button>';
         formHtml += '</div>';
         
-        // Валюты
         formHtml += '<div style="margin-bottom: 20px;">';
         formHtml += '<h3 style="margin: 0 0 12px 0; color: #00ffc6;"><i class="fas fa-money-bill-wave"></i> Валюты</h3>';
         for (const [code, info] of Object.entries(window.availableCurrencies)) {
@@ -1603,7 +1597,6 @@ window.manageCountryResources = async function(countryId, countryName) {
         }
         formHtml += '</div>';
         
-        // Ресурсы
         formHtml += '<div>';
         formHtml += '<h3 style="margin: 0 0 12px 0; color: #00ffc6;"><i class="fas fa-box"></i> Ресурсы</h3>';
         for (const [code, info] of Object.entries(window.availableResources)) {

@@ -11,7 +11,6 @@ router = APIRouter(prefix="/api/settings")
 RULES_FILE = 'data/rules.txt'
 COUNTRIES_FILE = 'data/countries.json'
 
-# Модели данных
 class RulesData(BaseModel):
     content: str
 
@@ -102,18 +101,15 @@ async def add_country(data: CountryData, request: Request):
             with open(COUNTRIES_FILE, 'r', encoding='utf-8') as f:
                 countries = json.load(f)
         
-        # Проверка на существование страны с таким ID
         if any(c['id'] == data.id for c in countries):
             return JSONResponse({'success': False, 'error': 'Страна с таким ID уже существует'})
         
-        # Добавляем новую страну
         countries.append({
             'id': data.id,
             'name': data.name,
             'available': data.available
         })
         
-        # Сохраняем
         with open(COUNTRIES_FILE, 'w', encoding='utf-8') as f:
             json.dump(countries, f, ensure_ascii=False, indent=4)
         
@@ -135,24 +131,20 @@ async def update_country(data: UpdateCountryData, request: Request):
         with open(COUNTRIES_FILE, 'r', encoding='utf-8') as f:
             countries = json.load(f)
         
-        # Находим страну
         country_index = next((i for i, c in enumerate(countries) if c['id'] == data.old_id), None)
         if country_index is None:
             return JSONResponse({'success': False, 'error': 'Страна не найдена'})
         
-        # Если изменили ID, проверяем на уникальность
         if data.old_id != data.id:
             if any(c['id'] == data.id for c in countries):
                 return JSONResponse({'success': False, 'error': 'Страна с таким ID уже существует'})
         
-        # Обновляем
         countries[country_index] = {
             'id': data.id,
             'name': data.name,
             'available': data.available
         }
         
-        # Сохраняем
         with open(COUNTRIES_FILE, 'w', encoding='utf-8') as f:
             json.dump(countries, f, ensure_ascii=False, indent=4)
         
@@ -174,10 +166,8 @@ async def delete_country(data: DeleteCountryData, request: Request):
         with open(COUNTRIES_FILE, 'r', encoding='utf-8') as f:
             countries = json.load(f)
         
-        # Удаляем страну
         countries = [c for c in countries if c['id'] != data.id]
         
-        # Сохраняем
         with open(COUNTRIES_FILE, 'w', encoding='utf-8') as f:
             json.dump(countries, f, ensure_ascii=False, indent=4)
         

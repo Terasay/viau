@@ -94,7 +94,6 @@ button:active, input[type="submit"]:active {
     color: #fff;
 }
 
-/* Вкладки навигации */
 .admin-tabs {
     display: flex;
     gap: 8px;
@@ -131,7 +130,6 @@ button:active, input[type="submit"]:active {
     box-shadow: 0 4px 12px #00ffc644;
 }
 
-/* Секции */
 .admin-section {
     display: none;
 }
@@ -140,7 +138,6 @@ button:active, input[type="submit"]:active {
     display: block;
 }
 
-/* Сетка для конвертера */
 .converter-admin-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -162,7 +159,6 @@ button:active, input[type="submit"]:active {
     font-size: 1.2em;
 }
 
-/* Список элементов */
 .items-list {
     max-height: 500px;
     overflow-y: auto;
@@ -209,7 +205,6 @@ button:active, input[type="submit"]:active {
     font-weight: bold;
 }
 
-/* Формы */
 .admin-form {
     display: flex;
     flex-direction: column;
@@ -254,7 +249,6 @@ button:active, input[type="submit"]:active {
     background: #cc0000 !important;
 }
 
-/* Результаты форм */
 .form-result {
     padding: 8px 12px;
     border-radius: 6px;
@@ -274,7 +268,6 @@ button:active, input[type="submit"]:active {
     border: 1px solid #ff4444;
 }
 
-/* Сообщения загрузки */
 .loading-msg {
     text-align: center;
     color: #00ffc6;
@@ -289,7 +282,6 @@ button:active, input[type="submit"]:active {
     font-size: 1.1em;
 }
 
-/* Скроллбары */
 .items-list::-webkit-scrollbar {
     width: 8px;
 }
@@ -308,7 +300,6 @@ button:active, input[type="submit"]:active {
     background: #00c6a2;
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
     .converter-admin-grid {
         grid-template-columns: 1fr;
@@ -323,7 +314,6 @@ button:active, input[type="submit"]:active {
     }
 }
 
-/* Стили для заявок */
 .applications-filters {
     display: flex;
     gap: 12px;

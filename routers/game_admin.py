@@ -85,12 +85,10 @@ async def update_research_points(country_id: str, request: Request):
     cursor = conn.cursor()
     
     try:
-        # Проверяем существование страны
         cursor.execute('SELECT id FROM countries WHERE id = ?', (country_id,))
         if not cursor.fetchone():
             return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
         
-        # Обновляем очки исследований
         cursor.execute(
             'UPDATE countries SET research_points = ? WHERE id = ?',
             (new_points, country_id)
@@ -123,7 +121,6 @@ async def next_turn(request: Request):
     try:
         from datetime import datetime
         
-        # Получаем текущий ход
         cursor.execute('SELECT current_turn FROM game_state WHERE id = 1')
         state = cursor.fetchone()
         
@@ -133,7 +130,6 @@ async def next_turn(request: Request):
         new_turn = state['current_turn'] + 1
         now = datetime.now().isoformat()
         
-        # Обновляем ход
         cursor.execute(
             'UPDATE game_state SET current_turn = ?, updated_at = ? WHERE id = 1',
             (new_turn, now)
@@ -173,7 +169,6 @@ async def set_turn(request: Request):
         from datetime import datetime
         now = datetime.now().isoformat()
         
-        # Устанавливаем ход
         cursor.execute(
             'UPDATE game_state SET current_turn = ?, updated_at = ? WHERE id = 1',
             (turn_number, now)

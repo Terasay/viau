@@ -277,7 +277,6 @@ async def websocket_endpoint(websocket: WebSocket):
 				await websocket.send_json({"error": "Empty message"})
 				continue
 			
-			# Поддержка ответов
 			reply_to = data.get("replyTo")
 			message_data = {
 				'text': text,
@@ -731,7 +730,6 @@ async def remove_player_country(request: Request):
 	c = conn.cursor()
 	
 	try:
-		# Получаем текущую страну игрока
 		c.execute('SELECT country, role FROM users WHERE id=?', (user_id,))
 		user = c.fetchone()
 		
@@ -747,10 +745,8 @@ async def remove_player_country(request: Request):
 		if not current_country:
 			return JSONResponse({'success': False, 'error': 'У пользователя нет назначенной страны'}, status_code=400)
 		
-		# Обновляем пользователя
 		c.execute('UPDATE users SET role=?, country=NULL WHERE id=?', ('user', user_id))
 		
-		# Отклоняем все заявки пользователя
 		c.execute('''
 			UPDATE player_applications 
 			SET status='rejected', 
@@ -761,7 +757,6 @@ async def remove_player_country(request: Request):
 		
 		conn.commit()
 		
-		# Освобождаем страну в countries.json
 		import json
 		countries_path = 'data/countries.json'
 		try:

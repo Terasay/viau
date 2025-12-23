@@ -63,7 +63,6 @@ body {
     position: relative;
 }
 
-/* Фоновая анимация */
 .background-animation {
     position: fixed;
     top: 0;
@@ -123,7 +122,6 @@ body {
     }
 }
 
-/* Экраны загрузки и доступа */
 .loading-screen,
 .access-screen {
     position: fixed;
@@ -188,7 +186,6 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* Кнопки */
 .btn-primary,
 .btn-secondary,
 .btn-icon {
@@ -246,7 +243,6 @@ body {
     transform: scale(1.1);
 }
 
-/* Основной контейнер игры */
 .game-container {
     min-height: 100vh;
     display: flex;
@@ -255,7 +251,6 @@ body {
     z-index: 1;
 }
 
-/* Шапка игры */
 .game-header {
     background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(12px);
@@ -322,7 +317,6 @@ body.dark-mode .game-header {
     color: var(--text-secondary);
 }
 
-/* Панель ресурсов */
 .resources-bar {
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
@@ -368,7 +362,6 @@ body.dark-mode .game-header {
     background: var(--border);
 }
 
-/* Навигация */
 .game-navigation {
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
@@ -410,7 +403,6 @@ body.dark-mode .game-header {
     font-size: 1.1em;
 }
 
-/* Контент игры */
 .game-content {
     flex: 1;
     padding: 32px;
@@ -454,14 +446,12 @@ body.dark-mode .game-header {
     color: var(--primary);
 }
 
-/* Сетка секций */
 .section-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: 24px;
 }
 
-/* Карточки информации */
 .info-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
@@ -512,7 +502,6 @@ body.dark-mode .game-header {
     font-weight: 700;
 }
 
-/* Заглушки */
 .placeholder-card {
     background: var(--bg-secondary);
     border: 2px dashed var(--border);
@@ -548,7 +537,6 @@ body.dark-mode .game-header {
     font-size: 14px;
 }
 
-/* Адаптивность */
 @media (max-width: 1024px) {
     .game-header {
         grid-template-columns: 1fr;
@@ -583,7 +571,6 @@ body.dark-mode .game-header {
     }
 }
 
-/* Модальные окна */
 .modal-overlay {
     position: fixed;
     top: 0;

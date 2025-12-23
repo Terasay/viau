@@ -1,4 +1,3 @@
-// Модуль экономики
 const economicModule = (function() {
     let countryId = null;
     let countryName = '';
@@ -90,7 +89,6 @@ const economicModule = (function() {
                     <div class="resources-list">
         `;
 
-        // Валюты
         for (const [code, info] of Object.entries(availableCurrencies)) {
             const amount = countryData.currencies[code] || 0;
             const isMain = code === countryData.main_currency;
@@ -123,7 +121,6 @@ const economicModule = (function() {
                     <div class="resources-list">
         `;
 
-        // Ресурсы
         const resourceIcons = {
             'gold': 'fa-solid fa-warehouse',
             'silver': 'fa-solid fa-warehouse',
@@ -180,5 +177,4 @@ const economicModule = (function() {
     };
 })();
 
-// Экспортируем модуль
 window.economicModule = economicModule;

@@ -1000,20 +1000,13 @@ def is_tech_visible(tech_id: str, researched_ids: set, all_techs_map: dict, all_
     if not tech:
         return False
     
-    # Если нет требований - это начальная технология, она всегда видна
     requires = tech.get('requires', [])
     if not requires:
         return True
-    
-    # Фильтруем требования только в текущей категории
     requires_in_category = [r for r in requires if r in all_tech_ids_in_category]
-    
-    # Если хотя бы одно требование изучено - технология видна
     for req_id in requires_in_category:
         if req_id in researched_ids:
             return True
-    
-    # Проверяем, есть ли изученная технология, которая зависит от данной
     for other_tech_id, other_tech in all_techs_map.items():
         if other_tech_id in researched_ids:
             other_requires = other_tech.get('requires', [])
@@ -1046,7 +1039,6 @@ async def get_tech_tree(category: str, request: Request, country_id: str = None,
     if not tech_data:
         return JSONResponse({"success": False, "error": "Unknown category"}, status_code=404)
     
-    # Собираем все ID технологий из текущей категории
     all_tech_ids_in_category = set()
     all_techs_map = {}
     for line in tech_data['lines']:
@@ -1054,13 +1046,11 @@ async def get_tech_tree(category: str, request: Request, country_id: str = None,
             all_tech_ids_in_category.add(tech['id'])
             all_techs_map[tech['id']] = tech
     
-    # Получаем изученные технологии страны
     researched_ids = set()
     if country_id:
         conn = get_db()
         cursor = conn.cursor()
         try:
-            # Проверяем доступ
             is_admin = user.get('role') in ['admin', 'moderator']
             if not is_admin:
                 cursor.execute("SELECT player_id FROM countries WHERE id = ?", (country_id,))
@@ -1082,7 +1072,6 @@ async def get_tech_tree(category: str, request: Request, country_id: str = None,
         finally:
             conn.close()
     
-    # Определяем, нужно ли фильтровать скрытые технологии
     is_admin = user.get('role') in ['admin', 'moderator']
     filter_hidden = not (is_admin and show_hidden)
     
@@ -1100,18 +1089,15 @@ async def get_tech_tree(category: str, request: Request, country_id: str = None,
         }
         
         for tech in line['technologies']:
-            # Фильтруем скрытые технологии для обычных игроков
             if filter_hidden and not is_tech_visible(tech['id'], researched_ids, all_techs_map, all_tech_ids_in_category):
                 continue
             
             tech_copy = tech.copy()
-            # Фильтруем cross-category зависимости для корректного отображения дерева
             if tech.get('requires'):
                 tech_copy['requires'] = [req for req in tech['requires'] if req in all_tech_ids_in_category]
             
             sorted_line['technologies'].append(tech_copy)
         
-        # Сортируем для детерминированного порядка
         sorted_line['technologies'].sort(key=lambda t: (t['year'], t['id']))
         sorted_tech_data['lines'].append(sorted_line)
     
@@ -1119,7 +1105,6 @@ async def get_tech_tree(category: str, request: Request, country_id: str = None,
 
 @router.get("/player/progress")
 async def get_player_tech_progress():
-    # TODO: Оставлено для совместимости, позже удалить
     return JSONResponse({
         "success": True,
         "researched": [],

@@ -785,7 +785,7 @@ button:active::before {
 }
 
 body.dark-mode .theme-toggle i::before {
-	content: "\f185"; /* fa-sun */
+	content: "\f185";
 }
 
 *:focus-visible {

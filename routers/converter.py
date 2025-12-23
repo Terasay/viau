@@ -6,13 +6,10 @@ import os
 
 router = APIRouter(prefix='/api/converter', tags=['converter'])
 
-# Путь к файлу с данными
 DATA_FILE = 'data/converter_data.json'
 
-# Создаем директорию data если её нет
 os.makedirs('data', exist_ok=True)
 
-# Инициализация файла данных если его нет
 if not os.path.exists(DATA_FILE):
     initial_data = {
         "currencies": {
@@ -67,9 +64,6 @@ def verify_admin(token):
     except Exception as e:
         print(f"Ошибка проверки прав: {e}")
         return False
-
-
-# ==================== ПУБЛИЧНЫЕ ЭНДПОИНТЫ ====================
 
 @router.get('/data')
 async def get_converter_data():
@@ -127,11 +121,9 @@ async def convert_currency(request: Request):
             'error': 'Неизвестная валюта'
         }, status_code=400)
     
-    # Конвертация через USD
     amount_in_usd = amount / currencies[from_currency]['rate']
     result = amount_in_usd * currencies[to_currency]['rate']
     
-    # Курс между валютами
     rate = currencies[to_currency]['rate'] / currencies[from_currency]['rate']
     
     return JSONResponse({
@@ -165,11 +157,9 @@ async def convert_resource(request: Request):
             'error': 'Неизвестный ресурс'
         }, status_code=400)
     
-    # Конвертация через золото
     amount_in_gold = amount / resources[from_resource]['rate']
     result = int(amount_in_gold * resources[to_resource]['rate'])
     
-    # Курс между ресурсами
     rate = resources[to_resource]['rate'] / resources[from_resource]['rate']
     
     return JSONResponse({
@@ -177,9 +167,6 @@ async def convert_resource(request: Request):
         'result': result,
         'rate': rate
     })
-
-
-# ==================== ADMIN ENDPOINTS ====================
 
 @router.get('/admin/all-data')
 async def get_all_converter_data(request: Request):

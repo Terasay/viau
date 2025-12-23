@@ -139,7 +139,6 @@ function renderTechTree() {
         </div>
     `;
     
-    // Добавляем кнопку переключения видимости скрытых технологий для админа
     if (isAdminView && viewingCountryId) {
         headerHTML += `
             <button class="btn-toggle-hidden" onclick="window.techModule.toggleHiddenTechs()" title="${showHiddenTechs ? 'Скрыть закрытые технологии' : 'Показать закрытые технологии'}">
@@ -334,8 +333,6 @@ function calculateTechPositionsOptimized(technologies) {
     const headerOffset = 80;
     const centerX = 600;
     
-    // КРИТИЧНО: Сортируем все технологии по year в начале для детерминированного порядка
-    // Это гарантирует, что admin и player обрабатывают технологии в одинаковом порядке
     const sortedTechnologies = [...technologies].sort((a, b) => {
         if (a.year !== b.year) return a.year - b.year;
         return a.id.localeCompare(b.id);
@@ -356,9 +353,7 @@ function calculateTechPositionsOptimized(technologies) {
     
     sortedTechnologies.forEach(tech => {
         if (tech.requires) {
-            // Фильтруем только те зависимости, которые существуют в текущей линии
             tech.requires.forEach(reqId => {
-                // Обрабатываем только зависимости внутри текущей линии
                 if (techMap[reqId]) {
                     children[reqId].push(tech.id);
                     parents[tech.id].push(reqId);
@@ -443,10 +438,9 @@ function calculateTechPositionsOptimized(technologies) {
         
         const techsByParentGroup = new Map();
         
-        // Сортируем технологии по year для детерминированного порядка
         const sortedTechs = [...techs].sort((a, b) => {
             if (a.year !== b.year) return a.year - b.year;
-            return a.id.localeCompare(b.id); // Если year одинаковый, сортируем по ID
+            return a.id.localeCompare(b.id);
         });
         
         sortedTechs.forEach(tech => {
@@ -1385,7 +1379,6 @@ async function toggleHiddenTechs() {
     localStorage.setItem('showHiddenTechs', showHiddenTechs.toString());
     console.log('Toggling hidden techs:', showHiddenTechs);
     
-    // Перезагружаем данные с новым параметром
     await initTechnologies(currentCategory);
 }
 

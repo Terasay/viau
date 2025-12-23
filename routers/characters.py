@@ -48,7 +48,6 @@ def init_characters_db():
     conn.commit()
     conn.close()
 
-# Вызываем инициализацию
 init_characters_db()
 
 class CharacterData(BaseModel):

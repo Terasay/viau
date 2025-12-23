@@ -1,4 +1,3 @@
-/* Экономика - основные стили */
 .economy-header {
     display: flex;
     justify-content: space-between;
@@ -49,7 +48,6 @@
     font-weight: 700;
 }
 
-/* Сетка экономики */
 .economy-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -91,7 +89,6 @@
     font-weight: 700;
 }
 
-/* Список ресурсов */
 .resources-list {
     display: flex;
     flex-direction: column;
@@ -182,7 +179,6 @@
     color: #ffd700;
 }
 
-/* Бейдж основной валюты */
 .badge-main {
     display: inline-block;
     padding: 2px 8px;
@@ -196,7 +192,6 @@
     letter-spacing: 0.5px;
 }
 
-/* Футер */
 .economy-footer {
     display: flex;
     justify-content: center;
@@ -232,7 +227,6 @@
     font-size: 1.1em;
 }
 
-/* Скроллбар */
 .resources-list::-webkit-scrollbar {
     width: 8px;
 }
@@ -252,13 +246,11 @@
     background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
 }
 
-/* Для Firefox */
 .resources-list {
     scrollbar-width: thin;
     scrollbar-color: var(--primary) var(--bg-tertiary);
 }
 
-/* Адаптивность */
 @media (max-width: 1024px) {
     .economy-grid {
         grid-template-columns: 1fr;
@@ -299,7 +291,6 @@
     }
 }
 
-/* Сообщения загрузки */
 .loading-msg {
     text-align: center;
     padding: 40px;
@@ -307,7 +298,6 @@
     font-size: 1.2em;
 }
 
-/* Темная тема */
 body.dark-mode .economy-section {
     background: var(--bg-secondary);
 }

@@ -122,7 +122,6 @@ body {
     z-index: 1;
 }
 
-/* Header */
 .settings-header {
     display: flex;
     justify-content: space-between;
@@ -204,7 +203,6 @@ body.dark-theme .settings-header {
     transform: translateY(-2px);
 }
 
-/* Main Layout */
 .settings-main {
     display: flex;
     flex: 1;
@@ -212,7 +210,6 @@ body.dark-theme .settings-header {
     padding: 32px;
 }
 
-/* Sidebar */
 .settings-sidebar {
     width: 280px;
     flex-shrink: 0;
@@ -258,7 +255,6 @@ body.dark-theme .settings-header {
     box-shadow: var(--shadow-lg);
 }
 
-/* Content Area */
 .settings-content {
     flex: 1;
     max-width: 800px;
@@ -300,7 +296,6 @@ body.dark-theme .settings-header {
     color: var(--text-secondary);
 }
 
-/* Cards */
 .settings-card {
     background: var(--bg-secondary);
     border-radius: var(--radius-lg);
@@ -325,7 +320,6 @@ body.dark-theme .settings-header {
     padding: 24px;
 }
 
-/* Avatar Section */
 .avatar-section {
     display: flex;
     align-items: center;
@@ -416,7 +410,6 @@ body.dark-theme .settings-header {
     color: var(--text-tertiary);
 }
 
-/* Info Grid */
 .info-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -470,7 +463,6 @@ body.dark-theme .settings-header {
     background: var(--danger);
 }
 
-/* Form Elements */
 .form-group {
     margin-bottom: 24px;
 }
@@ -533,7 +525,6 @@ body.dark-theme .settings-header {
     color: var(--primary);
 }
 
-/* Password Strength */
 .password-strength {
     margin-top: 12px;
 }
@@ -575,7 +566,6 @@ body.dark-theme .settings-header {
     background: var(--success);
 }
 
-/* Theme Selector */
 .theme-selector {
     display: flex;
     gap: 16px;
@@ -629,7 +619,6 @@ body.dark-theme .settings-header {
     transform: scale(1.05);
 }
 
-/* Toast Notification */
 .toast {
     position: fixed;
     bottom: 24px;
@@ -691,7 +680,6 @@ body.dark-theme .settings-header {
     color: var(--text-secondary);
 }
 
-/* Responsive */
 @media (max-width: 1024px) {
     .settings-main {
         padding: 24px;

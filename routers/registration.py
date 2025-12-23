@@ -8,7 +8,6 @@ from datetime import datetime
 
 router = APIRouter(prefix="/api/registration")
 
-# Модель данных для заявки
 class ApplicationData(BaseModel):
     first_name: str
     last_name: str
@@ -57,14 +56,12 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Вызываем инициализацию при импорте модуля
 init_db()
 
 @router.post("/submit-application")
 async def submit_application(data: ApplicationData, request: Request):
     """Отправка новой заявки на регистрацию игрока"""
     
-    # Импортируем функцию получения пользователя
     import sys
     sys.path.append('..')
     from main import get_current_user
@@ -80,7 +77,6 @@ async def submit_application(data: ApplicationData, request: Request):
     cursor = conn.cursor()
     
     try:
-        # Проверяем есть ли уже заявка от этого пользователя
         cursor.execute(
             "SELECT id, status FROM player_applications WHERE user_id = ?",
             (user['id'],)
@@ -88,21 +84,18 @@ async def submit_application(data: ApplicationData, request: Request):
         existing = cursor.fetchone()
         
         if existing:
-            # Если заявка одобрена, нельзя создавать новую
             if existing['status'] == 'approved':
                 return JSONResponse({
                     "success": False,
                     "error": "Ваша заявка уже одобрена. Вы являетесь игроком."
                 }, status_code=400)
             
-            # Если заявка на рассмотрении, нельзя создавать новую
             if existing['status'] == 'pending':
                 return JSONResponse({
                     "success": False,
                     "error": "Ваша заявка уже находится на рассмотрении."
                 }, status_code=400)
         
-        # Проверяем занятость страны
         cursor.execute(
             "SELECT id FROM player_applications WHERE country = ? AND status != 'rejected'",
             (data.country,)
@@ -113,7 +106,6 @@ async def submit_application(data: ApplicationData, request: Request):
                 "error": "Эта страна уже занята"
             }, status_code=400)
         
-        # Создаём новую заявку
         now = datetime.now().isoformat()
         
         cursor.execute('''
@@ -175,7 +167,6 @@ async def update_application(data: ApplicationData, request: Request):
     cursor = conn.cursor()
     
     try:
-        # Проверяем есть ли заявка
         cursor.execute(
             "SELECT id, status, country FROM player_applications WHERE user_id = ?",
             (user['id'],)
@@ -188,14 +179,12 @@ async def update_application(data: ApplicationData, request: Request):
                 "error": "Заявка не найдена"
             }, status_code=404)
         
-        # Можно редактировать только заявки со статусом pending или rejected
         if existing['status'] == 'approved':
             return JSONResponse({
                 "success": False,
                 "error": "Нельзя редактировать одобренную заявку"
             }, status_code=400)
         
-        # Проверяем занятость страны (если страна изменилась)
         if existing['country'] != data.country:
             cursor.execute(
                 "SELECT id FROM player_applications WHERE country = ? AND status != 'rejected' AND user_id != ?",
@@ -207,7 +196,6 @@ async def update_application(data: ApplicationData, request: Request):
                     "error": "Эта страна уже занята"
                 }, status_code=400)
         
-        # Обновляем заявку
         now = datetime.now().isoformat()
         
         cursor.execute('''
@@ -361,7 +349,6 @@ async def cancel_application(request: Request):
                 "error": "Нельзя отозвать одобренную заявку"
             }, status_code=400)
         
-        # Удаляем заявку
         cursor.execute("DELETE FROM player_applications WHERE user_id = ?", (user['id'],))
         conn.commit()
         
@@ -399,7 +386,6 @@ async def get_occupied_countries(request: Request):
     cursor = conn.cursor()
     
     try:
-        # Получаем страны с заявками (кроме отклоненных)
         cursor.execute("SELECT country FROM player_applications WHERE status != 'rejected'")
         countries = [row['country'] for row in cursor.fetchall()]
         
@@ -417,9 +403,6 @@ async def get_occupied_countries(request: Request):
     finally:
         conn.close()
 
-# ===== ADMIN ENDPOINTS =====
-# Эти эндпоинты будут использоваться в админ панели
-
 @router.get("/admin/all-applications")
 async def get_all_applications(request: Request):
     """Получение всех заявок для админ панели"""
@@ -435,7 +418,6 @@ async def get_all_applications(request: Request):
             "error": "Требуется авторизация"
         }, status_code=401)
     
-    # Проверка прав администратора
     if user.get('role') != 'admin':
         raise HTTPException(status_code=403, detail="Access denied")
     
@@ -485,7 +467,6 @@ async def get_pending_applications(request: Request):
             "error": "Требуется авторизация"
         }, status_code=401)
     
-    # Проверка прав администратора
     if user.get('role') != 'admin':
         raise HTTPException(status_code=403, detail="Access denied")
     
@@ -553,7 +534,6 @@ async def approve_application(data: ApproveApplicationData, request: Request):
     cursor = conn.cursor()
     
     try:
-        # Получаем заявку
         cursor.execute(
             "SELECT user_id, status FROM player_applications WHERE id = ?",
             (data.application_id,)
@@ -575,7 +555,6 @@ async def approve_application(data: ApproveApplicationData, request: Request):
         user_id = application['user_id']
         now = datetime.now().isoformat()
         
-        # Обновляем заявку с новыми данными
         cursor.execute('''
             UPDATE player_applications SET
                 first_name = ?,
@@ -608,7 +587,6 @@ async def approve_application(data: ApproveApplicationData, request: Request):
             data.application_id
         ))
         
-        # Обновляем роль пользователя и назначаем страну
         cursor.execute('''
             UPDATE users SET
                 role = 'player',
@@ -616,7 +594,6 @@ async def approve_application(data: ApproveApplicationData, request: Request):
             WHERE id = ?
         ''', (data.assigned_country, user_id))
         
-        # Создаём персонажа-правителя
         from routers.characters import calculate_birth_year
         birth_year = calculate_birth_year(data.age)
         
@@ -634,43 +611,39 @@ async def approve_application(data: ApproveApplicationData, request: Request):
             'Правитель',
             data.ethnicity,
             data.religion,
-            None,  # relatives - будет заполнено вручную админом
-            None,  # friends
-            None,  # enemies
-            5,  # military - стандартные значения
-            5,  # administration
-            5,  # diplomacy
-            5,  # intrigue
-            5,  # knowledge
+            None,
+            None,
+            None,
+            1,
+            1,
+            1,
+            1,
+            1,
             user_id,
             data.assigned_country,
             now,
             now
         ))
         
-        # Создаём страну в экономической системе
         import json
         countries_path = 'data/countries.json'
-        country_name = data.assigned_country  # По умолчанию используем ID
+        country_name = data.assigned_country
         
         try:
             with open(countries_path, 'r', encoding='utf-8') as f:
                 countries_list = json.load(f)
             
-            # Находим название страны по ID
             for country_data in countries_list:
                 if country_data['id'] == data.assigned_country:
                     country_name = country_data['name']
-                    country_data['available'] = False  # Отмечаем как занятую
+                    country_data['available'] = False
                     break
             
-            # Сохраняем обновлённый список стран
             with open(countries_path, 'w', encoding='utf-8') as f:
                 json.dump(countries_list, f, ensure_ascii=False, indent=4)
         except Exception as e:
             print(f"Error loading country name from countries.json: {e}")
         
-        # Создаём запись о стране в БД
         from routers.economic import create_country
         country_created = create_country(
             country_id=data.assigned_country,
@@ -678,14 +651,13 @@ async def approve_application(data: ApproveApplicationData, request: Request):
             ruler_first_name=data.first_name,
             ruler_last_name=data.last_name,
             country_name=country_name,
-            currency='Золото',  # Валюта по умолчанию
-            conn=conn,  # Передаём существующее соединение
-            cursor=cursor  # Передаём существующий курсор
+            currency='Золото',
+            conn=conn,
+            cursor=cursor
         )
         
         if not country_created:
             print(f"Warning: Failed to create country record for {data.assigned_country}")
-            # Откатываем всю транзакцию, так как создание страны не удалось
             conn.rollback()
             return JSONResponse({
                 "success": False,

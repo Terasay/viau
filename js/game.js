@@ -2,7 +2,6 @@ let currentUser = null;
 let currentCountry = null;
 let gameState = null;
 
-// Экспортируем состояние для других модулей
 window.gameState = {
     getUser: () => currentUser,
     getCountry: () => currentCountry,
@@ -66,7 +65,6 @@ async function initGame() {
             await loadCountryData();
         }
 
-        // Загружаем состояние игры
         await loadGameState();
 
         initInterface();
@@ -133,7 +131,6 @@ function initInterface() {
         document.getElementById('ruler-name').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
         
-        // Отображаем основную валюту
         const mainCurrency = currentCountry.main_currency || 'HOM';
         document.getElementById('currency-name').textContent = mainCurrency;
         
@@ -248,14 +245,12 @@ function setupNavigation() {
             btn.classList.add('active');
             document.getElementById(`${sectionName}-section`).classList.add('active');
             
-            // Сохраняем текущий раздел
             localStorage.setItem('activeSection', sectionName);
             
             if (sectionName === 'technologies' && window.techModule) {
                 window.techModule.init();
             }
             
-            // Инициализация экономики
             if (sectionName === 'economy') {
                 if (!window.economicModule) {
                     console.error('economicModule не загружен');
@@ -271,7 +266,6 @@ function setupNavigation() {
         });
     });
     
-    // Восстанавливаем последний активный раздел
     const savedSection = localStorage.getItem('activeSection');
     if (savedSection) {
         const savedBtn = document.querySelector(`[data-section="${savedSection}"]`);
@@ -402,7 +396,6 @@ window.gameState = {
     updateCountry: updateCountryData
 };
 
-// Функция выбора страны для просмотра технологий (для админа)
 window.selectCountryForTech = function(countryId, countryName) {
     closeModal();
     if (window.techModule) {
@@ -411,7 +404,6 @@ window.selectCountryForTech = function(countryId, countryName) {
     }
 };
 
-// Функция выбора страны для просмотра экономики (для админа)
 window.selectCountryForEconomy = function(countryId, countryName) {
     console.log('selectCountryForEconomy вызвана:', { countryId, countryName });
     closeModal();
@@ -423,7 +415,6 @@ window.selectCountryForEconomy = function(countryId, countryName) {
     }
 };
 
-// Функция показа модального окна выбора страны
 window.showCountrySelectionModal = async function(sectionType = 'technologies') {
     console.log('showCountrySelectionModal вызвана с типом:', sectionType);
     const modal = document.getElementById('modal-overlay');

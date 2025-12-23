@@ -68,7 +68,6 @@ async def upload_map(request: Request):
     if not user or user[4] != 'admin':
         return JSONResponse({'success': False, 'error': 'Only admins can upload maps'}, status_code=403)
     
-    # Получить данные из формы
     form = await request.form()
     name = form.get('name', '').strip() if form.get('name') else ''
     file = form.get('file')
