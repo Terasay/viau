@@ -172,7 +172,13 @@ def init_db():
     if 'avatar' not in columns:
         c.execute('ALTER TABLE users ADD COLUMN avatar TEXT')
     if 'referral_code' not in columns:
-        c.execute('ALTER TABLE users ADD COLUMN referral_code TEXT UNIQUE')
+        c.execute('ALTER TABLE users ADD COLUMN referral_code TEXT')
+        # Создаем уникальный индекс для referral_code
+        try:
+            c.execute('CREATE UNIQUE INDEX idx_referral_code ON users(referral_code)')
+        except sqlite3.OperationalError:
+            # Индекс уже существует
+            pass
     
     c.execute('''CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
