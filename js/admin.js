@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else if (sectionName === 'settings') {
                 await loadSettings();
             } else if (sectionName === 'countries-economic') {
-                await loadCountriesEconomic();
+                await window.loadCountriesEconomic();
             }
         });
     });
@@ -1101,7 +1101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    async function loadCountriesEconomic() {
+    window.loadCountriesEconomic = async function() {
         await window.loadAvailableData();
         
         const countriesList = document.getElementById('countries-economic-list');
@@ -1150,7 +1150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (data.success) {
                     migrateResult.textContent = data.message;
                     migrateResult.className = 'form-result success';
-                    await loadCountriesEconomic();
+                    await window.loadCountriesEconomic();
                 } else {
                     migrateResult.textContent = `Ошибка: ${data.error}`;
                     migrateResult.className = 'form-result error';
@@ -1246,7 +1246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     addCoinsResult.textContent = data.message;
                     addCoinsResult.className = 'form-result success';
                     addCoinsForm.reset();
-                    await loadCountriesEconomic();
+                    await window.loadCountriesEconomic();
                 } else {
                     addCoinsResult.textContent = `Ошибка: ${data.error}`;
                     addCoinsResult.className = 'form-result error';
@@ -1288,7 +1288,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     updateCurrencyCountryResult.textContent = data.message;
                     updateCurrencyCountryResult.className = 'form-result success';
                     updateCurrencyCountryForm.reset();
-                    await loadCountriesEconomic();
+                    await window.loadCountriesEconomic();
                 } else {
                     updateCurrencyCountryResult.textContent = `Ошибка: ${data.error}`;
                     updateCurrencyCountryResult.className = 'form-result error';
@@ -1646,11 +1646,12 @@ window.updateMainCurrency = async function(countryId) {
         
         if (data.success) {
             alert('Основная валюта обновлена!');
-            await loadCountriesEconomic();
+            await window.loadCountriesEconomic();
         } else {
             alert('Ошибка: ' + data.message);
         }
     } catch (e) {
+        console.error('Ошибка в updateMainCurrency:', e);
         alert('Ошибка: ' + e.message);
     }
 };
