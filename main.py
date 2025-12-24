@@ -179,6 +179,8 @@ def init_db():
         except sqlite3.OperationalError:
             # Индекс уже существует
             pass
+    if 'secret_coins' not in columns:
+        c.execute('ALTER TABLE users ADD COLUMN secret_coins INTEGER DEFAULT 0')
     
     c.execute('''CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -691,6 +693,14 @@ async def me(request: Request):
         if len(user) > 9 and user[9]:
             avatar_url = f'/avatars/{user[9]}'
         
+        # Получаем secret_coins из базы
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute('SELECT secret_coins FROM users WHERE id=?', (user[10] if len(user) > 10 else user[0],))
+        coins_result = c.fetchone()
+        conn.close()
+        secret_coins = coins_result[0] if coins_result and coins_result[0] is not None else 0
+        
         return JSONResponse({
             'logged_in': True,
             'id': user[10] if len(user) > 10 else None,
@@ -702,7 +712,8 @@ async def me(request: Request):
             'banned': bool(user[5]),
             'ban_until': user[7],
             'mute_until': user[8],
-            'avatar': avatar_url
+            'avatar': avatar_url,
+            'secret_coins': secret_coins
         })
     return JSONResponse({'logged_in': False})
 
@@ -832,6 +843,109 @@ async def remove_player_country(request: Request):
 		
 	except Exception as e:
 		print(f"Error removing player country: {e}")
+		return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+	finally:
+		conn.close()
+
+@app.get('/api/shop/coins')
+async def get_shop_coins(request: Request):
+	"""Получение баланса секретных монет пользователя"""
+	user = await get_current_user(request)
+	if not user:
+		return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+	
+	conn = sqlite3.connect(DB_FILE)
+	c = conn.cursor()
+	
+	try:
+		c.execute('SELECT secret_coins FROM users WHERE id=?', (user['id'],))
+		result = c.fetchone()
+		
+		if not result:
+			return JSONResponse({'success': False, 'error': 'Пользователь не найден'}, status_code=404)
+		
+		coins = result[0] if result[0] is not None else 0
+		
+		return JSONResponse({
+			'success': True,
+			'coins': coins
+		})
+	except Exception as e:
+		print(f"Error getting secret coins: {e}")
+		return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+	finally:
+		conn.close()
+
+@app.post('/api/shop/purchase')
+async def shop_purchase(request: Request):
+	"""Покупка предмета в секретном магазине"""
+	user = await get_current_user(request)
+	if not user:
+		return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+	
+	data = await request.json()
+	item = data.get('item')
+	price = data.get('price')
+	
+	if not item or not price:
+		return JSONResponse({'success': False, 'error': 'Некорректные данные'}, status_code=400)
+	
+	conn = sqlite3.connect(DB_FILE)
+	c = conn.cursor()
+	
+	try:
+		# Проверяем баланс
+		c.execute('SELECT secret_coins FROM users WHERE id=?', (user['id'],))
+		result = c.fetchone()
+		
+		if not result:
+			return JSONResponse({'success': False, 'error': 'Пользователь не найден'}, status_code=404)
+		
+		current_coins = result[0] if result[0] is not None else 0
+		
+		if current_coins < price:
+			return JSONResponse({
+				'success': False, 
+				'error': f'Недостаточно монет! Требуется: {price}, у вас: {current_coins}'
+			}, status_code=400)
+		
+		# Обрабатываем покупку
+		if item == 'skill-point':
+			# Добавляем очко навыка персонажу
+			c.execute('SELECT id FROM characters WHERE user_id=?', (user['id'],))
+			char = c.fetchone()
+			
+			if not char:
+				return JSONResponse({
+					'success': False,
+					'error': 'У вас нет персонажа'
+				}, status_code=404)
+			
+			# Списываем монеты
+			new_balance = current_coins - price
+			c.execute('UPDATE users SET secret_coins=? WHERE id=?', (new_balance, user['id']))
+			
+			# Добавляем очко навыка
+			c.execute('''
+				UPDATE characters 
+				SET skill_points = skill_points + 1,
+					updated_at = ?
+				WHERE user_id = ?
+			''', (datetime.now().isoformat(), user['id']))
+			
+			conn.commit()
+			
+			return JSONResponse({
+				'success': True,
+				'message': 'Очко навыка успешно добавлено! Распределите его в разделе "Мой персонаж".',
+				'new_balance': new_balance
+			})
+		else:
+			return JSONResponse({'success': False, 'error': 'Неизвестный предмет'}, status_code=400)
+			
+	except Exception as e:
+		print(f"Error processing purchase: {e}")
+		conn.rollback()
 		return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
 	finally:
 		conn.close()

@@ -69,6 +69,12 @@ async function initGame() {
 
         initInterface();
         updateGameStateDisplay();
+        
+        // Отображаем секретные монеты
+        const secretCoinsElement = document.getElementById('secret-coins');
+        if (secretCoinsElement && currentUser.secret_coins !== undefined) {
+            secretCoinsElement.textContent = currentUser.secret_coins;
+        }
 
         loadingScreen.style.display = 'none';
         gameContainer.style.display = 'flex';
@@ -125,7 +131,8 @@ function initInterface() {
         document.getElementById('country-name').textContent = currentUser.role === 'admin' ? 'Панель администратора' : 'Панель модератора';
         document.getElementById('ruler-name').textContent = 'Управление игрой';
         document.getElementById('currency-name').textContent = '-';
-        document.getElementById('secret-coins').textContent = '-';
+        // Отображаем секретные монеты для админа/модератора
+        document.getElementById('secret-coins').textContent = currentUser.secret_coins || 0;
     } else if (currentCountry) {
         document.getElementById('country-name').textContent = currentCountry.country_name;
         document.getElementById('ruler-name').textContent = 
@@ -134,15 +141,26 @@ function initInterface() {
         const mainCurrency = currentCountry.main_currency || 'HOM';
         document.getElementById('currency-name').textContent = mainCurrency;
         
-        document.getElementById('secret-coins').textContent = currentCountry.secret_coins || 0;
+        // Используем секретные монеты из currentUser, а не из country
+        document.getElementById('secret-coins').textContent = currentUser.secret_coins || 0;
         document.getElementById('overview-country').textContent = currentCountry.country_name;
         document.getElementById('overview-ruler').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
         document.getElementById('overview-currency').textContent = mainCurrency;
-        document.getElementById('overview-coins').textContent = currentCountry.secret_coins || 0;
+        document.getElementById('overview-coins').textContent = currentUser.secret_coins || 0;
     }
 
     document.getElementById('username').textContent = currentUser.username;
+
+    // Добавляем обработчик клика на секретные монеты
+    const secretCoinsElement = document.getElementById('secret-coins');
+    if (secretCoinsElement) {
+        secretCoinsElement.style.cursor = 'pointer';
+        secretCoinsElement.parentElement.style.cursor = 'pointer';
+        secretCoinsElement.parentElement.addEventListener('click', () => {
+            window.location.href = '/secret_shop.html';
+        });
+    }
 
     if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
         const overviewSection = document.getElementById('overview-section');
