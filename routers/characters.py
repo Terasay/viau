@@ -106,15 +106,24 @@ async def get_all_characters(request: Request):
     
     try:
         cursor.execute('''
-            SELECT * FROM characters
-            ORDER BY created_at DESC
+            SELECT c.*, co.name as country_name
+            FROM characters c
+            LEFT JOIN countries co ON c.country = co.code
+            ORDER BY c.created_at DESC
         ''')
         
         characters = cursor.fetchall()
         
+        result_characters = []
+        for char in characters:
+            char_dict = dict(char)
+            # Формируем полное имя для отображения
+            char_dict['name'] = f"{char_dict['first_name']} {char_dict['last_name']}"
+            result_characters.append(char_dict)
+        
         return JSONResponse({
             "success": True,
-            "characters": [dict(char) for char in characters]
+            "characters": result_characters
         })
         
     except Exception as e:
@@ -333,8 +342,10 @@ async def get_my_character(request: Request):
     
     try:
         cursor.execute('''
-            SELECT * FROM characters 
-            WHERE user_id = ?
+            SELECT c.*, co.name as country_name
+            FROM characters c
+            LEFT JOIN countries co ON c.country = co.code
+            WHERE c.user_id = ?
         ''', (user['id'],))
         
         character = cursor.fetchone()
@@ -349,12 +360,12 @@ async def get_my_character(request: Request):
         game_start_year = 1516
         age = game_start_year - character['birth_year']
         
+        char_dict = dict(character)
+        char_dict['age'] = age
+        
         return JSONResponse({
             "success": True,
-            "character": {
-                **dict(character),
-                "age": age
-            }
+            "character": char_dict
         })
         
     except Exception as e:

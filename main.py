@@ -734,6 +734,14 @@ async def admin_users(request: Request):
 	conn.close()
 	return JSONResponse({'users': users})
 
+@app.get('/api/admin/check')
+async def check_admin(request: Request):
+	"""Проверка прав администратора"""
+	user = await get_current_user(request)
+	if not user:
+		return JSONResponse({'is_admin': False})
+	return JSONResponse({'is_admin': user.get('role') == 'admin'})
+
 @app.post('/admin/set_status')
 async def admin_set_status(request: Request):
 	token = request.headers.get('Authorization')
