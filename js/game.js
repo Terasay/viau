@@ -121,6 +121,11 @@ async function loadCountryData() {
 }
 
 function initInterface() {
+    console.log('=== initInterface DEBUG ===');
+    console.log('currentUser:', currentUser);
+    console.log('currentCountry:', currentCountry);
+    console.log('currentCountry.secret_coins:', currentCountry?.secret_coins);
+    
     if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
         document.getElementById('country-name').textContent = currentUser.role === 'admin' ? 'Панель администратора' : 'Панель модератора';
         document.getElementById('ruler-name').textContent = 'Управление игрой';
@@ -132,16 +137,17 @@ function initInterface() {
         document.getElementById('ruler-name').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
         
-        const mainCurrency = currentCountry.main_currency || 'HOM';
+        const mainCurrency = currentCountry.main_currency || currentCountry.currency || 'ESC';
         document.getElementById('currency-name').textContent = mainCurrency;
         
-        // Используем секретные монеты из currentUser, а не из country
-        document.getElementById('secret-coins').textContent = currentUser.secret_coins || 0;
+        // Секретные монеты берём из страны (currentCountry)
+        const secretCoins = currentCountry.secret_coins !== undefined ? currentCountry.secret_coins : 0;
+        document.getElementById('secret-coins').textContent = secretCoins;
         document.getElementById('overview-country').textContent = currentCountry.country_name;
         document.getElementById('overview-ruler').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
         document.getElementById('overview-currency').textContent = mainCurrency;
-        document.getElementById('overview-coins').textContent = currentUser.secret_coins || 0;
+        document.getElementById('overview-coins').textContent = secretCoins;
     }
 
     document.getElementById('username').textContent = currentUser.username;
