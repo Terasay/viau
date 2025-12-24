@@ -54,8 +54,6 @@ async function initGame() {
         }
 
         currentUser = userData;
-        console.log('Loaded user data:', currentUser);
-        console.log('User secret_coins:', currentUser.secret_coins);
 
         const allowedRoles = ['player', 'moderator', 'admin'];
         if (!allowedRoles.includes(currentUser.role)) {
@@ -71,6 +69,12 @@ async function initGame() {
 
         initInterface();
         updateGameStateDisplay();
+        
+        // Отображаем секретные монеты
+        const secretCoinsElement = document.getElementById('secret-coins');
+        if (secretCoinsElement && currentUser.secret_coins !== undefined) {
+            secretCoinsElement.textContent = currentUser.secret_coins;
+        }
 
         loadingScreen.style.display = 'none';
         gameContainer.style.display = 'flex';
@@ -123,28 +127,29 @@ async function loadCountryData() {
 }
 
 function initInterface() {
-    // Всегда отображаем секретные монеты из currentUser (они привязаны к пользователю, а не к стране)
-    const secretCoinsValue = currentUser.secret_coins !== undefined ? currentUser.secret_coins : 0;
-    
     if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
         document.getElementById('country-name').textContent = currentUser.role === 'admin' ? 'Панель администратора' : 'Панель модератора';
         document.getElementById('ruler-name').textContent = 'Управление игрой';
         document.getElementById('currency-name').textContent = '-';
-        document.getElementById('secret-coins').textContent = secretCoinsValue;
+        // Для админа/модератора секретные монеты из пользователя (у них нет страны)
+        document.getElementById('secret-coins').textContent = currentUser.secret_coins || 0;
     } else if (currentCountry) {
         document.getElementById('country-name').textContent = currentCountry.country_name;
         document.getElementById('ruler-name').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
         
+        // Валюта из страны с fallback
         const mainCurrency = currentCountry.main_currency || currentCountry.currency || 'HOM';
         document.getElementById('currency-name').textContent = mainCurrency;
-        document.getElementById('secret-coins').textContent = secretCoinsValue;
         
+        // Для игрока секретные монеты берутся из СТРАНЫ, а не из пользователя
+        const secretCoins = currentCountry.secret_coins !== undefined ? currentCountry.secret_coins : 0;
+        document.getElementById('secret-coins').textContent = secretCoins;
         document.getElementById('overview-country').textContent = currentCountry.country_name;
         document.getElementById('overview-ruler').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
         document.getElementById('overview-currency').textContent = mainCurrency;
-        document.getElementById('overview-coins').textContent = secretCoinsValue;
+        document.getElementById('overview-coins').textContent = secretCoins;
     }
 
     document.getElementById('username').textContent = currentUser.username;
