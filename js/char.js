@@ -1,7 +1,7 @@
-// Модуль управления персонажем игрока
 let currentCharacter = null;
+let isAdmin = false;
+let selectedCharacterId = null;
 
-// Названия навыков
 const skillNames = {
     military: 'Военное дело',
     administration: 'Администрация',
@@ -10,7 +10,6 @@ const skillNames = {
     knowledge: 'Знания'
 };
 
-// Иконки навыков
 const skillIcons = {
     military: 'fa-fist-raised',
     administration: 'fa-landmark',
@@ -19,16 +18,73 @@ const skillIcons = {
     knowledge: 'fa-book'
 };
 
-async function loadMyCharacter() {
+async function checkUserRole() {
     const token = localStorage.getItem('token');
-    
-    if (!token) {
-        showError('Требуется авторизация');
-        return;
-    }
+    if (!token) return false;
 
     try {
-        const response = await fetch('/api/characters/my', {
+        const response = await fetch('/api/admin/check', {
+            headers: {
+                'Authorization': token
+            }
+        });
+        const data = await response.json();
+        return data.is_admin || false;
+    } catch (error) {
+        return false;
+    }
+}
+
+async function loadAllCharacters() {
+    const token = localStorage.getItem('token');
+    
+    try {
+        const response = await fetch('/api/characters/admin/all', {
+            headers: {
+                'Authorization': token
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            populateCharacterSelect(data.characters);
+        } else {
+            showError(data.error || 'Не удалось загрузить список персонажей');
+        }
+    } catch (error) {
+        console.error('Error loading characters:', error);
+        showError('Ошибка при загрузке списка персонажей');
+    }
+}
+
+function populateCharacterSelect(characters) {
+    const select = document.getElementById('character-select');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">-- Выберите персонажа --</option>';
+    
+    characters.forEach(char => {
+        const option = document.createElement('option');
+        option.value = char.id;
+        option.textContent = `${char.name} (${char.country_name})`;
+        select.appendChild(option);
+    });
+
+    select.addEventListener('change', async (e) => {
+        const characterId = e.target.value;
+        if (characterId) {
+            selectedCharacterId = characterId;
+            await loadCharacterById(characterId);
+        }
+    });
+}
+
+async function loadCharacterById(characterId) {
+    const token = localStorage.getItem('token');
+    
+    try {
+        const response = await fetch(`/api/characters/admin/${characterId}`, {
             headers: {
                 'Authorization': token
             }
@@ -48,24 +104,60 @@ async function loadMyCharacter() {
     }
 }
 
+async function loadMyCharacter() {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        showError('Требуется авторизация');
+        return;
+    }
+
+    isAdmin = await checkUserRole();
+
+    if (isAdmin) {
+        const selector = document.getElementById('admin-character-selector');
+        if (selector) {
+            selector.style.display = 'block';
+        }
+        
+        await loadAllCharacters();
+    } else {
+        try {
+            const response = await fetch('/api/characters/my', {
+                headers: {
+                    'Authorization': token
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                currentCharacter = data.character;
+                displayCharacter(currentCharacter);
+            } else {
+                showError(data.error || 'Не удалось загрузить персонажа');
+            }
+        } catch (error) {
+            console.error('Error loading character:', error);
+            showError('Ошибка при загрузке персонажа');
+        }
+    }
+}
+
 function displayCharacter(character) {
-    // Заполняем основную информацию
     document.getElementById('char-first-name').textContent = character.first_name;
     document.getElementById('char-last-name').textContent = character.last_name;
     document.getElementById('char-position').textContent = character.position;
     document.getElementById('char-age').textContent = character.age;
     document.getElementById('char-country').textContent = character.country;
     
-    // Заполняем дополнительную информацию
     document.getElementById('char-ethnicity').textContent = character.ethnicity || 'Не указана';
     document.getElementById('char-religion').textContent = character.religion || 'Не указана';
     document.getElementById('char-relatives').textContent = character.relatives || 'Нет';
     
-    // Отображаем очки навыков
     const skillPointsElement = document.getElementById('char-skill-points');
     skillPointsElement.textContent = character.skill_points || 0;
     
-    // Отображаем уведомление если нет очков
     const noPointsNotice = document.querySelector('.no-points-notice');
     if (character.skill_points <= 0) {
         if (!noPointsNotice) {
@@ -160,13 +252,22 @@ async function upgradeSkill(skill) {
     }
 
     try {
-        const response = await fetch('/api/characters/upgrade-skill', {
+        // Если админ и выбран персонаж, прокачиваем его
+        const url = (isAdmin && selectedCharacterId) 
+            ? '/api/characters/admin/upgrade-skill'
+            : '/api/characters/upgrade-skill';
+
+        const body = (isAdmin && selectedCharacterId)
+            ? { skill, character_id: selectedCharacterId }
+            : { skill };
+
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Authorization': token,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ skill })
+            body: JSON.stringify(body)
         });
 
         const data = await response.json();

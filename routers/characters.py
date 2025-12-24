@@ -393,7 +393,6 @@ async def upgrade_skill(request: Request):
     cursor = conn.cursor()
     
     try:
-        # Получаем персонажа
         cursor.execute('''
             SELECT * FROM characters 
             WHERE user_id = ?
@@ -407,14 +406,12 @@ async def upgrade_skill(request: Request):
                 "error": "Персонаж не найден"
             }, status_code=404)
         
-        # Проверяем наличие очков
         if character['skill_points'] <= 0:
             return JSONResponse({
                 "success": False,
                 "error": "Недостаточно очков навыков"
             }, status_code=400)
         
-        # Проверяем, не достигнут ли максимум
         current_value = character[skill]
         if current_value >= 10:
             return JSONResponse({
@@ -422,7 +419,6 @@ async def upgrade_skill(request: Request):
                 "error": "Навык уже на максимуме"
             }, status_code=400)
         
-        # Обновляем навык и очки
         now = datetime.now().isoformat()
         cursor.execute(f'''
             UPDATE characters 
@@ -434,7 +430,6 @@ async def upgrade_skill(request: Request):
         
         conn.commit()
         
-        # Возвращаем обновленного персонажа
         cursor.execute('SELECT * FROM characters WHERE user_id = ?', (user['id'],))
         updated_character = cursor.fetchone()
         
@@ -446,6 +441,164 @@ async def upgrade_skill(request: Request):
         
     except Exception as e:
         print(f"Error upgrading skill: {e}")
+        conn.rollback()
+        return JSONResponse({
+            "success": False,
+            "error": str(e)
+        }, status_code=500)
+    finally:
+        conn.close()
+        
+@router.get("/admin/{character_id}")
+async def get_character_by_id(character_id: int, request: Request):
+    """Получить персонажа по ID (только для админов)"""
+    sys.path.append('..')
+    from main import get_current_user
+    
+    try:
+        user = get_current_user(request)
+        if not user:
+            return JSONResponse({
+                "success": False,
+                "error": "Не авторизован"
+            }, status_code=401)
+        
+        if not user.get('is_admin'):
+            return JSONResponse({
+                "success": False,
+                "error": "Доступ запрещен"
+            }, status_code=403)
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT c.*, co.name as country_name
+            FROM characters c
+            LEFT JOIN countries co ON c.country = co.code
+            WHERE c.id = ?
+        ''', (character_id,))
+        
+        character = cursor.fetchone()
+        
+        if not character:
+            return JSONResponse({
+                "success": False,
+                "error": "Персонаж не найден"
+            }, status_code=404)
+        
+        char_dict = dict(character)
+        current_year = 2024
+        char_dict['age'] = current_year - char_dict['birth_year']
+        
+        return JSONResponse({
+            "success": True,
+            "character": char_dict
+        })
+        
+    except Exception as e:
+        print(f"Error getting character by id: {e}")
+        return JSONResponse({
+            "success": False,
+            "error": str(e)
+        }, status_code=500)
+    finally:
+        conn.close()
+
+@router.post("/admin/upgrade-skill")
+async def admin_upgrade_skill(request: Request):
+    """Прокачка навыка персонажа админом"""
+    sys.path.append('..')
+    from main import get_current_user
+    
+    conn = get_db()
+    try:
+        user = get_current_user(request)
+        if not user:
+            return JSONResponse({
+                "success": False,
+                "error": "Не авторизован"
+            }, status_code=401)
+        
+        if not user.get('is_admin'):
+            return JSONResponse({
+                "success": False,
+                "error": "Доступ запрещен"
+            }, status_code=403)
+        
+        body = await request.json()
+        skill = body.get('skill')
+        character_id = body.get('character_id')
+        
+        if not skill or not character_id:
+            return JSONResponse({
+                "success": False,
+                "error": "Не указан навык или ID персонажа"
+            }, status_code=400)
+        
+        valid_skills = ['military', 'administration', 'diplomacy', 'intrigue', 'knowledge']
+        if skill not in valid_skills:
+            return JSONResponse({
+                "success": False,
+                "error": "Неверный навык"
+            }, status_code=400)
+        
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT * FROM characters WHERE id = ?', (character_id,))
+        character = cursor.fetchone()
+        
+        if not character:
+            return JSONResponse({
+                "success": False,
+                "error": "Персонаж не найден"
+            }, status_code=404)
+        
+        if character['skill_points'] <= 0:
+            return JSONResponse({
+                "success": False,
+                "error": "Недостаточно очков навыков"
+            }, status_code=400)
+        
+        current_value = character[skill]
+        if current_value >= 10:
+            return JSONResponse({
+                "success": False,
+                "error": "Навык уже на максимуме"
+            }, status_code=400)
+        
+        now = datetime.now().isoformat()
+        cursor.execute(f'''
+            UPDATE characters 
+            SET {skill} = {skill} + 1, 
+                skill_points = skill_points - 1,
+                updated_at = ?
+            WHERE id = ?
+        ''', (now, character_id))
+        
+        conn.commit()
+        
+        # Возвращаем обновленного персонажа
+        cursor.execute('''
+            SELECT c.*, co.name as country_name
+            FROM characters c
+            LEFT JOIN countries co ON c.country = co.code
+            WHERE c.id = ?
+        ''', (character_id,))
+        updated_character = cursor.fetchone()
+        
+        char_dict = dict(updated_character)
+        current_year = 2024
+        char_dict['age'] = current_year - char_dict['birth_year']
+        
+        return JSONResponse({
+            "success": True,
+            "character": char_dict,
+            "message": f"Навык повышен до {current_value + 1}"
+        })
+        
+    except Exception as e:
+        print(f"Error upgrading skill (admin): {e}")
         conn.rollback()
         return JSONResponse({
             "success": False,
