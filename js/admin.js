@@ -1541,11 +1541,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 window.manageCountryResources = async function(countryId, countryName) {
     const modalOverlay = document.querySelector('.modal-overlay-admin');
     const modalContent = document.querySelector('.modal-content-admin');
+    
+    if (!modalOverlay || !modalContent) {
+        console.error('Модальное окно не найдено в DOM', { modalOverlay, modalContent });
+        alert('Ошибка: элементы модального окна не найдены');
+        return;
+    }
+    
     const modalTitle = modalContent.querySelector('.modal-title');
     const modalForm = modalContent.querySelector('.modal-form');
 
     if (!modalTitle || !modalForm) {
-        console.error('Модальное окно не найдено', { modalTitle, modalForm, modalContent });
+        console.error('Элементы внутри модального окна не найдены', { modalTitle, modalForm, modalContent });
         alert('Ошибка: не удалось открыть модальное окно');
         return;
     }

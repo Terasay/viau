@@ -69,12 +69,6 @@ async function initGame() {
 
         initInterface();
         updateGameStateDisplay();
-        
-        // Отображаем секретные монеты
-        const secretCoinsElement = document.getElementById('secret-coins');
-        if (secretCoinsElement && currentUser.secret_coins !== undefined) {
-            secretCoinsElement.textContent = currentUser.secret_coins;
-        }
 
         loadingScreen.style.display = 'none';
         gameContainer.style.display = 'flex';
