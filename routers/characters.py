@@ -45,7 +45,6 @@ def init_characters_db():
         )
     ''')
     
-    # Добавление поля skill_points если его нет
     cursor.execute("PRAGMA table_info(characters)")
     columns = [column[1] for column in cursor.fetchall()]
     
@@ -116,9 +115,7 @@ async def get_all_characters(request: Request):
         result_characters = []
         for char in characters:
             char_dict = dict(char)
-            # Формируем полное имя для отображения
             char_dict['name'] = f"{char_dict['first_name']} {char_dict['last_name']}"
-            # country_name будет таким же как country (код страны)
             char_dict['country_name'] = char_dict.get('country', 'Не указана')
             result_characters.append(char_dict)
         
@@ -356,7 +353,6 @@ async def get_my_character(request: Request):
                 "error": "Персонаж не найден"
             }, status_code=404)
         
-        # Вычисляем возраст
         game_start_year = 1516
         age = game_start_year - character['birth_year']
         
@@ -590,7 +586,6 @@ async def admin_upgrade_skill(request: Request):
         
         conn.commit()
         
-        # Возвращаем обновленного персонажа
         cursor.execute('''
             SELECT *
             FROM characters
