@@ -131,25 +131,23 @@ function initInterface() {
         document.getElementById('country-name').textContent = currentUser.role === 'admin' ? 'Панель администратора' : 'Панель модератора';
         document.getElementById('ruler-name').textContent = 'Управление игрой';
         document.getElementById('currency-name').textContent = '-';
-        // Для админа/модератора секретные монеты из пользователя (у них нет страны)
+        // Отображаем секретные монеты для админа/модератора
         document.getElementById('secret-coins').textContent = currentUser.secret_coins || 0;
     } else if (currentCountry) {
         document.getElementById('country-name').textContent = currentCountry.country_name;
         document.getElementById('ruler-name').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
         
-        // Валюта из страны с fallback
-        const mainCurrency = currentCountry.main_currency || currentCountry.currency || 'HOM';
+        const mainCurrency = currentCountry.main_currency || 'HOM';
         document.getElementById('currency-name').textContent = mainCurrency;
         
-        // Для игрока секретные монеты берутся из СТРАНЫ, а не из пользователя
-        const secretCoins = currentCountry.secret_coins !== undefined ? currentCountry.secret_coins : 0;
-        document.getElementById('secret-coins').textContent = secretCoins;
+        // Используем секретные монеты из currentUser, а не из country
+        document.getElementById('secret-coins').textContent = currentUser.secret_coins || 0;
         document.getElementById('overview-country').textContent = currentCountry.country_name;
         document.getElementById('overview-ruler').textContent = 
             `${currentCountry.ruler_first_name} ${currentCountry.ruler_last_name}`;
         document.getElementById('overview-currency').textContent = mainCurrency;
-        document.getElementById('overview-coins').textContent = secretCoins;
+        document.getElementById('overview-coins').textContent = currentUser.secret_coins || 0;
     }
 
     document.getElementById('username').textContent = currentUser.username;
