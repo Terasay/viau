@@ -858,11 +858,12 @@ async def get_shop_coins(request: Request):
 	c = conn.cursor()
 	
 	try:
-		c.execute('SELECT secret_coins FROM users WHERE id=?', (user['id'],))
+		# Секретные монеты привязаны к СТРАНЕ, а не к пользователю!
+		c.execute('SELECT secret_coins FROM countries WHERE player_id=?', (user['id'],))
 		result = c.fetchone()
 		
 		if not result:
-			return JSONResponse({'success': False, 'error': 'Пользователь не найден'}, status_code=404)
+			return JSONResponse({'success': False, 'error': 'У вас нет страны'}, status_code=404)
 		
 		coins = result[0] if result[0] is not None else 0
 		
@@ -894,14 +895,15 @@ async def shop_purchase(request: Request):
 	c = conn.cursor()
 	
 	try:
-		# Проверяем баланс
-		c.execute('SELECT secret_coins FROM users WHERE id=?', (user['id'],))
-		result = c.fetchone()
+		# Находим страну игрока (СЕКРЕТНЫЕ МОНЕТЫ ПРИВЯЗАНЫ К СТРАНЕ!)
+		c.execute('SELECT id, secret_coins FROM countries WHERE player_id=?', (user['id'],))
+		country = c.fetchone()
 		
-		if not result:
-			return JSONResponse({'success': False, 'error': 'Пользователь не найден'}, status_code=404)
+		if not country:
+			return JSONResponse({'success': False, 'error': 'У вас нет страны'}, status_code=404)
 		
-		current_coins = result[0] if result[0] is not None else 0
+		country_id = country[0]
+		current_coins = country[1] if country[1] is not None else 0
 		
 		if current_coins < price:
 			return JSONResponse({
@@ -921,9 +923,10 @@ async def shop_purchase(request: Request):
 					'error': 'У вас нет персонажа'
 				}, status_code=404)
 			
-			# Списываем монеты
+			# Списываем монеты ИЗ СТРАНЫ
 			new_balance = current_coins - price
-			c.execute('UPDATE users SET secret_coins=? WHERE id=?', (new_balance, user['id']))
+			c.execute('UPDATE countries SET secret_coins=?, updated_at=? WHERE id=?', 
+					 (new_balance, datetime.now().isoformat(), country_id))
 			
 			# Добавляем очко навыка
 			c.execute('''
