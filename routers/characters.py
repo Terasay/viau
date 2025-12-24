@@ -106,10 +106,9 @@ async def get_all_characters(request: Request):
     
     try:
         cursor.execute('''
-            SELECT c.*, co.name as country_name
-            FROM characters c
-            LEFT JOIN countries co ON c.country = co.code
-            ORDER BY c.created_at DESC
+            SELECT *
+            FROM characters
+            ORDER BY created_at DESC
         ''')
         
         characters = cursor.fetchall()
@@ -119,6 +118,8 @@ async def get_all_characters(request: Request):
             char_dict = dict(char)
             # Формируем полное имя для отображения
             char_dict['name'] = f"{char_dict['first_name']} {char_dict['last_name']}"
+            # country_name будет таким же как country (код страны)
+            char_dict['country_name'] = char_dict.get('country', 'Не указана')
             result_characters.append(char_dict)
         
         return JSONResponse({
@@ -342,10 +343,9 @@ async def get_my_character(request: Request):
     
     try:
         cursor.execute('''
-            SELECT c.*, co.name as country_name
-            FROM characters c
-            LEFT JOIN countries co ON c.country = co.code
-            WHERE c.user_id = ?
+            SELECT *
+            FROM characters
+            WHERE user_id = ?
         ''', (user['id'],))
         
         character = cursor.fetchone()
@@ -362,6 +362,7 @@ async def get_my_character(request: Request):
         
         char_dict = dict(character)
         char_dict['age'] = age
+        char_dict['country_name'] = char_dict.get('country', 'Не указана')
         
         return JSONResponse({
             "success": True,
@@ -467,14 +468,14 @@ async def get_character_by_id(character_id: int, request: Request):
     from main import get_current_user
     
     try:
-        user = get_current_user(request)
+        user = await get_current_user(request)
         if not user:
             return JSONResponse({
                 "success": False,
                 "error": "Не авторизован"
             }, status_code=401)
         
-        if not user.get('is_admin'):
+        if user.get('role') != 'admin':
             return JSONResponse({
                 "success": False,
                 "error": "Доступ запрещен"
@@ -484,10 +485,9 @@ async def get_character_by_id(character_id: int, request: Request):
         cursor = conn.cursor()
         
         cursor.execute('''
-            SELECT c.*, co.name as country_name
-            FROM characters c
-            LEFT JOIN countries co ON c.country = co.code
-            WHERE c.id = ?
+            SELECT *
+            FROM characters
+            WHERE id = ?
         ''', (character_id,))
         
         character = cursor.fetchone()
@@ -499,8 +499,9 @@ async def get_character_by_id(character_id: int, request: Request):
             }, status_code=404)
         
         char_dict = dict(character)
-        current_year = 2024
-        char_dict['age'] = current_year - char_dict['birth_year']
+        game_start_year = 1516
+        char_dict['age'] = game_start_year - char_dict['birth_year']
+        char_dict['country_name'] = char_dict.get('country', 'Не указана')
         
         return JSONResponse({
             "success": True,
@@ -524,14 +525,14 @@ async def admin_upgrade_skill(request: Request):
     
     conn = get_db()
     try:
-        user = get_current_user(request)
+        user = await get_current_user(request)
         if not user:
             return JSONResponse({
                 "success": False,
                 "error": "Не авторизован"
             }, status_code=401)
         
-        if not user.get('is_admin'):
+        if user.get('role') != 'admin':
             return JSONResponse({
                 "success": False,
                 "error": "Доступ запрещен"
@@ -591,16 +592,16 @@ async def admin_upgrade_skill(request: Request):
         
         # Возвращаем обновленного персонажа
         cursor.execute('''
-            SELECT c.*, co.name as country_name
-            FROM characters c
-            LEFT JOIN countries co ON c.country = co.code
-            WHERE c.id = ?
+            SELECT *
+            FROM characters
+            WHERE id = ?
         ''', (character_id,))
         updated_character = cursor.fetchone()
         
         char_dict = dict(updated_character)
-        current_year = 2024
-        char_dict['age'] = current_year - char_dict['birth_year']
+        game_start_year = 1516
+        char_dict['age'] = game_start_year - char_dict['birth_year']
+        char_dict['country_name'] = char_dict.get('country', 'Не указана')
         
         return JSONResponse({
             "success": True,
