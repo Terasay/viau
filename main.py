@@ -179,8 +179,7 @@ def init_db():
         except sqlite3.OperationalError:
             # Индекс уже существует
             pass
-    if 'secret_coins' not in columns:
-        c.execute('ALTER TABLE users ADD COLUMN secret_coins INTEGER DEFAULT 0')
+    # secret_coins НЕ НУЖНЫ в таблице users - они в таблице countries!
     
     c.execute('''CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
