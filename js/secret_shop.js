@@ -3,9 +3,23 @@ let currentUser = null;
 let userCoins = 0;
 
 document.addEventListener('DOMContentLoaded', async () => {
+    loadTheme();
     await loadUserData();
     setupEventListeners();
 });
+
+function loadTheme() {
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+    }
+}
+
+function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+    const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+    localStorage.setItem('theme', theme);
+}
 
 async function loadUserData() {
     const token = localStorage.getItem('token');
@@ -61,6 +75,9 @@ async function loadSecretCoins() {
 }
 
 function setupEventListeners() {
+    // Переключатель темы
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+    
     // Кнопка "Назад"
     document.getElementById('back-btn').addEventListener('click', () => {
         window.location.href = '/game.html';
