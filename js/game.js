@@ -616,9 +616,9 @@ function openStatisticsModal(type) {
         // Отрисовываем диаграмму в зависимости от типа
         setTimeout(() => {
             const chartOptions = {
-                width: 600,
-                height: 400,
-                radius: 130,
+                width: 750,
+                height: 550,
+                radius: 180,
                 population: data.population || 0
             };
             
