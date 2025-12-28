@@ -252,36 +252,79 @@ NAVY_TECH = {
             "id": "navigation",
             "name": "Навигация и мореходство",
             "technologies": [
+                # Два корня - компас и лоцманство
                 {"id": "compass", "name": "Компас", "year": 1500, "requires": []},
                 {"id": "coastal_piloting", "name": "Прибрежное лоцманство", "year": 1500, "requires": []},
-                {"id": "astrolabe", "name": "Астролябия", "year": 1515, "requires": ["compass", "astronomical_observations"]},
-                {"id": "sea_charts_1", "name": "Морские карты I", "year": 1525, "requires": ["coastal_piloting", "printing_press"]},
+                
+                # От компаса - астролябия, от лоцманства - карты
+                {"id": "astrolabe", "name": "Астролябия", "year": 1515, "requires": ["compass"]},
+                {"id": "sea_charts_1", "name": "Морские карты I", "year": 1525, "requires": ["coastal_piloting"]},
+                
+                # Слияние двух веток
                 {"id": "navigation_tables", "name": "Навигационные таблицы", "year": 1540, "requires": ["astrolabe", "sea_charts_1"]},
+                
+                # Разветвление: паруса (основная) и звёздная навигация (боковая ветка)
                 {"id": "improved_sails", "name": "Улучшенные паруса", "year": 1555, "requires": ["navigation_tables"]},
+                {"id": "star_navigation", "name": "Навигация по звездам", "year": 1595, "requires": ["navigation_tables"]},
+                
+                # Карты II требуют паруса (основная линия)
                 {"id": "sea_charts_2", "name": "Морские карты II", "year": 1575, "requires": ["improved_sails"]},
-                {"id": "star_navigation", "name": "Навигация по звездам", "year": 1595, "requires": ["sea_charts_2"]},
+                
+                # Лаг - от звёздной навигации (боковая ветка сливается обратно)
                 {"id": "log_speed", "name": "Лаг (измеритель скорости)", "year": 1615, "requires": ["star_navigation"]},
-                {"id": "quadrant", "name": "Квадрант", "year": 1625, "requires": ["log_speed"]},
-                {"id": "improved_compass", "name": "Улучшенные компасы", "year": 1640, "requires": ["quadrant", "precision_metalworking"]},
-                {"id": "sextant", "name": "Секстант", "year": 1655, "requires": ["improved_compass", "optics"]},
+                
+                # Квадрант требует и карты II и лаг - слияние
+                {"id": "quadrant", "name": "Квадрант", "year": 1625, "requires": ["sea_charts_2", "log_speed"]},
+                
+                # Улучшенные компасы - основная линия
+                {"id": "improved_compass", "name": "Улучшенные компасы", "year": 1640, "requires": ["quadrant"]},
+                
+                # Секстант - основная линия
+                {"id": "sextant", "name": "Секстант", "year": 1655, "requires": ["improved_compass"]},
+                
+                # Разветвление: морская астрономия (основная) и барометр (боковая)
                 {"id": "naval_astronomy", "name": "Морская астрономия", "year": 1670, "requires": ["sextant"]},
-                {"id": "barometer", "name": "Барометр", "year": 1685, "requires": ["naval_astronomy", "scientific_instruments"]},
+                {"id": "barometer", "name": "Барометр", "year": 1685, "requires": ["sextant"]},
+                
+                # Глубиномер - от барометра (боковая сливается)
                 {"id": "depth_sounder", "name": "Глубиномер", "year": 1700, "requires": ["barometer"]},
-                {"id": "chronometers_1", "name": "Морские хронометры I", "year": 1715, "requires": ["depth_sounder", "precision_clockmaking"]},
+                
+                # Хронометры требуют морскую астрономию и глубиномер
+                {"id": "chronometers_1", "name": "Морские хронометры I", "year": 1715, "requires": ["naval_astronomy", "depth_sounder"]},
+                
+                # Основная линия продолжается
                 {"id": "longitude_finding", "name": "Точное определение долготы", "year": 1730, "requires": ["chronometers_1"]},
-                {"id": "scientific_cartography", "name": "Научная картография", "year": 1745, "requires": ["longitude_finding", "scientific_method_2"]},
+                
+                # Разветвление: научная картография (основная) и морские сигналы (боковая)
+                {"id": "scientific_cartography", "name": "Научная картография", "year": 1745, "requires": ["longitude_finding"]},
+                {"id": "sea_signals", "name": "Морские сигналы", "year": 1775, "requires": ["longitude_finding"]},
+                
+                # Хронометры II - от научной картографии
                 {"id": "chronometers_2", "name": "Морские хронометры II", "year": 1760, "requires": ["scientific_cartography"]},
-                {"id": "sea_signals", "name": "Морские сигналы", "year": 1775, "requires": ["chronometers_2"]},
+                
+                # Семафор - от морских сигналов (боковая)
                 {"id": "semaphore", "name": "Семафорная связь", "year": 1790, "requires": ["sea_signals"]},
-                {"id": "lighthouses", "name": "Морские маяки", "year": 1805, "requires": ["semaphore"]},
+                
+                # Маяки требуют и хронометры II и семафор - слияние
+                {"id": "lighthouses", "name": "Морские маяки", "year": 1805, "requires": ["chronometers_2", "semaphore"]},
+                
+                # Основная линия
                 {"id": "precise_sea_charts", "name": "Точные морские карты", "year": 1820, "requires": ["lighthouses"]},
                 {"id": "hydrography", "name": "Гидрография", "year": 1835, "requires": ["precise_sea_charts"]},
-                {"id": "steam_navigation", "name": "Паровая навигация", "year": 1850, "requires": ["hydrography", "steam_frigates_1"]},
-                {"id": "oceanography", "name": "Океанография", "year": 1860, "requires": ["steam_navigation", "scientific_research_3"]},
+                
+                # Разветвление: паровая навигация (основная) и океанография (боковая)
+                {"id": "steam_navigation", "name": "Паровая навигация", "year": 1850, "requires": ["hydrography"]},
+                {"id": "oceanography", "name": "Океанография", "year": 1860, "requires": ["hydrography"]},
+                
+                # Морские течения - от океанографии
                 {"id": "ocean_currents", "name": "Морские течения", "year": 1870, "requires": ["oceanography"]},
-                {"id": "radio_communication_navy", "name": "Радиосвязь на море", "year": 1880, "requires": ["ocean_currents", "telegraph"]},
+                
+                # Радиосвязь требует и паровую навигацию и течения - слияние
+                {"id": "radio_communication_navy", "name": "Радиосвязь на море", "year": 1880, "requires": ["steam_navigation", "ocean_currents"]},
+                
+                # Финальная линия
                 {"id": "modern_cartography", "name": "Современная картография", "year": 1890, "requires": ["radio_communication_navy"]},
-                {"id": "electric_lighthouses", "name": "Электрическое освещение маяков", "year": 1895, "requires": ["modern_cartography", "electric_lighting"]},
+                {"id": "electric_lighthouses", "name": "Электрическое освещение маяков", "year": 1895, "requires": ["modern_cartography"]},
                 {"id": "modern_navigation_systems", "name": "Современные навигационные системы", "year": 1900, "requires": ["electric_lighthouses"]},
             ]
         },
@@ -289,35 +332,72 @@ NAVY_TECH = {
             "id": "naval_doctrine",
             "name": "Морская доктрина и тактика",
             "technologies": [
+                # Два корня - абордаж и стрельба
                 {"id": "boarding_tactics", "name": "Абордажная тактика", "year": 1500, "requires": []},
                 {"id": "naval_gunnery", "name": "Корабельная стрельба", "year": 1500, "requires": []},
+                
+                # От абордажа - дисциплина, от стрельбы - бортовой залп
                 {"id": "ship_discipline", "name": "Корабельная дисциплина", "year": 1520, "requires": ["boarding_tactics"]},
-                {"id": "broadside_doctrine", "name": "Бортовой залп", "year": 1525, "requires": ["naval_gunnery", "broadside_guns"]},
+                {"id": "broadside_doctrine", "name": "Бортовой залп", "year": 1525, "requires": ["naval_gunnery"]},
+                
+                # Морпехи - боковая ветка от дисциплины
                 {"id": "marines_1", "name": "Морская пехота I", "year": 1540, "requires": ["ship_discipline"]},
-                {"id": "fleet_organization", "name": "Флотская организация", "year": 1545, "requires": ["broadside_doctrine", "marines_1"]},
+                
+                # Флотская организация - слияние дисциплины и залпа
+                {"id": "fleet_organization", "name": "Флотская организация", "year": 1545, "requires": ["ship_discipline", "broadside_doctrine"]},
+                
+                # Основная линия
                 {"id": "squadrons", "name": "Эскадры", "year": 1565, "requires": ["fleet_organization"]},
                 {"id": "naval_battles", "name": "Морские сражения", "year": 1585, "requires": ["squadrons"]},
-                {"id": "fleet_discipline", "name": "Флотская дисциплина", "year": 1605, "requires": ["naval_battles", "line_infantry"]},
-                {"id": "line_formation", "name": "Построение линией", "year": 1620, "requires": ["fleet_discipline"]},
-                {"id": "linear_fleet_tactics_1", "name": "Линейная тактика флота I", "year": 1640, "requires": ["line_formation", "ships_of_line_1"]},
+                
+                # Разветвление: флотская дисциплина (основная) и построение линией (боковая)
+                {"id": "fleet_discipline", "name": "Флотская дисциплина", "year": 1605, "requires": ["naval_battles"]},
+                {"id": "line_formation", "name": "Построение линией", "year": 1620, "requires": ["naval_battles"]},
+                
+                # Линейная тактика - слияние
+                {"id": "linear_fleet_tactics_1", "name": "Линейная тактика флота I", "year": 1640, "requires": ["fleet_discipline", "line_formation"]},
+                
+                # Разветвление: координация (основная) и флотские сигналы (боковая)
                 {"id": "squadron_coordination", "name": "Координация эскадр", "year": 1655, "requires": ["linear_fleet_tactics_1"]},
-                {"id": "fleet_signals", "name": "Флотские сигналы", "year": 1670, "requires": ["squadron_coordination", "sea_signals"]},
-                {"id": "line_breaking", "name": "Тактика прорыва линии", "year": 1685, "requires": ["fleet_signals"]},
-                {"id": "concentrated_fire", "name": "Сосредоточение огня", "year": 1700, "requires": ["line_breaking"]},
-                {"id": "cruiser_operations", "name": "Крейсерские операции", "year": 1715, "requires": ["concentrated_fire", "frigates_2"]},
-                {"id": "port_blockade", "name": "Блокада портов", "year": 1730, "requires": ["cruiser_operations"]},
-                {"id": "fleet_artillery", "name": "Флотская артиллерия", "year": 1745, "requires": ["port_blockade", "naval_artillery_3"]},
-                {"id": "convoy_system", "name": "Конвойная система", "year": 1760, "requires": ["fleet_artillery"]},
+                {"id": "fleet_signals", "name": "Флотские сигналы", "year": 1670, "requires": ["linear_fleet_tactics_1"]},
+                
+                # Прорыв линии - от координации
+                {"id": "line_breaking", "name": "Тактика прорыва линии", "year": 1685, "requires": ["squadron_coordination"]},
+                
+                # Сосредоточение огня требует и прорыв и сигналы - слияние
+                {"id": "concentrated_fire", "name": "Сосредоточение огня", "year": 1700, "requires": ["line_breaking", "fleet_signals"]},
+                
+                # Разветвление: крейсерские операции (основная) и блокада (боковая)
+                {"id": "cruiser_operations", "name": "Крейсерские операции", "year": 1715, "requires": ["concentrated_fire"]},
+                {"id": "port_blockade", "name": "Блокада портов", "year": 1730, "requires": ["concentrated_fire"]},
+                
+                # Флотская артиллерия - от крейсерских операций
+                {"id": "fleet_artillery", "name": "Флотская артиллерия", "year": 1745, "requires": ["cruiser_operations"]},
+                
+                # Конвойная система требует и артиллерию и блокаду - слияние
+                {"id": "convoy_system", "name": "Конвойная система", "year": 1760, "requires": ["fleet_artillery", "port_blockade"]},
+                
+                # Основная линия
                 {"id": "aggressive_tactics", "name": "Агрессивная тактика", "year": 1775, "requires": ["convoy_system"]},
                 {"id": "force_concentration", "name": "Сосредоточение сил", "year": 1790, "requires": ["aggressive_tactics"]},
-                {"id": "tactical_flexibility", "name": "Тактическая гибкость", "year": 1805, "requires": ["force_concentration", "semaphore"]},
-                {"id": "steam_tactics", "name": "Паровая тактика", "year": 1820, "requires": ["tactical_flexibility", "paddle_steamers"]},
-                {"id": "screw_maneuverability", "name": "Винтовая маневренность", "year": 1835, "requires": ["steam_tactics", "screw_ships"]},
-                {"id": "ironclad_doctrine", "name": "Броненосная доктрина", "year": 1850, "requires": ["screw_maneuverability", "ironclads_1"]},
+                {"id": "tactical_flexibility", "name": "Тактическая гибкость", "year": 1805, "requires": ["force_concentration"]},
+                
+                # Разветвление: паровая тактика (основная) и винтовая (боковая)
+                {"id": "steam_tactics", "name": "Паровая тактика", "year": 1820, "requires": ["tactical_flexibility"]},
+                {"id": "screw_maneuverability", "name": "Винтовая маневренность", "year": 1835, "requires": ["tactical_flexibility"]},
+                
+                # Броненосная доктрина - слияние
+                {"id": "ironclad_doctrine", "name": "Броненосная доктрина", "year": 1850, "requires": ["steam_tactics", "screw_maneuverability"]},
+                
+                # Разветвление: современная война (основная) и океанский флот (боковая)
                 {"id": "modern_naval_warfare", "name": "Современная морская война", "year": 1860, "requires": ["ironclad_doctrine"]},
-                {"id": "ocean_fleet", "name": "Океанский флот", "year": 1870, "requires": ["modern_naval_warfare"]},
-                {"id": "sea_power_theory", "name": "Теория морской мощи", "year": 1880, "requires": ["ocean_fleet", "modern_fleet_organization"]},
-                {"id": "command_of_sea", "name": "Командование морем", "year": 1890, "requires": ["sea_power_theory", "modern_battleships"]},
+                {"id": "ocean_fleet", "name": "Океанский флот", "year": 1870, "requires": ["ironclad_doctrine"]},
+                
+                # Теория морской мощи - слияние
+                {"id": "sea_power_theory", "name": "Теория морской мощи", "year": 1880, "requires": ["modern_naval_warfare", "ocean_fleet"]},
+                
+                # Финальная линия
+                {"id": "command_of_sea", "name": "Командование морем", "year": 1890, "requires": ["sea_power_theory"]},
                 {"id": "sea_dominance", "name": "Доминирование на море", "year": 1900, "requires": ["command_of_sea"]},
             ]
         }
