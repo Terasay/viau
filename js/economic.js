@@ -38,8 +38,14 @@ const economicModule = (function() {
             const currData = await currResponse.json();
             const resData = await resResponse.json();
             
+            console.log('Available currencies loaded:', currData);
+            console.log('Available resources loaded:', resData);
+            
             if (currData.success) availableCurrencies = currData.currencies;
             if (resData.success) availableResources = resData.resources;
+            
+            console.log('Currencies object:', availableCurrencies);
+            console.log('Resources object:', availableResources);
         } catch (e) {
             console.error('Ошибка загрузки валют/ресурсов:', e);
         }
@@ -48,13 +54,17 @@ const economicModule = (function() {
     async function loadCountryResources() {
         try {
             const token = localStorage.getItem('token');
+            console.log('Loading resources for country:', countryId);
             const response = await fetch(`/api/economic/country/${countryId}/resources`, {
                 headers: { 'Authorization': token }
             });
             const data = await response.json();
             
+            console.log('Country resources response:', data);
+            
             if (data.success) {
                 countryData = data;
+                console.log('Country data set:', countryData);
             } else {
                 console.error('Ошибка загрузки ресурсов страны:', data.message);
             }
@@ -80,6 +90,9 @@ const economicModule = (function() {
         console.log('Рендеринг экономики для страны:', countryData);
         const mainCurrencyInfo = availableCurrencies[countryData.main_currency];
         const mainCurrencyName = mainCurrencyInfo ? mainCurrencyInfo.name : countryData.main_currency;
+
+        console.log('countryData.currencies:', countryData.currencies);
+        console.log('countryData.resources:', countryData.resources);
 
         const headerTitle = countryName 
             ? `Экономика страны: ${countryName}` 

@@ -279,8 +279,18 @@ function setupNavigation() {
                     return;
                 }
                 if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'moderator')) {
-                    // Админам показываем окно выбора страны
-                    window.showCountrySelectionModal('economy');
+                    // Проверяем сохраненную страну
+                    const savedCountry = localStorage.getItem('econViewingCountryId');
+                    const savedCountryName = localStorage.getItem('econViewingCountryName');
+                    
+                    if (savedCountry && savedCountryName) {
+                        // Если есть сохраненная страна, используем ее
+                        console.log('Восстановлена сохраненная страна для экономики:', savedCountry, savedCountryName);
+                        window.economicModule.init(savedCountry, savedCountryName);
+                    } else {
+                        // Если нет сохраненной страны, показываем окно выбора
+                        window.showCountrySelectionModal('economy');
+                    }
                 } else if (currentCountry) {
                     window.economicModule.init(currentCountry.id, currentCountry.country_name);
                 }
