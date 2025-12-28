@@ -532,3 +532,59 @@ function closeModal() {
 }
 
 window.closeModal = closeModal;
+
+function openStatisticsModal(type) {
+    const modal = document.getElementById('modal-overlay');
+    const modalBody = document.getElementById('modal-body');
+    const modalTitle = document.getElementById('modal-title');
+    const modalFooter = document.getElementById('modal-footer');
+    const modalContainer = document.getElementById('modal-container');
+    
+    if (!modal || !modalBody || !modalTitle || !modalFooter) {
+        console.error('Модальное окно не найдено');
+        return;
+    }
+    
+    // Делаем модальное окно крупным
+    modalContainer.style.maxWidth = '900px';
+    modalContainer.style.width = '90%';
+    
+    const titles = {
+        'religion': 'Религии страны',
+        'culture': 'Культура страны',
+        'social': 'Социальные слои'
+    };
+    
+    const icons = {
+        'religion': 'fa-church',
+        'culture': 'fa-palette',
+        'social': 'fa-users'
+    };
+    
+    modalTitle.innerHTML = `<i class="fas ${icons[type]}"></i> ${titles[type]}`;
+    
+    // Создаем заглушку с местом под диаграмму
+    modalBody.innerHTML = `
+        <div class="statistics-modal-content">
+            <div class="statistics-placeholder">
+                <i class="fas fa-chart-pie fa-4x"></i>
+                <h3>Диаграмма в разработке</h3>
+                <p>Здесь будет отображаться интерактивная диаграмма</p>
+                <p class="stats-description">
+                    ${type === 'religion' ? 'В этом разделе будет представлено распределение религий среди населения вашей страны.' : ''}
+                    ${type === 'culture' ? 'В этом разделе будет представлено культурное разнообразие вашей страны.' : ''}
+                    ${type === 'social' ? 'В этом разделе будет показано распределение населения по социальным слоям.' : ''}
+                </p>
+                <div class="chart-placeholder" id="chart-placeholder-${type}">
+                    <!-- Здесь будет диаграмма -->
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
+    
+    modal.classList.add('visible');
+}
+
+window.openStatisticsModal = openStatisticsModal;
