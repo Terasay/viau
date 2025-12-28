@@ -162,6 +162,12 @@ function initInterface() {
         });
     }
 
+    // Добавляем обработчик для кнопки закрытия модального окна
+    const modalCloseBtn = document.getElementById('modal-close');
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', closeModal);
+    }
+
     if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
         const overviewSection = document.getElementById('overview-section');
         overviewSection.innerHTML = `
