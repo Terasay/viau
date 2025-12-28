@@ -20,7 +20,15 @@ async function initTechnologies(category = 'land_forces') {
         
         isAdminView = user && (user.role === 'admin' || user.role === 'moderator');
         
-        if (country) {
+        // Проверяем сохранённую страну для технологий
+        const savedTechCountry = localStorage.getItem('techViewingCountryId');
+        const savedTechCountryName = localStorage.getItem('techViewingCountryName');
+        
+        if (isAdminView && savedTechCountry) {
+            // Если админ и есть сохранённая страна, используем её
+            viewingCountryId = savedTechCountry;
+            console.log('Восстановлена сохранённая страна для технологий:', savedTechCountry, savedTechCountryName);
+        } else if (country) {
             currentCountryId = country.id;
             viewingCountryId = country.id;
         } else if (isAdminView) {
@@ -140,11 +148,17 @@ function renderTechTree() {
     `;
     
     if (isAdminView && viewingCountryId) {
+        const savedCountryName = localStorage.getItem('techViewingCountryName') || 'Неизвестная страна';
         headerHTML += `
-            <button class="btn-toggle-hidden" onclick="window.techModule.toggleHiddenTechs()" title="${showHiddenTechs ? 'Скрыть закрытые технологии' : 'Показать закрытые технологии'}">
-                <i class="fas fa-${showHiddenTechs ? 'eye-slash' : 'eye'}"></i>
-                <span>${showHiddenTechs ? 'Скрыть закрытые' : 'Показать закрытые'}</span>
-            </button>
+            <div class="tech-admin-controls">
+                <button class="btn-change-country" onclick="window.techModule.changeCountry()" title="Сменить страну">
+                    <i class="fas fa-exchange-alt"></i> Страна: ${savedCountryName}
+                </button>
+                <button class="btn-toggle-hidden" onclick="window.techModule.toggleHiddenTechs()" title="${showHiddenTechs ? 'Скрыть закрытые технологии' : 'Показать закрытые технологии'}">
+                    <i class="fas fa-${showHiddenTechs ? 'eye-slash' : 'eye'}"></i>
+                    <span>${showHiddenTechs ? 'Скрыть закрытые' : 'Показать закрытые'}</span>
+                </button>
+            </div>
         `;
     }
     
@@ -1169,8 +1183,7 @@ async function selectCountry(countryId, countryName) {
     localStorage.setItem('techViewingCountryId', countryId);
     localStorage.setItem('techViewingCountryName', countryName);
     
-    updateCountryIndicator(countryName);
-    
+    // Перезагружаем дерево технологий с новой страной
     await initTechnologies(currentCategory);
 }
 

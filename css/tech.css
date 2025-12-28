@@ -82,6 +82,12 @@
     margin: 0;
 }
 
+.tech-admin-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .btn-change-country {
     padding: 10px 20px;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
