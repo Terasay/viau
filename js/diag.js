@@ -80,9 +80,9 @@
 
         // Настройки по умолчанию
         const settings = {
-            width: options.width || 600,
-            height: options.height || 400,
-            radius: options.radius || 130,
+            width: options.width || 700,
+            height: options.height || 500,
+            radius: options.radius || 160,
             showPercentages: options.showPercentages !== false,
             showLegend: options.showLegend !== false,
             title: options.title || '',
@@ -210,8 +210,9 @@
         // Функция для определения сегмента по координатам
         const getSegmentAtPoint = (x, y) => {
             const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
+            // Используем логические размеры (settings), а не физические (canvas.width с DPI)
+            const scaleX = settings.width / rect.width;
+            const scaleY = settings.height / rect.height;
             const canvasX = (x - rect.left) * scaleX;
             const canvasY = (y - rect.top) * scaleY;
             
@@ -484,9 +485,9 @@
 
         // Настройки
         const settings = {
-            width: options.width || 600,
-            height: options.height || 400,
-            radius: options.radius || 130,
+            width: options.width || 700,
+            height: options.height || 500,
+            radius: options.radius || 160,
             showPercentages: options.showPercentages !== false,
             showLegend: options.showLegend !== false,
             title: options.title || '',
@@ -639,8 +640,9 @@
         // Определение сегмента по координатам
         const getSegmentAtPoint = (x, y) => {
             const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
+            // Используем логические размеры (settings), а не физические (canvas.width с DPI)
+            const scaleX = settings.width / rect.width;
+            const scaleY = settings.height / rect.height;
             const canvasX = (x - rect.left) * scaleX;
             const canvasY = (y - rect.top) * scaleY;
             
