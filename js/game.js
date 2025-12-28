@@ -554,8 +554,8 @@ function openStatisticsModal(type) {
     }
     
     // Делаем модальное окно крупным
-    modalContainer.style.maxWidth = '900px';
-    modalContainer.style.width = '90%';
+    modalContainer.style.maxWidth = '1200px';
+    modalContainer.style.width = '95%';
     
     const titles = {
         'religion': 'Религии страны',
@@ -571,28 +571,96 @@ function openStatisticsModal(type) {
     
     modalTitle.innerHTML = `<i class="fas ${icons[type]}"></i> ${titles[type]}`;
     
-    // Создаем заглушку с местом под диаграмму
+    // Показываем загрузку
     modalBody.innerHTML = `
-        <div class="statistics-modal-content">
-            <div class="statistics-placeholder">
-                <i class="fas fa-chart-pie fa-4x"></i>
-                <h3>Диаграмма в разработке</h3>
-                <p>Здесь будет отображаться интерактивная диаграмма</p>
-                <p class="stats-description">
-                    ${type === 'religion' ? 'В этом разделе будет представлено распределение религий среди населения вашей страны.' : ''}
-                    ${type === 'culture' ? 'В этом разделе будет представлено культурное разнообразие вашей страны.' : ''}
-                    ${type === 'social' ? 'В этом разделе будет показано распределение населения по социальным слоям.' : ''}
-                </p>
-                <div class="chart-placeholder" id="chart-placeholder-${type}">
-                    <!-- Здесь будет диаграмма -->
-                </div>
-            </div>
+        <div style="text-align: center; padding: 60px;">
+            <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--primary);"></i>
+            <p style="margin-top: 20px; color: var(--text-secondary);">Загрузка статистики...</p>
         </div>
     `;
     
     modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
-    
     modal.classList.add('visible');
+    
+    // Получаем ID страны текущего пользователя
+    const countryId = currentCountry?.id;
+    if (!countryId) {
+        modalBody.innerHTML = `
+            <div style="text-align: center; padding: 60px; color: var(--danger);">
+                <i class="fas fa-exclamation-triangle fa-3x"></i>
+                <p style="margin-top: 20px;">Не удалось определить страну</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Загружаем статистику
+    const token = localStorage.getItem('token');
+    fetch(`/api/statistics/country/${countryId}`, {
+        headers: { 'Authorization': token }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            throw new Error(data.error || 'Ошибка загрузки статистики');
+        }
+        
+        // Создаём контейнер для диаграммы
+        const chartId = `chart-${type}-${Date.now()}`;
+        modalBody.innerHTML = `
+            <div class="statistics-modal-content">
+                <div id="${chartId}" class="chart-container"></div>
+            </div>
+        `;
+        
+        // Отрисовываем диаграмму в зависимости от типа
+        setTimeout(() => {
+            if (type === 'religion') {
+                if (typeof window.drawPieChart === 'function') {
+                    window.drawPieChart(chartId, data.religions, {
+                        title: `Религиозный состав населения`,
+                        width: 700,
+                        height: 450,
+                        radius: 140
+                    });
+                } else {
+                    modalBody.innerHTML = '<p style="color: var(--danger);">Модуль отрисовки диаграмм не загружен</p>';
+                }
+            } else if (type === 'culture') {
+                if (typeof window.drawNestedPieChart === 'function') {
+                    window.drawNestedPieChart(chartId, data.cultures, {
+                        title: `Культурный состав населения`,
+                        width: 700,
+                        height: 450,
+                        radius: 140
+                    });
+                } else {
+                    modalBody.innerHTML = '<p style="color: var(--danger);">Модуль отрисовки диаграмм не загружен</p>';
+                }
+            } else if (type === 'social') {
+                if (typeof window.drawPieChart === 'function') {
+                    window.drawPieChart(chartId, data.social_layers, {
+                        title: `Социальная структура населения`,
+                        width: 700,
+                        height: 450,
+                        radius: 140
+                    });
+                } else {
+                    modalBody.innerHTML = '<p style="color: var(--danger);">Модуль отрисовки диаграмм не загружен</p>';
+                }
+            }
+        }, 100);
+    })
+    .catch(error => {
+        console.error('Error loading statistics:', error);
+        modalBody.innerHTML = `
+            <div style="text-align: center; padding: 60px; color: var(--danger);">
+                <i class="fas fa-exclamation-circle fa-3x"></i>
+                <p style="margin-top: 20px; font-size: 1.1em;">Ошибка загрузки данных</p>
+                <p style="margin-top: 8px; font-size: 0.9em; color: var(--text-secondary);">${error.message}</p>
+            </div>
+        `;
+    });
 }
 
 window.openStatisticsModal = openStatisticsModal;

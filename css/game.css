@@ -771,6 +771,35 @@ body.dark-mode .game-header {
     min-height: 400px;
 }
 
+.chart-container {
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.chart-legend {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) var(--bg-tertiary);
+}
+
+.chart-legend::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chart-legend::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+.chart-legend::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+}
+
+.chart-legend::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
 .statistics-placeholder {
     display: flex;
     flex-direction: column;
