@@ -100,13 +100,23 @@
 
         // Создаём canvas для диаграммы
         const canvas = document.createElement('canvas');
-        canvas.width = settings.width;
-        canvas.height = settings.height;
+        const dpr = window.devicePixelRatio || 1;
+        
+        // Устанавливаем реальный размер с учетом DPI
+        canvas.width = settings.width * dpr;
+        canvas.height = settings.height * dpr;
+        
+        // CSS размер остается прежним
+        canvas.style.width = settings.width + 'px';
+        canvas.style.height = settings.height + 'px';
         canvas.style.maxWidth = '100%';
         canvas.style.height = 'auto';
         canvas.style.cursor = 'pointer';
 
         const ctx = canvas.getContext('2d');
+        // Масштабируем контекст под высокий DPI
+        ctx.scale(dpr, dpr);
+        
         const centerX = settings.width / 2;
         const centerY = settings.height / 2;
 
@@ -133,21 +143,24 @@
             currentAngle += sliceAngle;
         });
 
-        // Создаём tooltip
+        // Создаём tooltip с уникальным ID
+        const tooltipId = `tooltip-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const tooltip = document.createElement('div');
+        tooltip.id = tooltipId;
         tooltip.style.cssText = `
-            position: absolute;
-            background: rgba(0, 0, 0, 0.9);
+            position: fixed;
+            background: rgba(0, 0, 0, 0.92);
             color: white;
             padding: 12px 16px;
             border-radius: 8px;
             font-size: 14px;
             pointer-events: none;
             opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.15s ease;
+            z-index: 999999;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
             white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         `;
         document.body.appendChild(tooltip);
 
@@ -274,6 +287,15 @@
             drawChart();
             tooltip.style.opacity = '0';
         });
+
+        // Очистка tooltip при удалении контейнера
+        const observer = new MutationObserver((mutations) => {
+            if (!document.body.contains(container)) {
+                tooltip.remove();
+                observer.disconnect();
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
 
         // Первоначальная отрисовка
         drawChart();
@@ -480,15 +502,25 @@
         chartWrapper.style.justifyContent = 'center';
         chartWrapper.style.flexWrap = 'wrap';
 
-        // Canvas
+        // Canvas с поддержкой высокого DPI
         const canvas = document.createElement('canvas');
-        canvas.width = settings.width;
-        canvas.height = settings.height;
+        const dpr = window.devicePixelRatio || 1;
+        
+        // Устанавливаем реальный размер с учетом DPI
+        canvas.width = settings.width * dpr;
+        canvas.height = settings.height * dpr;
+        
+        // CSS размер остается прежним
+        canvas.style.width = settings.width + 'px';
+        canvas.style.height = settings.height + 'px';
         canvas.style.maxWidth = '100%';
         canvas.style.height = 'auto';
         canvas.style.cursor = 'pointer';
 
         const ctx = canvas.getContext('2d');
+        // Масштабируем контекст под высокий DPI
+        ctx.scale(dpr, dpr);
+        
         const centerX = settings.width / 2;
         const centerY = settings.height / 2;
 
@@ -517,21 +549,24 @@
             });
         });
 
-        // Tooltip
+        // Tooltip с уникальным ID
+        const tooltipId = `tooltip-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const tooltip = document.createElement('div');
+        tooltip.id = tooltipId;
         tooltip.style.cssText = `
-            position: absolute;
-            background: rgba(0, 0, 0, 0.9);
+            position: fixed;
+            background: rgba(0, 0, 0, 0.92);
             color: white;
             padding: 12px 16px;
             border-radius: 8px;
             font-size: 14px;
             pointer-events: none;
             opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.15s ease;
+            z-index: 999999;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
             white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         `;
         document.body.appendChild(tooltip);
 
@@ -681,6 +716,15 @@
             drawChart();
             tooltip.style.opacity = '0';
         });
+
+        // Очистка tooltip при удалении контейнера
+        const observer = new MutationObserver((mutations) => {
+            if (!document.body.contains(container)) {
+                tooltip.remove();
+                observer.disconnect();
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
 
         drawChart();
 
