@@ -2,32 +2,30 @@
 (function() {
     'use strict';
 
-    // Генерация цветовой палитры
     const generateColors = (count) => {
         const colors = [
-            '#6366f1', // primary
-            '#8b5cf6', // secondary
-            '#3b82f6', // info
-            '#10b981', // success
-            '#f59e0b', // warning
-            '#ef4444', // danger
-            '#ec4899', // pink
-            '#14b8a6', // teal
-            '#f97316', // orange
-            '#06b6d4', // cyan
-            '#8b5cf6', // violet
-            '#84cc16', // lime
-            '#a855f7', // purple
-            '#0ea5e9', // sky
-            '#22c55e', // green
-            '#eab308', // yellow
-            '#dc2626', // red
-            '#7c3aed', // violet-600
-            '#059669', // emerald
-            '#d97706'  // amber
+            '#6366f1',
+            '#8b5cf6',
+            '#3b82f6',
+            '#10b981',
+            '#f59e0b',
+            '#ef4444',
+            '#ec4899',
+            '#14b8a6',
+            '#f97316',
+            '#06b6d4',
+            '#8b5cf6',
+            '#84cc16',
+            '#a855f7',
+            '#0ea5e9',
+            '#22c55e',
+            '#eab308',
+            '#dc2626',
+            '#7c3aed',
+            '#059669',
+            '#d97706'
         ];
         
-        // Если нужно больше цветов, генерируем дополнительные
         while (colors.length < count) {
             const hue = Math.floor(Math.random() * 360);
             colors.push(`hsl(${hue}, 70%, 60%)`);
@@ -36,7 +34,6 @@
         return colors.slice(0, count);
     };
 
-    // Основная функция отрисовки круговой диаграммы
     function drawPieChart(containerId, data, options = {}) {
         const container = document.getElementById(containerId);
         if (!container) {
@@ -44,11 +41,9 @@
             return;
         }
 
-        // Очищаем контейнер
         container.innerHTML = '';
         container.style.padding = '20px';
 
-        // Проверяем наличие данных
         if (!data || Object.keys(data).length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 60px; color: var(--text-secondary);">
@@ -60,7 +55,6 @@
             return;
         }
 
-        // Фильтруем данные (убираем нулевые значения)
         const filteredData = {};
         for (const [key, value] of Object.entries(data)) {
             if (value > 0) {
@@ -78,7 +72,6 @@
             return;
         }
 
-        // Настройки по умолчанию
         const settings = {
             width: options.width || 700,
             height: options.height || 500,
@@ -90,7 +83,6 @@
             ...options
         };
 
-        // Создаём контейнер для диаграммы и легенды
         const chartWrapper = document.createElement('div');
         chartWrapper.style.display = 'flex';
         chartWrapper.style.gap = '30px';
@@ -98,15 +90,12 @@
         chartWrapper.style.justifyContent = 'center';
         chartWrapper.style.flexWrap = 'wrap';
 
-        // Создаём canvas для диаграммы
         const canvas = document.createElement('canvas');
         const dpr = window.devicePixelRatio || 1;
         
-        // Устанавливаем реальный размер с учетом DPI
         canvas.width = settings.width * dpr;
         canvas.height = settings.height * dpr;
         
-        // CSS размер остается прежним
         canvas.style.width = settings.width + 'px';
         canvas.style.height = settings.height + 'px';
         canvas.style.maxWidth = '100%';
@@ -114,18 +103,16 @@
         canvas.style.cursor = 'pointer';
 
         const ctx = canvas.getContext('2d');
-        // Масштабируем контекст под высокий DPI
         ctx.scale(dpr, dpr);
         
         const centerX = settings.width / 2;
         const centerY = settings.height / 2;
 
-        // Подготовка данных
         const total = Object.values(filteredData).reduce((sum, val) => sum + val, 0);
         const colors = generateColors(Object.keys(filteredData).length);
         
         let segments = [];
-        let currentAngle = -Math.PI / 2; // Начинаем сверху
+        let currentAngle = -Math.PI / 2;
 
         Object.entries(filteredData).forEach(([label, value], index) => {
             const percentage = (value / total) * 100;
@@ -143,7 +130,6 @@
             currentAngle += sliceAngle;
         });
 
-        // Создаём tooltip с уникальным ID
         const tooltipId = `tooltip-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const tooltip = document.createElement('div');
         tooltip.id = tooltipId;
@@ -164,7 +150,6 @@
         `;
         document.body.appendChild(tooltip);
 
-        // Функция отрисовки диаграммы
         const drawChart = (hoveredIndex = -1) => {
             ctx.clearRect(0, 0, settings.width, settings.height);
             
@@ -172,7 +157,6 @@
                 const isHovered = index === hoveredIndex;
                 const radiusOffset = isHovered ? 10 : 0;
                 
-                // Рисуем сегмент
                 ctx.fillStyle = segment.color;
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, settings.radius + radiusOffset, segment.startAngle, segment.endAngle);
@@ -180,12 +164,10 @@
                 ctx.closePath();
                 ctx.fill();
 
-                // Рисуем границу сегмента
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
-                // Добавляем процент в сегмент (если больше 5%)
                 if (settings.showPercentages && segment.percentage > 5) {
                     const midAngle = (segment.startAngle + segment.endAngle) / 2;
                     const textRadius = (settings.radius + radiusOffset) * 0.7;
@@ -200,17 +182,14 @@
                 }
             });
 
-            // Добавляем внутренний круг (donut effect)
             ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg-primary') || '#f8fafc';
             ctx.beginPath();
             ctx.arc(centerX, centerY, settings.radius * 0.5, 0, 2 * Math.PI);
             ctx.fill();
         };
 
-        // Функция для определения сегмента по координатам
         const getSegmentAtPoint = (x, y) => {
             const rect = canvas.getBoundingClientRect();
-            // Используем логические размеры (settings), а не физические (canvas.width с DPI)
             const scaleX = settings.width / rect.width;
             const scaleY = settings.height / rect.height;
             const canvasX = (x - rect.left) * scaleX;
@@ -220,7 +199,6 @@
             const dy = canvasY - centerY;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            // Проверяем, находится ли точка в пределах кольца
             if (distance < settings.radius * 0.5 || distance > settings.radius) {
                 return -1;
             }
@@ -245,7 +223,6 @@
             return -1;
         };
 
-        // Обработчики событий для интерактивности
         let currentHoveredIndex = -1;
 
         canvas.addEventListener('mousemove', (e) => {
@@ -289,7 +266,6 @@
             tooltip.style.opacity = '0';
         });
 
-        // Очистка tooltip при удалении контейнера
         const observer = new MutationObserver((mutations) => {
             if (!document.body.contains(container)) {
                 tooltip.remove();
@@ -298,16 +274,13 @@
         });
         observer.observe(document.body, { childList: true, subtree: true });
 
-        // Первоначальная отрисовка
         drawChart();
 
-        // Добавляем canvas в обёртку
         const canvasContainer = document.createElement('div');
         canvasContainer.style.position = 'relative';
         canvasContainer.appendChild(canvas);
         chartWrapper.appendChild(canvasContainer);
 
-        // Создаём легенду
         if (settings.showLegend) {
             const legend = document.createElement('div');
             legend.className = 'chart-legend';
@@ -369,7 +342,6 @@
                 legendItem.appendChild(colorBox);
                 legendItem.appendChild(textContainer);
 
-                // Hover эффект
                 legendItem.addEventListener('mouseenter', () => {
                     legendItem.style.borderColor = segment.color;
                     legendItem.style.transform = 'translateX(8px)';
@@ -386,7 +358,6 @@
             chartWrapper.appendChild(legend);
         }
 
-        // Добавляем заголовок, если указан
         if (settings.title) {
             const title = document.createElement('h3');
             title.style.cssText = `
@@ -403,23 +374,21 @@
         container.appendChild(chartWrapper);
     }
 
-    // Генерация цветовой гаммы для этноса (различные оттенки одного цвета)
     const generateEthnosColorScheme = (baseColor, count) => {
         const schemes = {
-            0: { h: 235, s: 85, name: 'blue' },      // Синий
-            1: { h: 270, s: 75, name: 'purple' },    // Фиолетовый
-            2: { h: 200, s: 80, name: 'cyan' },      // Голубой
-            3: { h: 140, s: 70, name: 'green' },     // Зелёный
-            4: { h: 30, s: 85, name: 'orange' },     // Оранжевый
-            5: { h: 350, s: 75, name: 'red' },       // Красный
-            6: { h: 290, s: 70, name: 'magenta' },   // Пурпурный
-            7: { h: 180, s: 65, name: 'teal' }       // Бирюзовый
+            0: { h: 235, s: 85, name: 'blue' },
+            1: { h: 270, s: 75, name: 'purple' },
+            2: { h: 200, s: 80, name: 'cyan' },
+            3: { h: 140, s: 70, name: 'green' },
+            4: { h: 30, s: 85, name: 'orange' },
+            5: { h: 350, s: 75, name: 'red' },
+            6: { h: 290, s: 70, name: 'magenta' },
+            7: { h: 180, s: 65, name: 'teal' }
         };
         
         const scheme = schemes[baseColor % 8];
         const colors = [];
         
-        // Генерируем оттенки от светлого к тёмному
         for (let i = 0; i < count; i++) {
             const lightnessStart = 70;
             const lightnessEnd = 40;
@@ -432,7 +401,6 @@
         return colors;
     };
 
-    // Функция для отрисовки вложенной диаграммы (для культур с этносами и нациями)
     function drawNestedPieChart(containerId, nestedData, options = {}) {
         const container = document.getElementById(containerId);
         if (!container) {
@@ -443,7 +411,6 @@
         container.innerHTML = '';
         container.style.padding = '20px';
 
-        // Проверяем наличие данных
         if (!nestedData || Object.keys(nestedData).length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 60px; color: var(--text-secondary);">
@@ -454,7 +421,6 @@
             return;
         }
 
-        // Подготовка данных с группировкой по этносам
         const ethnicGroups = [];
         let hasData = false;
 
@@ -483,7 +449,6 @@
             return;
         }
 
-        // Настройки
         const settings = {
             width: options.width || 700,
             height: options.height || 500,
@@ -495,7 +460,6 @@
             ...options
         };
 
-        // Создаём контейнер
         const chartWrapper = document.createElement('div');
         chartWrapper.style.display = 'flex';
         chartWrapper.style.gap = '30px';
@@ -503,15 +467,12 @@
         chartWrapper.style.justifyContent = 'center';
         chartWrapper.style.flexWrap = 'wrap';
 
-        // Canvas с поддержкой высокого DPI
         const canvas = document.createElement('canvas');
         const dpr = window.devicePixelRatio || 1;
         
-        // Устанавливаем реальный размер с учетом DPI
         canvas.width = settings.width * dpr;
         canvas.height = settings.height * dpr;
         
-        // CSS размер остается прежним
         canvas.style.width = settings.width + 'px';
         canvas.style.height = settings.height + 'px';
         canvas.style.maxWidth = '100%';
@@ -519,13 +480,11 @@
         canvas.style.cursor = 'pointer';
 
         const ctx = canvas.getContext('2d');
-        // Масштабируем контекст под высокий DPI
         ctx.scale(dpr, dpr);
         
         const centerX = settings.width / 2;
         const centerY = settings.height / 2;
 
-        // Подготовка сегментов с цветовыми схемами для каждого этноса
         let segments = [];
         let currentAngle = -Math.PI / 2;
 
@@ -550,7 +509,6 @@
             });
         });
 
-        // Tooltip с уникальным ID
         const tooltipId = `tooltip-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const tooltip = document.createElement('div');
         tooltip.id = tooltipId;
@@ -571,7 +529,6 @@
         `;
         document.body.appendChild(tooltip);
 
-        // Отрисовка
         const drawChart = (hoveredIndex = -1) => {
             ctx.clearRect(0, 0, settings.width, settings.height);
             
@@ -579,7 +536,6 @@
                 const isHovered = index === hoveredIndex;
                 const radiusOffset = isHovered ? 10 : 0;
                 
-                // Сегмент
                 ctx.fillStyle = segment.color;
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, settings.radius + radiusOffset, segment.startAngle, segment.endAngle);
@@ -587,17 +543,14 @@
                 ctx.closePath();
                 ctx.fill();
 
-                // Граница сегмента
                 const nextSegment = segments[index + 1];
                 const isDifferentEthnos = !nextSegment || nextSegment.groupIndex !== segment.groupIndex;
                 
                 if (isDifferentEthnos) {
-                    // Сплошная линия между разными этносами
                     ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
                     ctx.lineWidth = 3;
                     ctx.setLineDash([]);
                 } else {
-                    // Пунктирная линия между нациями одного этноса
                     ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
                     ctx.lineWidth = 2;
                     ctx.setLineDash([5, 5]);
@@ -612,7 +565,6 @@
                 ctx.stroke();
                 ctx.setLineDash([]);
 
-                // Процент
                 if (settings.showPercentages && segment.percentage > 3) {
                     const midAngle = (segment.startAngle + segment.endAngle) / 2;
                     const textRadius = (settings.radius + radiusOffset) * 0.7;
@@ -630,17 +582,14 @@
                 }
             });
 
-            // Внутренний круг
             ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg-primary') || '#f8fafc';
             ctx.beginPath();
             ctx.arc(centerX, centerY, settings.radius * 0.5, 0, 2 * Math.PI);
             ctx.fill();
         };
 
-        // Определение сегмента по координатам
         const getSegmentAtPoint = (x, y) => {
             const rect = canvas.getBoundingClientRect();
-            // Используем логические размеры (settings), а не физические (canvas.width с DPI)
             const scaleX = settings.width / rect.width;
             const scaleY = settings.height / rect.height;
             const canvasX = (x - rect.left) * scaleX;
@@ -674,7 +623,6 @@
             return -1;
         };
 
-        // Интерактивность
         let currentHoveredIndex = -1;
 
         canvas.addEventListener('mousemove', (e) => {
@@ -719,7 +667,6 @@
             tooltip.style.opacity = '0';
         });
 
-        // Очистка tooltip при удалении контейнера
         const observer = new MutationObserver((mutations) => {
             if (!document.body.contains(container)) {
                 tooltip.remove();
@@ -735,7 +682,6 @@
         canvasContainer.appendChild(canvas);
         chartWrapper.appendChild(canvasContainer);
 
-        // Создаём легенду
         if (settings.showLegend) {
             const legend = document.createElement('div');
             legend.className = 'chart-legend';
@@ -806,7 +752,6 @@
                 legendItem.appendChild(colorBox);
                 legendItem.appendChild(textContainer);
 
-                // Hover эффект
                 legendItem.addEventListener('mouseenter', () => {
                     legendItem.style.borderColor = segment.color;
                     legendItem.style.transform = 'translateX(8px)';
@@ -823,7 +768,6 @@
             chartWrapper.appendChild(legend);
         }
 
-        // Добавляем заголовок, если указан
         if (settings.title) {
             const title = document.createElement('h3');
             title.style.cssText = `
@@ -840,11 +784,9 @@
         container.appendChild(chartWrapper);
     }
 
-    // Экспортируем функции в глобальную область
     window.drawPieChart = drawPieChart;
     window.drawNestedPieChart = drawNestedPieChart;
 
-    // Функция для тестирования диаграмм (можно удалить в продакшене)
     window.testChart = function() {
         const testData = {
             'Ронцуизм': 35.5,

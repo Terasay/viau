@@ -152,17 +152,15 @@ function initInterface() {
 
     document.getElementById('username').textContent = currentUser.username;
 
-    // Добавляем обработчик клика на секретные монеты
     const secretCoinsElement = document.getElementById('secret-coins');
     if (secretCoinsElement) {
         secretCoinsElement.style.cursor = 'pointer';
         secretCoinsElement.parentElement.style.cursor = 'pointer';
         secretCoinsElement.parentElement.addEventListener('click', () => {
-            window.location.href = '/secret_shop.html';
+            window.location.href = '/secret_shop';
         });
     }
 
-    // Добавляем обработчик для кнопки закрытия модального окна
     const modalCloseBtn = document.getElementById('modal-close');
     if (modalCloseBtn) {
         modalCloseBtn.addEventListener('click', closeModal);
