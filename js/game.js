@@ -221,10 +221,12 @@ function initInterface() {
                 ` : ''}
             </div>
             <div style="margin-top: 24px;">
-                <div class="placeholder-card">
-                    <i class="fas fa-gamepad fa-3x"></i>
-                    <h3>Игровые функции для администраторов</h3>
-                    <p>Управление игровыми процессами, событиями и механиками будет доступно в следующих обновлениях</p>
+                <div class="info-card">
+                    <h3><i class="fas fa-chart-bar"></i> Редактор статистики стран</h3>
+                    <p style="color: var(--text-secondary); margin: 12px 0;">Управление населением, религиями, культурами и социальными слоями стран</p>
+                    <button class="btn-primary" onclick="openStatisticsEditor()" style="width: 100%; margin-top: 16px;">
+                        <i class="fas fa-edit"></i> Открыть редактор статистики
+                    </button>
                 </div>
             </div>
         `;
@@ -594,3 +596,331 @@ function openStatisticsModal(type) {
 }
 
 window.openStatisticsModal = openStatisticsModal;
+
+// Редактор статистики для админа
+let currentEditingCountry = null;
+
+async function openStatisticsEditor() {
+    const modal = document.getElementById('modal-overlay');
+    const modalBody = document.getElementById('modal-body');
+    const modalTitle = document.getElementById('modal-title');
+    const modalFooter = document.getElementById('modal-footer');
+    const modalContainer = document.getElementById('modal-container');
+    
+    if (!modal || !modalBody || !modalTitle || !modalFooter) return;
+    
+    modalContainer.style.maxWidth = '1000px';
+    modalContainer.style.width = '95%';
+    
+    modalTitle.innerHTML = '<i class="fas fa-chart-bar"></i> Редактор статистики стран';
+    
+    // Загружаем список стран
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch('/api/economic/countries', {
+            headers: { 'Authorization': token }
+        });
+        const data = await response.json();
+        
+        if (!data.success || !data.countries) {
+            modalBody.innerHTML = '<p style="color: var(--danger);">Ошибка загрузки списка стран</p>';
+            modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
+            modal.classList.add('visible');
+            return;
+        }
+        
+        let countriesHtml = '<div class="statistics-editor-list">';
+        data.countries.forEach(country => {
+            countriesHtml += `
+                <div class="country-edit-item" onclick="selectCountryForEdit('${country.id}', '${country.country_name.replace(/'/g, "\\'")}')">  
+                    <div>
+                        <strong>${country.country_name}</strong>
+                        <span style="color: var(--text-tertiary); font-size: 0.9em;">ID: ${country.id}</span>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            `;
+        });
+        countriesHtml += '</div>';
+        
+        modalBody.innerHTML = `
+            <p style="color: var(--text-secondary); margin-bottom: 16px;">Выберите страну для редактирования статистики:</p>
+            ${countriesHtml}
+        `;
+        
+        modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
+        modal.classList.add('visible');
+        
+    } catch (error) {
+        console.error('Error loading countries:', error);
+        modalBody.innerHTML = '<p style="color: var(--danger);">Ошибка подключения к серверу</p>';
+        modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
+        modal.classList.add('visible');
+    }
+}
+
+async function selectCountryForEdit(countryId, countryName) {
+    currentEditingCountry = { id: countryId, name: countryName };
+    
+    const modal = document.getElementById('modal-overlay');
+    const modalBody = document.getElementById('modal-body');
+    const modalTitle = document.getElementById('modal-title');
+    const modalFooter = document.getElementById('modal-footer');
+    
+    modalTitle.innerHTML = `<i class="fas fa-edit"></i> Редактирование статистики: ${countryName}`;
+    
+    // Показываем загрузку
+    modalBody.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-3x"></i><p>Загрузка данных...</p></div>';
+    
+    // Загружаем текущие данные и справочники
+    const token = localStorage.getItem('token');
+    try {
+        const [statsResponse, religionsResponse, culturesResponse, layersResponse] = await Promise.all([
+            fetch(`/api/statistics/country/${countryId}`, { headers: { 'Authorization': token } }),
+            fetch('/api/statistics/reference/religions'),
+            fetch('/api/statistics/reference/cultures'),
+            fetch('/api/statistics/reference/social-layers')
+        ]);
+        
+        const stats = await statsResponse.json();
+        const religions = await religionsResponse.json();
+        const cultures = await culturesResponse.json();
+        const layers = await layersResponse.json();
+        
+        renderStatisticsForm(stats, religions.religions, cultures.cultures, layers.social_layers);
+        
+    } catch (error) {
+        console.error('Error loading statistics:', error);
+        modalBody.innerHTML = '<p style="color: var(--danger);">Ошибка загрузки данных статистики</p>';
+        modalFooter.innerHTML = `
+            <button class="btn-secondary" onclick="openStatisticsEditor()">Назад</button>
+            <button class="btn-secondary" onclick="closeModal()">Закрыть</button>
+        `;
+    }
+}
+
+function renderStatisticsForm(currentStats, allReligions, allCultures, allLayers) {
+    const modalBody = document.getElementById('modal-body');
+    const modalFooter = document.getElementById('modal-footer');
+    
+    let html = '<div class="statistics-editor-form">';
+    
+    // Население
+    html += `
+        <div class="stats-form-section">
+            <h4><i class="fas fa-users"></i> Население</h4>
+            <p class="stats-form-hint">Формат: 0.77 = 770 тыс., 41.23 = 41.23 млн</p>
+            <input type="number" id="stat-population" step="0.01" min="0" 
+                   value="${currentStats.population || 0}" 
+                   class="modal-input" placeholder="Например: 41.23">
+        </div>
+    `;
+    
+    // Религии
+    html += `
+        <div class="stats-form-section">
+            <h4><i class="fas fa-church"></i> Религии</h4>
+            <p class="stats-form-hint">Укажите процент верующих для каждой религии (сумма не должна превышать 100%)</p>
+            <div class="stats-form-grid">
+    `;
+    allReligions.forEach(religion => {
+        const value = currentStats.religions?.[religion] || 0;
+        html += `
+            <div class="stats-form-item">
+                <label>${religion}</label>
+                <input type="number" class="religion-input" data-religion="${religion}" 
+                       value="${value}" step="0.1" min="0" max="100" placeholder="0">
+            </div>
+        `;
+    });
+    html += '</div></div>';
+    
+    // Культуры
+    html += `
+        <div class="stats-form-section">
+            <h4><i class="fas fa-palette"></i> Культуры</h4>
+            <p class="stats-form-hint">Укажите процент для каждой нации (процент этноса вычисляется автоматически)</p>
+    `;
+    
+    for (const [ethnos, nations] of Object.entries(allCultures)) {
+        html += `<div class="stats-form-ethnos"><strong>${ethnos}</strong><div class="stats-form-grid">`;
+        nations.forEach(nation => {
+            const value = currentStats.cultures?.[ethnos]?.nations?.[nation] || 0;
+            html += `
+                <div class="stats-form-item">
+                    <label>${nation}</label>
+                    <input type="number" class="culture-input" data-ethnos="${ethnos}" data-nation="${nation}" 
+                           value="${value}" step="0.1" min="0" max="100" placeholder="0">
+                </div>
+            `;
+        });
+        html += '</div></div>';
+    }
+    html += '</div>';
+    
+    // Социальные слои
+    html += `
+        <div class="stats-form-section">
+            <h4><i class="fas fa-layer-group"></i> Социальные слои</h4>
+            <p class="stats-form-hint">Укажите процент населения для каждого социального слоя</p>
+            <div class="stats-form-grid">
+    `;
+    allLayers.forEach(layer => {
+        const value = currentStats.social_layers?.[layer] || 0;
+        html += `
+            <div class="stats-form-item">
+                <label>${layer}</label>
+                <input type="number" class="layer-input" data-layer="${layer}" 
+                       value="${value}" step="0.1" min="0" max="100" placeholder="0">
+            </div>
+        `;
+    });
+    html += '</div></div>';
+    
+    html += '</div>';
+    
+    modalBody.innerHTML = html;
+    
+    modalFooter.innerHTML = `
+        <button class="btn-secondary" onclick="openStatisticsEditor()">Назад к списку</button>
+        <button class="btn-primary" onclick="saveStatistics()">
+            <i class="fas fa-save"></i> Сохранить
+        </button>
+    `;
+}
+
+async function saveStatistics() {
+    if (!currentEditingCountry) return;
+    
+    const token = localStorage.getItem('token');
+    const countryId = currentEditingCountry.id;
+    
+    // Собираем данные
+    const population = parseFloat(document.getElementById('stat-population').value) || 0;
+    
+    const religions = {};
+    document.querySelectorAll('.religion-input').forEach(input => {
+        const value = parseFloat(input.value) || 0;
+        if (value > 0) {
+            religions[input.dataset.religion] = value;
+        }
+    });
+    
+    const cultures = {};
+    document.querySelectorAll('.culture-input').forEach(input => {
+        const value = parseFloat(input.value) || 0;
+        if (value > 0) {
+            const ethnos = input.dataset.ethnos;
+            const nation = input.dataset.nation;
+            if (!cultures[ethnos]) {
+                cultures[ethnos] = { nations: {} };
+            }
+            cultures[ethnos].nations[nation] = value;
+        }
+    });
+    
+    const socialLayers = {};
+    document.querySelectorAll('.layer-input').forEach(input => {
+        const value = parseFloat(input.value) || 0;
+        if (value > 0) {
+            socialLayers[input.dataset.layer] = value;
+        }
+    });
+    
+    // Проверяем суммы процентов
+    const religionsSum = Object.values(religions).reduce((a, b) => a + b, 0);
+    if (religionsSum > 100) {
+        alert(`Сумма процентов религий превышает 100% (${religionsSum.toFixed(1)}%)`);
+        return;
+    }
+    
+    let culturesSum = 0;
+    for (const ethnos of Object.values(cultures)) {
+        culturesSum += Object.values(ethnos.nations).reduce((a, b) => a + b, 0);
+    }
+    if (culturesSum > 100) {
+        alert(`Сумма процентов наций превышает 100% (${culturesSum.toFixed(1)}%)`);
+        return;
+    }
+    
+    const layersSum = Object.values(socialLayers).reduce((a, b) => a + b, 0);
+    if (layersSum > 100) {
+        alert(`Сумма процентов социальных слоёв превышает 100% (${layersSum.toFixed(1)}%)`);
+        return;
+    }
+    
+    // Показываем загрузку
+    const modalBody = document.getElementById('modal-body');
+    modalBody.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-3x"></i><p>Сохранение...</p></div>';
+    
+    try {
+        // Сохраняем все данные
+        await Promise.all([
+            fetch(`/api/statistics/country/${countryId}/population`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ population })
+            }),
+            fetch(`/api/statistics/country/${countryId}/religions`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ religions })
+            }),
+            fetch(`/api/statistics/country/${countryId}/cultures`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cultures })
+            }),
+            fetch(`/api/statistics/country/${countryId}/social-layers`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ social_layers: socialLayers })
+            })
+        ]);
+        
+        modalBody.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <i class="fas fa-check-circle fa-4x" style="color: var(--success);"></i>
+                <h3 style="margin-top: 20px; color: var(--success);">Статистика успешно сохранена!</h3>
+                <p style="color: var(--text-secondary); margin-top: 12px;">
+                    Население: ${population.toFixed(2)} млн<br>
+                    Религий: ${Object.keys(religions).length}<br>
+                    Наций: ${culturesSum.toFixed(1)}%<br>
+                    Социальных слоёв: ${Object.keys(socialLayers).length}
+                </p>
+            </div>
+        `;
+        
+        const modalFooter = document.getElementById('modal-footer');
+        modalFooter.innerHTML = `
+            <button class="btn-primary" onclick="openStatisticsEditor()">Редактировать другую страну</button>
+            <button class="btn-secondary" onclick="closeModal()">Закрыть</button>
+        `;
+        
+    } catch (error) {
+        console.error('Error saving statistics:', error);
+        modalBody.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-times-circle fa-4x" style="color: var(--danger);"></i><h3 style="margin-top: 20px; color: var(--danger);">Ошибка сохранения</h3><p style="color: var(--text-secondary);">Попробуйте снова</p></div>';
+        
+        const modalFooter = document.getElementById('modal-footer');
+        modalFooter.innerHTML = `
+            <button class="btn-secondary" onclick="selectCountryForEdit('${countryId}', '${currentEditingCountry.name}')">Повторить</button>
+            <button class="btn-secondary" onclick="closeModal()">Закрыть</button>
+        `;
+    }
+}
+
+window.openStatisticsEditor = openStatisticsEditor;
+window.selectCountryForEdit = selectCountryForEdit;
+window.saveStatistics = saveStatistics;

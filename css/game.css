@@ -832,3 +832,143 @@ body.dark-mode .stat-item {
 body.dark-mode .stat-item:hover {
     background: linear-gradient(135deg, rgba(129, 140, 248, 0.1) 0%, rgba(167, 139, 250, 0.1) 100%);
 }
+/* Стили для редактора статистики */
+.statistics-editor-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.country-edit-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.country-edit-item:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border-color: var(--primary);
+    transform: translateX(8px);
+}
+
+.country-edit-item strong {
+    font-size: 1.1em;
+    color: var(--text-primary);
+}
+
+.country-edit-item span {
+    display: block;
+    margin-top: 4px;
+}
+
+.country-edit-item i {
+    color: var(--text-tertiary);
+    transition: all 0.3s ease;
+}
+
+.country-edit-item:hover i {
+    color: var(--primary);
+    transform: translateX(4px);
+}
+
+.statistics-editor-form {
+    max-height: 600px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.stats-form-section {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.stats-form-section h4 {
+    color: var(--text-primary);
+    font-size: 1.2em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stats-form-section h4 i {
+    color: var(--primary);
+}
+
+.stats-form-hint {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin-bottom: 16px;
+    font-style: italic;
+}
+
+.stats-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.stats-form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.stats-form-item label {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.stats-form-item input {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1em;
+    transition: all 0.3s ease;
+}
+
+.stats-form-item input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.stats-form-ethnos {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    border-left: 4px solid var(--primary);
+}
+
+.stats-form-ethnos strong {
+    display: block;
+    color: var(--primary);
+    font-size: 1.1em;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    .stats-form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .statistics-editor-form {
+        max-height: 500px;
+    }
+}
