@@ -8,19 +8,27 @@ const economicModule = (function() {
     async function init(playerCountryId, playerCountryName = '') {
         console.log('economicModule.init вызван с параметрами:', { playerCountryId, playerCountryName });
         
-        // Проверяем сохраненную страну для экономики
-        const savedEconCountry = localStorage.getItem('econViewingCountryId');
-        const savedEconCountryName = localStorage.getItem('econViewingCountryName');
-        
-        // Если админ и есть сохраненная страна, используем её
-        const user = window.gameState?.getUser();
-        if (user && (user.role === 'admin' || user.role === 'moderator') && savedEconCountry && !playerCountryId) {
-            countryId = savedEconCountry;
-            countryName = savedEconCountryName || '';
-            console.log('Восстановлена сохраненная страна для экономики:', savedEconCountry);
-        } else {
+        // Если параметры переданы, используем их
+        if (playerCountryId) {
             countryId = playerCountryId;
             countryName = playerCountryName;
+        } else {
+            // Проверяем сохраненную страну для экономики
+            const savedEconCountry = localStorage.getItem('econViewingCountryId');
+            const savedEconCountryName = localStorage.getItem('econViewingCountryName');
+            
+            // Если админ и есть сохраненная страна, используем её
+            const user = window.gameState?.getUser();
+            if (user && (user.role === 'admin' || user.role === 'moderator') && savedEconCountry) {
+                countryId = savedEconCountry;
+                countryName = savedEconCountryName || '';
+                console.log('Восстановлена сохраненная страна для экономики:', savedEconCountry);
+            }
+        }
+        
+        if (!countryId) {
+            console.error('Не удалось определить ID страны');
+            return;
         }
         
         await loadAvailableData();
@@ -124,24 +132,30 @@ const economicModule = (function() {
                     <div class="resources-list">
         `;
 
-        for (const [code, info] of Object.entries(availableCurrencies)) {
-            const amount = countryData.currencies[code] || 0;
-            const isMain = code === countryData.main_currency;
-            html += `
-                <div class="resource-item ${isMain ? 'main-currency' : ''}">
-                    <div class="resource-icon">
-                        <i class="fas fa-coins"></i>
-                    </div>
-                    <div class="resource-info">
-                        <div class="resource-name">
-                            ${info.name}
-                            ${isMain ? '<span class="badge-main">Основная</span>' : ''}
+        // Проверяем, что availableCurrencies - это объект и не пустой
+        if (availableCurrencies && typeof availableCurrencies === 'object' && Object.keys(availableCurrencies).length > 0) {
+            for (const [code, info] of Object.entries(availableCurrencies)) {
+                const amount = countryData.currencies[code] || 0;
+                const isMain = code === countryData.main_currency;
+                html += `
+                    <div class="resource-item ${isMain ? 'main-currency' : ''}">
+                        <div class="resource-icon">
+                            <i class="fas fa-coins"></i>
                         </div>
-                        <div class="resource-code">${code}</div>
+                        <div class="resource-info">
+                            <div class="resource-name">
+                                ${info.name}
+                                ${isMain ? '<span class="badge-main">Основная</span>' : ''}
+                            </div>
+                            <div class="resource-code">${code}</div>
+                        </div>
+                        <div class="resource-amount">${amount.toLocaleString('ru-RU')}</div>
                     </div>
-                    <div class="resource-amount">${amount.toLocaleString('ru-RU')}</div>
-                </div>
-            `;
+                `;
+            }
+        } else {
+            console.error('availableCurrencies пуст или не является объектом:', availableCurrencies);
+            html += '<div class="loading-msg">Нет доступных валют</div>';
         }
 
         html += `
@@ -169,21 +183,27 @@ const economicModule = (function() {
             'coal': 'fa-solid fa-warehouse'
         };
 
-        for (const [code, info] of Object.entries(availableResources)) {
-            const amount = countryData.resources[code] || 0;
-            const icon = resourceIcons[code] || 'fa-cube';
-            html += `
-                <div class="resource-item">
-                    <div class="resource-icon">
-                        <i class="fas ${icon}"></i>
+        // Проверяем, что availableResources - это объект и не пустой
+        if (availableResources && typeof availableResources === 'object' && Object.keys(availableResources).length > 0) {
+            for (const [code, info] of Object.entries(availableResources)) {
+                const amount = countryData.resources[code] || 0;
+                const icon = resourceIcons[code] || 'fa-cube';
+                html += `
+                    <div class="resource-item">
+                        <div class="resource-icon">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="resource-info">
+                            <div class="resource-name">${info.name}</div>
+                            <div class="resource-code">${code}</div>
+                        </div>
+                        <div class="resource-amount">${amount.toLocaleString('ru-RU')}</div>
                     </div>
-                    <div class="resource-info">
-                        <div class="resource-name">${info.name}</div>
-                        <div class="resource-code">${code}</div>
-                    </div>
-                    <div class="resource-amount">${amount.toLocaleString('ru-RU')}</div>
-                </div>
-            `;
+                `;
+            }
+        } else {
+            console.error('availableResources пуст или не является объектом:', availableResources);
+            html += '<div class="loading-msg">Нет доступных ресурсов</div>';
         }
 
         html += `
