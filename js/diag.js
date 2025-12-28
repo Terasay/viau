@@ -485,9 +485,9 @@
 
         // Настройки
         const settings = {
-            width: options.width || 700,
-            height: options.height || 500,
-            radius: options.radius || 160,
+            width: options.width || 1050,
+            height: options.height || 750,
+            radius: options.radius || 240,
             showPercentages: options.showPercentages !== false,
             showLegend: options.showLegend !== false,
             title: options.title || '',
