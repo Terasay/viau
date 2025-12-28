@@ -1165,6 +1165,10 @@ async function selectCountry(countryId, countryName) {
     console.log('Selected country:', countryId, countryName);
     viewingCountryId = countryId;
     
+    // Сохраняем выбор в localStorage
+    localStorage.setItem('techViewingCountryId', countryId);
+    localStorage.setItem('techViewingCountryName', countryName);
+    
     updateCountryIndicator(countryName);
     
     await initTechnologies(currentCategory);
@@ -1382,6 +1386,10 @@ async function toggleHiddenTechs() {
     await initTechnologies(currentCategory);
 }
 
+async function changeCountry() {
+    await showCountrySelector();
+}
+
 window.techModule = {
     init: initTechnologies,
     showInfo: showTechInfo,
@@ -1390,5 +1398,6 @@ window.techModule = {
     showCountrySelector: showCountrySelector,
     selectCountry: selectCountry,
     editResearchPoints: editResearchPoints,
-    toggleHiddenTechs: toggleHiddenTechs
+    toggleHiddenTechs: toggleHiddenTechs,
+    changeCountry: changeCountry
 };

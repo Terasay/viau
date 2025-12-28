@@ -429,11 +429,10 @@ window.selectCountryForTech = function(countryId, countryName) {
 window.selectCountryForEconomy = function(countryId, countryName) {
     console.log('selectCountryForEconomy вызвана:', { countryId, countryName });
     closeModal();
-    if (window.economicModule) {
-        console.log('Вызов economicModule.init');
-        window.economicModule.init(countryId, countryName);
+    if (window.economicModule && window.economicModule.selectCountry) {
+        window.economicModule.selectCountry(countryId, countryName);
     } else {
-        console.error('economicModule не загружен!');
+        console.error('economicModule.selectCountry не найден');
     }
 };
 

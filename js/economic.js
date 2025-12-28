@@ -7,8 +7,22 @@ const economicModule = (function() {
 
     async function init(playerCountryId, playerCountryName = '') {
         console.log('economicModule.init вызван с параметрами:', { playerCountryId, playerCountryName });
-        countryId = playerCountryId;
-        countryName = playerCountryName;
+        
+        // Проверяем сохраненную страну для экономики
+        const savedEconCountry = localStorage.getItem('econViewingCountryId');
+        const savedEconCountryName = localStorage.getItem('econViewingCountryName');
+        
+        // Если админ и есть сохраненная страна, используем её
+        const user = window.gameState?.getUser();
+        if (user && (user.role === 'admin' || user.role === 'moderator') && savedEconCountry && !playerCountryId) {
+            countryId = savedEconCountry;
+            countryName = savedEconCountryName || '';
+            console.log('Восстановлена сохраненная страна для экономики:', savedEconCountry);
+        } else {
+            countryId = playerCountryId;
+            countryName = playerCountryName;
+        }
+        
         await loadAvailableData();
         await loadCountryResources();
         renderEconomyView();
@@ -70,10 +84,18 @@ const economicModule = (function() {
         const headerTitle = countryName 
             ? `Экономика страны: ${countryName}` 
             : 'Экономика страны';
+        
+        const user = window.gameState?.getUser();
+        const isAdmin = user && (user.role === 'admin' || user.role === 'moderator');
 
         let html = `
             <div class="economy-header">
-                <h2><i class="fas fa-chart-line"></i> ${headerTitle}</h2>
+                <div class="economy-header-left">
+                    <h2><i class="fas fa-chart-line"></i> ${headerTitle}</h2>
+                    ${isAdmin ? `<button class="btn-change-country" onclick="economicModule.changeCountry()" title="Сменить страну">
+                        <i class="fas fa-exchange-alt"></i> Сменить страну
+                    </button>` : ''}
+                </div>
                 <div class="main-currency-display">
                     <i class="fas fa-coins"></i>
                     <span>Основная валюта: <strong>${mainCurrencyName}</strong></span>
@@ -170,10 +192,33 @@ const economicModule = (function() {
         await loadCountryResources();
         renderEconomyView();
     }
+    
+    async function changeCountry() {
+        // Показываем модальное окно выбора страны
+        if (window.showCountrySelectionModal) {
+            await window.showCountrySelectionModal('economy');
+        }
+    }
+    
+    async function selectCountry(selectedCountryId, selectedCountryName) {
+        console.log('economicModule.selectCountry вызвана:', { selectedCountryId, selectedCountryName });
+        countryId = selectedCountryId;
+        countryName = selectedCountryName;
+        
+        // Сохраняем выбор в localStorage
+        localStorage.setItem('econViewingCountryId', selectedCountryId);
+        localStorage.setItem('econViewingCountryName', selectedCountryName);
+        
+        // Перезагружаем данные
+        await loadCountryResources();
+        renderEconomyView();
+    }
 
     return {
         init,
-        refresh
+        refresh,
+        changeCountry,
+        selectCountry
     };
 })();
 

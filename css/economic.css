@@ -10,6 +10,12 @@
     box-shadow: var(--shadow);
 }
 
+.economy-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
 .economy-header h2 {
     margin: 0;
     color: var(--text-primary);
@@ -21,6 +27,36 @@
 
 .economy-header h2 i {
     color: var(--primary);
+}
+
+.btn-change-country {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.btn-change-country:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+}
+
+.btn-change-country:active {
+    transform: translateY(0);
+}
+
+.btn-change-country i {
+    font-size: 1.1em;
 }
 
 .main-currency-display {
