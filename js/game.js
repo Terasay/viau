@@ -615,13 +615,18 @@ function openStatisticsModal(type) {
         
         // Отрисовываем диаграмму в зависимости от типа
         setTimeout(() => {
+            const chartOptions = {
+                width: 600,
+                height: 400,
+                radius: 130,
+                population: data.population || 0
+            };
+            
             if (type === 'religion') {
                 if (typeof window.drawPieChart === 'function') {
                     window.drawPieChart(chartId, data.religions, {
-                        title: `Религиозный состав населения`,
-                        width: 700,
-                        height: 450,
-                        radius: 140
+                        ...chartOptions,
+                        title: `Религиозный состав населения`
                     });
                 } else {
                     modalBody.innerHTML = '<p style="color: var(--danger);">Модуль отрисовки диаграмм не загружен</p>';
@@ -629,10 +634,8 @@ function openStatisticsModal(type) {
             } else if (type === 'culture') {
                 if (typeof window.drawNestedPieChart === 'function') {
                     window.drawNestedPieChart(chartId, data.cultures, {
-                        title: `Культурный состав населения`,
-                        width: 700,
-                        height: 450,
-                        radius: 140
+                        ...chartOptions,
+                        title: `Культурный состав населения`
                     });
                 } else {
                     modalBody.innerHTML = '<p style="color: var(--danger);">Модуль отрисовки диаграмм не загружен</p>';
@@ -640,10 +643,8 @@ function openStatisticsModal(type) {
             } else if (type === 'social') {
                 if (typeof window.drawPieChart === 'function') {
                     window.drawPieChart(chartId, data.social_layers, {
-                        title: `Социальная структура населения`,
-                        width: 700,
-                        height: 450,
-                        radius: 140
+                        ...chartOptions,
+                        title: `Социальная структура населения`
                     });
                 } else {
                     modalBody.innerHTML = '<p style="color: var(--danger);">Модуль отрисовки диаграмм не загружен</p>';

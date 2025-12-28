@@ -597,9 +597,9 @@ body.dark-mode .game-header {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-xl);
     border: 1px solid var(--border);
-    max-width: 500px;
-    width: 90%;
-    max-height: 80vh;
+    max-width: 1400px;
+    width: 95%;
+    max-height: 92vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -778,6 +778,9 @@ body.dark-mode .game-header {
 }
 
 .chart-legend {
+    max-height: 380px;
+    overflow-y: auto;
+    min-width: 220px;
     scrollbar-width: thin;
     scrollbar-color: var(--primary) var(--bg-tertiary);
 }
