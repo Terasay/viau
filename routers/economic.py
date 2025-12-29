@@ -996,8 +996,8 @@ async def get_all_economy_history(request: Request):
 async def get_income_settings(country_id: str, request: Request):
     """Получение настроек среднего заработка для страны"""
     user = await get_current_user(request)
-    if not user or user['role'] not in ['admin', 'moderator']:
-        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
     
     conn = get_db()
     cursor = conn.cursor()
@@ -1008,6 +1008,11 @@ async def get_income_settings(country_id: str, request: Request):
         
         if not country:
             return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        # Проверяем доступ (игрок может видеть свою страну, админ - любую)
+        if user['role'] not in ['admin', 'moderator']:
+            if country['player_id'] != user['id']:
+                return JSONResponse({'success': False, 'error': 'Доступ запрещён'}, status_code=403)
         
         cursor.execute(
             'SELECT social_layer, avg_income FROM country_income_settings WHERE country_id = ?',
