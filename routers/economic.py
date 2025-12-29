@@ -690,7 +690,7 @@ async def get_tax_settings(country_id: str, request: Request):
             tax_settings[row['social_layer']] = row['tax_rate']
         
         # Установить значения по умолчанию для слоев, если не установлены
-        default_layers = ['Богачи', 'Знать', 'Средний класс', 'Нижний класс']
+        default_layers = ['Элита', 'Высший класс', 'Средний класс', 'Низший класс']
         for layer in default_layers:
             if layer not in tax_settings:
                 tax_settings[layer] = 10.0  # 10% по умолчанию
@@ -802,12 +802,13 @@ async def get_balance_forecast(country_id: str, request: Request):
         tax_income = 0.0
         tax_breakdown = {}
         
-        # Средний доход на человека по слоям (условные значения)
+        # Средний заработок на человека по социальным слоям
+        # Это базовый заработок, с которого берётся налог
         income_per_person = {
-            'Богачи': 100.0,
-            'Знать': 50.0,
+            'Элита': 100.0,
+            'Высший класс': 50.0,
             'Средний класс': 20.0,
-            'Нижний класс': 5.0,
+            'Низший класс': 5.0,
             'Маргиналы': 0.0
         }
         
@@ -815,12 +816,20 @@ async def get_balance_forecast(country_id: str, request: Request):
             if layer_name == 'Маргиналы':
                 continue  # Маргиналы не платят налоги
             
+            # Рассчитываем количество людей в этом слое
             layer_population = population * (percentage / 100.0)
+            
+            # Получаем ставку налога для этого слоя
             tax_rate = tax_settings.get(layer_name, 10.0)
+            
+            # Получаем средний заработок для этого слоя
             base_income = income_per_person.get(layer_name, 10.0)
             
+            # Налог = население_слоя × средний_заработок × (налоговая_ставка / 100)
+            # Например: 500,000 чел × 100 монет × 10% = 5,000,000 монет
             layer_tax = layer_population * base_income * (tax_rate / 100.0)
             tax_income += layer_tax
+            
             tax_breakdown[layer_name] = {
                 'population': round(layer_population, 2),
                 'tax_rate': tax_rate,

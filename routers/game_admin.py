@@ -169,10 +169,10 @@ async def next_turn(request: Request):
             # Расчет налоговых доходов
             tax_income = 0.0
             income_per_person = {
-                'Богачи': 100.0,
-                'Знать': 50.0,
+                'Элита': 100.0,
+                'Высший класс': 50.0,
                 'Средний класс': 20.0,
-                'Нижний класс': 5.0,
+                'Низший класс': 5.0,
                 'Маргиналы': 0.0
             }
             
@@ -180,9 +180,17 @@ async def next_turn(request: Request):
                 if layer_name == 'Маргиналы':
                     continue
                 
+                # Рассчитываем количество людей в этом слое
                 layer_population = population * (percentage / 100.0)
+                
+                # Получаем ставку налога для этого слоя
                 tax_rate = tax_settings.get(layer_name, 10.0)
+                
+                # Получаем средний заработок для этого слоя
                 base_income = income_per_person.get(layer_name, 10.0)
+                
+                # Налог = население_слоя × средний_заработок × (налоговая_ставка / 100)
+                # Например: 500,000 чел × 100 монет × 10% = 5,000,000 монет
                 layer_tax = layer_population * base_income * (tax_rate / 100.0)
                 tax_income += layer_tax
             

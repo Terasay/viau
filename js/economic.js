@@ -205,7 +205,7 @@ const economicModule = (function() {
                     <h3>Налоговые ставки</h3>
                 </div>
                 <div class="tax-settings-grid">
-                    ${['Богачи', 'Знать', 'Средний класс', 'Нижний класс'].map(layer => {
+                    ${['Элита', 'Высший класс', 'Средний класс', 'Низший класс'].map(layer => {
                         const taxRate = taxSettings[layer] || 10;
                         const taxBreakdown = balanceData?.forecast?.tax_breakdown?.[layer];
                         return `
