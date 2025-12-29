@@ -138,15 +138,23 @@ async def next_turn(request: Request):
         for country in countries:
             country_id = country['id']
             
-            # Получаем текущий баланс
-            cursor.execute('SELECT balance, main_currency FROM countries WHERE id = ?', (country_id,))
+            # Получаем основную валюту
+            cursor.execute('SELECT main_currency FROM countries WHERE id = ?', (country_id,))
             country_data = cursor.fetchone()
-            balance_start = country_data['balance']
+            main_currency = country_data['main_currency']
             
-            # Получаем статистику населения
+            # Получаем текущий баланс из country_currencies
+            cursor.execute(
+                'SELECT amount FROM country_currencies WHERE country_id = ? AND currency_code = ?',
+                (country_id, main_currency)
+            )
+            balance_row = cursor.fetchone()
+            balance_start = float(balance_row['amount']) if balance_row else 0.0
+            
+            # Получаем статистику населения (в миллионах: 0.77 = 770 тыс., 41.23 = 41.23 млн)
             cursor.execute('SELECT population FROM country_stats WHERE country_id = ?', (country_id,))
             stats = cursor.fetchone()
-            population = stats['population'] if stats else 0.0
+            population = (stats['population'] * 1_000_000) if stats else 0.0
             
             # Получаем социальные слои
             cursor.execute(
@@ -185,11 +193,15 @@ async def next_turn(request: Request):
                 # Рассчитываем количество людей в этом слое
                 layer_population = population * (percentage / 100.0)
                 
-                # Получаем ставку налога для этого слоя
-                tax_rate = tax_settings.get(layer_name, 10.0)
+                # Получаем ставку налога для этого слоя (если не задана, пропускаем)
+                tax_rate = tax_settings.get(layer_name)
+                if tax_rate is None:
+                    continue
                 
-                # Получаем средний заработок для этого слоя
-                base_income = income_settings.get(layer_name, 10.0)
+                # Получаем средний заработок для этого слоя (если не задан, пропускаем)
+                base_income = income_settings.get(layer_name)
+                if base_income is None:
+                    continue
                 
                 # Налог = население_слоя × средний_заработок × (налоговая_ставка / 100)
                 # Например: 500,000 чел × 100 монет × 10% = 5,000,000 монет
@@ -202,10 +214,14 @@ async def next_turn(request: Request):
             total_income = tax_income
             balance_end = balance_start + total_income - total_expenses
             
-            # Обновляем баланс страны
+            # Обновляем баланс в country_currencies
+            now_update = datetime.now().isoformat()
             cursor.execute(
-                'UPDATE countries SET balance = ? WHERE id = ?',
-                (balance_end, country_id)
+                '''INSERT INTO country_currencies (country_id, currency_code, amount, created_at, updated_at)
+                   VALUES (?, ?, ?, ?, ?)
+                   ON CONFLICT(country_id, currency_code) 
+                   DO UPDATE SET amount = ?, updated_at = ?''',
+                (country_id, main_currency, balance_end, now_update, now_update, balance_end, now_update)
             )
             
             # Сохраняем историю

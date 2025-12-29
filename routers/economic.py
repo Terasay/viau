@@ -779,7 +779,7 @@ async def get_balance_forecast(country_id: str, request: Request):
     cursor = conn.cursor()
     
     try:
-        cursor.execute('SELECT player_id, balance, main_currency FROM countries WHERE id = ?', (country_id,))
+        cursor.execute('SELECT player_id, main_currency FROM countries WHERE id = ?', (country_id,))
         country = cursor.fetchone()
         
         if not country:
@@ -789,10 +789,18 @@ async def get_balance_forecast(country_id: str, request: Request):
             if country['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Доступ запрещён'}, status_code=403)
         
-        # Получаем статистику населения
+        # Получаем баланс основной валюты из country_currencies
+        cursor.execute(
+            'SELECT amount FROM country_currencies WHERE country_id = ? AND currency_code = ?',
+            (country_id, country['main_currency'])
+        )
+        balance_row = cursor.fetchone()
+        balance = float(balance_row['amount']) if balance_row else 0.0
+        
+        # Получаем статистику населения (в миллионах: 0.77 = 770 тыс., 41.23 = 41.23 млн)
         cursor.execute('SELECT population FROM country_stats WHERE country_id = ?', (country_id,))
         stats = cursor.fetchone()
-        population = stats['population'] if stats else 0.0
+        population = (stats['population'] * 1_000_000) if stats else 0.0
         
         # Получаем социальные слои
         cursor.execute(
@@ -832,11 +840,15 @@ async def get_balance_forecast(country_id: str, request: Request):
             # Рассчитываем количество людей в этом слое
             layer_population = population * (percentage / 100.0)
             
-            # Получаем ставку налога для этого слоя
-            tax_rate = tax_settings.get(layer_name, 10.0)
+            # Получаем ставку налога для этого слоя (если не задана, пропускаем)
+            tax_rate = tax_settings.get(layer_name)
+            if tax_rate is None:
+                continue
             
-            # Получаем средний заработок для этого слоя (если не установлен, используем 10.0 как минимум)
-            base_income = income_settings.get(layer_name, 10.0)
+            # Получаем средний заработок для этого слоя (если не задан, пропускаем)
+            base_income = income_settings.get(layer_name)
+            if base_income is None:
+                continue
             
             # Налог = население_слоя × средний_заработок × (налоговая_ставка / 100)
             # Например: 500,000 чел × 100 монет × 10% = 5,000,000 монет
@@ -858,7 +870,7 @@ async def get_balance_forecast(country_id: str, request: Request):
         
         return JSONResponse({
             'success': True,
-            'balance': round(country['balance'], 2),
+            'balance': round(balance, 2),
             'currency': country['main_currency'],
             'forecast': {
                 'income': round(total_income, 2),
@@ -1005,12 +1017,6 @@ async def get_income_settings(country_id: str, request: Request):
         income_settings = {}
         for row in cursor.fetchall():
             income_settings[row['social_layer']] = row['avg_income']
-        
-        # Установить значения по умолчанию для слоев, если не установлены
-        default_layers = {'Элита': 100.0, 'Высший класс': 50.0, 'Средний класс': 20.0, 'Низший класс': 5.0}
-        for layer, default_value in default_layers.items():
-            if layer not in income_settings:
-                income_settings[layer] = default_value
         
         return JSONResponse({
             'success': True,

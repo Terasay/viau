@@ -227,8 +227,8 @@ const economicModule = (function() {
                 </div>
                 <div class="tax-settings-grid">
                     ${['Элита', 'Высший класс', 'Средний класс', 'Низший класс'].map(layer => {
-                        const taxRate = taxSettings[layer] || 10;
-                        const avgIncome = incomeSettings[layer] || 10;
+                        const taxRate = taxSettings[layer] !== undefined ? taxSettings[layer] : '';
+                        const avgIncome = incomeSettings[layer] !== undefined ? incomeSettings[layer] : '';
                         const taxBreakdown = balanceData?.forecast?.tax_breakdown?.[layer];
                         return `
                             <div class="tax-item">
@@ -244,7 +244,8 @@ const economicModule = (function() {
                                            value="${taxRate}" 
                                            min="0" 
                                            max="100" 
-                                           step="1">
+                                           step="1"
+                                           ${!isAdmin ? 'disabled' : ''}>
                                     <span class="tax-percent">%</span>
                                 </div>
                                 <div class="tax-controls">
@@ -254,7 +255,8 @@ const economicModule = (function() {
                                            id="income-${layer}" 
                                            value="${avgIncome}" 
                                            min="0" 
-                                           step="0.1">
+                                           step="0.1"
+                                           ${!isAdmin ? 'disabled' : ''}>
                                     <span class="tax-percent">${balanceData?.currency || 'монет'}</span>
                                 </div>
                                 ${taxBreakdown ? `
@@ -276,9 +278,9 @@ const economicModule = (function() {
                             <span>Не платят налоги</span>
                         </div>
                     </div>
-                    <button class="btn-save-taxes" onclick="economicModule.saveSettings()">
+                    ${isAdmin ? `<button class="btn-save-taxes" onclick="economicModule.saveSettings()">
                         <i class="fas fa-save"></i> Сохранить все настройки
-                    </button>
+                    </button>` : ''}
                 </div>
             </div>
             <div class="economy-grid">

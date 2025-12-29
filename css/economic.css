@@ -603,6 +603,13 @@ body.dark-mode .resource-item:hover {
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
+.tax-input:disabled,
+.income-input:disabled {
+    background: var(--bg-tertiary);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 .tax-percent {
     font-size: 1.2em;
     font-weight: 700;
