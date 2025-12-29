@@ -236,18 +236,18 @@ const economicModule = (function() {
                                     <i class="fas fa-users"></i>
                                     ${layer}
                                 </div>
+                                <div class="tax-controls">
+                                    <label style="font-size: 12px; margin-right: 5px;">Налог:</label>
+                                    <input type="number" 
+                                           class="tax-input" 
+                                           id="tax-${layer}" 
+                                           value="${taxRate}" 
+                                           min="0" 
+                                           max="100" 
+                                           step="1">
+                                    <span class="tax-percent">%</span>
+                                </div>
                                 ${isAdmin ? `
-                                    <div class="tax-controls">
-                                        <label style="font-size: 12px; margin-right: 5px;">Налог:</label>
-                                        <input type="number" 
-                                               class="tax-input" 
-                                               id="tax-${layer}" 
-                                               value="${taxRate}" 
-                                               min="0" 
-                                               max="100" 
-                                               step="1">
-                                        <span class="tax-percent">%</span>
-                                    </div>
                                     <div class="tax-controls">
                                         <label style="font-size: 12px; margin-right: 5px;">Заработок:</label>
                                         <input type="number" 
@@ -260,10 +260,6 @@ const economicModule = (function() {
                                     </div>
                                 ` : `
                                     <div class="tax-info-display">
-                                        <div class="tax-info-item">
-                                            <span class="tax-info-label">Налог:</span>
-                                            <span class="tax-info-value">${taxRate !== '' ? taxRate + '%' : '—'}</span>
-                                        </div>
                                         <div class="tax-info-item">
                                             <span class="tax-info-label">Заработок:</span>
                                             <span class="tax-info-value">${avgIncome !== '' ? avgIncome + ' ' + (balanceData?.currency || 'монет') : '—'}</span>
@@ -289,9 +285,9 @@ const economicModule = (function() {
                             <span>Не платят налоги</span>
                         </div>
                     </div>
-                    ${isAdmin ? `<button class="btn-save-taxes" onclick="economicModule.saveSettings()">
-                        <i class="fas fa-save"></i> Сохранить все настройки
-                    </button>` : ''}
+                    <button class="btn-save-taxes" onclick="economicModule.saveSettings()">
+                        <i class="fas fa-save"></i> ${isAdmin ? 'Сохранить все настройки' : 'Сохранить налоги'}
+                    </button>
                 </div>
             </div>
             <div class="economy-grid">
@@ -425,6 +421,9 @@ const economicModule = (function() {
     }
 
     async function saveSettings() {
+        const user = window.gameState?.getUser();
+        const isAdmin = user && (user.role === 'admin' || user.role === 'moderator');
+        
         const newTaxSettings = {};
         const newIncomeSettings = {};
         const layers = ['Элита', 'Высший класс', 'Средний класс', 'Низший класс'];
@@ -436,7 +435,8 @@ const economicModule = (function() {
             if (taxInput) {
                 newTaxSettings[layer] = parseFloat(taxInput.value) || 0;
             }
-            if (incomeInput) {
+            // Только админ может изменять заработок
+            if (incomeInput && isAdmin) {
                 newIncomeSettings[layer] = parseFloat(incomeInput.value) || 0;
             }
         }
@@ -460,26 +460,28 @@ const economicModule = (function() {
                 throw new Error(taxData.error || 'Ошибка сохранения налоговых ставок');
             }
             
-            // Сохраняем настройки дохода
-            const incomeResponse = await fetch(`/api/economic/country/${countryId}/income-settings`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': token,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ income_settings: newIncomeSettings })
-            });
+            // Сохраняем настройки дохода (только для админа)
+            if (isAdmin) {
+                const incomeResponse = await fetch(`/api/economic/country/${countryId}/income-settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ income_settings: newIncomeSettings })
+                });
 
-            const incomeData = await incomeResponse.json();
-            
-            if (!incomeData.success) {
-                throw new Error(incomeData.error || 'Ошибка сохранения настроек дохода');
+                const incomeData = await incomeResponse.json();
+                
+                if (!incomeData.success) {
+                    throw new Error(incomeData.error || 'Ошибка сохранения настроек дохода');
+                }
             }
             
             if (window.showAlert) {
-                await window.showAlert('Успех', 'Все настройки успешно обновлены');
+                await window.showAlert('Успех', isAdmin ? 'Все настройки успешно обновлены' : 'Налоги успешно обновлены');
             } else {
-                alert('Все настройки успешно обновлены');
+                alert(isAdmin ? 'Все настройки успешно обновлены' : 'Налоги успешно обновлены');
             }
             await refresh();
             

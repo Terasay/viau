@@ -722,7 +722,7 @@ async def get_tax_settings(country_id: str, request: Request):
 
 @router.post("/country/{country_id}/tax-settings")
 async def update_tax_settings(country_id: str, request: Request):
-    """Обновление настроек налогов для страны"""
+    """Обновление настроек налогов для страны (игроки могут менять налоги своей страны)"""
     user = await get_current_user(request)
     if not user:
         return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
@@ -740,6 +740,7 @@ async def update_tax_settings(country_id: str, request: Request):
         if not country:
             return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
         
+        # Игрок может менять налоги только своей страны, админ - любой
         if user['role'] not in ['admin', 'moderator']:
             if country['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Доступ запрещён'}, status_code=403)
