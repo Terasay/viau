@@ -236,29 +236,40 @@ const economicModule = (function() {
                                     <i class="fas fa-users"></i>
                                     ${layer}
                                 </div>
-                                <div class="tax-controls">
-                                    <label style="font-size: 12px; margin-right: 5px;">Налог:</label>
-                                    <input type="number" 
-                                           class="tax-input" 
-                                           id="tax-${layer}" 
-                                           value="${taxRate}" 
-                                           min="0" 
-                                           max="100" 
-                                           step="1"
-                                           ${!isAdmin ? 'disabled' : ''}>
-                                    <span class="tax-percent">%</span>
-                                </div>
-                                <div class="tax-controls">
-                                    <label style="font-size: 12px; margin-right: 5px;">Заработок:</label>
-                                    <input type="number" 
-                                           class="income-input" 
-                                           id="income-${layer}" 
-                                           value="${avgIncome}" 
-                                           min="0" 
-                                           step="0.1"
-                                           ${!isAdmin ? 'disabled' : ''}>
-                                    <span class="tax-percent">${balanceData?.currency || 'монет'}</span>
-                                </div>
+                                ${isAdmin ? `
+                                    <div class="tax-controls">
+                                        <label style="font-size: 12px; margin-right: 5px;">Налог:</label>
+                                        <input type="number" 
+                                               class="tax-input" 
+                                               id="tax-${layer}" 
+                                               value="${taxRate}" 
+                                               min="0" 
+                                               max="100" 
+                                               step="1">
+                                        <span class="tax-percent">%</span>
+                                    </div>
+                                    <div class="tax-controls">
+                                        <label style="font-size: 12px; margin-right: 5px;">Заработок:</label>
+                                        <input type="number" 
+                                               class="income-input" 
+                                               id="income-${layer}" 
+                                               value="${avgIncome}" 
+                                               min="0" 
+                                               step="0.1">
+                                        <span class="tax-percent">${balanceData?.currency || 'монет'}</span>
+                                    </div>
+                                ` : `
+                                    <div class="tax-info-display">
+                                        <div class="tax-info-item">
+                                            <span class="tax-info-label">Налог:</span>
+                                            <span class="tax-info-value">${taxRate !== '' ? taxRate + '%' : '—'}</span>
+                                        </div>
+                                        <div class="tax-info-item">
+                                            <span class="tax-info-label">Заработок:</span>
+                                            <span class="tax-info-value">${avgIncome !== '' ? avgIncome + ' ' + (balanceData?.currency || 'монет') : '—'}</span>
+                                        </div>
+                                    </div>
+                                `}
                                 ${taxBreakdown ? `
                                     <div class="tax-income-info">
                                         <span class="tax-population">${taxBreakdown.population.toLocaleString('ru-RU')} чел.</span>

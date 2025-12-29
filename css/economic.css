@@ -568,6 +568,31 @@ body.dark-mode .resource-item:hover {
     gap: 8px;
 }
 
+.tax-info-display {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.tax-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tax-info-label {
+    font-size: 0.85em;
+    color: var(--text-tertiary);
+    font-weight: 600;
+}
+
+.tax-info-value {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--primary);
+    font-family: 'Fira Mono', 'Courier New', monospace;
+}
+
 .tax-input {
     width: 80px;
     padding: 8px 12px;
