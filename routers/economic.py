@@ -745,6 +745,16 @@ async def update_tax_settings(country_id: str, request: Request):
             if country['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Доступ запрещён'}, status_code=403)
         
+        # Валидация налоговых ставок (максимум 50%)
+        for social_layer, tax_rate in tax_settings.items():
+            if social_layer == 'Маргиналы':
+                continue
+            if tax_rate < 0 or tax_rate > 50:
+                return JSONResponse(
+                    {'success': False, 'error': f'Налоговая ставка для "{social_layer}" должна быть от 0% до 50%'},
+                    status_code=400
+                )
+        
         now = datetime.now().isoformat()
         
         for social_layer, tax_rate in tax_settings.items():

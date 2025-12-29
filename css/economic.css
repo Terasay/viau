@@ -523,15 +523,21 @@ body.dark-mode .resource-item:hover {
 }
 
 .tax-item {
-    display: grid;
-    grid-template-columns: 1fr auto auto auto;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
     gap: 16px;
-    padding: 16px;
+    padding: 20px;
     background: var(--bg-tertiary);
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     border: 1px solid var(--border);
     transition: all 0.3s ease;
+}
+
+.tax-item-content {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 16px;
 }
 
 .tax-item:hover {
@@ -621,6 +627,26 @@ body.dark-mode .resource-item:hover {
     transition: all 0.3s ease;
 }
 
+.income-input-inline {
+    width: 80px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-primary);
+    color: var(--primary);
+    font-size: 1em;
+    font-weight: 700;
+    text-align: center;
+    font-family: 'Fira Mono', 'Courier New', monospace;
+    transition: all 0.3s ease;
+}
+
+.income-input-inline:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
 .tax-input:focus,
 .income-input:focus {
     outline: none;
@@ -684,6 +710,118 @@ body.dark-mode .resource-item:hover {
     font-weight: 600;
     cursor: pointer;
     display: flex;
+/* Налоговый ползунок */
+.tax-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border-radius: var(--radius);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.tax-slider-label {
+    font-size: 0.95em;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    min-width: 140px;
+}
+
+.tax-slider-wrapper {
+    position: relative;
+    flex: 1;
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.tax-slider {
+    position: absolute;
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    outline: none;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.tax-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border: 3px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+    transition: all 0.2s ease;
+}
+
+.tax-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.6);
+}
+
+.tax-slider::-webkit-slider-thumb:active {
+    transform: scale(1.1);
+}
+
+.tax-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border: 3px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+    transition: all 0.2s ease;
+}
+
+.tax-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.6);
+}
+
+.tax-slider::-moz-range-thumb:active {
+    transform: scale(1.1);
+}
+
+.tax-slider-track {
+    position: absolute;
+    width: 100%;
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.tax-slider-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e 0%, #eab308 50%, #ef4444 100%);
+    border-radius: 4px;
+    transition: width 0.2s ease;
+}
+
+.tax-slider-value {
+    min-width: 70px;
+    text-align: center;
+    font-size: 1.3em;
+    font-weight: 700;
+    color: var(--primary);
+    font-family: 'Fira Mono', 'Courier New', monospace;
+    background: var(--bg-secondary);
+    padding: 6px 12px;
+    border-radius: var(--radius);
+    border: 2px solid var(--primary);
+}
+
     align-items: center;
     justify-content: center;
     gap: 10px;

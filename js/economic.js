@@ -227,51 +227,63 @@ const economicModule = (function() {
                 </div>
                 <div class="tax-settings-grid">
                     ${['Элита', 'Высший класс', 'Средний класс', 'Низший класс'].map(layer => {
-                        const taxRate = taxSettings[layer] !== undefined ? taxSettings[layer] : '';
+                        const taxRate = taxSettings[layer] !== undefined ? taxSettings[layer] : 0;
                         const avgIncome = incomeSettings[layer] !== undefined ? incomeSettings[layer] : '';
                         const taxBreakdown = balanceData?.forecast?.tax_breakdown?.[layer];
                         return `
                             <div class="tax-item">
-                                <div class="tax-layer-name">
-                                    <i class="fas fa-users"></i>
-                                    ${layer}
-                                </div>
-                                <div class="tax-controls">
-                                    <label style="font-size: 12px; margin-right: 5px;">Налог:</label>
-                                    <input type="number" 
-                                           class="tax-input" 
-                                           id="tax-${layer}" 
-                                           value="${taxRate}" 
-                                           min="0" 
-                                           max="100" 
-                                           step="1">
-                                    <span class="tax-percent">%</span>
-                                </div>
-                                ${isAdmin ? `
-                                    <div class="tax-controls">
-                                        <label style="font-size: 12px; margin-right: 5px;">Заработок:</label>
-                                        <input type="number" 
-                                               class="income-input" 
-                                               id="income-${layer}" 
-                                               value="${avgIncome}" 
-                                               min="0" 
-                                               step="0.1">
-                                        <span class="tax-percent">${balanceData?.currency || 'монет'}</span>
+                                <div class="tax-item-content">
+                                    <div class="tax-layer-name">
+                                        <i class="fas fa-users"></i>
+                                        ${layer}
                                     </div>
-                                ` : `
-                                    <div class="tax-info-display">
-                                        <div class="tax-info-item">
-                                            <span class="tax-info-label">Заработок:</span>
-                                            <span class="tax-info-value">${avgIncome !== '' ? avgIncome + ' ' + (balanceData?.currency || 'монет') : '—'}</span>
+                                    ${isAdmin ? `
+                                        <div class="tax-info-display">
+                                            <div class="tax-info-item">
+                                                <span class="tax-info-label">Заработок:</span>
+                                                <span class="tax-info-value">
+                                                    <input type="number" 
+                                                           class="income-input-inline" 
+                                                           id="income-${layer}" 
+                                                           value="${avgIncome}" 
+                                                           min="0" 
+                                                           step="0.1">
+                                                    <span style="margin-left: 4px;">${balanceData?.currency || 'монет'}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ` : `
+                                        <div class="tax-info-display">
+                                            <div class="tax-info-item">
+                                                <span class="tax-info-label">Заработок:</span>
+                                                <span class="tax-info-value">${avgIncome !== '' ? avgIncome + ' ' + (balanceData?.currency || 'монет') : '—'}</span>
+                                            </div>
+                                        </div>
+                                    `}
+                                    ${taxBreakdown ? `
+                                        <div class="tax-income-info">
+                                            <span class="tax-population">${taxBreakdown.population.toLocaleString('ru-RU')} чел.</span>
+                                            <span class="tax-income">+${taxBreakdown.income.toFixed(2)} ${balanceData.currency}</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <div class="tax-slider-container">
+                                    <label class="tax-slider-label">Налоговая ставка:</label>
+                                    <div class="tax-slider-wrapper">
+                                        <input type="range" 
+                                               class="tax-slider" 
+                                               id="tax-${layer}" 
+                                               min="0" 
+                                               max="50" 
+                                               step="0.5" 
+                                               value="${taxRate}"
+                                               oninput="economicModule.updateTaxDisplay('${layer}', this.value)">
+                                        <div class="tax-slider-track">
+                                            <div class="tax-slider-progress" id="progress-${layer}" style="width: ${(taxRate / 50) * 100}%"></div>
                                         </div>
                                     </div>
-                                `}
-                                ${taxBreakdown ? `
-                                    <div class="tax-income-info">
-                                        <span class="tax-population">${taxBreakdown.population.toLocaleString('ru-RU')} чел.</span>
-                                        <span class="tax-income">+${taxBreakdown.income.toFixed(2)} ${balanceData.currency}</span>
-                                    </div>
-                                ` : ''}
+                                    <div class="tax-slider-value" id="value-${layer}">${taxRate}%</div>
+                                </div>
                             </div>
                         `;
                     }).join('')}
@@ -495,12 +507,24 @@ const economicModule = (function() {
         }
     }
 
+    function updateTaxDisplay(layer, value) {
+        const valueElement = document.getElementById(`value-${layer}`);
+        const progressElement = document.getElementById(`progress-${layer}`);
+        if (valueElement) {
+            valueElement.textContent = `${parseFloat(value).toFixed(1)}%`;
+        }
+        if (progressElement) {
+            progressElement.style.width = `${(value / 50) * 100}%`;
+        }
+    }
+
     return {
         init,
         refresh,
         changeCountry,
         selectCountry,
         saveSettings,
+        updateTaxDisplay,
         saveTaxSettings: saveSettings  // алиас для обратной совместимости
     };
 })();
