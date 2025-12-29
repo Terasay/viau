@@ -120,6 +120,7 @@ async def next_turn(request: Request):
     
     try:
         from datetime import datetime
+        import json
         
         cursor.execute('SELECT current_turn FROM game_state WHERE id = 1')
         state = cursor.fetchone()
@@ -127,9 +128,93 @@ async def next_turn(request: Request):
         if not state:
             return JSONResponse({'success': False, 'error': 'Состояние игры не найдено'}, status_code=404)
         
-        new_turn = state['current_turn'] + 1
-        now = datetime.now().isoformat()
+        current_turn = state['current_turn']
+        new_turn = current_turn + 1
         
+        # Обрабатываем экономику для всех стран
+        cursor.execute('SELECT id FROM countries')
+        countries = cursor.fetchall()
+        
+        for country in countries:
+            country_id = country['id']
+            
+            # Получаем текущий баланс
+            cursor.execute('SELECT balance, main_currency FROM countries WHERE id = ?', (country_id,))
+            country_data = cursor.fetchone()
+            balance_start = country_data['balance']
+            
+            # Получаем статистику населения
+            cursor.execute('SELECT population FROM country_stats WHERE country_id = ?', (country_id,))
+            stats = cursor.fetchone()
+            population = stats['population'] if stats else 0.0
+            
+            # Получаем социальные слои
+            cursor.execute(
+                'SELECT layer_name, percentage FROM country_social_layers WHERE country_id = ?',
+                (country_id,)
+            )
+            social_layers = {}
+            for row in cursor.fetchall():
+                social_layers[row['layer_name']] = row['percentage']
+            
+            # Получаем настройки налогов
+            cursor.execute(
+                'SELECT social_layer, tax_rate FROM country_tax_settings WHERE country_id = ?',
+                (country_id,)
+            )
+            tax_settings = {}
+            for row in cursor.fetchall():
+                tax_settings[row['social_layer']] = row['tax_rate']
+            
+            # Расчет налоговых доходов
+            tax_income = 0.0
+            income_per_person = {
+                'Богачи': 100.0,
+                'Знать': 50.0,
+                'Средний класс': 20.0,
+                'Нижний класс': 5.0,
+                'Маргиналы': 0.0
+            }
+            
+            for layer_name, percentage in social_layers.items():
+                if layer_name == 'Маргиналы':
+                    continue
+                
+                layer_population = population * (percentage / 100.0)
+                tax_rate = tax_settings.get(layer_name, 10.0)
+                base_income = income_per_person.get(layer_name, 10.0)
+                layer_tax = layer_population * base_income * (tax_rate / 100.0)
+                tax_income += layer_tax
+            
+            # Расчет расходов
+            base_expenses = population * 0.5
+            
+            total_income = tax_income
+            total_expenses = base_expenses
+            balance_end = balance_start + total_income - total_expenses
+            
+            # Обновляем баланс страны
+            cursor.execute(
+                'UPDATE countries SET balance = ? WHERE id = ?',
+                (balance_end, country_id)
+            )
+            
+            # Сохраняем историю
+            now = datetime.now().isoformat()
+            cursor.execute(
+                '''INSERT INTO economy_history 
+                   (country_id, turn_number, balance_start, balance_end, income, expenses, 
+                    tax_income, tax_settings, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                   ON CONFLICT(country_id, turn_number) 
+                   DO UPDATE SET balance_end = ?, income = ?, expenses = ?, tax_income = ?''',
+                (country_id, current_turn, balance_start, balance_end, total_income, 
+                 total_expenses, tax_income, json.dumps(tax_settings), now,
+                 balance_end, total_income, total_expenses, tax_income)
+            )
+        
+        # Обновляем номер хода
+        now = datetime.now().isoformat()
         cursor.execute(
             'UPDATE game_state SET current_turn = ?, updated_at = ? WHERE id = 1',
             (new_turn, now)
@@ -139,7 +224,7 @@ async def next_turn(request: Request):
         return JSONResponse({
             'success': True,
             'current_turn': new_turn,
-            'message': f'Ход успешно изменён на {new_turn}'
+            'message': f'Ход успешно изменён на {new_turn}. Экономика всех стран пересчитана.'
         })
     
     except Exception as e:

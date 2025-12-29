@@ -13,6 +13,12 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+async def get_current_user(request: Request):
+    """Получение текущего пользователя из токена"""
+    sys.path.append('..')
+    from main import get_current_user as main_get_current_user
+    return await main_get_current_user(request)
+
 def init_db():
     """Инициализация таблицы стран"""
     conn = get_db()
@@ -29,6 +35,7 @@ def init_db():
             main_currency TEXT DEFAULT 'ESC',
             secret_coins INTEGER DEFAULT 0,
             research_points INTEGER DEFAULT 100,
+            balance REAL DEFAULT 1000.0,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             FOREIGN KEY (player_id) REFERENCES users (id)
@@ -42,6 +49,9 @@ def init_db():
     if 'main_currency' not in columns:
         cursor.execute('ALTER TABLE countries ADD COLUMN main_currency TEXT DEFAULT "ESC"')
         cursor.execute('UPDATE countries SET main_currency = "ESC" WHERE main_currency IS NULL')
+    if 'balance' not in columns:
+        cursor.execute('ALTER TABLE countries ADD COLUMN balance REAL DEFAULT 1000.0')
+        cursor.execute('UPDATE countries SET balance = 1000.0 WHERE balance IS NULL')
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS country_resources (
@@ -66,6 +76,38 @@ def init_db():
             updated_at TEXT NOT NULL,
             FOREIGN KEY (country_id) REFERENCES countries (id) ON DELETE CASCADE,
             UNIQUE(country_id, currency_code)
+        )
+    ''')
+    
+    # Таблица настроек налогов
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS country_tax_settings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            country_id TEXT NOT NULL,
+            social_layer TEXT NOT NULL,
+            tax_rate REAL NOT NULL DEFAULT 0.0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (country_id) REFERENCES countries (id) ON DELETE CASCADE,
+            UNIQUE(country_id, social_layer)
+        )
+    ''')
+    
+    # Таблица истории экономики по ходам
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS economy_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            country_id TEXT NOT NULL,
+            turn_number INTEGER NOT NULL,
+            balance_start REAL NOT NULL,
+            balance_end REAL NOT NULL,
+            income REAL NOT NULL,
+            expenses REAL NOT NULL,
+            tax_income REAL NOT NULL,
+            tax_settings TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (country_id) REFERENCES countries (id) ON DELETE CASCADE,
+            UNIQUE(country_id, turn_number)
         )
     ''')
     
@@ -148,10 +190,6 @@ def migrate_existing_players():
 
 async def check_admin(request: Request):
     """Проверка прав администратора"""
-    import sys
-    sys.path.append('..')
-    from main import get_current_user
-    
     user = await get_current_user(request)
     if not user or user.get('role') != 'admin':
         return None
@@ -218,10 +256,6 @@ def create_country(country_id: str, player_id: int, ruler_first_name: str, ruler
 @router.get("/countries")
 async def get_all_countries(request: Request):
     """Получение списка стран (для админов - все страны, для игроков - только своя)"""
-    import sys
-    sys.path.append('..')
-    from main import get_current_user
-    
     user = await get_current_user(request)
     if not user:
         return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
@@ -293,10 +327,6 @@ async def get_all_countries(request: Request):
 @router.get("/country/{country_id}")
 async def get_country(country_id: str, request: Request):
     """Получение информации о стране"""
-    import sys
-    sys.path.append('..')
-    from main import get_current_user
-    
     user = await get_current_user(request)
     if not user:
         return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
@@ -591,17 +621,17 @@ async def update_country_resource(country_id: str, request: Request):
 
 @router.post("/country/{country_id}/update-currency")
 async def update_country_currency(country_id: str, request: Request):
-    """Обновить количество валюты страны (только админ)"""
-    user = await check_admin(request)
-    if not user:
-        return JSONResponse({'success': False, 'message': 'Доступ запрещён'}, status_code=403)
+    """Обновление количества валюты у страны"""
+    user = await get_current_user(request)
+    if not user or user['role'] != 'admin':
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
     
     data = await request.json()
     currency_code = data.get('currency_code')
     amount = data.get('amount', 0)
     
     if not currency_code:
-        return JSONResponse({'success': False, 'message': 'Не указан код валюты'}, status_code=400)
+        return JSONResponse({'success': False, 'error': 'Не указан код валюты'}, status_code=400)
     
     conn = get_db()
     cursor = conn.cursor()
@@ -609,31 +639,321 @@ async def update_country_currency(country_id: str, request: Request):
     try:
         now = datetime.now().isoformat()
         
-        cursor.execute('''
-            INSERT INTO country_currencies (country_id, currency_code, amount, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?)
-            ON CONFLICT(country_id, currency_code) 
-            DO UPDATE SET amount = ?, updated_at = ?
-        ''', (country_id, currency_code, amount, now, now, amount, now))
+        cursor.execute(
+            '''INSERT INTO country_currencies (country_id, currency_code, amount, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?)
+               ON CONFLICT(country_id, currency_code) 
+               DO UPDATE SET amount = ?, updated_at = ?''',
+            (country_id, currency_code, amount, now, now, amount, now)
+        )
         
         conn.commit()
         return JSONResponse({'success': True, 'message': 'Валюта обновлена'})
+        
     except Exception as e:
-        return JSONResponse({'success': False, 'message': str(e)}, status_code=500)
+        conn.rollback()
+        print(f"Error updating currency: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
     finally:
         conn.close()
-    """Создаёт страны для всех одобренных заявок без стран (только админ)"""
-    user = await check_admin(request)
+
+# ========== НАЛОГИ И БАЛАНС ==========
+
+@router.get("/country/{country_id}/tax-settings")
+async def get_tax_settings(country_id: str, request: Request):
+    """Получение настроек налогов для страны"""
+    user = await get_current_user(request)
     if not user:
-        return JSONResponse({'success': False, 'error': 'Нет доступа'}, status_code=403)
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    conn = get_db()
+    cursor = conn.cursor()
     
     try:
-        count = migrate_existing_players()
+        cursor.execute('SELECT player_id FROM countries WHERE id = ?', (country_id,))
+        country = cursor.fetchone()
+        
+        if not country:
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        if user['role'] not in ['admin', 'moderator']:
+            if country['player_id'] != user['id']:
+                return JSONResponse({'success': False, 'error': 'Доступ запрещён'}, status_code=403)
+        
+        cursor.execute(
+            'SELECT social_layer, tax_rate FROM country_tax_settings WHERE country_id = ?',
+            (country_id,)
+        )
+        
+        tax_settings = {}
+        for row in cursor.fetchall():
+            tax_settings[row['social_layer']] = row['tax_rate']
+        
+        # Установить значения по умолчанию для слоев, если не установлены
+        default_layers = ['Богачи', 'Знать', 'Средний класс', 'Нижний класс']
+        for layer in default_layers:
+            if layer not in tax_settings:
+                tax_settings[layer] = 10.0  # 10% по умолчанию
+        
         return JSONResponse({
             'success': True,
-            'message': f'Создано стран: {count}',
-            'count': count
+            'tax_settings': tax_settings
         })
+        
     except Exception as e:
-        print(f"Error in migration endpoint: {e}")
+        print(f"Error getting tax settings: {e}")
         return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.post("/country/{country_id}/tax-settings")
+async def update_tax_settings(country_id: str, request: Request):
+    """Обновление настроек налогов для страны"""
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    data = await request.json()
+    tax_settings = data.get('tax_settings', {})
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('SELECT player_id FROM countries WHERE id = ?', (country_id,))
+        country = cursor.fetchone()
+        
+        if not country:
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        if user['role'] not in ['admin', 'moderator']:
+            if country['player_id'] != user['id']:
+                return JSONResponse({'success': False, 'error': 'Доступ запрещён'}, status_code=403)
+        
+        now = datetime.now().isoformat()
+        
+        for social_layer, tax_rate in tax_settings.items():
+            if social_layer == 'Маргиналы':
+                continue  # Маргиналы не платят налоги
+            
+            cursor.execute(
+                '''INSERT INTO country_tax_settings (country_id, social_layer, tax_rate, created_at, updated_at)
+                   VALUES (?, ?, ?, ?, ?)
+                   ON CONFLICT(country_id, social_layer) 
+                   DO UPDATE SET tax_rate = ?, updated_at = ?''',
+                (country_id, social_layer, tax_rate, now, now, tax_rate, now)
+            )
+        
+        conn.commit()
+        return JSONResponse({'success': True, 'message': 'Налоговые ставки обновлены'})
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"Error updating tax settings: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.get("/country/{country_id}/balance-forecast")
+async def get_balance_forecast(country_id: str, request: Request):
+    """Получение баланса и прогноза доходов/расходов"""
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('SELECT player_id, balance, main_currency FROM countries WHERE id = ?', (country_id,))
+        country = cursor.fetchone()
+        
+        if not country:
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        if user['role'] not in ['admin', 'moderator']:
+            if country['player_id'] != user['id']:
+                return JSONResponse({'success': False, 'error': 'Доступ запрещён'}, status_code=403)
+        
+        # Получаем статистику населения
+        cursor.execute('SELECT population FROM country_stats WHERE country_id = ?', (country_id,))
+        stats = cursor.fetchone()
+        population = stats['population'] if stats else 0.0
+        
+        # Получаем социальные слои
+        cursor.execute(
+            'SELECT layer_name, percentage FROM country_social_layers WHERE country_id = ?',
+            (country_id,)
+        )
+        social_layers = {}
+        for row in cursor.fetchall():
+            social_layers[row['layer_name']] = row['percentage']
+        
+        # Получаем настройки налогов
+        cursor.execute(
+            'SELECT social_layer, tax_rate FROM country_tax_settings WHERE country_id = ?',
+            (country_id,)
+        )
+        tax_settings = {}
+        for row in cursor.fetchall():
+            tax_settings[row['social_layer']] = row['tax_rate']
+        
+        # Расчет налоговых доходов
+        tax_income = 0.0
+        tax_breakdown = {}
+        
+        # Средний доход на человека по слоям (условные значения)
+        income_per_person = {
+            'Богачи': 100.0,
+            'Знать': 50.0,
+            'Средний класс': 20.0,
+            'Нижний класс': 5.0,
+            'Маргиналы': 0.0
+        }
+        
+        for layer_name, percentage in social_layers.items():
+            if layer_name == 'Маргиналы':
+                continue  # Маргиналы не платят налоги
+            
+            layer_population = population * (percentage / 100.0)
+            tax_rate = tax_settings.get(layer_name, 10.0)
+            base_income = income_per_person.get(layer_name, 10.0)
+            
+            layer_tax = layer_population * base_income * (tax_rate / 100.0)
+            tax_income += layer_tax
+            tax_breakdown[layer_name] = {
+                'population': round(layer_population, 2),
+                'tax_rate': tax_rate,
+                'income': round(layer_tax, 2)
+            }
+        
+        # Расчет расходов (пока что базовые)
+        base_expenses = population * 0.5  # 0.5 валюты на человека
+        
+        total_income = tax_income
+        total_expenses = base_expenses
+        net_change = total_income - total_expenses
+        
+        return JSONResponse({
+            'success': True,
+            'balance': round(country['balance'], 2),
+            'currency': country['main_currency'],
+            'forecast': {
+                'income': round(total_income, 2),
+                'expenses': round(total_expenses, 2),
+                'net_change': round(net_change, 2),
+                'tax_breakdown': tax_breakdown
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error calculating balance forecast: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.get("/country/{country_id}/economy-history")
+async def get_economy_history(country_id: str, request: Request):
+    """Получение истории экономики страны (только для админа)"""
+    user = await get_current_user(request)
+    if not user or user['role'] not in ['admin', 'moderator']:
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute(
+            '''SELECT turn_number, balance_start, balance_end, income, expenses, 
+                      tax_income, tax_settings, created_at
+               FROM economy_history 
+               WHERE country_id = ?
+               ORDER BY turn_number DESC
+               LIMIT 50''',
+            (country_id,)
+        )
+        
+        history = []
+        for row in cursor.fetchall():
+            import json
+            history.append({
+                'turn': row['turn_number'],
+                'balance_start': row['balance_start'],
+                'balance_end': row['balance_end'],
+                'income': row['income'],
+                'expenses': row['expenses'],
+                'tax_income': row['tax_income'],
+                'tax_settings': json.loads(row['tax_settings']),
+                'date': row['created_at']
+            })
+        
+        return JSONResponse({
+            'success': True,
+            'history': history
+        })
+        
+    except Exception as e:
+        print(f"Error getting economy history: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.get("/economy-history/all")
+async def get_all_economy_history(request: Request):
+    """Получение истории экономики всех стран (только для админа)"""
+    user = await get_current_user(request)
+    if not user or user['role'] not in ['admin', 'moderator']:
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Получаем список всех стран
+        cursor.execute('SELECT id, country_name FROM countries ORDER BY country_name')
+        countries = cursor.fetchall()
+        
+        result = {}
+        for country in countries:
+            country_id = country['id']
+            country_name = country['country_name']
+            
+            cursor.execute(
+                '''SELECT turn_number, balance_start, balance_end, income, expenses, 
+                          tax_income, tax_settings, created_at
+                   FROM economy_history 
+                   WHERE country_id = ?
+                   ORDER BY turn_number DESC
+                   LIMIT 20''',
+                (country_id,)
+            )
+            
+            history = []
+            import json
+            for row in cursor.fetchall():
+                history.append({
+                    'turn': row['turn_number'],
+                    'balance_start': row['balance_start'],
+                    'balance_end': row['balance_end'],
+                    'income': row['income'],
+                    'expenses': row['expenses'],
+                    'tax_income': row['tax_income'],
+                    'tax_settings': json.loads(row['tax_settings']),
+                    'date': row['created_at']
+                })
+            
+            result[country_id] = {
+                'country_name': country_name,
+                'history': history
+            }
+        
+        return JSONResponse({
+            'success': True,
+            'countries': result
+        })
+        
+    except Exception as e:
+        print(f"Error getting all economy history: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()

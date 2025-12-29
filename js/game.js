@@ -227,6 +227,15 @@ function initInterface() {
                     </button>
                 </div>
             </div>
+            <div style="margin-top: 24px;">
+                <div class="info-card">
+                    <h3><i class="fas fa-history"></i> История экономики</h3>
+                    <p style="color: var(--text-secondary); margin: 12px 0;">Просмотр истории экономических показателей всех стран по ходам</p>
+                    <button class="btn-primary" onclick="openEconomyHistory()" style="width: 100%; margin-top: 16px;">
+                        <i class="fas fa-chart-line"></i> Просмотреть историю экономики
+                    </button>
+                </div>
+            </div>
         `;
     }
 
@@ -991,3 +1000,111 @@ async function saveStatistics() {
 window.openStatisticsEditor = openStatisticsEditor;
 window.selectCountryForEdit = selectCountryForEdit;
 window.saveStatistics = saveStatistics;
+
+// История экономики для админа
+async function openEconomyHistory() {
+    const modal = document.getElementById('modal-overlay');
+    const modalBody = document.getElementById('modal-body');
+    const modalTitle = document.getElementById('modal-title');
+    const modalFooter = document.getElementById('modal-footer');
+    
+    modalTitle.innerHTML = '<i class="fas fa-history"></i> История экономики всех стран';
+    modalBody.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-3x"></i><p style="margin-top: 20px;">Загрузка истории...</p></div>';
+    modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
+    
+    modal.classList.add('visible');
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/economic/economy-history/all', {
+            headers: { 'Authorization': token }
+        });
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Ошибка загрузки истории');
+        }
+        
+        let html = '<div class="economy-history-container">';
+        
+        for (const [countryId, countryData] of Object.entries(data.countries)) {
+            html += `
+                <div class="economy-history-country">
+                    <div class="economy-history-header">
+                        <h3><i class="fas fa-flag"></i> ${countryData.country_name}</h3>
+                        ${countryData.history.length > 0 ? `<span class="history-count">${countryData.history.length} ходов</span>` : ''}
+                    </div>
+            `;
+            
+            if (countryData.history.length === 0) {
+                html += '<p style="color: var(--text-tertiary); padding: 20px; text-align: center;">История отсутствует</p>';
+            } else {
+                html += '<div class="economy-history-list">';
+                
+                for (const turn of countryData.history) {
+                    const changeClass = (turn.balance_end - turn.balance_start) >= 0 ? 'positive' : 'negative';
+                    const changeIcon = (turn.balance_end - turn.balance_start) >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                    
+                    html += `
+                        <div class="economy-history-item">
+                            <div class="history-turn">
+                                <i class="fas fa-calendar-alt"></i>
+                                <strong>Ход ${turn.turn}</strong>
+                            </div>
+                            <div class="history-balance">
+                                <div class="balance-row">
+                                    <span>Начало:</span>
+                                    <strong>${turn.balance_start.toFixed(2)}</strong>
+                                </div>
+                                <div class="balance-row">
+                                    <span>Конец:</span>
+                                    <strong>${turn.balance_end.toFixed(2)}</strong>
+                                </div>
+                                <div class="balance-change ${changeClass}">
+                                    <i class="fas ${changeIcon}"></i>
+                                    ${(turn.balance_end - turn.balance_start) > 0 ? '+' : ''}${(turn.balance_end - turn.balance_start).toFixed(2)}
+                                </div>
+                            </div>
+                            <div class="history-income-expenses">
+                                <div class="income-item">
+                                    <i class="fas fa-arrow-down" style="color: #22c55e;"></i>
+                                    <span>Доходы:</span>
+                                    <strong style="color: #22c55e;">${turn.income.toFixed(2)}</strong>
+                                </div>
+                                <div class="expense-item">
+                                    <i class="fas fa-arrow-up" style="color: #ef4444;"></i>
+                                    <span>Расходы:</span>
+                                    <strong style="color: #ef4444;">${turn.expenses.toFixed(2)}</strong>
+                                </div>
+                            </div>
+                            <div class="history-taxes">
+                                <span class="tax-label"><i class="fas fa-percent"></i> Налоговый доход:</span>
+                                <strong>${turn.tax_income.toFixed(2)}</strong>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+            }
+            
+            html += '</div>';
+        }
+        
+        html += '</div>';
+        
+        modalBody.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error loading economy history:', error);
+        modalBody.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <i class="fas fa-times-circle fa-4x" style="color: var(--danger);"></i>
+                <h3 style="margin-top: 20px; color: var(--danger);">Ошибка загрузки</h3>
+                <p style="color: var(--text-secondary); margin-top: 12px;">${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+window.openEconomyHistory = openEconomyHistory;

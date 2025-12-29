@@ -938,6 +938,209 @@ body.dark-mode .stat-item:hover {
     color: var(--primary);
 }
 
+/* История экономики */
+.economy-history-container {
+    max-height: 70vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.economy-history-country {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    padding: 20px;
+}
+
+.economy-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 16px;
+}
+
+.economy-history-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3em;
+}
+
+.economy-history-header h3 i {
+    color: var(--primary);
+}
+
+.history-count {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border: 1px solid var(--primary);
+    padding: 4px 12px;
+    border-radius: var(--radius);
+    font-size: 0.9em;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.economy-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.economy-history-item {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 16px;
+    display: grid;
+    grid-template-columns: auto 1fr 1fr auto;
+    gap: 16px;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.economy-history-item:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border-color: var(--primary);
+    transform: translateX(4px);
+}
+
+.history-turn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+    font-size: 1.1em;
+}
+
+.history-turn i {
+    color: var(--primary);
+}
+
+.history-balance {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.balance-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.95em;
+}
+
+.balance-row span {
+    color: var(--text-tertiary);
+}
+
+.balance-row strong {
+    color: var(--text-primary);
+    font-family: 'Fira Mono', 'Courier New', monospace;
+}
+
+.balance-change {
+    margin-top: 4px;
+    padding: 6px 12px;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 1.05em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Fira Mono', 'Courier New', monospace;
+}
+
+.balance-change.positive {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.2) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    color: #22c55e;
+}
+
+.balance-change.negative {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.2) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+}
+
+.history-income-expenses {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.income-item,
+.expense-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95em;
+}
+
+.income-item span,
+.expense-item span {
+    color: var(--text-tertiary);
+}
+
+.income-item strong,
+.expense-item strong {
+    font-family: 'Fira Mono', 'Courier New', monospace;
+}
+
+.history-taxes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border-radius: var(--radius);
+    border: 1px solid var(--primary);
+}
+
+.tax-label {
+    font-size: 0.85em;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.history-taxes strong {
+    font-size: 1.1em;
+    color: var(--primary);
+    font-family: 'Fira Mono', 'Courier New', monospace;
+}
+
+.economy-history-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.economy-history-container::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+.economy-history-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border-radius: 4px;
+}
+
+.economy-history-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+}
+
+@media (max-width: 1024px) {
+    .economy-history-item {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
 .stats-form-hint {
     color: var(--text-secondary);
     font-size: 0.9em;

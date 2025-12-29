@@ -4,6 +4,8 @@ const economicModule = (function() {
     let availableCurrencies = {};
     let availableResources = {};
     let countryData = null;
+    let balanceData = null;
+    let taxSettings = {};
 
     async function init(playerCountryId, playerCountryName = '') {
         console.log('economicModule.init вызван с параметрами:', { playerCountryId, playerCountryName });
@@ -33,6 +35,8 @@ const economicModule = (function() {
         
         await loadAvailableData();
         await loadCountryResources();
+        await loadBalanceData();
+        await loadTaxSettings();
         renderEconomyView();
     }
 
@@ -81,6 +85,44 @@ const economicModule = (function() {
         }
     }
 
+    async function loadBalanceData() {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/economic/country/${countryId}/balance-forecast`, {
+                headers: { 'Authorization': token }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                balanceData = data;
+                console.log('Balance data loaded:', balanceData);
+            } else {
+                console.error('Ошибка загрузки баланса:', data.message);
+            }
+        } catch (e) {
+            console.error('Ошибка загрузки баланса:', e);
+        }
+    }
+
+    async function loadTaxSettings() {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/economic/country/${countryId}/tax-settings`, {
+                headers: { 'Authorization': token }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                taxSettings = data.tax_settings;
+                console.log('Tax settings loaded:', taxSettings);
+            } else {
+                console.error('Ошибка загрузки налоговых настроек:', data.message);
+            }
+        } catch (e) {
+            console.error('Ошибка загрузки налоговых настроек:', e);
+        }
+    }
+
     function renderEconomyView() {
         console.log('renderEconomyView вызвана', { countryData, countryId, countryName });
         const container = document.getElementById('economy-content');
@@ -122,7 +164,90 @@ const economicModule = (function() {
                     <span>Основная валюта: <strong>${mainCurrencyName}</strong></span>
                 </div>
             </div>
+            <!-- Баланс и прогноз -->
+            <div class="balance-section">
+                <div class="balance-card">
+                    <div class="balance-header">
+                        <i class="fas fa-wallet"></i>
+                        <h3>Текущий баланс</h3>
+                    </div>
+                    <div class="balance-value">
+                        ${(balanceData?.balance || 0).toFixed(2)} <span class="currency-label">${balanceData?.currency || mainCurrencyName}</span>
+                    </div>
+                    <div class="balance-forecast ${(balanceData?.forecast?.net_change || 0) >= 0 ? 'positive' : 'negative'}">
+                        <i class="fas ${(balanceData?.forecast?.net_change || 0) >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                        <span>Прогноз: ${(balanceData?.forecast?.net_change || 0) > 0 ? '+' : ''}${(balanceData?.forecast?.net_change || 0).toFixed(2)}</span>
+                    </div>
+                </div>
 
+                <div class="forecast-breakdown">
+                    <div class="forecast-item income">
+                        <i class="fas fa-arrow-down"></i>
+                        <div>
+                            <span class="forecast-label">Доходы</span>
+                            <span class="forecast-value">+${(balanceData?.forecast?.income || 0).toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <div class="forecast-item expenses">
+                        <i class="fas fa-arrow-up"></i>
+                        <div>
+                            <span class="forecast-label">Расходы</span>
+                            <span class="forecast-value">-${(balanceData?.forecast?.expenses || 0).toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Налоги -->
+            <div class="economy-section">
+                <div class="section-header">
+                    <i class="fas fa-percent"></i>
+                    <h3>Налоговые ставки</h3>
+                </div>
+                <div class="tax-settings-grid">
+                    ${['Богачи', 'Знать', 'Средний класс', 'Нижний класс'].map(layer => {
+                        const taxRate = taxSettings[layer] || 10;
+                        const taxBreakdown = balanceData?.forecast?.tax_breakdown?.[layer];
+                        return `
+                            <div class="tax-item">
+                                <div class="tax-layer-name">
+                                    <i class="fas fa-users"></i>
+                                    ${layer}
+                                </div>
+                                <div class="tax-controls">
+                                    <input type="number" 
+                                           class="tax-input" 
+                                           id="tax-${layer}" 
+                                           value="${taxRate}" 
+                                           min="0" 
+                                           max="100" 
+                                           step="1">
+                                    <span class="tax-percent">%</span>
+                                </div>
+                                ${taxBreakdown ? `
+                                    <div class="tax-income-info">
+                                        <span class="tax-population">${taxBreakdown.population.toFixed(0)} чел.</span>
+                                        <span class="tax-income">+${taxBreakdown.income.toFixed(2)} ${balanceData.currency}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                    <div class="tax-item marginals">
+                        <div class="tax-layer-name">
+                            <i class="fas fa-users-slash"></i>
+                            Маргиналы
+                        </div>
+                        <div class="tax-exempt">
+                            <i class="fas fa-ban"></i>
+                            <span>Не платят налоги</span>
+                        </div>
+                    </div>
+                    <button class="btn-save-taxes" onclick="economicModule.saveTaxSettings()">
+                        <i class="fas fa-save"></i> Сохранить налоговые ставки
+                    </button>
+                </div>
+            </div>
             <div class="economy-grid">
                 <div class="economy-section">
                     <div class="section-header">
@@ -223,6 +348,8 @@ const economicModule = (function() {
 
     async function refresh() {
         await loadCountryResources();
+        await loadBalanceData();
+        await loadTaxSettings();
         renderEconomyView();
     }
     
@@ -244,14 +371,65 @@ const economicModule = (function() {
         
         // Перезагружаем данные
         await loadCountryResources();
+        await loadBalanceData();
+        await loadTaxSettings();
         renderEconomyView();
+    }
+
+    async function saveTaxSettings() {
+        const newTaxSettings = {};
+        const layers = ['Богачи', 'Знать', 'Средний класс', 'Нижний класс'];
+        
+        for (const layer of layers) {
+            const input = document.getElementById(`tax-${layer}`);
+            if (input) {
+                newTaxSettings[layer] = parseFloat(input.value) || 0;
+            }
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/economic/country/${countryId}/tax-settings`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ tax_settings: newTaxSettings })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                if (window.showAlert) {
+                    await window.showAlert('Успех', 'Налоговые ставки успешно обновлены');
+                } else {
+                    alert('Налоговые ставки успешно обновлены');
+                }
+                await refresh();
+            } else {
+                if (window.showAlert) {
+                    await window.showAlert('Ошибка', data.error || 'Не удалось сохранить налоговые ставки');
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Не удалось сохранить налоговые ставки'));
+                }
+            }
+        } catch (e) {
+            console.error('Ошибка сохранения налоговых ставок:', e);
+            if (window.showAlert) {
+                await window.showAlert('Ошибка', 'Не удалось сохранить налоговые ставки');
+            } else {
+                alert('Ошибка сохранения налоговых ставок');
+            }
+        }
     }
 
     return {
         init,
         refresh,
         changeCountry,
-        selectCountry
+        selectCountry,
+        saveTaxSettings
     };
 })();
 
