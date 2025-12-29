@@ -524,7 +524,7 @@ body.dark-mode .resource-item:hover {
 
 .tax-item {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto auto auto;
     align-items: center;
     gap: 16px;
     padding: 16px;
@@ -582,7 +582,22 @@ body.dark-mode .resource-item:hover {
     transition: all 0.3s ease;
 }
 
-.tax-input:focus {
+.income-input {
+    width: 100px;
+    padding: 8px 12px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 1.1em;
+    font-weight: 600;
+    text-align: center;
+    font-family: 'Fira Mono', 'Courier New', monospace;
+    transition: all 0.3s ease;
+}
+
+.tax-input:focus,
+.income-input:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);

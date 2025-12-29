@@ -111,6 +111,20 @@ def init_db():
         )
     ''')
     
+    # Таблица настроек среднего заработка по классам
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS country_income_settings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            country_id TEXT NOT NULL,
+            social_layer TEXT NOT NULL,
+            avg_income REAL NOT NULL DEFAULT 10.0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (country_id) REFERENCES countries (id) ON DELETE CASCADE,
+            UNIQUE(country_id, social_layer)
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -798,19 +812,18 @@ async def get_balance_forecast(country_id: str, request: Request):
         for row in cursor.fetchall():
             tax_settings[row['social_layer']] = row['tax_rate']
         
+        # Получаем настройки среднего заработка
+        cursor.execute(
+            'SELECT social_layer, avg_income FROM country_income_settings WHERE country_id = ?',
+            (country_id,)
+        )
+        income_settings = {}
+        for row in cursor.fetchall():
+            income_settings[row['social_layer']] = row['avg_income']
+        
         # Расчет налоговых доходов
         tax_income = 0.0
         tax_breakdown = {}
-        
-        # Средний заработок на человека по социальным слоям
-        # Это базовый заработок, с которого берётся налог
-        income_per_person = {
-            'Элита': 100.0,
-            'Высший класс': 50.0,
-            'Средний класс': 20.0,
-            'Низший класс': 5.0,
-            'Маргиналы': 0.0
-        }
         
         for layer_name, percentage in social_layers.items():
             if layer_name == 'Маргиналы':
@@ -822,8 +835,8 @@ async def get_balance_forecast(country_id: str, request: Request):
             # Получаем ставку налога для этого слоя
             tax_rate = tax_settings.get(layer_name, 10.0)
             
-            # Получаем средний заработок для этого слоя
-            base_income = income_per_person.get(layer_name, 10.0)
+            # Получаем средний заработок для этого слоя (если не установлен, используем 10.0 как минимум)
+            base_income = income_settings.get(layer_name, 10.0)
             
             # Налог = население_слоя × средний_заработок × (налоговая_ставка / 100)
             # Например: 500,000 чел × 100 монет × 10% = 5,000,000 монет
@@ -833,14 +846,14 @@ async def get_balance_forecast(country_id: str, request: Request):
             tax_breakdown[layer_name] = {
                 'population': round(layer_population, 2),
                 'tax_rate': tax_rate,
+                'avg_income': base_income,
                 'income': round(layer_tax, 2)
             }
         
-        # Расчет расходов (пока что базовые)
-        base_expenses = population * 0.5  # 0.5 валюты на человека
+        # Расходы пока не учитываются (будут добавлены позже)
+        total_expenses = 0.0
         
         total_income = tax_income
-        total_expenses = base_expenses
         net_change = total_income - total_expenses
         
         return JSONResponse({
@@ -963,6 +976,91 @@ async def get_all_economy_history(request: Request):
         
     except Exception as e:
         print(f"Error getting all economy history: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.get("/country/{country_id}/income-settings")
+async def get_income_settings(country_id: str, request: Request):
+    """Получение настроек среднего заработка для страны"""
+    user = await get_current_user(request)
+    if not user or user['role'] not in ['admin', 'moderator']:
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('SELECT player_id FROM countries WHERE id = ?', (country_id,))
+        country = cursor.fetchone()
+        
+        if not country:
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        cursor.execute(
+            'SELECT social_layer, avg_income FROM country_income_settings WHERE country_id = ?',
+            (country_id,)
+        )
+        
+        income_settings = {}
+        for row in cursor.fetchall():
+            income_settings[row['social_layer']] = row['avg_income']
+        
+        # Установить значения по умолчанию для слоев, если не установлены
+        default_layers = {'Элита': 100.0, 'Высший класс': 50.0, 'Средний класс': 20.0, 'Низший класс': 5.0}
+        for layer, default_value in default_layers.items():
+            if layer not in income_settings:
+                income_settings[layer] = default_value
+        
+        return JSONResponse({
+            'success': True,
+            'income_settings': income_settings
+        })
+        
+    except Exception as e:
+        print(f"Error getting income settings: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.post("/country/{country_id}/income-settings")
+async def update_income_settings(country_id: str, request: Request):
+    """Обновление настроек среднего заработка для страны (только админ)"""
+    user = await get_current_user(request)
+    if not user or user['role'] not in ['admin', 'moderator']:
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    
+    data = await request.json()
+    income_settings = data.get('income_settings', {})
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute('SELECT player_id FROM countries WHERE id = ?', (country_id,))
+        country = cursor.fetchone()
+        
+        if not country:
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        now = datetime.now().isoformat()
+        
+        for social_layer, avg_income in income_settings.items():
+            cursor.execute(
+                '''INSERT INTO country_income_settings 
+                   (country_id, social_layer, avg_income, created_at, updated_at)
+                   VALUES (?, ?, ?, ?, ?)
+                   ON CONFLICT(country_id, social_layer) 
+                   DO UPDATE SET avg_income = ?, updated_at = ?''',
+                (country_id, social_layer, avg_income, now, now, avg_income, now)
+            )
+        
+        conn.commit()
+        return JSONResponse({'success': True, 'message': 'Настройки дохода обновлены'})
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"Error updating income settings: {e}")
         return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
     finally:
         conn.close()

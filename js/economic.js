@@ -6,6 +6,7 @@ const economicModule = (function() {
     let countryData = null;
     let balanceData = null;
     let taxSettings = {};
+    let incomeSettings = {};
 
     async function init(playerCountryId, playerCountryName = '') {
         console.log('economicModule.init вызван с параметрами:', { playerCountryId, playerCountryName });
@@ -37,6 +38,7 @@ const economicModule = (function() {
         await loadCountryResources();
         await loadBalanceData();
         await loadTaxSettings();
+        await loadIncomeSettings();
         renderEconomyView();
     }
 
@@ -120,6 +122,25 @@ const economicModule = (function() {
             }
         } catch (e) {
             console.error('Ошибка загрузки налоговых настроек:', e);
+        }
+    }
+
+    async function loadIncomeSettings() {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/economic/country/${countryId}/income-settings`, {
+                headers: { 'Authorization': token }
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                incomeSettings = data.income_settings;
+                console.log('Income settings loaded:', incomeSettings);
+            } else {
+                console.error('Ошибка загрузки настроек дохода:', data.message);
+            }
+        } catch (e) {
+            console.error('Ошибка загрузки настроек дохода:', e);
         }
     }
 
@@ -207,6 +228,7 @@ const economicModule = (function() {
                 <div class="tax-settings-grid">
                     ${['Элита', 'Высший класс', 'Средний класс', 'Низший класс'].map(layer => {
                         const taxRate = taxSettings[layer] || 10;
+                        const avgIncome = incomeSettings[layer] || 10;
                         const taxBreakdown = balanceData?.forecast?.tax_breakdown?.[layer];
                         return `
                             <div class="tax-item">
@@ -215,6 +237,7 @@ const economicModule = (function() {
                                     ${layer}
                                 </div>
                                 <div class="tax-controls">
+                                    <label style="font-size: 12px; margin-right: 5px;">Налог:</label>
                                     <input type="number" 
                                            class="tax-input" 
                                            id="tax-${layer}" 
@@ -224,9 +247,19 @@ const economicModule = (function() {
                                            step="1">
                                     <span class="tax-percent">%</span>
                                 </div>
+                                <div class="tax-controls">
+                                    <label style="font-size: 12px; margin-right: 5px;">Заработок:</label>
+                                    <input type="number" 
+                                           class="income-input" 
+                                           id="income-${layer}" 
+                                           value="${avgIncome}" 
+                                           min="0" 
+                                           step="0.1">
+                                    <span class="tax-percent">${balanceData?.currency || 'монет'}</span>
+                                </div>
                                 ${taxBreakdown ? `
                                     <div class="tax-income-info">
-                                        <span class="tax-population">${taxBreakdown.population.toFixed(0)} чел.</span>
+                                        <span class="tax-population">${taxBreakdown.population.toLocaleString('ru-RU')} чел.</span>
                                         <span class="tax-income">+${taxBreakdown.income.toFixed(2)} ${balanceData.currency}</span>
                                     </div>
                                 ` : ''}
@@ -243,8 +276,8 @@ const economicModule = (function() {
                             <span>Не платят налоги</span>
                         </div>
                     </div>
-                    <button class="btn-save-taxes" onclick="economicModule.saveTaxSettings()">
-                        <i class="fas fa-save"></i> Сохранить налоговые ставки
+                    <button class="btn-save-taxes" onclick="economicModule.saveSettings()">
+                        <i class="fas fa-save"></i> Сохранить все настройки
                     </button>
                 </div>
             </div>
@@ -350,6 +383,7 @@ const economicModule = (function() {
         await loadCountryResources();
         await loadBalanceData();
         await loadTaxSettings();
+        await loadIncomeSettings();
         renderEconomyView();
     }
     
@@ -373,23 +407,32 @@ const economicModule = (function() {
         await loadCountryResources();
         await loadBalanceData();
         await loadTaxSettings();
+        await loadIncomeSettings();
         renderEconomyView();
     }
 
-    async function saveTaxSettings() {
+    async function saveSettings() {
         const newTaxSettings = {};
-        const layers = ['Богачи', 'Знать', 'Средний класс', 'Нижний класс'];
+        const newIncomeSettings = {};
+        const layers = ['Элита', 'Высший класс', 'Средний класс', 'Низший класс'];
         
         for (const layer of layers) {
-            const input = document.getElementById(`tax-${layer}`);
-            if (input) {
-                newTaxSettings[layer] = parseFloat(input.value) || 0;
+            const taxInput = document.getElementById(`tax-${layer}`);
+            const incomeInput = document.getElementById(`income-${layer}`);
+            
+            if (taxInput) {
+                newTaxSettings[layer] = parseFloat(taxInput.value) || 0;
+            }
+            if (incomeInput) {
+                newIncomeSettings[layer] = parseFloat(incomeInput.value) || 0;
             }
         }
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/economic/country/${countryId}/tax-settings`, {
+            
+            // Сохраняем налоговые ставки
+            const taxResponse = await fetch(`/api/economic/country/${countryId}/tax-settings`, {
                 method: 'POST',
                 headers: {
                     'Authorization': token,
@@ -398,28 +441,41 @@ const economicModule = (function() {
                 body: JSON.stringify({ tax_settings: newTaxSettings })
             });
 
-            const data = await response.json();
+            const taxData = await taxResponse.json();
             
-            if (data.success) {
-                if (window.showAlert) {
-                    await window.showAlert('Успех', 'Налоговые ставки успешно обновлены');
-                } else {
-                    alert('Налоговые ставки успешно обновлены');
-                }
-                await refresh();
-            } else {
-                if (window.showAlert) {
-                    await window.showAlert('Ошибка', data.error || 'Не удалось сохранить налоговые ставки');
-                } else {
-                    alert('Ошибка: ' + (data.error || 'Не удалось сохранить налоговые ставки'));
-                }
+            if (!taxData.success) {
+                throw new Error(taxData.error || 'Ошибка сохранения налоговых ставок');
             }
-        } catch (e) {
-            console.error('Ошибка сохранения налоговых ставок:', e);
+            
+            // Сохраняем настройки дохода
+            const incomeResponse = await fetch(`/api/economic/country/${countryId}/income-settings`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ income_settings: newIncomeSettings })
+            });
+
+            const incomeData = await incomeResponse.json();
+            
+            if (!incomeData.success) {
+                throw new Error(incomeData.error || 'Ошибка сохранения настроек дохода');
+            }
+            
             if (window.showAlert) {
-                await window.showAlert('Ошибка', 'Не удалось сохранить налоговые ставки');
+                await window.showAlert('Успех', 'Все настройки успешно обновлены');
             } else {
-                alert('Ошибка сохранения налоговых ставок');
+                alert('Все настройки успешно обновлены');
+            }
+            await refresh();
+            
+        } catch (e) {
+            console.error('Ошибка сохранения настроек:', e);
+            if (window.showAlert) {
+                await window.showAlert('Ошибка', e.message || 'Не удалось сохранить настройки');
+            } else {
+                alert('Ошибка: ' + (e.message || 'Не удалось сохранить настройки'));
             }
         }
     }
@@ -429,7 +485,8 @@ const economicModule = (function() {
         refresh,
         changeCountry,
         selectCountry,
-        saveTaxSettings
+        saveSettings,
+        saveTaxSettings: saveSettings  // алиас для обратной совместимости
     };
 })();
 

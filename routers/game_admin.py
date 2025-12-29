@@ -166,15 +166,17 @@ async def next_turn(request: Request):
             for row in cursor.fetchall():
                 tax_settings[row['social_layer']] = row['tax_rate']
             
+            # Получаем настройки среднего заработка
+            cursor.execute(
+                'SELECT social_layer, avg_income FROM country_income_settings WHERE country_id = ?',
+                (country_id,)
+            )
+            income_settings = {}
+            for row in cursor.fetchall():
+                income_settings[row['social_layer']] = row['avg_income']
+            
             # Расчет налоговых доходов
             tax_income = 0.0
-            income_per_person = {
-                'Элита': 100.0,
-                'Высший класс': 50.0,
-                'Средний класс': 20.0,
-                'Низший класс': 5.0,
-                'Маргиналы': 0.0
-            }
             
             for layer_name, percentage in social_layers.items():
                 if layer_name == 'Маргиналы':
@@ -187,18 +189,17 @@ async def next_turn(request: Request):
                 tax_rate = tax_settings.get(layer_name, 10.0)
                 
                 # Получаем средний заработок для этого слоя
-                base_income = income_per_person.get(layer_name, 10.0)
+                base_income = income_settings.get(layer_name, 10.0)
                 
                 # Налог = население_слоя × средний_заработок × (налоговая_ставка / 100)
                 # Например: 500,000 чел × 100 монет × 10% = 5,000,000 монет
                 layer_tax = layer_population * base_income * (tax_rate / 100.0)
                 tax_income += layer_tax
             
-            # Расчет расходов
-            base_expenses = population * 0.5
+            # Расходы пока не учитываются
+            total_expenses = 0.0
             
             total_income = tax_income
-            total_expenses = base_expenses
             balance_end = balance_start + total_income - total_expenses
             
             # Обновляем баланс страны
