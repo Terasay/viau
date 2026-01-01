@@ -184,8 +184,13 @@ function renderTechTree() {
     container.appendChild(header);
     console.log('Header added');
     
-    // Секция образования и науки (только для админов)
-    if (isAdminView && viewingCountryId) {
+    // Секция образования и науки
+    if (viewingCountryId) {
+        const education = educationScienceData.education_level || 0;
+        const science = educationScienceData.science_level || 0;
+        
+        if (isAdminView) {
+            // Админ видит слайдеры для редактирования
         const eduSciSection = document.createElement('div');
         eduSciSection.className = 'tech-education-science-section';
         
@@ -246,8 +251,40 @@ function renderTechTree() {
             </button>
         `;
         
-        container.appendChild(eduSciSection);
-        console.log('Education/science section added');
+            container.appendChild(eduSciSection);
+            console.log('Education/science section added (admin)');
+        } else {
+            // Игрок видит только текущие значения
+            const playerEduSciSection = document.createElement('div');
+            playerEduSciSection.className = 'tech-education-science-section player-view';
+            
+            playerEduSciSection.innerHTML = `
+                <div class="education-science-container">
+                    <div class="param-card">
+                        <div class="param-header">
+                            <i class="fas fa-graduation-cap"></i>
+                            <h4>Образованность населения</h4>
+                        </div>
+                        <div class="param-value-display">
+                            <span class="param-value-large">${education.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="param-card">
+                        <div class="param-header">
+                            <i class="fas fa-flask"></i>
+                            <h4>Уровень науки</h4>
+                        </div>
+                        <div class="param-value-display">
+                            <span class="param-value-large">${science.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(playerEduSciSection);
+            console.log('Education/science section added (player)');
+        }
     }
     
     const linesContainer = document.createElement('div');
@@ -1291,7 +1328,7 @@ function updateCountryIndicator(countryName) {
     `;
 }
 
-function updateResearchPointsDisplay() {
+async function updateResearchPointsDisplay() {
     const user = window.gameState?.getUser();
     const isAdmin = user && (user.role === 'admin' || user.role === 'moderator');
     
@@ -1305,10 +1342,14 @@ function updateResearchPointsDisplay() {
     }
     
     if (rpDisplay) {
+        // Рассчитываем прогноз прироста
+        const gain = await calculateResearchPointsGain();
+        const gainText = gain > 0 ? ` <span style="color: #22c55e">(+${gain})</span>` : '';
+        
         if (isAdmin) {
             rpDisplay.innerHTML = `
                 <i class="fas fa-flask"></i>
-                <span>ОИ страны: <strong>${currentResearchPoints}</strong></span>
+                <span>ОИ страны: <strong>${currentResearchPoints}</strong>${gainText}</span>
                 <button class="btn-edit-rp" onclick="window.techModule.editResearchPoints()" title="Редактировать ОИ">
                     <i class="fas fa-edit"></i>
                 </button>
@@ -1316,7 +1357,7 @@ function updateResearchPointsDisplay() {
         } else {
             rpDisplay.innerHTML = `
                 <i class="fas fa-flask"></i>
-                <span>Очки исследований: <strong>${currentResearchPoints}</strong></span>
+                <span>Очки исследований: <strong>${currentResearchPoints}</strong>${gainText}</span>
             `;
         }
     }
@@ -1487,6 +1528,36 @@ async function changeCountry() {
     await showCountrySelector();
 }
 
+async function calculateResearchPointsGain() {
+    if (!viewingCountryId) return 0;
+    
+    const token = localStorage.getItem('token');
+    
+    try {
+        // Получаем население
+        const statsResponse = await fetch(`/api/statistics/country/${viewingCountryId}`, {
+            headers: { 'Authorization': token }
+        });
+        
+        if (!statsResponse.ok) return 0;
+        
+        const statsData = await statsResponse.json();
+        if (!statsData.success) return 0;
+        
+        const population = statsData.population || 0; // в миллионах
+        const education = educationScienceData.education_level || 0;
+        const science = educationScienceData.science_level || 0;
+        
+        // Формула: (P × E × 4) + (S × 35)
+        const gain = (population * education * 4) + (science * 35);
+        return Math.round(gain);
+        
+    } catch (error) {
+        console.error('Error calculating research gain:', error);
+        return 0;
+    }
+}
+
 function updateParamDisplay(param, value) {
     const valueElement = document.getElementById(`value-${param}`);
     const progressElement = document.getElementById(`progress-${param}`);
@@ -1498,6 +1569,9 @@ function updateParamDisplay(param, value) {
     if (progressElement) {
         progressElement.style.width = `${value}%`;
     }
+    
+    // Пересчитываем прогноз ОИ при изменении параметров
+    updateResearchPointsDisplay();
 }
 
 async function saveEducationScience() {
@@ -1560,5 +1634,6 @@ window.techModule = {
     toggleHiddenTechs: toggleHiddenTechs,
     changeCountry: changeCountry,
     updateParamDisplay: updateParamDisplay,
-    saveEducationScience: saveEducationScience
+    saveEducationScience: saveEducationScience,
+    calculateResearchPointsGain: calculateResearchPointsGain
 };

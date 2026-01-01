@@ -947,6 +947,10 @@ body.dark-mode .btn-toggle-hidden {
     border: 1px solid var(--border);
 }
 
+.tech-education-science-section.player-view {
+    padding: 16px;
+}
+
 .education-science-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -954,11 +958,31 @@ body.dark-mode .btn-toggle-hidden {
     margin-bottom: 20px;
 }
 
+.player-view .education-science-container {
+    margin-bottom: 0;
+}
+
 .param-card {
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
     border: 1px solid rgba(99, 102, 241, 0.2);
     border-radius: var(--radius-lg);
     padding: 20px;
+}
+
+.player-view .param-card {
+    padding: 16px;
+}
+
+.param-value-display {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.param-value-large {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: var(--primary);
+    font-family: 'Fira Mono', 'Courier New', monospace;
 }
 
 .param-header {
