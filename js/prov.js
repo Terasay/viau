@@ -627,13 +627,8 @@ let provincesModule = (function() {
     };
 })();
 
-// Инициализация при загрузке DOM
-document.addEventListener('DOMContentLoaded', () => {
-    // Ждем инициализации игры
-    setTimeout(() => {
-        provincesModule.init();
-    }, 1000);
-});
-
 // Экспортируем модуль глобально
 window.provincesModule = provincesModule;
+
+// Инициализируем модуль сразу после экспорта
+provincesModule.init();
