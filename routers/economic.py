@@ -897,6 +897,117 @@ async def get_balance_forecast(country_id: str, request: Request):
     finally:
         conn.close()
 
+@router.get("/country/{country_id}/education-science")
+async def get_education_science(country_id: str, request: Request):
+    """Получение параметров образования и науки для страны"""
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Проверка доступа: админ или игрок своей страны
+        cursor.execute('SELECT player_id FROM countries WHERE id = ?', (country_id,))
+        country = cursor.fetchone()
+        
+        if not country:
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        if user['role'] not in ['admin', 'moderator']:
+            if country['player_id'] != user['id']:
+                return JSONResponse({'success': False, 'error': 'Доступ запрещён'}, status_code=403)
+        
+        # Получаем данные образования и науки
+        cursor.execute(
+            'SELECT education_level, science_level FROM country_education_science WHERE country_id = ?',
+            (country_id,)
+        )
+        data = cursor.fetchone()
+        
+        if data:
+            return JSONResponse({
+                'success': True,
+                'education_level': data['education_level'],
+                'science_level': data['science_level']
+            })
+        else:
+            # Если нет данных, создаём с нулевыми значениями
+            now = datetime.now().isoformat()
+            cursor.execute(
+                '''INSERT INTO country_education_science 
+                   (country_id, education_level, science_level, created_at, updated_at)
+                   VALUES (?, 0.0, 0.0, ?, ?)''',
+                (country_id, now, now)
+            )
+            conn.commit()
+            return JSONResponse({
+                'success': True,
+                'education_level': 0.0,
+                'science_level': 0.0
+            })
+    
+    except Exception as e:
+        print(f"Error getting education/science data: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.post("/country/{country_id}/education-science")
+async def update_education_science(country_id: str, request: Request):
+    """Обновление параметров образования и науки (только для админа)"""
+    user = await get_current_user(request)
+    if not user or user['role'] != 'admin':
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    
+    data = await request.json()
+    education_level = data.get('education_level')
+    science_level = data.get('science_level')
+    
+    if education_level is None or science_level is None:
+        return JSONResponse({'success': False, 'error': 'Отсутствуют обязательные параметры'}, status_code=400)
+    
+    # Валидация диапазона 0-100
+    if education_level < 0 or education_level > 100:
+        return JSONResponse({'success': False, 'error': 'Образованность должна быть от 0 до 100'}, status_code=400)
+    if science_level < 0 or science_level > 100:
+        return JSONResponse({'success': False, 'error': 'Уровень науки должен быть от 0 до 100'}, status_code=400)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Проверка существования страны
+        cursor.execute('SELECT id FROM countries WHERE id = ?', (country_id,))
+        if not cursor.fetchone():
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        now = datetime.now().isoformat()
+        cursor.execute(
+            '''INSERT INTO country_education_science 
+               (country_id, education_level, science_level, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?)
+               ON CONFLICT(country_id) 
+               DO UPDATE SET education_level = ?, science_level = ?, updated_at = ?''',
+            (country_id, education_level, science_level, now, now, 
+             education_level, science_level, now)
+        )
+        conn.commit()
+        
+        return JSONResponse({
+            'success': True,
+            'education_level': education_level,
+            'science_level': science_level
+        })
+    
+    except Exception as e:
+        print(f"Error updating education/science: {e}")
+        conn.rollback()
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
 @router.get("/country/{country_id}/economy-history")
 async def get_economy_history(country_id: str, request: Request):
     """Получение истории экономики страны (только для админа)"""
@@ -1086,3 +1197,115 @@ async def update_income_settings(country_id: str, request: Request):
         return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
     finally:
         conn.close()
+
+@router.get("/country/{country_id}/education-science")
+async def get_education_science(country_id: str, request: Request):
+    """Получение параметров образования и науки для страны"""
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Проверка доступа: админ или игрок своей страны
+        cursor.execute('SELECT player_id FROM countries WHERE id = ?', (country_id,))
+        country = cursor.fetchone()
+        
+        if not country:
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        if user['role'] not in ['admin', 'moderator']:
+            if country['player_id'] != user['id']:
+                return JSONResponse({'success': False, 'error': 'Доступ запрещён'}, status_code=403)
+        
+        # Получаем данные образования и науки
+        cursor.execute(
+            'SELECT education_level, science_level FROM country_education_science WHERE country_id = ?',
+            (country_id,)
+        )
+        data = cursor.fetchone()
+        
+        if data:
+            return JSONResponse({
+                'success': True,
+                'education_level': data['education_level'],
+                'science_level': data['science_level']
+            })
+        else:
+            # Если нет данных, создаём с нулевыми значениями
+            now = datetime.now().isoformat()
+            cursor.execute(
+                '''INSERT INTO country_education_science 
+                   (country_id, education_level, science_level, created_at, updated_at)
+                   VALUES (?, 0.0, 0.0, ?, ?)''',
+                (country_id, now, now)
+            )
+            conn.commit()
+            return JSONResponse({
+                'success': True,
+                'education_level': 0.0,
+                'science_level': 0.0
+            })
+    
+    except Exception as e:
+        print(f"Error getting education/science data: {e}")
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.post("/country/{country_id}/education-science")
+async def update_education_science(country_id: str, request: Request):
+    """Обновление параметров образования и науки (только для админа)"""
+    user = await get_current_user(request)
+    if not user or user['role'] != 'admin':
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    
+    data = await request.json()
+    education_level = data.get('education_level')
+    science_level = data.get('science_level')
+    
+    if education_level is None or science_level is None:
+        return JSONResponse({'success': False, 'error': 'Отсутствуют обязательные параметры'}, status_code=400)
+    
+    # Валидация диапазона 0-100
+    if education_level < 0 or education_level > 100:
+        return JSONResponse({'success': False, 'error': 'Образованность должна быть от 0 до 100'}, status_code=400)
+    if science_level < 0 or science_level > 100:
+        return JSONResponse({'success': False, 'error': 'Уровень науки должен быть от 0 до 100'}, status_code=400)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Проверка существования страны
+        cursor.execute('SELECT id FROM countries WHERE id = ?', (country_id,))
+        if not cursor.fetchone():
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        now = datetime.now().isoformat()
+        cursor.execute(
+            '''INSERT INTO country_education_science 
+               (country_id, education_level, science_level, created_at, updated_at)
+               VALUES (?, ?, ?, ?, ?)
+               ON CONFLICT(country_id) 
+               DO UPDATE SET education_level = ?, science_level = ?, updated_at = ?''',
+            (country_id, education_level, science_level, now, now, 
+             education_level, science_level, now)
+        )
+        conn.commit()
+        
+        return JSONResponse({
+            'success': True,
+            'education_level': education_level,
+            'science_level': science_level
+        })
+    
+    except Exception as e:
+        print(f"Error updating education/science: {e}")
+        conn.rollback()
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+

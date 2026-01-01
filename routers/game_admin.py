@@ -237,6 +237,28 @@ async def next_turn(request: Request):
                  total_expenses, tax_income, json.dumps(tax_settings), now,
                  balance_end, total_income, total_expenses, tax_income)
             )
+            
+            # Начисление очков исследований (ОИ) на основе образования и науки
+            cursor.execute(
+                'SELECT education_level, science_level FROM country_education_science WHERE country_id = ?',
+                (country_id,)
+            )
+            edu_sci = cursor.fetchone()
+            
+            if edu_sci and stats:
+                education = edu_sci['education_level']  # E (0-100)
+                science = edu_sci['science_level']  # S (0-100)
+                population_millions = stats['population']  # P (в миллионах)
+                
+                # Формула: (P × E × 4) + (S × 35)
+                research_gain = (population_millions * education * 4) + (science * 35)
+                research_gain = int(round(research_gain))
+                
+                if research_gain > 0:
+                    cursor.execute(
+                        'UPDATE countries SET research_points = research_points + ? WHERE id = ?',
+                        (research_gain, country_id)
+                    )
         
         # Обновляем номер хода
         now = datetime.now().isoformat()

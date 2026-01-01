@@ -9,6 +9,7 @@ let viewingCountryId = null;
 let currentResearchPoints = 0;
 let showHiddenTechs = localStorage.getItem('showHiddenTechs') === 'true';
 let isAdminView = false;
+let educationScienceData = {};
 
 async function initTechnologies(category = 'land_forces') {
     console.log('Initializing tech tree for category:', category);
@@ -103,6 +104,23 @@ async function initTechnologies(category = 'land_forces') {
                     currentResearchPoints = rpData.research_points || 0;
                 }
             }
+            
+            // Загружаем данные образования и науки
+            console.log('Fetching education/science data for:', viewingCountryId);
+            const eduSciResponse = await fetch(`/api/economic/country/${viewingCountryId}/education-science`, {
+                headers: { 'Authorization': token }
+            });
+            
+            if (eduSciResponse.ok) {
+                const eduSciData = await eduSciResponse.json();
+                console.log('Education/science data:', eduSciData);
+                if (eduSciData.success) {
+                    educationScienceData = {
+                        education_level: eduSciData.education_level || 0,
+                        science_level: eduSciData.science_level || 0
+                    };
+                }
+            }
         } else {
             playerProgress = {
                 researched: [],
@@ -165,6 +183,80 @@ function renderTechTree() {
     header.innerHTML = headerHTML;
     container.appendChild(header);
     console.log('Header added');
+    
+    // Секция образования и науки (только для админов)
+    if (isAdminView && viewingCountryId) {
+        const eduSciSection = document.createElement('div');
+        eduSciSection.className = 'tech-education-science-section';
+        
+        const education = educationScienceData.education_level || 0;
+        const science = educationScienceData.science_level || 0;
+        
+        eduSciSection.innerHTML = `
+            <div class="education-science-container">
+                <div class="param-card">
+                    <div class="param-header">
+                        <i class="fas fa-graduation-cap"></i>
+                        <h4>Образованность населения</h4>
+                    </div>
+                    <div class="param-slider-container">
+                        <div class="param-slider-wrapper">
+                            <input type="range" 
+                                   id="education-slider" 
+                                   class="param-slider"
+                                   min="0" 
+                                   max="100" 
+                                   step="0.1"
+                                   value="${education}"
+                                   oninput="window.techModule.updateParamDisplay('education', this.value)">
+                            <div class="param-slider-track">
+                                <div id="progress-education" class="param-slider-progress" style="width: ${education}%"></div>
+                            </div>
+                        </div>
+                        <div id="value-education" class="param-slider-value">${education.toFixed(1)}</div>
+                    </div>
+                    <p class="param-description">Влияет на прирост ОИ: <strong>P × E × 4</strong></p>
+                </div>
+                
+                <div class="param-card">
+                    <div class="param-header">
+                        <i class="fas fa-flask"></i>
+                        <h4>Уровень науки</h4>
+                    </div>
+                    <div class="param-slider-container">
+                        <div class="param-slider-wrapper">
+                            <input type="range" 
+                                   id="science-slider" 
+                                   class="param-slider"
+                                   min="0" 
+                                   max="100" 
+                                   step="0.1"
+                                   value="${science}"
+                                   oninput="window.techModule.updateParamDisplay('science', this.value)">
+                            <div class="param-slider-track">
+                                <div id="progress-science" class="param-slider-progress" style="width: ${science}%"></div>
+                            </div>
+                        </div>
+                        <div id="value-science" class="param-slider-value">${science.toFixed(1)}</div>
+                    </div>
+                    <p class="param-description">Влияет на прирост ОИ: <strong>S × 35</strong></p>
+                </div>
+            </div>
+            
+            <div class="research-formula-info">
+                <i class="fas fa-calculator"></i>
+                <p><strong>Прирост ОИ за ход = (P × E × 4) + (S × 35)</strong></p>
+                <p class="formula-legend">где P — население (млн), E — образованность (%), S — уровень науки (%)</p>
+            </div>
+            
+            <button class="btn-save-education-science" onclick="window.techModule.saveEducationScience()">
+                <i class="fas fa-save"></i> Сохранить параметры
+            </button>
+        `;
+        
+        container.appendChild(eduSciSection);
+        console.log('Education/science section added');
+    }
     
     const linesContainer = document.createElement('div');
     linesContainer.className = 'tech-lines-container';
@@ -1403,6 +1495,68 @@ async function changeCountry() {
     await showCountrySelector();
 }
 
+function updateParamDisplay(param, value) {
+    const valueElement = document.getElementById(`value-${param}`);
+    const progressElement = document.getElementById(`progress-${param}`);
+    
+    if (valueElement) {
+        valueElement.textContent = parseFloat(value).toFixed(1);
+    }
+    
+    if (progressElement) {
+        progressElement.style.width = `${value}%`;
+    }
+}
+
+async function saveEducationScience() {
+    if (!viewingCountryId) {
+        showError('Страна не выбрана');
+        return;
+    }
+    
+    const educationSlider = document.getElementById('education-slider');
+    const scienceSlider = document.getElementById('science-slider');
+    
+    if (!educationSlider || !scienceSlider) {
+        showError('Элементы интерфейса не найдены');
+        return;
+    }
+    
+    const education = parseFloat(educationSlider.value);
+    const science = parseFloat(scienceSlider.value);
+    
+    const token = localStorage.getItem('token');
+    
+    try {
+        const response = await fetch(`/api/economic/country/${viewingCountryId}/education-science`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({
+                education_level: education,
+                science_level: science
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            educationScienceData = {
+                education_level: education,
+                science_level: science
+            };
+            showSuccess('Параметры образования и науки успешно сохранены!');
+        } else {
+            showError(data.error || 'Не удалось сохранить параметры');
+        }
+    } catch (error) {
+        console.error('Error saving education/science:', error);
+        showError('Произошла ошибка при сохранении параметров');
+    }
+}
+
 window.techModule = {
     init: initTechnologies,
     showInfo: showTechInfo,
@@ -1412,5 +1566,7 @@ window.techModule = {
     selectCountry: selectCountry,
     editResearchPoints: editResearchPoints,
     toggleHiddenTechs: toggleHiddenTechs,
-    changeCountry: changeCountry
+    changeCountry: changeCountry,
+    updateParamDisplay: updateParamDisplay,
+    saveEducationScience: saveEducationScience
 };
