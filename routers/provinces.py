@@ -112,7 +112,7 @@ async def get_provinces(country_id: str, request: Request):
             return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
         
         if user['role'] not in ['admin', 'moderator']:
-            if country['player_id'] != user['user_id']:
+            if country['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Нет доступа к этой стране'}, status_code=403)
         
         # Получаем провинции
@@ -290,7 +290,7 @@ async def get_province_buildings(province_id: int, request: Request):
             return JSONResponse({'success': False, 'error': 'Провинция не найдена'}, status_code=404)
         
         if user['role'] not in ['admin', 'moderator']:
-            if province['player_id'] != user['user_id']:
+            if province['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Нет доступа к этой провинции'}, status_code=403)
         
         # Получаем постройки
@@ -411,7 +411,7 @@ async def build_building(province_id: int, request: Request):
             return JSONResponse({'success': False, 'error': 'Провинция не найдена'}, status_code=404)
         
         if user['role'] not in ['admin', 'moderator']:
-            if province['player_id'] != user['user_id']:
+            if province['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Нет доступа к этой провинции'}, status_code=403)
         
         # Получаем данные типа здания
@@ -487,7 +487,7 @@ async def demolish_building(building_id: int, request: Request):
             return JSONResponse({'success': False, 'error': 'Здание не найдено'}, status_code=404)
         
         if user['role'] not in ['admin', 'moderator']:
-            if building['player_id'] != user['user_id']:
+            if building['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Нет доступа к этому зданию'}, status_code=403)
         
         # Удаляем здание
