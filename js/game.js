@@ -465,6 +465,16 @@ window.selectCountryForEconomy = function(countryId, countryName) {
     }
 };
 
+window.selectCountryForProvinces = function(countryId, countryName) {
+    console.log('selectCountryForProvinces вызвана:', { countryId, countryName });
+    closeModal();
+    if (window.provincesModule && window.provincesModule.selectCountry) {
+        window.provincesModule.selectCountry(countryId, countryName);
+    } else {
+        console.error('provincesModule.selectCountry не найден');
+    }
+};
+
 window.showCountrySelectionModal = async function(sectionType = 'technologies') {
     console.log('showCountrySelectionModal вызвана с типом:', sectionType);
     const modal = document.getElementById('modal-overlay');
@@ -481,6 +491,8 @@ window.showCountrySelectionModal = async function(sectionType = 'technologies') 
 
     const titleText = sectionType === 'economy' 
         ? 'Выбор страны для просмотра экономики' 
+        : sectionType === 'provinces'
+        ? 'Выбор страны для просмотра провинций'
         : 'Выбор страны для управления технологиями';
     modalTitle.textContent = titleText;
     console.log('Заголовок модального окна установлен:', titleText);
@@ -507,7 +519,11 @@ window.showCountrySelectionModal = async function(sectionType = 'technologies') 
         html += '<div style="display: grid; gap: 12px;">';
 
         data.countries.forEach(country => {
-            const functionName = sectionType === 'economy' ? 'selectCountryForEconomy' : 'selectCountryForTech';
+            const functionName = sectionType === 'economy' 
+                ? 'selectCountryForEconomy' 
+                : sectionType === 'provinces'
+                ? 'selectCountryForProvinces'
+                : 'selectCountryForTech';
             html += `
                 <div class="country-select-card" onclick="${functionName}('${country.id}', '${country.country_name}')" style="
                     padding: 16px;

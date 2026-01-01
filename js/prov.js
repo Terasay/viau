@@ -16,8 +16,13 @@ let provincesModule = (function() {
             if (user && country) {
                 isAdminView = user.role === 'admin' || user.role === 'moderator';
                 currentCountryId = country.id;
-                currentCountryName = country.name;
+                currentCountryName = country.country_name || country.name || 'Неизвестная страна';
+                console.log('Provinces module: country set', currentCountryId, currentCountryName);
                 // Не загружаем данные сразу, будем загружать при открытии вкладки
+            } else if (user && user.role === 'admin') {
+                // Для админа без выбранной страны устанавливаем режим админа
+                isAdminView = true;
+                console.log('Provinces module: admin mode without selected country');
             }
         }
     }
@@ -50,6 +55,39 @@ let provincesModule = (function() {
     }
 
     async function ensureDataLoaded() {
+        // Проверяем, выбрана ли страна
+        if (!currentCountryId) {
+            // Если админ и страна не выбрана - показываем окно выбора
+            if (isAdminView) {
+                const container = document.getElementById('provinces-content');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="placeholder-card">
+                            <i class="fas fa-city fa-3x"></i>
+                            <h3>Выберите страну</h3>
+                            <p>Для просмотра провинций выберите страну из списка</p>
+                            <button class="btn-primary" onclick="window.showCountrySelectionModal('provinces')">
+                                <i class="fas fa-globe"></i> Выбрать страну
+                            </button>
+                        </div>
+                    `;
+                }
+            } else {
+                // Для игрока показываем ошибку
+                const container = document.getElementById('provinces-content');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="placeholder-card">
+                            <i class="fas fa-exclamation-triangle fa-3x" style="color: var(--error);"></i>
+                            <h3>Ошибка загрузки</h3>
+                            <p>Не удалось определить вашу страну. Попробуйте перезагрузить страницу.</p>
+                        </div>
+                    `;
+                }
+            }
+            return;
+        }
+        
         // Загружаем данные только если они еще не загружены
         if (provinces.length === 0 && buildingTypes.length === 0) {
             await loadData();
@@ -515,6 +553,19 @@ let provincesModule = (function() {
         }
     }
 
+    function selectCountry(countryId, countryName) {
+        currentCountryId = countryId;
+        currentCountryName = countryName;
+        console.log('Provinces: country selected', countryId, countryName);
+        
+        // Сбрасываем загруженные данные
+        provinces = [];
+        buildingTypes = [];
+        
+        // Загружаем данные для новой страны
+        ensureDataLoaded();
+    }
+
     // Вспомогательные функции для модальных окон
     function showSuccess(title, message) {
         return new Promise((resolve) => {
@@ -564,6 +615,7 @@ let provincesModule = (function() {
     return {
         init,
         ensureDataLoaded,
+        selectCountry,
         showBuildings,
         showBuildMenu,
         buildBuilding,
