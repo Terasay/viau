@@ -1344,7 +1344,7 @@ async function updateResearchPointsDisplay() {
     if (rpDisplay) {
         // Рассчитываем прогноз прироста
         const gain = await calculateResearchPointsGain();
-        const gainText = gain > 0 ? ` <span style="color: #238c4aff">(+${gain})</span>` : '';
+        const gainText = gain > 0 ? ` <span style="color: #00b542ff">(+${gain})</span>` : '';
         
         if (isAdmin) {
             rpDisplay.innerHTML = `
