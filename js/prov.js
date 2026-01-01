@@ -62,6 +62,11 @@ let provincesModule = (function() {
     }
 
     async function ensureDataLoaded() {
+        // Инициализируем модуль при первом вызове
+        if (!isInitialized) {
+            await init();
+        }
+        
         // Проверяем, выбрана ли страна
         if (!currentCountryId) {
             // Если админ и страна не выбрана - показываем окно выбора
