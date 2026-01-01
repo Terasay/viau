@@ -89,6 +89,7 @@ init_db()
 
 async def get_current_user(request: Request):
     """Получение текущего пользователя из токена"""
+    sys.path.append('..')
     from main import get_current_user as main_get_current_user
     return await main_get_current_user(request)
 
