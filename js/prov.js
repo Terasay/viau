@@ -5,8 +5,13 @@ let provincesModule = (function() {
     let isAdminView = false;
     let provinces = [];
     let buildingTypes = [];
+    let isInitialized = false; // Флаг инициализации
 
     async function init() {
+        if (isInitialized) {
+            return; // Уже инициализирован
+        }
+        
         console.log('Provinces module initialized');
         const gameState = window.gameState;
         if (gameState) {
@@ -25,6 +30,8 @@ let provincesModule = (function() {
                 console.log('Provinces module: admin mode without selected country');
             }
         }
+        
+        isInitialized = true;
     }
 
     async function loadData() {
@@ -629,6 +636,3 @@ let provincesModule = (function() {
 
 // Экспортируем модуль глобально
 window.provincesModule = provincesModule;
-
-// Инициализируем модуль сразу после экспорта
-provincesModule.init();
