@@ -17,13 +17,16 @@ let provincesModule = (function() {
                 isAdminView = user.role === 'admin' || user.role === 'moderator';
                 currentCountryId = country.id;
                 currentCountryName = country.name;
-                await loadData();
+                // Не загружаем данные сразу, будем загружать при открытии вкладки
             }
         }
     }
 
     async function loadData() {
-        if (!currentCountryId) return;
+        if (!currentCountryId) {
+            console.log('No country selected for provinces');
+            return;
+        }
         
         try {
             await Promise.all([
@@ -33,7 +36,25 @@ let provincesModule = (function() {
             render();
         } catch (error) {
             console.error('Error loading provinces data:', error);
-            showError('Ошибка загрузки данных провинций');
+            const container = document.getElementById('provinces-content');
+            if (container) {
+                container.innerHTML = `
+                    <div class="placeholder-card">
+                        <i class="fas fa-exclamation-triangle fa-3x" style="color: var(--error);"></i>
+                        <h3>Ошибка загрузки</h3>
+                        <p>Не удалось загрузить данные провинций. Попробуйте перезагрузить страницу.</p>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    async function ensureDataLoaded() {
+        // Загружаем данные только если они еще не загружены
+        if (provinces.length === 0 && buildingTypes.length === 0) {
+            await loadData();
+        } else {
+            render();
         }
     }
 
@@ -542,6 +563,7 @@ let provincesModule = (function() {
     // Публичный API модуля
     return {
         init,
+        ensureDataLoaded,
         showBuildings,
         showBuildMenu,
         buildBuilding,

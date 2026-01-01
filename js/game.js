@@ -310,6 +310,10 @@ function setupNavigation() {
                     window.economicModule.init(currentCountry.id, currentCountry.country_name);
                 }
             }
+            
+            if (sectionName === 'provinces' && window.provincesModule) {
+                window.provincesModule.ensureDataLoaded();
+            }
         });
     });
     
