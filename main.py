@@ -396,6 +396,10 @@ async def get_current_user(request: Request):
 	if not token:
 		return None
 	
+	# Удаляем префикс "Bearer " если он есть
+	if token.startswith('Bearer '):
+		token = token[7:]
+	
 	payload = decode_jwt(token)
 	if not payload:
 		return None
