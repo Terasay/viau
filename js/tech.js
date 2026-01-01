@@ -215,7 +215,6 @@ function renderTechTree() {
                         </div>
                         <div id="value-education" class="param-slider-value">${education.toFixed(1)}</div>
                     </div>
-                    <p class="param-description">Влияет на прирост ОИ: <strong>P × E × 4</strong></p>
                 </div>
                 
                 <div class="param-card">
@@ -239,14 +238,7 @@ function renderTechTree() {
                         </div>
                         <div id="value-science" class="param-slider-value">${science.toFixed(1)}</div>
                     </div>
-                    <p class="param-description">Влияет на прирост ОИ: <strong>S × 35</strong></p>
                 </div>
-            </div>
-            
-            <div class="research-formula-info">
-                <i class="fas fa-calculator"></i>
-                <p><strong>Прирост ОИ за ход = (P × E × 4) + (S × 35)</strong></p>
-                <p class="formula-legend">где P — население (млн), E — образованность (%), S — уровень науки (%)</p>
             </div>
             
             <button class="btn-save-education-science" onclick="window.techModule.saveEducationScience()">

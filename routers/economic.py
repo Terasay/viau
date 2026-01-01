@@ -111,6 +111,19 @@ def init_db():
         )
     ''')
     
+    # Таблица параметров образования и науки
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS country_education_science (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            country_id TEXT NOT NULL UNIQUE,
+            education_level REAL NOT NULL DEFAULT 0.0,
+            science_level REAL NOT NULL DEFAULT 0.0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (country_id) REFERENCES countries (id) ON DELETE CASCADE
+        )
+    ''')
+    
     # Таблица настроек среднего заработка по классам
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS country_income_settings (
