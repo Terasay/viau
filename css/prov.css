@@ -120,13 +120,17 @@
 }
 
 /* Иконки в кнопках */
+.btn-primary,
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .btn-primary i,
 .btn-secondary i {
-    display: inline-block;
-    vertical-align: middle;
     margin-right: 6px;
-    position: relative;
-    top: -1px;
+    font-size: 1em;
 }
 
 /* Список построек */
