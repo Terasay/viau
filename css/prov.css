@@ -301,15 +301,15 @@
 
 .building-type-card .btn-primary {
     width: 100%;
-    padding: 4px 8px;
-    font-size: 0.75em;
+    padding: 2px 4px;
+    font-size: 0.65em;
     margin-top: 5px;
-    line-height: 1.2;
+    line-height: 1;
 }
 /* Кнопка "Построить здание" в начале списка построек */
 #modal-body > .btn-primary:first-child {
-    padding: 6px 12px;
-    font-size: 0.85em;
+    padding: 4px 8px;
+    font-size: 0.75em;
 }
 /* Формы */
 .form-group {
