@@ -123,9 +123,10 @@
 .btn-primary i,
 .btn-secondary i {
     display: inline-block;
-    vertical-align: baseline;
+    vertical-align: middle;
     margin-right: 6px;
-    line-height: 1;
+    position: relative;
+    top: -1px;
 }
 
 /* Список построек */
