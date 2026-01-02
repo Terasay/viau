@@ -301,12 +301,16 @@
 
 .building-type-card .btn-primary {
     width: 100%;
-    padding: 6px 10px;
-    font-size: 0.8em;
+    padding: 4px 8px;
+    font-size: 0.75em;
     margin-top: 5px;
     line-height: 1.2;
 }
-
+/* Кнопка "Построить здание" в начале списка построек */
+#modal-body > .btn-primary:first-child {
+    padding: 6px 12px;
+    font-size: 0.85em;
+}
 /* Формы */
 .form-group {
     margin-bottom: 20px;
