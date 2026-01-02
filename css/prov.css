@@ -122,8 +122,10 @@
 /* Иконки в кнопках */
 .btn-primary i,
 .btn-secondary i {
-    vertical-align: middle;
-    margin-right: 4px;
+    display: inline-block;
+    vertical-align: baseline;
+    margin-right: 6px;
+    line-height: 1;
 }
 
 /* Список построек */
