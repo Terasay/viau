@@ -255,6 +255,10 @@
     flex-shrink: 0;
     width: 16px;
     text-align: center;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .building-type-card p {
@@ -287,13 +291,18 @@
     flex-shrink: 0;
     text-align: center;
     font-size: 0.9em;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .building-type-card .btn-primary {
     width: 100%;
-    padding: 8px 12px;
-    font-size: 0.85em;
+    padding: 6px 10px;
+    font-size: 0.8em;
     margin-top: 5px;
+    line-height: 1.2;
 }
 
 /* Формы */
