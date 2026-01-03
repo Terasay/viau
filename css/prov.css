@@ -450,16 +450,21 @@ body.dark-mode .building-type-card {
 
 .building-type-manager-header h4 {
     display: flex;
-    align-items: center;
+    align-items: baseline; /* Изменено с center на baseline */
     gap: 8px;
     color: var(--primary);
     font-size: 1.1em;
     font-weight: 600;
     margin: 0;
+    line-height: 1.4;
 }
 
 .building-type-manager-header h4 i {
     color: var(--primary);
+    font-size: 1em;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
 }
 
 .building-type-manager-actions {
@@ -483,23 +488,21 @@ body.dark-mode .building-type-card {
 
 .building-type-manager-stats .stat-row {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    align-items: baseline; /* Изменено с center на baseline */
+    gap: 6px;
     color: var(--text-secondary);
     font-size: 0.9em;
-    line-height: 1.8;
+    line-height: 1.6;
+    padding: 2px 0;
 }
 
 .building-type-manager-stats .stat-row i {
     color: var(--primary);
     width: 16px;
-    height: 16px;
-    text-align: center;
-    font-size: 0.85em;
+    font-size: 1em; /* Тот же размер что и текст */
     flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    text-align: center;
+    /* Убираем height, display: inline-flex, align-items, justify-content */
 }
 
 .building-type-manager-stats .stat-row strong {
