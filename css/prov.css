@@ -301,26 +301,22 @@
 
 .building-type-stats .stat-row {
     display: flex;
-    align-items: center;
-    gap: 6px; /* Используем gap вместо margin-right на иконке */
+    align-items: baseline; /* Выравнивание по базовой линии текста */
+    gap: 6px;
     color: var(--text-secondary);
     font-size: 0.75em;
-    line-height: 1.4;
-    min-height: 20px; /* Минимальная высота для стабильности */
+    line-height: 1.6;
+    padding: 2px 0;
 }
 
 
 .building-type-stats .stat-row i {
     color: var(--primary);
     width: 14px;
-    font-size: 0.85em;
+    font-size: 1em; /* Тот же размер что и текст */
     flex-shrink: 0;
-    /* Убираем лишние свойства, которые могут мешать */
-    display: inline-block; /* Вместо inline-flex */
     text-align: center;
-    line-height: inherit; /* Наследуем line-height от родителя */
 }
-
 .building-type-stats .stat-row span {
     line-height: inherit;
 }
