@@ -237,6 +237,11 @@ body {
     justify-content: center;
 }
 
+.btn-icon i {
+    font-size: 0.9em;
+    line-height: 1;
+}
+
 .btn-icon:hover {
     background: var(--primary);
     color: white;

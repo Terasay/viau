@@ -84,6 +84,12 @@
     gap: 8px;
 }
 
+.province-actions .btn-icon i,
+.building-type-manager-actions .btn-icon i {
+    font-size: 0.85em;
+    margin: 0;
+}
+
 .province-info {
     margin: 15px 0;
 }
@@ -130,7 +136,9 @@
 .btn-primary i,
 .btn-secondary i {
     margin-right: 6px;
-    font-size: 1em;
+    font-size: 0.95em;
+    line-height: 1;
+    vertical-align: middle;
 }
 
 /* Список построек */
@@ -476,12 +484,15 @@ body.dark-mode .building-type-card {
     gap: 8px;
     color: var(--text-secondary);
     font-size: 0.9em;
+    line-height: 1.5;
 }
 
 .building-type-manager-stats .stat-row i {
     color: var(--primary);
-    width: 18px;
+    width: 16px;
     text-align: center;
+    font-size: 0.9em;
+    flex-shrink: 0;
 }
 
 .building-type-manager-stats .stat-row strong {
