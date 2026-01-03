@@ -125,24 +125,20 @@
     margin-top: 15px;
 }
 
-/* Иконки в кнопках */
 .btn-primary,
 .btn-secondary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    line-height: 1;
+    gap: 6px;
+    line-height: 1.4;
 }
 
 .btn-primary i,
 .btn-secondary i {
-    margin-right: 6px;
     font-size: 0.9em;
-    display: inline-flex;
-    align-items: center;
 }
 
-/* Список построек */
 .buildings-list {
     display: flex;
     flex-direction: column;
@@ -240,7 +236,6 @@
     color: #ffc107;
 }
 
-/* Типы построек для выбора */
 .building-types-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -269,8 +264,8 @@
     margin: 0 0 8px 0;
     line-height: 1.4;
     display: flex;
-    align-items: baseline; /* Изменено с center на baseline */
-    gap: 6px; /* Используем gap вместо margin-right на иконке */
+    align-items: baseline;
+    gap: 6px;
 }
 
 .building-type-card h4 i {
@@ -278,7 +273,6 @@
     width: 16px;
     text-align: center;
     flex-shrink: 0;
-    /* Убираем лишние свойства */
 }
 
 .building-type-card p {
@@ -298,7 +292,7 @@
 
 .building-type-stats .stat-row {
     display: flex;
-    align-items: baseline; /* Выравнивание по базовой линии текста */
+    align-items: baseline;
     gap: 6px;
     color: var(--text-secondary);
     font-size: 0.75em;
@@ -310,7 +304,7 @@
 .building-type-stats .stat-row i {
     color: var(--primary);
     width: 14px;
-    font-size: 1em; /* Тот же размер что и текст */
+    font-size: 1em;
     flex-shrink: 0;
     text-align: center;
 }
@@ -331,20 +325,12 @@
     margin-right: 3px;
 }
 
-/* Кнопка "Построить здание" в начале списка построек */
 #modal-body > .btn-primary:first-child {
-    padding: 6px 10px;
-    font-size: 0.8em;
-    line-height: 1.3;
-}
-
-#modal-body > .btn-primary:first-child i {
+    padding: 8px 16px;
     font-size: 0.9em;
-    vertical-align: baseline;
-    margin-right: 3px;
+    line-height: 1.4;
 }
 
-/* Формы */
 .form-group {
     margin-bottom: 20px;
 }
@@ -362,7 +348,6 @@
     color: var(--primary);
 }
 
-/* Кнопки */
 .btn-danger {
     background: var(--error);
     color: white;
@@ -373,7 +358,6 @@
     transform: translateY(-1px);
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
     .provinces-grid {
         grid-template-columns: 1fr;
@@ -403,7 +387,6 @@
     }
 }
 
-/* Темная тема */
 body.dark-mode .province-card {
     background: var(--bg-secondary);
 }
@@ -420,7 +403,6 @@ body.dark-mode .building-type-card {
     background: rgba(255, 255, 255, 0.05);
 }
 
-/* Управление каталогом построек (админ) */
 .building-types-manager-list {
     display: flex;
     flex-direction: column;
@@ -450,7 +432,7 @@ body.dark-mode .building-type-card {
 
 .building-type-manager-header h4 {
     display: flex;
-    align-items: baseline; /* Изменено с center на baseline */
+    align-items: baseline;
     gap: 8px;
     color: var(--primary);
     font-size: 1.1em;
@@ -488,7 +470,7 @@ body.dark-mode .building-type-card {
 
 .building-type-manager-stats .stat-row {
     display: flex;
-    align-items: baseline; /* Изменено с center на baseline */
+    align-items: baseline;
     gap: 6px;
     color: var(--text-secondary);
     font-size: 0.9em;
@@ -499,10 +481,9 @@ body.dark-mode .building-type-card {
 .building-type-manager-stats .stat-row i {
     color: var(--primary);
     width: 16px;
-    font-size: 1em; /* Тот же размер что и текст */
+    font-size: 1em;
     flex-shrink: 0;
     text-align: center;
-    /* Убираем height, display: inline-flex, align-items, justify-content */
 }
 
 .building-type-manager-stats .stat-row strong {
