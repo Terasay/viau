@@ -494,3 +494,36 @@ body.dark-mode .building-type-card {
 body.dark-mode .building-type-manager-card {
     background: rgba(255, 255, 255, 0.05);
 }
+
+#modal-body .btn-primary,
+#modal-body .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    line-height: 1.4;
+}
+
+#modal-body .btn-primary i,
+#modal-body .btn-secondary i {
+    font-size: 0.9em;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Специфично для кнопки "Добавить тип постройки" */
+#modal-body > .btn-primary:first-child {
+    padding: 10px 20px;
+    font-size: 0.95em;
+    line-height: 1.4;
+}
+
+#modal-body > .btn-primary:first-child i {
+    font-size: 1em;
+}
+
+.modal-overlay .btn-primary span,
+.modal-overlay .btn-secondary span {
+    line-height: 1.4;
+}

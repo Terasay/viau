@@ -668,7 +668,7 @@ let provincesModule = (function() {
         
         let html = `
             <button class="btn-primary" style="margin-bottom: 20px;" onclick="provincesModule.showAddBuildingTypeModal()">
-                <i class="fas fa-plus"></i> Добавить тип постройки
+                <i class="fas fa-plus"></i><span>Добавить тип постройки</span>
             </button>
         `;
 
