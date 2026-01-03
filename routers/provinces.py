@@ -505,3 +505,175 @@ async def demolish_building(building_id: int, request: Request):
         return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
     finally:
         conn.close()
+
+@router.post("/building-types")
+async def create_building_type(request: Request):
+    """Создание типа постройки (только админ)"""
+    user = await get_current_user(request)
+    if not user or user['role'] != 'admin':
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    
+    data = await request.json()
+    name = data.get('name', '').strip()
+    description = data.get('description', '').strip()
+    base_cost = data.get('base_cost', 1000)
+    maintenance_cost = data.get('maintenance_cost', 100)
+    build_time = data.get('build_time', 1)
+    effect_type = data.get('effect_type', '').strip()
+    effect_value = data.get('effect_value', 0.0)
+    
+    if not name:
+        return JSONResponse({'success': False, 'error': 'Название обязательно'}, status_code=400)
+    
+    if base_cost < 0 or maintenance_cost < 0 or build_time < 1:
+        return JSONResponse({'success': False, 'error': 'Некорректные значения параметров'}, status_code=400)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Проверяем уникальность названия
+        cursor.execute('SELECT id FROM building_types WHERE name = ?', (name,))
+        if cursor.fetchone():
+            return JSONResponse({'success': False, 'error': 'Тип постройки с таким названием уже существует'}, status_code=400)
+        
+        cursor.execute('''
+            INSERT INTO building_types 
+            (name, description, base_cost, maintenance_cost, build_time, effect_type, effect_value)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (name, description, base_cost, maintenance_cost, build_time, effect_type, effect_value))
+        
+        conn.commit()
+        
+        building_type_id = cursor.lastrowid
+        
+        return JSONResponse({
+            'success': True,
+            'message': f'Тип постройки "{name}" успешно создан',
+            'building_type': {
+                'id': building_type_id,
+                'name': name,
+                'description': description,
+                'base_cost': base_cost,
+                'maintenance_cost': maintenance_cost,
+                'build_time': build_time,
+                'effect_type': effect_type,
+                'effect_value': effect_value
+            }
+        })
+    
+    except Exception as e:
+        conn.rollback()
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.put("/building-types/{building_type_id}")
+async def update_building_type(building_type_id: int, request: Request):
+    """Обновление типа постройки (только админ)"""
+    user = await get_current_user(request)
+    if not user or user['role'] != 'admin':
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    
+    data = await request.json()
+    name = data.get('name', '').strip()
+    description = data.get('description', '').strip()
+    base_cost = data.get('base_cost', 1000)
+    maintenance_cost = data.get('maintenance_cost', 100)
+    build_time = data.get('build_time', 1)
+    effect_type = data.get('effect_type', '').strip()
+    effect_value = data.get('effect_value', 0.0)
+    
+    if not name:
+        return JSONResponse({'success': False, 'error': 'Название обязательно'}, status_code=400)
+    
+    if base_cost < 0 or maintenance_cost < 0 or build_time < 1:
+        return JSONResponse({'success': False, 'error': 'Некорректные значения параметров'}, status_code=400)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Проверяем существование типа постройки
+        cursor.execute('SELECT id FROM building_types WHERE id = ?', (building_type_id,))
+        if not cursor.fetchone():
+            return JSONResponse({'success': False, 'error': 'Тип постройки не найден'}, status_code=404)
+        
+        # Проверяем уникальность названия (исключая текущую запись)
+        cursor.execute('SELECT id FROM building_types WHERE name = ? AND id != ?', (name, building_type_id))
+        if cursor.fetchone():
+            return JSONResponse({'success': False, 'error': 'Тип постройки с таким названием уже существует'}, status_code=400)
+        
+        cursor.execute('''
+            UPDATE building_types
+            SET name = ?, description = ?, base_cost = ?, maintenance_cost = ?, 
+                build_time = ?, effect_type = ?, effect_value = ?
+            WHERE id = ?
+        ''', (name, description, base_cost, maintenance_cost, build_time, effect_type, effect_value, building_type_id))
+        
+        conn.commit()
+        
+        return JSONResponse({
+            'success': True,
+            'message': f'Тип постройки "{name}" успешно обновлён',
+            'building_type': {
+                'id': building_type_id,
+                'name': name,
+                'description': description,
+                'base_cost': base_cost,
+                'maintenance_cost': maintenance_cost,
+                'build_time': build_time,
+                'effect_type': effect_type,
+                'effect_value': effect_value
+            }
+        })
+    
+    except Exception as e:
+        conn.rollback()
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.delete("/building-types/{building_type_id}")
+async def delete_building_type(building_type_id: int, request: Request):
+    """Удаление типа постройки (только админ)"""
+    user = await get_current_user(request)
+    if not user or user['role'] != 'admin':
+        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Проверяем существование типа постройки
+        cursor.execute('SELECT name FROM building_types WHERE id = ?', (building_type_id,))
+        building_type = cursor.fetchone()
+        
+        if not building_type:
+            return JSONResponse({'success': False, 'error': 'Тип постройки не найден'}, status_code=404)
+        
+        # Проверяем, есть ли уже построенные здания этого типа
+        cursor.execute('SELECT COUNT(*) as count FROM buildings WHERE building_type_id = ?', (building_type_id,))
+        count = cursor.fetchone()['count']
+        
+        if count > 0:
+            return JSONResponse({
+                'success': False, 
+                'error': f'Невозможно удалить тип постройки. Существует {count} зданий этого типа.'
+            }, status_code=400)
+        
+        # Удаляем тип постройки
+        cursor.execute('DELETE FROM building_types WHERE id = ?', (building_type_id,))
+        
+        conn.commit()
+        
+        return JSONResponse({
+            'success': True,
+            'message': f'Тип постройки "{building_type["name"]}" успешно удалён'
+        })
+    
+    except Exception as e:
+        conn.rollback()
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()

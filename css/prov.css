@@ -381,6 +381,15 @@
     .provinces-header h2 {
         font-size: 1.5em;
     }
+    
+    .provinces-header > div:last-child {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .provinces-header > div:last-child button {
+        width: 100%;
+    }
 }
 
 /* Темная тема */
@@ -397,5 +406,89 @@ body.dark-mode .building-item.under-construction {
 }
 
 body.dark-mode .building-type-card {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Управление каталогом построек (админ) */
+.building-types-manager-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.building-type-manager-card {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    padding: 15px;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.building-type-manager-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.building-type-manager-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.building-type-manager-header h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary);
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 0;
+}
+
+.building-type-manager-header h4 i {
+    color: var(--primary);
+}
+
+.building-type-manager-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.building-type-manager-description {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin: 8px 0;
+    font-style: italic;
+}
+
+.building-type-manager-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.building-type-manager-stats .stat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+.building-type-manager-stats .stat-row i {
+    color: var(--primary);
+    width: 18px;
+    text-align: center;
+}
+
+.building-type-manager-stats .stat-row strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+body.dark-mode .building-type-manager-card {
     background: rgba(255, 255, 255, 0.05);
 }
