@@ -464,16 +464,10 @@ body.dark-mode .building-type-card {
     font-size: 1.1em;
     font-weight: 600;
     margin: 0;
-    line-height: 1.4;
 }
 
 .building-type-manager-header h4 i {
     color: var(--primary);
-    font-size: 0.95em;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
 }
 
 .building-type-manager-actions {
