@@ -131,14 +131,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    line-height: 1;
 }
 
 .btn-primary i,
 .btn-secondary i {
     margin-right: 6px;
-    font-size: 0.95em;
-    line-height: 1;
-    vertical-align: middle;
+    font-size: 0.9em;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* Список построек */
@@ -266,16 +267,21 @@
     font-size: 0.95em;
     font-weight: 600;
     margin: 0 0 8px 0;
-    line-height: 1.4;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
 }
 
 .building-type-card h4 i {
-    font-size: 1em;
+    font-size: 0.9em;
     width: 16px;
+    height: 16px;
     text-align: center;
-    vertical-align: baseline;
-    display: inline-block;
-    margin-right: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 6px;
+    flex-shrink: 0;
 }
 
 .building-type-card p {
@@ -294,19 +300,24 @@
 }
 
 .building-type-stats .stat-row {
+    display: flex;
+    align-items: center;
     color: var(--text-secondary);
     font-size: 0.75em;
-    line-height: 1.6;
+    line-height: 1.8;
     margin-bottom: 3px;
 }
 
 .building-type-stats .stat-row i {
     color: var(--primary);
     width: 14px;
+    height: 14px;
     text-align: center;
-    font-size: 0.9em;
-    vertical-align: baseline;
-    display: inline-block;
+    font-size: 0.85em;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin-right: 4px;
 }
 
@@ -453,10 +464,16 @@ body.dark-mode .building-type-card {
     font-size: 1.1em;
     font-weight: 600;
     margin: 0;
+    line-height: 1.4;
 }
 
 .building-type-manager-header h4 i {
     color: var(--primary);
+    font-size: 0.95em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .building-type-manager-actions {
@@ -484,15 +501,19 @@ body.dark-mode .building-type-card {
     gap: 8px;
     color: var(--text-secondary);
     font-size: 0.9em;
-    line-height: 1.5;
+    line-height: 1.8;
 }
 
 .building-type-manager-stats .stat-row i {
     color: var(--primary);
     width: 16px;
+    height: 16px;
     text-align: center;
-    font-size: 0.9em;
+    font-size: 0.85em;
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .building-type-manager-stats .stat-row strong {
