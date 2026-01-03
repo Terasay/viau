@@ -242,7 +242,7 @@ let provincesModule = (function() {
         // Кнопка строительства
         html += `
             <button class="btn-primary" style="margin-bottom: 20px;" onclick="provincesModule.showBuildMenu(${provinceId})">
-                <i class="fas fa-hammer"></i> Построить здание
+                Построить здание
             </button>
         `;
 
@@ -326,7 +326,7 @@ let provincesModule = (function() {
         const modalBody = document.getElementById('modal-body');
         
         let html = `
-            <h3 style="margin-bottom: 20px;"><i class="fas fa-hammer"></i> Выберите тип здания</h3>
+            <h3 style="margin-bottom: 20px;"> Выберите тип здания</h3>
             <div class="building-types-grid">
         `;
         
@@ -358,7 +358,7 @@ let provincesModule = (function() {
                         ` : ''}
                     </div>
                     <button class="btn-primary btn-full" onclick="provincesModule.buildBuilding(${provinceId}, ${type.id})">
-                        <i class="fas fa-hammer"></i> Построить
+                        Построить
                     </button>
                 </div>
             `;
