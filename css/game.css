@@ -1203,6 +1203,34 @@ body.dark-mode .stat-item:hover {
     margin-bottom: 12px;
 }
 
+#modal-body .btn-primary,
+#modal-body .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    line-height: 1.4;
+}
+
+#modal-body .btn-primary i,
+#modal-body .btn-secondary i {
+    font-size: 0.9em;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Специфично для кнопки "Добавить тип постройки" */
+#modal-body > .btn-primary:first-child {
+    padding: 10px 20px;
+    font-size: 0.95em;
+    line-height: 1.4;
+}
+
+#modal-body > .btn-primary:first-child i {
+    font-size: 1em;
+}
+
 @media (max-width: 768px) {
     .stats-form-grid {
         grid-template-columns: 1fr;
