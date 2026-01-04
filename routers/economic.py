@@ -390,7 +390,10 @@ async def get_country(country_id: str, request: Request):
                 'ruler_last_name': country['ruler_last_name'],
                 'country_name': country['country_name'],
                 'currency': country['currency'],
+                'main_currency': country['main_currency'],
                 'secret_coins': country['secret_coins'],
+                'research_points': country.get('research_points', 100),
+                'balance': country.get('balance', 0.0),
                 'created_at': country['created_at'],
                 'updated_at': country['updated_at']
             }
