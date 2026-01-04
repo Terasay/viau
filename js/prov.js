@@ -6,6 +6,7 @@ let provincesModule = (function() {
     let provinces = [];
     let buildingTypes = [];
     let isInitialized = false; // Флаг инициализации
+    let countryCurrency = 'ед.'; // Валюта страны
 
     async function init() {
         if (isInitialized) {
@@ -22,6 +23,7 @@ let provincesModule = (function() {
                 isAdminView = user.role === 'admin' || user.role === 'moderator';
                 currentCountryId = country.id;
                 currentCountryName = country.country_name || country.name || 'Неизвестная страна';
+                countryCurrency = country.currency || 'ед.';
                 console.log('Provinces module: country set', currentCountryId, currentCountryName);
                 // Не загружаем данные сразу, будем загружать при открытии вкладки
             } else if (user && user.role === 'admin') {
@@ -163,6 +165,16 @@ let provincesModule = (function() {
         return Math.ceil(price / 10) * 10;
     }
 
+    function formatPrice(goldAmount) {
+        // Форматирует цену: конвертированная цена с валютой + исходная в золоте для админов
+        const convertedPrice = convertGoldToPrice(goldAmount);
+        let formatted = `${convertedPrice} ${countryCurrency}`;
+        if (isAdminView) {
+            formatted += ` (${goldAmount} золота)`;
+        }
+        return formatted;
+    }
+
     function render() {
         const container = document.getElementById('provinces-content');
         if (!container) return;
@@ -285,8 +297,7 @@ let provincesModule = (function() {
             
             buildings.forEach(building => {
                 const effectText = getEffectText(building.effect_type, building.effect_value);
-                const displayCost = convertGoldToPrice(building.base_cost);
-                const displayMaintenance = convertGoldToPrice(building.maintenance_cost);
+                const displayMaintenance = formatPrice(building.maintenance_cost);
                 
                 html += `
                     <div class="building-item">
@@ -306,7 +317,7 @@ let provincesModule = (function() {
                             </div>
                             <div class="stat-item">
                                 <i class="fas fa-coins"></i>
-                                <span>Содержание: ${displayMaintenance}</span>
+                                <span>Содержание: ${displayMaintenance}/ход</span>
                             </div>
                             ${effectText ? `
                                 <div class="stat-item">
@@ -391,8 +402,8 @@ let provincesModule = (function() {
             category.buildings.forEach(type => {
                 const effectText = getEffectText(type.effect_type, type.effect_value);
                 const icon = getCategoryIcon(type.building_category);
-                const displayCost = convertGoldToPrice(type.base_cost);
-                const displayMaintenance = convertGoldToPrice(type.maintenance_cost);
+                const displayCost = formatPrice(type.base_cost);
+                const displayMaintenance = formatPrice(type.maintenance_cost);
                 
                 html += `
                     <div class="building-type-card">
