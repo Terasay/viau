@@ -493,7 +493,7 @@ async def build_building(province_id: int, request: Request):
     try:
         # Проверяем доступ к провинции и получаем данные страны
         cursor.execute('''
-            SELECT p.id, p.country_id, c.player_id, c.balance, c.main_currency
+            SELECT p.id, p.country_id, c.player_id, c.main_currency
             FROM provinces p
             JOIN countries c ON p.country_id = c.id
             WHERE p.id = ?
@@ -507,6 +507,16 @@ async def build_building(province_id: int, request: Request):
             if province['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Нет доступа к этой провинции'}, status_code=403)
         
+        # Получаем баланс страны из таблицы country_currencies
+        currency_code = province['main_currency'] or 'ESC'
+        cursor.execute('''
+            SELECT amount FROM country_currencies 
+            WHERE country_id = ? AND currency_code = ?
+        ''', (province['country_id'], currency_code))
+        
+        balance_row = cursor.fetchone()
+        current_balance = balance_row['amount'] if balance_row else 0
+        
         # Получаем данные типа здания
         cursor.execute('SELECT * FROM building_types WHERE id = ?', (building_type_id,))
         building_type = cursor.fetchone()
@@ -515,22 +525,21 @@ async def build_building(province_id: int, request: Request):
             return JSONResponse({'success': False, 'error': 'Тип здания не найден'}, status_code=404)
         
         # Конвертируем цену из золота в валюту страны
-        currency_code = province['main_currency'] or 'ESC'
         actual_cost = convert_gold_to_currency(building_type['base_cost'], currency_code)
         
         # Проверяем баланс страны
-        if province['balance'] < actual_cost:
+        if current_balance < actual_cost:
             return JSONResponse({
                 'success': False, 
-                'error': f'Недостаточно средств. Требуется: {actual_cost}, доступно: {province["balance"]}'
+                'error': f'Недостаточно средств. Требуется: {actual_cost}, доступно: {current_balance}'
             }, status_code=400)
         
-        # Списываем деньги
+        # Списываем деньги из country_currencies
         cursor.execute('''
-            UPDATE countries
-            SET balance = balance - ?
-            WHERE id = ?
-        ''', (actual_cost, province['country_id']))
+            UPDATE country_currencies
+            SET amount = amount - ?
+            WHERE country_id = ? AND currency_code = ?
+        ''', (actual_cost, province['country_id'], currency_code))
         
         # Создаем здание мгновенно
         built_at = datetime.now().isoformat()
