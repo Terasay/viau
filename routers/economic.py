@@ -392,8 +392,8 @@ async def get_country(country_id: str, request: Request):
                 'currency': country['currency'],
                 'main_currency': country['main_currency'],
                 'secret_coins': country['secret_coins'],
-                'research_points': country.get('research_points', 100),
-                'balance': country.get('balance', 0.0),
+                'research_points': country['research_points'] if 'research_points' in country.keys() else 100,
+                'balance': country['balance'] if 'balance' in country.keys() else 0.0,
                 'created_at': country['created_at'],
                 'updated_at': country['updated_at']
             }
