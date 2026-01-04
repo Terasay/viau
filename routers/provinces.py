@@ -46,6 +46,18 @@ def init_db():
         )
     ''')
     
+    # Миграция: добавляем новые колонки если их нет
+    cursor.execute("PRAGMA table_info(building_types)")
+    columns = [row[1] for row in cursor.fetchall()]
+    
+    if 'building_category' not in columns:
+        cursor.execute('ALTER TABLE building_types ADD COLUMN building_category TEXT NOT NULL DEFAULT "educational"')
+        print('✓ Добавлена колонка building_category')
+    
+    if 'required_tech_id' not in columns:
+        cursor.execute('ALTER TABLE building_types ADD COLUMN required_tech_id TEXT')
+        print('✓ Добавлена колонка required_tech_id')
+    
     # Таблица построек в провинциях
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS buildings (
@@ -61,7 +73,10 @@ def init_db():
     
     # Добавляем базовые типы построек, если их нет
     cursor.execute('SELECT COUNT(*) as count FROM building_types')
-    if cursor.fetchone()['count'] == 0:
+    existing_count = cursor.fetchone()['count']
+    
+    # Если таблица пустая, добавляем постройки
+    if existing_count == 0:
         default_buildings = [
             # ОБРАЗОВАТЕЛЬНЫЕ ПОСТРОЙКИ (влияют на прирост образования и науки)
             ('Школа', 'Начальное образование для населения. Увеличивает прирост образования.', 
@@ -109,6 +124,15 @@ def init_db():
             (name, description, base_cost, maintenance_cost, building_category, effect_type, effect_value, required_tech_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ''', default_buildings)
+        print(f'✓ Добавлено {len(default_buildings)} типов построек')
+    else:
+        # Если в таблице есть старые постройки без категорий, обновляем их
+        cursor.execute('SELECT id, name FROM building_types WHERE building_category IS NULL OR building_category = ""')
+        old_buildings = cursor.fetchall()
+        if old_buildings:
+            # Устанавливаем дефолтную категорию для старых построек
+            cursor.execute('UPDATE building_types SET building_category = "educational" WHERE building_category IS NULL OR building_category = ""')
+            print(f'✓ Обновлено {len(old_buildings)} старых построек')
     
     conn.commit()
     conn.close()
