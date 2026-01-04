@@ -39,8 +39,10 @@ def init_db():
             description TEXT,
             base_cost INTEGER NOT NULL DEFAULT 1000,
             maintenance_cost INTEGER NOT NULL DEFAULT 100,
+            building_category TEXT NOT NULL DEFAULT 'educational',
             effect_type TEXT,
-            effect_value REAL
+            effect_value REAL,
+            required_tech_id TEXT
         )
     ''')
     
@@ -61,22 +63,51 @@ def init_db():
     cursor.execute('SELECT COUNT(*) as count FROM building_types')
     if cursor.fetchone()['count'] == 0:
         default_buildings = [
-            ('Текстильная фабрика', 'Производит ткани, повышает доход', 5000, 500, 'income', 1000),
-            ('Металлургический завод', 'Производит металл, повышает доход', 8000, 800, 'income', 1500),
-            ('Химический завод', 'Производит химикаты, повышает доход', 10000, 1000, 'income', 2000),
-            ('Машиностроительный завод', 'Производит машины, повышает доход', 12000, 1200, 'income', 2500),
-            ('Судостроительная верфь', 'Строит корабли, повышает доход', 15000, 1500, 'income', 3000),
-            ('Университет', 'Повышает образование', 7000, 700, 'education', 5.0),
-            ('Исследовательский центр', 'Повышает науку', 8000, 800, 'science', 5.0),
-            ('Библиотека', 'Повышает образование', 3000, 300, 'education', 2.0),
-            ('Больница', 'Повышает рост населения', 5000, 500, 'population', 0.1),
-            ('Ферма', 'Производит еду, повышает население', 2000, 200, 'population', 0.05),
+            # ОБРАЗОВАТЕЛЬНЫЕ ПОСТРОЙКИ (влияют на прирост образования и науки)
+            ('Школа', 'Начальное образование для населения. Увеличивает прирост образования.', 
+             3000, 300, 'educational', 'education_growth', 0.05, None),
+            ('Университет', 'Высшее учебное заведение. Значительно увеличивает прирост образования и науки.', 
+             8000, 800, 'educational', 'education_growth', 0.15, None),
+            ('Академия наук', 'Центр научных исследований. Максимально увеличивает прирост науки.', 
+             15000, 1500, 'educational', 'science_growth', 0.20, None),
+            ('Библиотека', 'Хранилище знаний. Увеличивает прирост образования.', 
+             2000, 200, 'educational', 'education_growth', 0.03, None),
+            
+            # ПРОИЗВОДСТВЕННЫЕ ПОСТРОЙКИ - ПЕХОТНОЕ СНАРЯЖЕНИЕ
+            ('Оружейная мастерская', 'Производит холодное оружие и простое огнестрельное оружие.', 
+             5000, 500, 'military_infantry', 'production_rifles', 50, None),
+            ('Завод винтовок', 'Массовое производство современных винтовок для армии.', 
+             12000, 1200, 'military_infantry', 'production_rifles', 200, 'tech_rifles_1'),
+            ('Пороховой завод', 'Производство пороха и боеприпасов для пехоты.', 
+             8000, 800, 'military_infantry', 'production_ammunition', 500, None),
+            
+            # ПРОИЗВОДСТВЕННЫЕ ПОСТРОЙКИ - ТЕХНИКА
+            ('Завод артиллерии', 'Производство пушек и артиллерийских орудий.', 
+             15000, 1500, 'military_vehicles', 'production_artillery', 10, 'tech_artillery_1'),
+            ('Танковый завод', 'Производство бронетехники и танков.', 
+             25000, 2500, 'military_vehicles', 'production_tanks', 5, 'tech_tanks_1'),
+            ('Авиационный завод', 'Производство самолётов для военных нужд.', 
+             30000, 3000, 'military_vehicles', 'production_aircraft', 3, 'tech_aircraft_1'),
+            ('Автомобильный завод', 'Производство военных грузовиков и транспорта.', 
+             18000, 1800, 'military_vehicles', 'production_vehicles', 20, 'tech_vehicles_1'),
+            
+            # ПРОИЗВОДСТВЕННЫЕ ПОСТРОЙКИ - ФЛОТ
+            ('Верфь парусных кораблей', 'Строительство парусных военных судов.', 
+             20000, 2000, 'military_naval', 'production_sailing_ships', 2, None),
+            ('Паровая верфь', 'Строительство паровых военных кораблей.', 
+             35000, 3500, 'military_naval', 'production_steam_ships', 1, 'tech_steam_ships_1'),
+            ('Верфь эсминцев', 'Строительство современных эсминцев и фрегатов.', 
+             50000, 5000, 'military_naval', 'production_destroyers', 1, 'tech_destroyers_1'),
+            ('Верфь линкоров', 'Строительство больших линейных кораблей.', 
+             80000, 8000, 'military_naval', 'production_battleships', 1, 'tech_battleships_1'),
+            ('Верфь подводных лодок', 'Строительство подводных лодок.', 
+             40000, 4000, 'military_naval', 'production_submarines', 1, 'tech_submarines_1'),
         ]
         
         cursor.executemany('''
             INSERT INTO building_types 
-            (name, description, base_cost, maintenance_cost, effect_type, effect_value)
-            VALUES (?, ?, ?, ?, ?, ?)
+            (name, description, base_cost, maintenance_cost, building_category, effect_type, effect_value, required_tech_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ''', default_buildings)
     
     conn.commit()
@@ -318,10 +349,8 @@ async def get_province_buildings(province_id: int, request: Request):
                 'level': row['level'],
                 'base_cost': row['base_cost'],
                 'maintenance_cost': row['maintenance_cost'],
-                'build_time': row['build_time'],
                 'effect_type': row['effect_type'],
                 'effect_value': row['effect_value'],
-                'construction_turn': row['construction_turn'],
                 'built_at': row['built_at']
             })
         
@@ -337,33 +366,56 @@ async def get_province_buildings(province_id: int, request: Request):
 
 @router.get("/building-types")
 async def get_building_types(request: Request):
-    """Получение всех типов построек"""
+    """Получение всех типов построек с учётом доступных технологий"""
     user = await get_current_user(request)
     if not user:
         return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    # Получаем country_id из query параметра (опционально)
+    country_id = request.query_params.get('country_id')
     
     conn = get_db()
     cursor = conn.cursor()
     
     try:
+        # Получаем список изученных технологий для страны (если указана)
+        researched_techs = set()
+        if country_id:
+            cursor.execute('''
+                SELECT tech_id FROM country_technologies 
+                WHERE country_id = ?
+            ''', (country_id,))
+            researched_techs = {row['tech_id'] for row in cursor.fetchall()}
+        
+        # Получаем все типы построек
         cursor.execute('''
             SELECT 
                 id, name, description, base_cost, maintenance_cost, 
-                effect_type, effect_value
+                building_category, effect_type, effect_value, required_tech_id
             FROM building_types
-            ORDER BY name
+            ORDER BY building_category, base_cost
         ''')
         
         building_types = []
         for row in cursor.fetchall():
+            # Проверяем доступность постройки по технологиям
+            required_tech = row['required_tech_id']
+            is_available = True
+            
+            if required_tech and country_id:
+                is_available = required_tech in researched_techs
+            
             building_types.append({
                 'id': row['id'],
                 'name': row['name'],
                 'description': row['description'],
                 'base_cost': row['base_cost'],
                 'maintenance_cost': row['maintenance_cost'],
+                'building_category': row['building_category'],
                 'effect_type': row['effect_type'],
-                'effect_value': row['effect_value']
+                'effect_value': row['effect_value'],
+                'required_tech_id': row['required_tech_id'],
+                'is_available': is_available
             })
         
         return JSONResponse({
@@ -423,12 +475,6 @@ async def build_building(province_id: int, request: Request):
                 'error': f'Недостаточно средств. Требуется: {building_type["base_cost"]}, доступно: {province["balance"]}'
             }, status_code=400)
         
-        # Получаем текущий ход
-        cursor.execute('SELECT current_turn FROM game_state WHERE id = 1')
-        game_state = cursor.fetchone()
-        current_turn = game_state['current_turn'] if game_state else 1
-        construction_turn = current_turn + building_type['build_time']
-        
         # Списываем деньги
         cursor.execute('''
             UPDATE countries
@@ -436,19 +482,18 @@ async def build_building(province_id: int, request: Request):
             WHERE id = ?
         ''', (building_type['base_cost'], province['country_id']))
         
-        # Создаем здание
+        # Создаем здание мгновенно
         built_at = datetime.now().isoformat()
         cursor.execute('''
-            INSERT INTO buildings (province_id, building_type_id, level, construction_turn, built_at)
-            VALUES (?, ?, 1, ?, ?)
-        ''', (province_id, building_type_id, construction_turn, built_at))
+            INSERT INTO buildings (province_id, building_type_id, level, built_at)
+            VALUES (?, ?, 1, ?)
+        ''', (province_id, building_type_id, built_at))
         
         conn.commit()
         
         return JSONResponse({
             'success': True,
-            'message': f'Начато строительство: {building_type["name"]}. Будет завершено на ходу {construction_turn}',
-            'construction_turn': construction_turn
+            'message': f'Построено: {building_type["name"]}'
         })
     
     except Exception as e:
@@ -501,172 +546,5 @@ async def demolish_building(building_id: int, request: Request):
     finally:
         conn.close()
 
-@router.post("/building-types")
-async def create_building_type(request: Request):
-    """Создание типа постройки (только админ)"""
-    user = await get_current_user(request)
-    if not user or user['role'] != 'admin':
-        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
-    
-    data = await request.json()
-    name = data.get('name', '').strip()
-    description = data.get('description', '').strip()
-    base_cost = data.get('base_cost', 1000)
-    maintenance_cost = data.get('maintenance_cost', 100)
-    build_time = data.get('build_time', 1)
-    effect_type = data.get('effect_type', '').strip()
-    effect_value = data.get('effect_value', 0.0)
-    
-    if not name:
-        return JSONResponse({'success': False, 'error': 'Название обязательно'}, status_code=400)
-    
-    if base_cost < 0 or maintenance_cost < 0 or build_time < 1:
-        return JSONResponse({'success': False, 'error': 'Некорректные значения параметров'}, status_code=400)
-    
-    conn = get_db()
-    cursor = conn.cursor()
-    
-    try:
-        # Проверяем уникальность названия
-        cursor.execute('SELECT id FROM building_types WHERE name = ?', (name,))
-        if cursor.fetchone():
-            return JSONResponse({'success': False, 'error': 'Тип постройки с таким названием уже существует'}, status_code=400)
-        
-        cursor.execute('''
-            INSERT INTO building_types 
-            (name, description, base_cost, maintenance_cost, effect_type, effect_value)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', (name, description, base_cost, maintenance_cost, effect_type, effect_value))
-        
-        conn.commit()
-        
-        building_type_id = cursor.lastrowid
-        
-        return JSONResponse({
-            'success': True,
-            'message': f'Тип постройки "{name}" успешно создан',
-            'building_type': {
-                'id': building_type_id,
-                'name': name,
-                'description': description,
-                'base_cost': base_cost,
-                'maintenance_cost': maintenance_cost,
-                'effect_type': effect_type,
-                'effect_value': effect_value
-            }
-        })
-    
-    except Exception as e:
-        conn.rollback()
-        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
-    finally:
-        conn.close()
-
-@router.put("/building-types/{building_type_id}")
-async def update_building_type(building_type_id: int, request: Request):
-    """Обновление типа постройки (только админ)"""
-    user = await get_current_user(request)
-    if not user or user['role'] != 'admin':
-        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
-    
-    data = await request.json()
-    name = data.get('name', '').strip()
-    description = data.get('description', '').strip()
-    base_cost = data.get('base_cost', 1000)
-    maintenance_cost = data.get('maintenance_cost', 100)
-    build_time = data.get('build_time', 1)
-    effect_type = data.get('effect_type', '').strip()
-    effect_value = data.get('effect_value', 0.0)
-    
-    if not name:
-        return JSONResponse({'success': False, 'error': 'Название обязательно'}, status_code=400)
-    
-    if base_cost < 0 or maintenance_cost < 0 or build_time < 1:
-        return JSONResponse({'success': False, 'error': 'Некорректные значения параметров'}, status_code=400)
-    
-    conn = get_db()
-    cursor = conn.cursor()
-    
-    try:
-        # Проверяем существование типа постройки
-        cursor.execute('SELECT id FROM building_types WHERE id = ?', (building_type_id,))
-        if not cursor.fetchone():
-            return JSONResponse({'success': False, 'error': 'Тип постройки не найден'}, status_code=404)
-        
-        # Проверяем уникальность названия (исключая текущую запись)
-        cursor.execute('SELECT id FROM building_types WHERE name = ? AND id != ?', (name, building_type_id))
-        if cursor.fetchone():
-            return JSONResponse({'success': False, 'error': 'Тип постройки с таким названием уже существует'}, status_code=400)
-        
-        cursor.execute('''
-            UPDATE building_types
-            SET name = ?, description = ?, base_cost = ?, maintenance_cost = ?, 
-                effect_type = ?, effect_value = ?
-            WHERE id = ?
-        ''', (name, description, base_cost, maintenance_cost, effect_type, effect_value, building_type_id))
-        
-        conn.commit()
-        
-        return JSONResponse({
-            'success': True,
-            'message': f'Тип постройки "{name}" успешно обновлён',
-            'building_type': {
-                'id': building_type_id,
-                'name': name,
-                'description': description,
-                'base_cost': base_cost,
-                'maintenance_cost': maintenance_cost,
-                'effect_type': effect_type,
-                'effect_value': effect_value
-            }
-        })
-    
-    except Exception as e:
-        conn.rollback()
-        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
-    finally:
-        conn.close()
-
-@router.delete("/building-types/{building_type_id}")
-async def delete_building_type(building_type_id: int, request: Request):
-    """Удаление типа постройки (только админ)"""
-    user = await get_current_user(request)
-    if not user or user['role'] != 'admin':
-        return JSONResponse({'success': False, 'error': 'Требуются права администратора'}, status_code=403)
-    
-    conn = get_db()
-    cursor = conn.cursor()
-    
-    try:
-        # Проверяем существование типа постройки
-        cursor.execute('SELECT name FROM building_types WHERE id = ?', (building_type_id,))
-        building_type = cursor.fetchone()
-        
-        if not building_type:
-            return JSONResponse({'success': False, 'error': 'Тип постройки не найден'}, status_code=404)
-        
-        # Проверяем, есть ли уже построенные здания этого типа
-        cursor.execute('SELECT COUNT(*) as count FROM buildings WHERE building_type_id = ?', (building_type_id,))
-        count = cursor.fetchone()['count']
-        
-        if count > 0:
-            return JSONResponse({
-                'success': False, 
-                'error': f'Невозможно удалить тип постройки. Существует {count} зданий этого типа.'
-            }, status_code=400)
-        
-        # Удаляем тип постройки
-        cursor.execute('DELETE FROM building_types WHERE id = ?', (building_type_id,))
-        
-        conn.commit()
-        
-        return JSONResponse({
-            'success': True,
-            'message': f'Тип постройки "{building_type["name"]}" успешно удалён'
-        })
-    
-    except Exception as e:
-        conn.rollback()
-        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
-    finally:
-        conn.close()
+# Эндпоинты для управления каталогом построек удалены
+# Постройки теперь фиксированы и задаются в init_db()

@@ -126,7 +126,7 @@ let provincesModule = (function() {
 
     async function loadBuildingTypes() {
         const token = localStorage.getItem('token');
-        const response = await fetch('/api/provinces/building-types', {
+        const response = await fetch(`/api/provinces/building-types?country_id=${currentCountryId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -150,7 +150,6 @@ let provincesModule = (function() {
                     <h2><i class="fas fa-city"></i> Провинции страны: ${currentCountryName}</h2>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    ${isAdminView ? '<button class="btn-secondary" onclick="provincesModule.showBuildingTypesManager()"><i class="fas fa-cogs"></i> Управление каталогом построек</button>' : ''}
                     ${isAdminView ? '<button class="btn-primary" onclick="provincesModule.showAddProvinceModal()"><i class="fas fa-plus"></i> Добавить провинцию</button>' : ''}
                 </div>
             </div>
@@ -306,6 +305,24 @@ let provincesModule = (function() {
         if (!effectType || !effectValue) return '';
         
         const effects = {
+            // Образовательные эффекты
+            'education_growth': `+${effectValue}% к приросту образования/ход`,
+            'science_growth': `+${effectValue}% к приросту науки/ход`,
+            
+            // Производственные эффекты
+            'production_rifles': `Производит ${effectValue} винтовок/ход`,
+            'production_ammunition': `Производит ${effectValue} боеприпасов/ход`,
+            'production_artillery': `Производит ${effectValue} орудий/ход`,
+            'production_tanks': `Производит ${effectValue} танков/ход`,
+            'production_aircraft': `Производит ${effectValue} самолётов/ход`,
+            'production_vehicles': `Производит ${effectValue} машин/ход`,
+            'production_sailing_ships': `Строит ${effectValue} парусных кораблей/ход`,
+            'production_steam_ships': `Строит ${effectValue} паровых кораблей/ход`,
+            'production_destroyers': `Строит ${effectValue} эсминцев/ход`,
+            'production_battleships': `Строит ${effectValue} линкоров/ход`,
+            'production_submarines': `Строит ${effectValue} подлодок/ход`,
+            
+            // Старые эффекты (на случай миграции)
             'income': `+${effectValue} к доходу`,
             'education': `+${effectValue}% к образованию`,
             'science': `+${effectValue}% к науке`,
@@ -318,43 +335,79 @@ let provincesModule = (function() {
     function showBuildMenu(provinceId) {
         const modalBody = document.getElementById('modal-body');
         
-        let html = `
-            <h3 style="margin-bottom: 20px;"> Выберите тип здания</h3>
-            <div class="building-types-grid">
-        `;
+        // Группируем постройки по категориям
+        const categories = {
+            'educational': { name: '📚 Образовательные постройки', buildings: [] },
+            'military_infantry': { name: '🔫 Производство пехотного снаряжения', buildings: [] },
+            'military_vehicles': { name: '🚜 Производство военной техники', buildings: [] },
+            'military_naval': { name: '⚓ Верфи и кораблестроение', buildings: [] }
+        };
         
+        // Фильтруем только доступные постройки и группируем по категориям
         buildingTypes.forEach(type => {
-            const effectText = getEffectText(type.effect_type, type.effect_value);
-            
-            html += `
-                <div class="building-type-card">
-                    <h4><i class="fas fa-industry"></i> ${type.name}</h4>
-                    <p>${type.description}</p>
-                    <div class="building-type-stats">
-                        <div class="stat-row">
-                            <i class="fas fa-coins"></i>
-                            <span>Стоимость: ${type.base_cost}</span>
-                        </div>
-                        <div class="stat-row">
-                            <i class="fas fa-wrench"></i>
-                            <span>Содержание: ${type.maintenance_cost}/ход</span>
-                        </div>
-                        ${effectText ? `
-                            <div class="stat-row">
-                                <i class="fas fa-chart-line"></i>
-                                <span>${effectText}</span>
-                            </div>
-                        ` : ''}
-                    </div>
-                    <button class="btn-primary btn-full" onclick="provincesModule.buildBuilding(${provinceId}, ${type.id})">
-                        Построить
-                    </button>
-                </div>
-            `;
+            if (type.is_available && categories[type.building_category]) {
+                categories[type.building_category].buildings.push(type);
+            }
         });
         
-        html += '</div>';
+        let html = '<h3 style="margin-bottom: 20px;">🏗️ Выберите тип здания</h3>';
+        
+        // Отображаем каждую категорию
+        for (const [categoryKey, category] of Object.entries(categories)) {
+            if (category.buildings.length === 0) continue;
+            
+            html += `
+                <h4 style="margin-top: 25px; margin-bottom: 15px; color: var(--primary); font-size: 1.1em;">
+                    ${category.name}
+                </h4>
+                <div class="building-types-grid">
+            `;
+            
+            category.buildings.forEach(type => {
+                const effectText = getEffectText(type.effect_type, type.effect_value);
+                const icon = getCategoryIcon(type.building_category);
+                
+                html += `
+                    <div class="building-type-card">
+                        <h4><i class="${icon}"></i> ${type.name}</h4>
+                        <p>${type.description}</p>
+                        <div class="building-type-stats">
+                            <div class="stat-row">
+                                <i class="fas fa-coins"></i>
+                                <span>Стоимость: ${type.base_cost}</span>
+                            </div>
+                            <div class="stat-row">
+                                <i class="fas fa-wrench"></i>
+                                <span>Содержание: ${type.maintenance_cost}/ход</span>
+                            </div>
+                            ${effectText ? `
+                                <div class="stat-row">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>${effectText}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <button class="btn-primary btn-full" onclick="provincesModule.buildBuilding(${provinceId}, ${type.id})">
+                            Построить
+                        </button>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+        }
+        
         modalBody.innerHTML = html;
+    }
+    
+    function getCategoryIcon(category) {
+        const icons = {
+            'educational': 'fas fa-graduation-cap',
+            'military_infantry': 'fas fa-person-rifle',
+            'military_vehicles': 'fas fa-truck-monster',
+            'military_naval': 'fas fa-ship'
+        };
+        return icons[category] || 'fas fa-building';
     }
 
     async function buildBuilding(provinceId, buildingTypeId) {
@@ -612,305 +665,6 @@ let provincesModule = (function() {
         });
     }
 
-    // ========== УПРАВЛЕНИЕ КАТАЛОГОМ ПОСТРОЕК (ТОЛЬКО АДМИН) ==========
-
-    async function showBuildingTypesManager() {
-        const modal = document.getElementById('modal-overlay');
-        const modalBody = document.getElementById('modal-body');
-        const modalTitle = document.getElementById('modal-title');
-        const modalFooter = document.getElementById('modal-footer');
-        
-        modalTitle.innerHTML = '<i class="fas fa-cogs"></i> Управление каталогом построек';
-        modalBody.innerHTML = '<p style="text-align: center;"><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>';
-        modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
-        modal.classList.add('visible');
-
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('/api/provinces/building-types', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                renderBuildingTypesManager(data.building_types);
-            } else {
-                await showError('Ошибка', data.error || 'Не удалось загрузить типы построек');
-            }
-        } catch (error) {
-            console.error('Error loading building types:', error);
-            await showError('Ошибка', 'Не удалось загрузить типы построек');
-        }
-    }
-
-    function renderBuildingTypesManager(buildingTypes) {
-        const modalBody = document.getElementById('modal-body');
-        const modalFooter = document.getElementById('modal-footer');
-        
-        let html = `
-            <button class="btn-primary" style="margin-bottom: 20px;" onclick="provincesModule.showAddBuildingTypeModal()">
-                <i class="fas fa-plus"></i><span>Добавить тип постройки</span>
-            </button>
-        `;
-
-        if (buildingTypes.length === 0) {
-            html += '<p style="text-align: center; color: var(--text-secondary);">Нет доступных типов построек</p>';
-        } else {
-            html += '<div class="building-types-manager-list">';
-            buildingTypes.forEach(type => {
-                html += `
-                    <div class="building-type-manager-card" data-type-id="${type.id}">
-                        <div class="building-type-manager-header">
-                            <h4><i class="fas fa-industry"></i> ${type.name}</h4>
-                            <div class="building-type-manager-actions">
-                                <button class="btn-icon" onclick="provincesModule.editBuildingType(${type.id})" title="Редактировать">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn-icon btn-danger" onclick="provincesModule.deleteBuildingType(${type.id}, '${type.name}')" title="Удалить">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <p class="building-type-manager-description">${type.description || 'Нет описания'}</p>
-                        <div class="building-type-manager-stats">
-                            <div class="stat-row">
-                                <i class="fas fa-coins"></i> Стоимость: <strong>${type.base_cost}</strong>
-                            </div>
-                            <div class="stat-row">
-                                <i class="fas fa-money-bill-wave"></i> Содержание: <strong>${type.maintenance_cost}</strong>
-                            </div>
-                            <div class="stat-row">
-                                <i class="fas fa-clock"></i> Время стройки: <strong>${type.build_time} ${type.build_time === 1 ? 'ход' : 'хода'}</strong>
-                            </div>
-                            ${type.effect_type ? `
-                                <div class="stat-row">
-                                    <i class="fas fa-star"></i> Эффект: <strong>${getEffectText(type.effect_type, type.effect_value)}</strong>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-            html += '</div>';
-        }
-        
-        modalBody.innerHTML = html;
-        modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
-    }
-
-    function showAddBuildingTypeModal() {
-        const modal = document.getElementById('modal-overlay');
-        const modalBody = document.getElementById('modal-body');
-        const modalTitle = document.getElementById('modal-title');
-        const modalFooter = document.getElementById('modal-footer');
-        
-        modalTitle.innerHTML = '<i class="fas fa-plus"></i> Добавить тип постройки';
-        modalBody.innerHTML = `
-            <form id="building-type-form" onsubmit="event.preventDefault(); provincesModule.saveBuildingType();">
-                <div class="form-group">
-                    <label><i class="fas fa-tag"></i> Название</label>
-                    <input type="text" id="building-type-name" class="modal-input" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-align-left"></i> Описание</label>
-                    <textarea id="building-type-description" class="modal-input" rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-coins"></i> Стоимость строительства</label>
-                    <input type="number" id="building-type-cost" class="modal-input" min="0" value="1000" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-money-bill-wave"></i> Стоимость содержания</label>
-                    <input type="number" id="building-type-maintenance" class="modal-input" min="0" value="100" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-star"></i> Тип эффекта</label>
-                    <select id="building-type-effect-type" class="modal-input">
-                        <option value="">Нет эффекта</option>
-                        <option value="income">Доход</option>
-                        <option value="education">Образование</option>
-                        <option value="science">Наука</option>
-                        <option value="population">Рост населения</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-chart-line"></i> Значение эффекта</label>
-                    <input type="number" id="building-type-effect-value" class="modal-input" step="0.1" value="0">
-                </div>
-            </form>
-        `;
-        modalFooter.innerHTML = `
-            <button class="btn-primary" onclick="provincesModule.saveBuildingType()">
-                <i class="fas fa-save"></i> Сохранить
-            </button>
-            <button class="btn-secondary" onclick="closeModal()">Отмена</button>
-        `;
-        
-        modal.classList.add('visible');
-    }
-
-    async function editBuildingType(buildingTypeId) {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch('/api/provinces/building-types', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                const buildingType = data.building_types.find(bt => bt.id === buildingTypeId);
-                if (buildingType) {
-                    showEditBuildingTypeModal(buildingType);
-                }
-            }
-        } catch (error) {
-            console.error('Error loading building type:', error);
-            await showError('Ошибка', 'Не удалось загрузить тип постройки');
-        }
-    }
-
-    function showEditBuildingTypeModal(buildingType) {
-        const modal = document.getElementById('modal-overlay');
-        const modalBody = document.getElementById('modal-body');
-        const modalTitle = document.getElementById('modal-title');
-        const modalFooter = document.getElementById('modal-footer');
-        
-        modalTitle.innerHTML = '<i class="fas fa-edit"></i> Редактировать тип постройки';
-        modalBody.innerHTML = `
-            <form id="building-type-form" onsubmit="event.preventDefault(); provincesModule.saveBuildingType(${buildingType.id});">
-                <div class="form-group">
-                    <label><i class="fas fa-tag"></i> Название</label>
-                    <input type="text" id="building-type-name" class="modal-input" value="${buildingType.name}" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-align-left"></i> Описание</label>
-                    <textarea id="building-type-description" class="modal-input" rows="3">${buildingType.description || ''}</textarea>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-coins"></i> Стоимость строительства</label>
-                    <input type="number" id="building-type-cost" class="modal-input" min="0" value="${buildingType.base_cost}" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-money-bill-wave"></i> Стоимость содержания</label>
-                    <input type="number" id="building-type-maintenance" class="modal-input" min="0" value="${buildingType.maintenance_cost}" required>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-star"></i> Тип эффекта</label>
-                    <select id="building-type-effect-type" class="modal-input">
-                        <option value="">Нет эффекта</option>
-                        <option value="income" ${buildingType.effect_type === 'income' ? 'selected' : ''}>Доход</option>
-                        <option value="education" ${buildingType.effect_type === 'education' ? 'selected' : ''}>Образование</option>
-                        <option value="science" ${buildingType.effect_type === 'science' ? 'selected' : ''}>Наука</option>
-                        <option value="population" ${buildingType.effect_type === 'population' ? 'selected' : ''}>Рост населения</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-chart-line"></i> Значение эффекта</label>
-                    <input type="number" id="building-type-effect-value" class="modal-input" step="0.1" value="${buildingType.effect_value || 0}">
-                </div>
-            </form>
-        `;
-        modalFooter.innerHTML = `
-            <button class="btn-primary" onclick="provincesModule.saveBuildingType(${buildingType.id})">
-                <i class="fas fa-save"></i> Сохранить
-            </button>
-            <button class="btn-secondary" onclick="closeModal()">Отмена</button>
-        `;
-        
-        modal.classList.add('visible');
-    }
-
-    async function saveBuildingType(buildingTypeId = null) {
-        const name = document.getElementById('building-type-name').value.trim();
-        const description = document.getElementById('building-type-description').value.trim();
-        const base_cost = parseInt(document.getElementById('building-type-cost').value);
-        const maintenance_cost = parseInt(document.getElementById('building-type-maintenance').value);
-        const effect_type = document.getElementById('building-type-effect-type').value;
-        const effect_value = parseFloat(document.getElementById('building-type-effect-value').value);
-        
-        if (!name) {
-            await showError('Ошибка', 'Название обязательно');
-            return;
-        }
-        
-        const token = localStorage.getItem('token');
-        const url = buildingTypeId 
-            ? `/api/provinces/building-types/${buildingTypeId}`
-            : '/api/provinces/building-types';
-        const method = buildingTypeId ? 'PUT' : 'POST';
-        
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name,
-                    description,
-                    base_cost,
-                    maintenance_cost,
-                    effect_type,
-                    effect_value
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                await showSuccess('Успех', data.message);
-                // Перезагружаем список типов построек
-                setTimeout(() => {
-                    showBuildingTypesManager();
-                }, 1500);
-            } else {
-                await showError('Ошибка', data.error || 'Не удалось сохранить тип постройки');
-            }
-        } catch (error) {
-            console.error('Error saving building type:', error);
-            await showError('Ошибка', 'Не удалось сохранить тип постройки');
-        }
-    }
-
-    async function deleteBuildingType(buildingTypeId, buildingTypeName) {
-        if (!confirm(`Вы уверены, что хотите удалить тип постройки "${buildingTypeName}"?`)) {
-            return;
-        }
-        
-        const token = localStorage.getItem('token');
-        
-        try {
-            const response = await fetch(`/api/provinces/building-types/${buildingTypeId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                await showSuccess('Успех', data.message);
-                // Перезагружаем список типов построек
-                setTimeout(() => {
-                    showBuildingTypesManager();
-                }, 1500);
-            } else {
-                await showError('Ошибка', data.error || 'Не удалось удалить тип постройки');
-            }
-        } catch (error) {
-            console.error('Error deleting building type:', error);
-            await showError('Ошибка', 'Не удалось удалить тип постройки');
-        }
-    }
-
     // Публичный API модуля
     return {
         init,
@@ -923,12 +677,7 @@ let provincesModule = (function() {
         showAddProvinceModal,
         saveProvince,
         editProvince,
-        deleteProvince,
-        showBuildingTypesManager,
-        showAddBuildingTypeModal,
-        editBuildingType,
-        saveBuildingType,
-        deleteBuildingType
+        deleteProvince
     };
 })();
 
