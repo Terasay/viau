@@ -39,7 +39,6 @@ def init_db():
             description TEXT,
             base_cost INTEGER NOT NULL DEFAULT 1000,
             maintenance_cost INTEGER NOT NULL DEFAULT 100,
-            build_time INTEGER NOT NULL DEFAULT 1,
             effect_type TEXT,
             effect_value REAL
         )
@@ -52,7 +51,6 @@ def init_db():
             province_id INTEGER NOT NULL,
             building_type_id INTEGER NOT NULL,
             level INTEGER NOT NULL DEFAULT 1,
-            construction_turn INTEGER,
             built_at TEXT NOT NULL,
             FOREIGN KEY (province_id) REFERENCES provinces (id) ON DELETE CASCADE,
             FOREIGN KEY (building_type_id) REFERENCES building_types (id)
@@ -63,22 +61,22 @@ def init_db():
     cursor.execute('SELECT COUNT(*) as count FROM building_types')
     if cursor.fetchone()['count'] == 0:
         default_buildings = [
-            ('Текстильная фабрика', 'Производит ткани, повышает доход', 5000, 500, 2, 'income', 1000),
-            ('Металлургический завод', 'Производит металл, повышает доход', 8000, 800, 3, 'income', 1500),
-            ('Химический завод', 'Производит химикаты, повышает доход', 10000, 1000, 3, 'income', 2000),
-            ('Машиностроительный завод', 'Производит машины, повышает доход', 12000, 1200, 4, 'income', 2500),
-            ('Судостроительная верфь', 'Строит корабли, повышает доход', 15000, 1500, 5, 'income', 3000),
-            ('Университет', 'Повышает образование', 7000, 700, 3, 'education', 5.0),
-            ('Исследовательский центр', 'Повышает науку', 8000, 800, 3, 'science', 5.0),
-            ('Библиотека', 'Повышает образование', 3000, 300, 2, 'education', 2.0),
-            ('Больница', 'Повышает рост населения', 5000, 500, 2, 'population', 0.1),
-            ('Ферма', 'Производит еду, повышает население', 2000, 200, 1, 'population', 0.05),
+            ('Текстильная фабрика', 'Производит ткани, повышает доход', 5000, 500, 'income', 1000),
+            ('Металлургический завод', 'Производит металл, повышает доход', 8000, 800, 'income', 1500),
+            ('Химический завод', 'Производит химикаты, повышает доход', 10000, 1000, 'income', 2000),
+            ('Машиностроительный завод', 'Производит машины, повышает доход', 12000, 1200, 'income', 2500),
+            ('Судостроительная верфь', 'Строит корабли, повышает доход', 15000, 1500, 'income', 3000),
+            ('Университет', 'Повышает образование', 7000, 700, 'education', 5.0),
+            ('Исследовательский центр', 'Повышает науку', 8000, 800, 'science', 5.0),
+            ('Библиотека', 'Повышает образование', 3000, 300, 'education', 2.0),
+            ('Больница', 'Повышает рост населения', 5000, 500, 'population', 0.1),
+            ('Ферма', 'Производит еду, повышает население', 2000, 200, 'population', 0.05),
         ]
         
         cursor.executemany('''
             INSERT INTO building_types 
-            (name, description, base_cost, maintenance_cost, build_time, effect_type, effect_value)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            (name, description, base_cost, maintenance_cost, effect_type, effect_value)
+            VALUES (?, ?, ?, ?, ?, ?)
         ''', default_buildings)
     
     conn.commit()
@@ -298,13 +296,11 @@ async def get_province_buildings(province_id: int, request: Request):
             SELECT 
                 b.id,
                 b.level,
-                b.construction_turn,
                 b.built_at,
                 bt.name,
                 bt.description,
                 bt.base_cost,
                 bt.maintenance_cost,
-                bt.build_time,
                 bt.effect_type,
                 bt.effect_value
             FROM buildings b
@@ -353,7 +349,7 @@ async def get_building_types(request: Request):
         cursor.execute('''
             SELECT 
                 id, name, description, base_cost, maintenance_cost, 
-                build_time, effect_type, effect_value
+                effect_type, effect_value
             FROM building_types
             ORDER BY name
         ''')
@@ -366,7 +362,6 @@ async def get_building_types(request: Request):
                 'description': row['description'],
                 'base_cost': row['base_cost'],
                 'maintenance_cost': row['maintenance_cost'],
-                'build_time': row['build_time'],
                 'effect_type': row['effect_type'],
                 'effect_value': row['effect_value']
             })
@@ -539,9 +534,9 @@ async def create_building_type(request: Request):
         
         cursor.execute('''
             INSERT INTO building_types 
-            (name, description, base_cost, maintenance_cost, build_time, effect_type, effect_value)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (name, description, base_cost, maintenance_cost, build_time, effect_type, effect_value))
+            (name, description, base_cost, maintenance_cost, effect_type, effect_value)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (name, description, base_cost, maintenance_cost, effect_type, effect_value))
         
         conn.commit()
         
@@ -556,7 +551,6 @@ async def create_building_type(request: Request):
                 'description': description,
                 'base_cost': base_cost,
                 'maintenance_cost': maintenance_cost,
-                'build_time': build_time,
                 'effect_type': effect_type,
                 'effect_value': effect_value
             }
@@ -607,9 +601,9 @@ async def update_building_type(building_type_id: int, request: Request):
         cursor.execute('''
             UPDATE building_types
             SET name = ?, description = ?, base_cost = ?, maintenance_cost = ?, 
-                build_time = ?, effect_type = ?, effect_value = ?
+                effect_type = ?, effect_value = ?
             WHERE id = ?
-        ''', (name, description, base_cost, maintenance_cost, build_time, effect_type, effect_value, building_type_id))
+        ''', (name, description, base_cost, maintenance_cost, effect_type, effect_value, building_type_id))
         
         conn.commit()
         
@@ -622,7 +616,6 @@ async def update_building_type(building_type_id: int, request: Request):
                 'description': description,
                 'base_cost': base_cost,
                 'maintenance_cost': maintenance_cost,
-                'build_time': build_time,
                 'effect_type': effect_type,
                 'effect_value': effect_value
             }

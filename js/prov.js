@@ -261,20 +261,14 @@ let provincesModule = (function() {
         } else {
             html += '<div class="buildings-list">';
             
-            // Получаем текущий ход
-            const gameState = window.gameState?.getGameState();
-            const currentTurn = gameState?.current_turn || 1;
-            
             buildings.forEach(building => {
-                const isUnderConstruction = building.construction_turn && building.construction_turn > currentTurn;
                 const effectText = getEffectText(building.effect_type, building.effect_value);
                 
                 html += `
-                    <div class="building-item ${isUnderConstruction ? 'under-construction' : ''}">
+                    <div class="building-item">
                         <div class="building-header">
                             <h4>
                                 <i class="fas fa-industry"></i> ${building.name}
-                                ${isUnderConstruction ? '<span class="construction-badge"><i class="fas fa-hard-hat"></i> Строится</span>' : ''}
                             </h4>
                             <button class="btn-icon btn-danger" onclick="provincesModule.demolishBuilding(${building.id}, ${provinceId})" title="Снести">
                                 <i class="fas fa-trash"></i>
@@ -294,12 +288,6 @@ let provincesModule = (function() {
                                 <div class="stat-item">
                                     <i class="fas fa-chart-line"></i>
                                     <span>${effectText}</span>
-                                </div>
-                            ` : ''}
-                            ${isUnderConstruction ? `
-                                <div class="stat-item construction-info">
-                                    <i class="fas fa-clock"></i>
-                                    <span>Завершится на ходу ${building.construction_turn}</span>
                                 </div>
                             ` : ''}
                         </div>
@@ -351,10 +339,6 @@ let provincesModule = (function() {
                             <i class="fas fa-wrench"></i>
                             <span>Содержание: ${type.maintenance_cost}/ход</span>
                         </div>
-                        <div class="stat-row">
-                            <i class="fas fa-clock"></i>
-                            <span>Время: ${type.build_time} ход(а/ов)</span>
-                        </div>
                         ${effectText ? `
                             <div class="stat-row">
                                 <i class="fas fa-chart-line"></i>
@@ -374,7 +358,7 @@ let provincesModule = (function() {
     }
 
     async function buildBuilding(provinceId, buildingTypeId) {
-        if (!confirm('Вы уверены, что хотите начать строительство?')) return;
+        if (!confirm('Вы уверены, что хотите построить это здание?')) return;
         
         try {
             const token = localStorage.getItem('token');
@@ -389,7 +373,7 @@ let provincesModule = (function() {
             
             const data = await response.json();
             if (data.success) {
-                await showSuccess('Строительство начато', data.message);
+                await showSuccess('Здание построено', data.message);
                 // Обновляем баланс страны
                 if (window.gameState) {
                     await window.gameState.updateCountry();
@@ -743,10 +727,6 @@ let provincesModule = (function() {
                     <input type="number" id="building-type-maintenance" class="modal-input" min="0" value="100" required>
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-clock"></i> Время строительства (ходов)</label>
-                    <input type="number" id="building-type-build-time" class="modal-input" min="1" value="1" required>
-                </div>
-                <div class="form-group">
                     <label><i class="fas fa-star"></i> Тип эффекта</label>
                     <select id="building-type-effect-type" class="modal-input">
                         <option value="">Нет эффекта</option>
@@ -821,10 +801,6 @@ let provincesModule = (function() {
                     <input type="number" id="building-type-maintenance" class="modal-input" min="0" value="${buildingType.maintenance_cost}" required>
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-clock"></i> Время строительства (ходов)</label>
-                    <input type="number" id="building-type-build-time" class="modal-input" min="1" value="${buildingType.build_time}" required>
-                </div>
-                <div class="form-group">
                     <label><i class="fas fa-star"></i> Тип эффекта</label>
                     <select id="building-type-effect-type" class="modal-input">
                         <option value="">Нет эффекта</option>
@@ -855,7 +831,6 @@ let provincesModule = (function() {
         const description = document.getElementById('building-type-description').value.trim();
         const base_cost = parseInt(document.getElementById('building-type-cost').value);
         const maintenance_cost = parseInt(document.getElementById('building-type-maintenance').value);
-        const build_time = parseInt(document.getElementById('building-type-build-time').value);
         const effect_type = document.getElementById('building-type-effect-type').value;
         const effect_value = parseFloat(document.getElementById('building-type-effect-value').value);
         
@@ -882,7 +857,6 @@ let provincesModule = (function() {
                     description,
                     base_cost,
                     maintenance_cost,
-                    build_time,
                     effect_type,
                     effect_value
                 })
