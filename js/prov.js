@@ -674,17 +674,36 @@ let provincesModule = (function() {
         }
     }
 
-    function selectCountry(countryId, countryName) {
+    async function selectCountry(countryId, countryName) {
         currentCountryId = countryId;
         currentCountryName = countryName;
         console.log('Provinces: country selected', countryId, countryName);
+        
+        // Загружаем данные страны, чтобы получить её валюту
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/economic/country/${countryId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            const data = await response.json();
+            if (data.success && data.country) {
+                currencyCode = data.country.main_currency || 'ESC';
+                console.log('Currency code updated for selected country:', currencyCode);
+            }
+        } catch (error) {
+            console.error('Error loading country currency:', error);
+            currencyCode = 'ESC'; // Дефолт
+        }
         
         // Сбрасываем загруженные данные
         provinces = [];
         buildingTypes = [];
         
         // Загружаем данные для новой страны
-        ensureDataLoaded();
+        await ensureDataLoaded();
     }
 
     // Вспомогательные функции для модальных окон
