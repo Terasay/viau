@@ -155,17 +155,14 @@ let provincesModule = (function() {
             const data = await response.json();
             
             if (data.success && data.data) {
-                // Получаем курс золота (в resources)
-                if (data.data.resources && data.data.resources.gold) {
-                    goldRate = data.data.resources.gold.rate;
-                }
-                
-                // Получаем название валюты страны
+                // Получаем название валюты страны И ЕЁ КУРС
                 if (data.data.currencies && data.data.currencies[currencyCode]) {
                     const currencyInfo = data.data.currencies[currencyCode];
                     currencyName = getCurrencyGenitiveName(currencyInfo.name);
+                    goldRate = currencyInfo.rate; // Курс валюты к золоту!
                 } else {
-                    currencyName = 'единиц'; // Дефолт
+                    currencyName = 'единиц';
+                    goldRate = 1;
                 }
                 
                 console.log('Currency loaded:', currencyCode, currencyName, 'Gold rate:', goldRate);
