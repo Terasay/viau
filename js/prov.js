@@ -46,7 +46,8 @@ let provincesModule = (function() {
         try {
             await Promise.all([
                 loadProvinces(),
-                loadBuildingTypes()
+                loadBuildingTypes(),
+                loadCurrencyData()
             ]);
             render();
         } catch (error) {
