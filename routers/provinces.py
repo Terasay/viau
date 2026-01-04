@@ -142,23 +142,23 @@ def init_db():
 # Инициализируем таблицы при импорте модуля
 init_db()
 
-def get_gold_rate():
-    """Получить курс золота из конвертера"""
+def get_currency_rate(currency_code):
+    """Получить курс валюты из конвертера"""
     try:
         import json
         converter_data_file = 'data/converter_data.json'
         with open(converter_data_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
-            if 'resources' in data and 'gold' in data['resources']:
-                return data['resources']['gold']['rate']
+            if 'currencies' in data and currency_code in data['currencies']:
+                return data['currencies'][currency_code]['rate']
     except Exception as e:
-        print(f'Ошибка получения курса золота: {e}')
+        print(f'Ошибка получения курса валюты: {e}')
     return 1  # Дефолтный курс
 
-def convert_gold_to_currency(gold_amount):
+def convert_gold_to_currency(gold_amount, currency_code):
     """Конвертировать золото в валюту и округлить до десятков вверх"""
-    gold_rate = get_gold_rate()
-    price = gold_amount * gold_rate
+    currency_rate = get_currency_rate(currency_code)
+    price = gold_amount * currency_rate
     # Округление до десятков вверх
     return math.ceil(price / 10) * 10
 
@@ -493,7 +493,7 @@ async def build_building(province_id: int, request: Request):
     try:
         # Проверяем доступ к провинции и получаем данные страны
         cursor.execute('''
-            SELECT p.id, p.country_id, c.player_id, c.balance
+            SELECT p.id, p.country_id, c.player_id, c.balance, c.main_currency
             FROM provinces p
             JOIN countries c ON p.country_id = c.id
             WHERE p.id = ?
@@ -515,7 +515,8 @@ async def build_building(province_id: int, request: Request):
             return JSONResponse({'success': False, 'error': 'Тип здания не найден'}, status_code=404)
         
         # Конвертируем цену из золота в валюту страны
-        actual_cost = convert_gold_to_currency(building_type['base_cost'])
+        currency_code = province['main_currency'] or 'ESC'
+        actual_cost = convert_gold_to_currency(building_type['base_cost'], currency_code)
         
         # Проверяем баланс страны
         if province['balance'] < actual_cost:
