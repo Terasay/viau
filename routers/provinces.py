@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 import sqlite3
 import sys
+import math
 from datetime import datetime
 
 sys.path.append('..')
@@ -31,7 +32,7 @@ def init_db():
         )
     ''')
     
-    # Таблица типов построек
+    # Таблица типов построек (цены в золоте)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS building_types (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -71,7 +72,7 @@ def init_db():
         )
     ''')
     
-    # Добавляем базовые типы построек, если их нет
+    # Добавляем базовые типы построек, если их нет (цены указаны в золоте)
     cursor.execute('SELECT COUNT(*) as count FROM building_types')
     existing_count = cursor.fetchone()['count']
     
@@ -79,6 +80,7 @@ def init_db():
     if existing_count == 0:
         default_buildings = [
             # ОБРАЗОВАТЕЛЬНЫЕ ПОСТРОЙКИ (влияют на прирост образования и науки)
+            # Цены в золоте (gold units)
             ('Школа', 'Начальное образование для населения. Увеличивает прирост образования.', 
              3000, 300, 'educational', 'education_growth', 0.05, None),
             ('Университет', 'Высшее учебное заведение. Значительно увеличивает прирост образования и науки.', 
@@ -139,6 +141,26 @@ def init_db():
 
 # Инициализируем таблицы при импорте модуля
 init_db()
+
+def get_gold_rate():
+    """Получить курс золота из конвертера"""
+    try:
+        import json
+        converter_data_file = 'data/converter_data.json'
+        with open(converter_data_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            if 'resources' in data and 'gold' in data['resources']:
+                return data['resources']['gold']['rate']
+    except Exception as e:
+        print(f'Ошибка получения курса золота: {e}')
+    return 1  # Дефолтный курс
+
+def convert_gold_to_currency(gold_amount):
+    """Конвертировать золото в валюту и округлить до десятков вверх"""
+    gold_rate = get_gold_rate()
+    price = gold_amount * gold_rate
+    # Округление до десятков вверх
+    return math.ceil(price / 10) * 10
 
 async def get_current_user(request: Request):
     """Получение текущего пользователя из токена"""
@@ -492,11 +514,14 @@ async def build_building(province_id: int, request: Request):
         if not building_type:
             return JSONResponse({'success': False, 'error': 'Тип здания не найден'}, status_code=404)
         
+        # Конвертируем цену из золота в валюту страны
+        actual_cost = convert_gold_to_currency(building_type['base_cost'])
+        
         # Проверяем баланс страны
-        if province['balance'] < building_type['base_cost']:
+        if province['balance'] < actual_cost:
             return JSONResponse({
                 'success': False, 
-                'error': f'Недостаточно средств. Требуется: {building_type["base_cost"]}, доступно: {province["balance"]}'
+                'error': f'Недостаточно средств. Требуется: {actual_cost}, доступно: {province["balance"]}'
             }, status_code=400)
         
         # Списываем деньги
@@ -504,7 +529,7 @@ async def build_building(province_id: int, request: Request):
             UPDATE countries
             SET balance = balance - ?
             WHERE id = ?
-        ''', (building_type['base_cost'], province['country_id']))
+        ''', (actual_cost, province['country_id']))
         
         # Создаем здание мгновенно
         built_at = datetime.now().isoformat()

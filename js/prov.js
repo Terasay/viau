@@ -135,9 +135,32 @@ let provincesModule = (function() {
         const data = await response.json();
         if (data.success) {
             buildingTypes = data.building_types || [];
+            // Загружаем курс золота для конвертации цен
+            await loadGoldRate();
         } else {
             throw new Error(data.error);
         }
+    }
+
+    let goldRate = 1; // Курс золота к валюте страны
+
+    async function loadGoldRate() {
+        try {
+            const response = await fetch('/api/converter/resource-rates');
+            const data = await response.json();
+            if (data.success && data.rates && data.rates.gold) {
+                goldRate = data.rates.gold;
+            }
+        } catch (error) {
+            console.error('Error loading gold rate:', error);
+            goldRate = 1; // Дефолтный курс
+        }
+    }
+
+    function convertGoldToPrice(goldAmount) {
+        // Конвертируем золото в валюту и округляем до десятков вверх
+        const price = goldAmount * goldRate;
+        return Math.ceil(price / 10) * 10;
     }
 
     function render() {
@@ -262,6 +285,8 @@ let provincesModule = (function() {
             
             buildings.forEach(building => {
                 const effectText = getEffectText(building.effect_type, building.effect_value);
+                const displayCost = convertGoldToPrice(building.base_cost);
+                const displayMaintenance = convertGoldToPrice(building.maintenance_cost);
                 
                 html += `
                     <div class="building-item">
@@ -281,7 +306,7 @@ let provincesModule = (function() {
                             </div>
                             <div class="stat-item">
                                 <i class="fas fa-coins"></i>
-                                <span>Содержание: ${building.maintenance_cost}</span>
+                                <span>Содержание: ${displayMaintenance}</span>
                             </div>
                             ${effectText ? `
                                 <div class="stat-item">
@@ -337,10 +362,10 @@ let provincesModule = (function() {
         
         // Группируем постройки по категориям
         const categories = {
-            'educational': { name: '📚 Образовательные постройки', buildings: [] },
-            'military_infantry': { name: '🔫 Производство пехотного снаряжения', buildings: [] },
-            'military_vehicles': { name: '🚜 Производство военной техники', buildings: [] },
-            'military_naval': { name: '⚓ Верфи и кораблестроение', buildings: [] }
+            'educational': { name: 'Образовательные постройки', buildings: [] },
+            'military_infantry': { name: 'Производство пехотного снаряжения', buildings: [] },
+            'military_vehicles': { name: 'Производство военной техники', buildings: [] },
+            'military_naval': { name: 'Верфи и кораблестроение', buildings: [] }
         };
         
         // Фильтруем только доступные постройки и группируем по категориям
@@ -350,7 +375,7 @@ let provincesModule = (function() {
             }
         });
         
-        let html = '<h3 style="margin-bottom: 20px;">🏗️ Выберите тип здания</h3>';
+        let html = '<h3 style="margin-bottom: 20px;">Выберите тип здания</h3>';
         
         // Отображаем каждую категорию
         for (const [categoryKey, category] of Object.entries(categories)) {
@@ -366,6 +391,8 @@ let provincesModule = (function() {
             category.buildings.forEach(type => {
                 const effectText = getEffectText(type.effect_type, type.effect_value);
                 const icon = getCategoryIcon(type.building_category);
+                const displayCost = convertGoldToPrice(type.base_cost);
+                const displayMaintenance = convertGoldToPrice(type.maintenance_cost);
                 
                 html += `
                     <div class="building-type-card">
@@ -374,11 +401,11 @@ let provincesModule = (function() {
                         <div class="building-type-stats">
                             <div class="stat-row">
                                 <i class="fas fa-coins"></i>
-                                <span>Стоимость: ${type.base_cost}</span>
+                                <span>Стоимость: ${displayCost}</span>
                             </div>
                             <div class="stat-row">
                                 <i class="fas fa-wrench"></i>
-                                <span>Содержание: ${type.maintenance_cost}/ход</span>
+                                <span>Содержание: ${displayMaintenance}/ход</span>
                             </div>
                             ${effectText ? `
                                 <div class="stat-row">
