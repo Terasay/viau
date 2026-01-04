@@ -6,7 +6,8 @@ let provincesModule = (function() {
     let provinces = [];
     let buildingTypes = [];
     let isInitialized = false; // Флаг инициализации
-    let countryCurrency = 'ед.'; // Валюта страны
+    let currencyCode = 'ESC'; // Код валюты страны
+    let currencyName = 'краунов'; // Название валюты (родительный падеж)
 
     async function init() {
         if (isInitialized) {
@@ -23,8 +24,8 @@ let provincesModule = (function() {
                 isAdminView = user.role === 'admin' || user.role === 'moderator';
                 currentCountryId = country.id;
                 currentCountryName = country.country_name || country.name || 'Неизвестная страна';
-                countryCurrency = country.currency || 'ед.';
-                console.log('Provinces module: country set', currentCountryId, currentCountryName);
+                currencyCode = country.main_currency || 'ESC';
+                console.log('Provinces module: country set', currentCountryId, currentCountryName, 'Currency:', currencyCode);
                 // Не загружаем данные сразу, будем загружать при открытии вкладки
             } else if (user && user.role === 'admin') {
                 // Для админа без выбранной страны устанавливаем режим админа
@@ -137,8 +138,8 @@ let provincesModule = (function() {
         const data = await response.json();
         if (data.success) {
             buildingTypes = data.building_types || [];
-            // Загружаем курс золота для конвертации цен
-            await loadGoldRate();
+            // Загружаем курс золота и название валюты
+            await loadCurrencyData();
         } else {
             throw new Error(data.error);
         }
@@ -146,29 +147,59 @@ let provincesModule = (function() {
 
     let goldRate = 1; // Курс золота к валюте страны
 
-    async function loadGoldRate() {
+    async function loadCurrencyData() {
         try {
-            const response = await fetch('/api/converter/resource-rates');
+            // Загружаем данные конвертера
+            const response = await fetch('/api/converter/data');
             const data = await response.json();
-            if (data.success && data.rates && data.rates.gold) {
-                goldRate = data.rates.gold;
+            
+            if (data.success && data.data) {
+                // Получаем курс золота (в resources)
+                if (data.data.resources && data.data.resources.gold) {
+                    goldRate = data.data.resources.gold.rate;
+                }
+                
+                // Получаем название валюты страны
+                if (data.data.currencies && data.data.currencies[currencyCode]) {
+                    const currencyInfo = data.data.currencies[currencyCode];
+                    currencyName = getCurrencyGenitiveName(currencyInfo.name);
+                } else {
+                    currencyName = 'единиц'; // Дефолт
+                }
+                
+                console.log('Currency loaded:', currencyCode, currencyName, 'Gold rate:', goldRate);
             }
         } catch (error) {
-            console.error('Error loading gold rate:', error);
-            goldRate = 1; // Дефолтный курс
+            console.error('Error loading currency data:', error);
+            goldRate = 1;
+            currencyName = 'единиц';
         }
     }
 
+    function getCurrencyGenitiveName(fullName) {
+        // Преобразуем полное название в родительный падеж (например, "Доллар США" -> "долларов")
+        const genitiveMap = {
+            'Доллар США': 'долларов',
+            'Евро': 'евро',
+            'Российский рубль': 'рублей',
+            'Фунт стерлингов': 'фунтов',
+            'Японская иена': 'иен',
+            'Китайский юань': 'юаней',
+            'Казахстанский тенге': 'тенге'
+        };
+        return genitiveMap[fullName] || fullName.toLowerCase();
+    }
+
     function convertGoldToPrice(goldAmount) {
-        // Конвертируем золото в валюту и округляем до десятков вверх
+        // Конвертируем золото в валюту через курс и округляем до десятков вверх
         const price = goldAmount * goldRate;
         return Math.ceil(price / 10) * 10;
     }
 
     function formatPrice(goldAmount) {
-        // Форматирует цену: конвертированная цена с валютой + исходная в золоте для админов
+        // Форматирует цену: конвертированная цена с названием валюты + исходная в золоте для админов
         const convertedPrice = convertGoldToPrice(goldAmount);
-        let formatted = `${convertedPrice} ${countryCurrency}`;
+        let formatted = `${convertedPrice} ${currencyName}`;
         if (isAdminView) {
             formatted += ` (${goldAmount} золота)`;
         }
