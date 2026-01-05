@@ -334,16 +334,9 @@ let provincesModule = (function() {
                             <h4>
                                 <i class="fas fa-industry"></i> ${building.name}
                             </h4>
-                            <button class="btn-icon btn-danger" onclick="provincesModule.demolishBuilding(${building.id}, ${provinceId})" title="Снести">
-                                <i class="fas fa-trash"></i>
-                            </button>
                         </div>
                         <p class="building-description">${building.description}</p>
                         <div class="building-stats">
-                            <div class="stat-item">
-                                <i class="fas fa-level-up-alt"></i>
-                                <span>Уровень: ${building.level}</span>
-                            </div>
                             <div class="stat-item">
                                 <i class="fas fa-coins"></i>
                                 <span>Содержание: ${displayMaintenance}/ход</span>
