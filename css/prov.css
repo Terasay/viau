@@ -7,17 +7,21 @@
 .province-card i,
 .buildings-list i,
 .building-types-grid i {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
     line-height: 1;
+    vertical-align: middle;
 }
 
-.provinces-header i,
-.province-card i,
-.buildings-list i,
-.building-types-grid i {
-    vertical-align: middle;
+/* Родительские элементы с иконками должны быть flex-контейнерами */
+.building-header h4,
+.building-stats .stat-item,
+.building-type-card h4,
+.building-type-stats .stat-row,
+.province-card-header h3,
+.province-city {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 /* Заголовок секции провинций */
@@ -101,14 +105,13 @@
     margin: 0;
     font-size: 0.95em;
     color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    /* display: flex уже добавлен выше */
 }
 
 .province-city i {
     color: var(--info);
     font-size: 0.9em;
+    flex-shrink: 0;
 }
 
 /* Действия с провинцией (админ) */
@@ -177,14 +180,13 @@
     font-size: 1.2em;
     font-weight: 600;
     color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    /* display: flex добавлен выше в общих правилах */
 }
 
 .building-header h4 i {
     color: var(--success);
     font-size: 0.9em;
+    flex-shrink: 0;
 }
 
 /* Описание постройки */
@@ -203,9 +205,7 @@
 }
 
 .building-stats .stat-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    /* display: flex добавлен выше в общих правилах */
     font-size: 0.9em;
     color: var(--text-secondary);
     padding: 8px 12px;
@@ -216,6 +216,7 @@
 .building-stats .stat-item i {
     color: var(--warning);
     font-size: 1.1em;
+    flex-shrink: 0;
 }
 
 /* ===================================
@@ -252,14 +253,13 @@
     font-size: 1.15em;
     font-weight: 600;
     color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    /* display: flex добавлен выше в общих правилах */
 }
 
 .building-type-card h4 i {
     color: var(--primary);
     font-size: 0.95em;
+    flex-shrink: 0;
 }
 
 .building-type-card p {
@@ -282,9 +282,7 @@
 }
 
 .building-type-stats .stat-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    /* display: flex добавлен выше в общих правилах */
     font-size: 0.85em;
     color: var(--text-secondary);
 }
@@ -293,6 +291,7 @@
     color: var(--warning);
     font-size: 1em;
     min-width: 16px;
+    flex-shrink: 0;
 }
 
 .building-type-stats .stat-row:first-child i {
