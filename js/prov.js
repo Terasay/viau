@@ -10,14 +10,19 @@ const provincesModule = (function() {
     let goldRate = 1;
 
     async function init() {
+        console.log('Provinces module init started');
         const gameState = window.gameState;
         if (gameState) {
             const user = gameState.getUser();
             const country = gameState.getCountry();
             
+            console.log('User:', user);
+            console.log('Country:', country);
+            
             if (user && country) {
                 currentCountryId = country.id;
                 currentCountryName = country.name;
+                currencyCode = country.main_currency || 'ESC';
                 isAdminView = user.role === 'admin' || user.role === 'moderator';
             } else {
                 isAdminView = user && (user.role === 'admin' || user.role === 'moderator');
@@ -26,11 +31,19 @@ const provincesModule = (function() {
         
         if (currentCountryId) {
             await loadData();
+        } else {
+            console.log('No country selected, rendering empty state');
+            render();
         }
     }
 
     async function loadData() {
-        if (!currentCountryId) return;
+        if (!currentCountryId) {
+            console.warn('loadData: no currentCountryId');
+            return;
+        }
+        
+        console.log('Loading data for country:', currentCountryId);
         
         try {
             await Promise.all([
@@ -38,6 +51,7 @@ const provincesModule = (function() {
                 loadBuildingTypes(),
                 loadCurrencyData()
             ]);
+            console.log('Data loaded successfully');
             render();
         } catch (error) {
             console.error('Ошибка загрузки данных:', error);
@@ -126,7 +140,20 @@ const provincesModule = (function() {
 
     function render() {
         const container = document.getElementById('provinces-content');
-        if (!container) return;
+        if (!container) {
+            console.error('Container #provinces-content not found');
+            return;
+        }
+
+        if (!currentCountryId) {
+            container.innerHTML = `
+                <div class="placeholder-text">
+                    <i class="fas fa-globe"></i>
+                    <p>Выберите страну для просмотра провинций</p>
+                </div>
+            `;
+            return;
+        }
 
         let html = `
             <div class="provinces-header">
