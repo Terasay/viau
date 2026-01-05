@@ -183,9 +183,9 @@
 .building-header h4 i {
     color: var(--primary);
     font-size: 0.85em;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    line-height: 1;
+    vertical-align: middle;
+    display: inline-block;
 }
 
 .construction-badge {
@@ -230,10 +230,14 @@
 .building-stats .stat-item i {
     color: var(--primary);
     width: 16px;
+    line-height: 1;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.building-stats .stat-item span {
+    vertical-align: middle;
     line-height: 1.6;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .building-stats .stat-item.construction-info {
