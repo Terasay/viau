@@ -2,22 +2,25 @@
    Стили для страницы провинций
    =================================== */
 
-/* Нормализация Font Awesome иконок: чтобы не «висели» над текстом */
-.provinces-header i,
-.province-card i,
-.buildings-list i,
-.building-types-grid i {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+/* Локальная страховка от конфликтующих стилей: FA-иконки не должны быть flex-элементами */
+.provinces-header i.fa,
+.provinces-header i.fas,
+.provinces-header i.far,
+.provinces-header i.fab,
+.province-card i.fa,
+.province-card i.fas,
+.province-card i.far,
+.province-card i.fab,
+.buildings-list i.fa,
+.buildings-list i.fas,
+.buildings-list i.far,
+.buildings-list i.fab,
+.building-types-grid i.fa,
+.building-types-grid i.fas,
+.building-types-grid i.far,
+.building-types-grid i.fab {
+    display: inline-block;
     line-height: 1;
-}
-
-.provinces-header i,
-.province-card i,
-.buildings-list i,
-.building-types-grid i {
-    vertical-align: middle;
 }
 
 /* Заголовок секции провинций */

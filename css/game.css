@@ -54,6 +54,19 @@ body.dark-mode {
     box-sizing: border-box;
 }
 
+/* Нормализация Font Awesome (webfont): выравнивание по строке */
+i.fa,
+i.fas,
+i.far,
+i.fab,
+i.fa-solid,
+i.fa-regular,
+i.fa-brands {
+    display: inline-block;
+    line-height: 1;
+    vertical-align: -0.125em;
+}
+
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: var(--bg-primary);
