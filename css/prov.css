@@ -1,72 +1,96 @@
-/* ===================================
-   Стили для страницы провинций
-   =================================== */
+/* ========================================
+   ПРОВИНЦИИ - ОСНОВНОЙ КОНТЕЙНЕР
+   ======================================== */
 
-/* Локальная страховка от конфликтующих стилей: FA-иконки не должны быть flex-элементами */
-.provinces-header i.fa,
-.provinces-header i.fas,
-.provinces-header i.far,
-.provinces-header i.fab,
-.province-card i.fa,
-.province-card i.fas,
-.province-card i.far,
-.province-card i.fab,
-.buildings-list i.fa,
-.buildings-list i.fas,
-.buildings-list i.far,
-.buildings-list i.fab,
-.building-types-grid i.fa,
-.building-types-grid i.fas,
-.building-types-grid i.far,
-.building-types-grid i.fab {
-    display: inline-block;
-    line-height: 1;
-}
-
-/* Заголовок секции провинций */
 .provinces-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: 32px;
-    padding: 24px;
-    background: var(--bg-secondary);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
+    gap: 24px;
+    flex-wrap: wrap;
 }
 
-.provinces-header h2 {
-    margin: 0;
-    font-size: 1.75em;
-    font-weight: 700;
-    color: var(--text-primary);
+.provinces-title {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
 }
 
-.provinces-header h2 i {
+.provinces-title i {
+    font-size: 2em;
     color: var(--primary);
-    font-size: 1em;
 }
 
-/* Сетка провинций */
+.provinces-title h2 {
+    margin: 0;
+    font-size: 1.8em;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* ========================================
+   ПУСТОЕ СОСТОЯНИЕ
+   ======================================== */
+
+.provinces-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 40px;
+    background: var(--bg-secondary);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-lg);
+    text-align: center;
+}
+
+.provinces-empty i {
+    font-size: 4em;
+    color: var(--primary);
+    opacity: 0.3;
+    margin-bottom: 24px;
+}
+
+.provinces-empty h3 {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.provinces-empty p {
+    font-size: 1em;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+.provinces-empty .hint {
+    font-size: 0.95em;
+    color: var(--primary);
+    font-weight: 600;
+    margin-top: 16px;
+}
+
+/* ========================================
+   СЕТКА ПРОВИНЦИЙ
+   ======================================== */
+
 .provinces-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
     gap: 24px;
-    margin-top: 24px;
 }
 
-/* Карточка провинции */
 .province-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 24px;
+    cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-sm);
 }
 
 .province-card:hover {
@@ -75,91 +99,348 @@
     border-color: var(--primary);
 }
 
-/* Заголовок карточки провинции */
 .province-card-header {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
+    gap: 16px;
     margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid var(--border);
 }
 
-.province-card-header h3 {
-    margin: 0 0 8px 0;
-    font-size: 1.4em;
+.province-card-icon {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.province-card-icon i {
+    font-size: 1.8em;
+    color: white;
+}
+
+.province-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.province-card-info h3 {
+    font-size: 1.3em;
     font-weight: 700;
     color: var(--text-primary);
+    margin: 0 0 8px 0;
+}
+
+.province-city {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95em;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.province-city i {
+    font-size: 0.9em;
+    color: var(--primary);
+}
+
+.province-city span {
+    line-height: 1;
+}
+
+.province-card-body {
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.province-stat {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.province-card-header h3 i {
+.province-stat i {
+    font-size: 1.1em;
     color: var(--primary);
-    font-size: 0.9em;
+    width: 20px;
+    text-align: center;
 }
 
-.province-city {
-    margin: 0;
+.stat-label {
+    font-size: 0.9em;
+    color: var(--text-tertiary);
+}
+
+.stat-value {
     font-size: 0.95em;
-    color: var(--text-secondary);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-left: auto;
+}
+
+.province-card-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-view {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 10px 20px;
+    background: var(--bg-tertiary);
+    border: none;
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.province-city i {
-    color: var(--info);
-    font-size: 0.9em;
-}
-
-/* Действия с провинцией (админ) */
-.province-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-danger {
-    background: var(--danger);
+.btn-view:hover {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     color: white;
 }
 
-.btn-danger:hover {
-    background: #dc2626;
-    transform: scale(1.1);
+.btn-view i {
+    font-size: 0.9em;
+    transition: transform 0.3s ease;
 }
 
-/* Информация о провинции */
-.province-info {
-    margin: 16px 0;
+.btn-view:hover i {
+    transform: translateX(4px);
 }
 
-/* Кнопка на всю ширину */
-.btn-full {
-    width: 100%;
-    margin-top: 16px;
+/* ========================================
+   МОДАЛЬНОЕ ОКНО - ДЕТАЛИ ПРОВИНЦИИ
+   ======================================== */
+
+.province-modal-loading,
+.province-modal-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    padding: 60px 40px;
+    text-align: center;
 }
 
-/* ===================================
-   Стили для построек
-   =================================== */
-
-/* Список построек в модальном окне */
-.buildings-list {
-    display: grid;
-    gap: 16px;
-    margin-top: 16px;
+.province-modal-loading i {
+    font-size: 3em;
+    color: var(--primary);
+    margin-bottom: 20px;
 }
 
-/* Карточка постройки */
-.building-item {
+.province-modal-error i {
+    font-size: 3em;
+    color: var(--danger);
+    margin-bottom: 20px;
+}
+
+.province-modal-loading p,
+.province-modal-error p {
+    font-size: 1.1em;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.error-detail {
+    font-size: 0.9em !important;
+    color: var(--danger) !important;
+    margin-top: 12px !important;
+}
+
+.province-details {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* ========================================
+   ИНФОРМАЦИЯ О ПРОВИНЦИИ
+   ======================================== */
+
+.province-info-section {
     background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+}
+
+.province-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.province-info-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
     border: 1px solid var(--border);
+}
+
+.province-info-item i {
+    font-size: 1.5em;
+    color: var(--primary);
+    width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.info-label {
+    font-size: 0.85em;
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 1.1em;
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* ========================================
+   СЕКЦИЯ ПОСТРОЕК
+   ======================================== */
+
+.province-buildings-section {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    border: 1px solid var(--border);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.section-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.section-header h3 i {
+    font-size: 1em;
+    color: var(--primary);
+}
+
+.buildings-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    text-align: center;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius);
+    border: 2px dashed var(--border);
+}
+
+.buildings-empty i {
+    font-size: 3em;
+    color: var(--primary);
+    opacity: 0.3;
+    margin-bottom: 20px;
+}
+
+.buildings-empty p {
+    font-size: 1em;
+    color: var(--text-secondary);
+    margin: 8px 0;
+}
+
+.buildings-empty .hint {
+    font-size: 0.9em;
+    color: var(--primary);
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+/* ========================================
+   ПОСТРОЙКИ ПО КАТЕГОРИЯМ
+   ======================================== */
+
+.buildings-by-category {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.building-category-section {
+    background: var(--bg-tertiary);
     border-radius: var(--radius);
     padding: 20px;
+}
+
+.category-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 20px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border);
+}
+
+.category-title i {
+    font-size: 1em;
+    color: var(--primary);
+}
+
+.category-count {
+    margin-left: auto;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border: 1px solid var(--primary);
+    padding: 4px 12px;
+    border-radius: var(--radius);
+    font-size: 0.8em;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.buildings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+}
+
+.building-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .building-item:hover {
@@ -167,231 +448,398 @@
     box-shadow: var(--shadow);
 }
 
-/* Заголовок постройки */
 .building-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
-.building-header h4 {
-    margin: 0;
-    font-size: 1.2em;
-    font-weight: 600;
-    color: var(--text-primary);
+.building-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border-radius: var(--radius);
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-.building-header h4 i {
-    color: var(--success);
-    font-size: 0.9em;
+.building-icon i {
+    font-size: 1.3em;
+    color: white;
 }
 
-/* Описание постройки */
-.building-description {
-    margin: 0 0 16px 0;
-    font-size: 0.95em;
+.building-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.building-info h5 {
+    font-size: 1.05em;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 6px 0;
+}
+
+.building-info p {
+    font-size: 0.85em;
     color: var(--text-secondary);
-    line-height: 1.5;
+    margin: 0;
+    line-height: 1.4;
 }
 
-/* Статистика постройки */
 .building-stats {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
 }
 
-.building-stats .stat-item {
+.building-stat {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     font-size: 0.9em;
     color: var(--text-secondary);
-    padding: 8px 12px;
-    background: var(--bg-secondary);
-    border-radius: var(--radius);
 }
 
-.building-stats .stat-item i {
-    color: var(--warning);
-    font-size: 1.1em;
-}
-
-/* ===================================
-   Стили для меню строительства
-   =================================== */
-
-/* Сетка типов построек */
-.building-types-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    margin-bottom: 24px;
-}
-
-/* Карточка типа постройки */
-.building-type-card {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-}
-
-.building-type-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary);
-}
-
-.building-type-card h4 {
-    margin: 0 0 12px 0;
-    font-size: 1.15em;
-    font-weight: 600;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.building-type-card h4 i {
+.building-stat i {
+    font-size: 1em;
     color: var(--primary);
-    font-size: 0.95em;
+    width: 16px;
+    text-align: center;
 }
 
-.building-type-card p {
-    margin: 0 0 16px 0;
-    font-size: 0.9em;
-    color: var(--text-secondary);
-    line-height: 1.5;
-    flex-grow: 1;
-}
-
-/* Статистика типа постройки */
-.building-type-stats {
+.building-actions {
     display: flex;
-    flex-direction: column;
+    justify-content: flex-end;
     gap: 8px;
-    margin-bottom: 16px;
-    padding: 12px;
-    background: var(--bg-secondary);
-    border-radius: var(--radius);
+    margin-top: 12px;
 }
 
-.building-type-stats .stat-row {
+.btn-icon-small {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius);
+    border: none;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+}
+
+.btn-icon-small.btn-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-icon-small.btn-danger:hover {
+    background: var(--danger);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* ========================================
+   МОДАЛЬНОЕ ОКНО СТРОИТЕЛЬСТВА
+   ======================================== */
+
+.build-modal-content {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.build-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.build-category {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+}
+
+.build-category-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.3em;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 20px 0;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+}
+
+.build-category-title i {
+    font-size: 1em;
+    color: var(--primary);
+}
+
+.build-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.build-option {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.build-option:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.build-option.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: var(--bg-tertiary);
+}
+
+.build-option.disabled:hover {
+    border-color: var(--border);
+    transform: none;
+    box-shadow: none;
+}
+
+.build-option-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.build-option-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.build-option.disabled .build-option-icon {
+    background: var(--bg-tertiary);
+    border: 2px dashed var(--border);
+}
+
+.build-option-icon i {
+    font-size: 1.4em;
+    color: white;
+}
+
+.build-option.disabled .build-option-icon i {
+    color: var(--text-tertiary);
+}
+
+.build-option-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.build-option-info h5 {
+    font-size: 1.05em;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 6px 0;
+}
+
+.build-option-info p {
     font-size: 0.85em;
     color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
 }
 
-.building-type-stats .stat-row i {
-    color: var(--warning);
-    font-size: 1em;
-    min-width: 16px;
+.build-option-cost {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border: 1px solid var(--primary);
+    border-radius: var(--radius);
+    margin-top: 12px;
 }
 
-.building-type-stats .stat-row:first-child i {
+.build-option-cost i {
+    font-size: 1.1em;
     color: var(--primary);
 }
 
-.building-type-stats .stat-row:last-child i {
-    color: var(--success);
+.cost-value {
+    font-size: 1.05em;
+    font-weight: 700;
+    color: var(--primary);
 }
 
-/* ===================================
-   Адаптивность
-   =================================== */
+.build-option-locked {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius);
+    margin-top: 12px;
+}
 
-@media (max-width: 1024px) {
+.build-option-locked i {
+    font-size: 1em;
+    color: var(--danger);
+}
+
+.build-option-locked span {
+    font-size: 0.85em;
+    color: var(--danger);
+    font-weight: 600;
+}
+
+/* ========================================
+   ФОРМА СОЗДАНИЯ/РЕДАКТИРОВАНИЯ
+   ======================================== */
+
+.province-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95em;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-group label i {
+    font-size: 1em;
+    color: var(--primary);
+    width: 18px;
+    text-align: center;
+}
+
+/* ========================================
+   СКРОЛЛБАРЫ
+   ======================================== */
+
+.build-modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.build-modal-content::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+.build-modal-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border-radius: 4px;
+}
+
+.build-modal-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+}
+
+/* ========================================
+   АДАПТИВНОСТЬ
+   ======================================== */
+
+@media (max-width: 1200px) {
     .provinces-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     }
     
-    .building-types-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 16px;
+    .build-options-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    
+    .buildings-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     }
 }
 
 @media (max-width: 768px) {
     .provinces-header {
         flex-direction: column;
-        gap: 16px;
-        padding: 20px;
+        align-items: stretch;
     }
     
-    .provinces-header h2 {
-        font-size: 1.4em;
+    .provinces-title {
+        justify-content: center;
     }
     
     .provinces-grid {
         grid-template-columns: 1fr;
-        gap: 16px;
     }
     
-    .province-card {
-        padding: 20px;
-    }
-    
-    .province-card-header {
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .province-actions {
-        width: 100%;
-        justify-content: flex-end;
-    }
-    
-    .building-types-grid {
+    .province-info-grid {
         grid-template-columns: 1fr;
-        gap: 16px;
+    }
+    
+    .build-options-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .buildings-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .section-header h3 {
+        justify-content: center;
     }
 }
 
 @media (max-width: 480px) {
-    .provinces-header {
-        padding: 16px;
+    .provinces-title i {
+        font-size: 1.5em;
     }
     
-    .provinces-header h2 {
-        font-size: 1.2em;
+    .provinces-title h2 {
+        font-size: 1.4em;
     }
     
     .province-card {
         padding: 16px;
     }
     
-    .province-card-header h3 {
-        font-size: 1.2em;
+    .province-card-icon {
+        width: 48px;
+        height: 48px;
     }
     
-    .building-type-card {
-        padding: 16px;
+    .province-card-icon i {
+        font-size: 1.5em;
     }
-}
-
-/* ===================================
-   Темная тема
-   =================================== */
-
-body.dark-mode .province-card:hover {
-    border-color: var(--primary);
-}
-
-body.dark-mode .building-item:hover {
-    border-color: var(--primary);
-}
-
-body.dark-mode .building-type-card:hover {
-    border-color: var(--primary);
 }
