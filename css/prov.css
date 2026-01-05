@@ -2,6 +2,24 @@
    Стили для страницы провинций
    =================================== */
 
+/* Нормализация Font Awesome иконок: чтобы не «висели» над текстом */
+.provinces-header i,
+.province-card i,
+.buildings-list i,
+.building-types-grid i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.provinces-header i,
+.province-card i,
+.buildings-list i,
+.building-types-grid i {
+    vertical-align: middle;
+}
+
 /* Заголовок секции провинций */
 .provinces-header {
     display: flex;
