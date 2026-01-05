@@ -668,22 +668,28 @@ body.dark-mode .game-header {
     margin: 8px 0 0 0;
 }
 
-.modal-body i {
+/* Большие иконки-индикаторы только для прямых дочерних элементов modal-body */
+.modal-body > i,
+.modal-body > p > i:only-child {
     font-size: 3em;
     margin-bottom: 16px;
     display: block;
 }
 
-.modal-success .modal-body i {
+.modal-success .modal-body > i,
+.modal-success .modal-body > p > i:only-child {
     color: var(--success);
 }
 
-.modal-error .modal-body i {
+.modal-error .modal-body > i,
+.modal-error .modal-body > p > i:only-child {
     color: var(--danger);
 }
 
-.modal-confirm .modal-body i,
-.modal-prompt .modal-body i {
+.modal-confirm .modal-body > i,
+.modal-confirm .modal-body > p > i:only-child,
+.modal-prompt .modal-body > i,
+.modal-prompt .modal-body > p > i:only-child {
     color: var(--primary);
 }
 

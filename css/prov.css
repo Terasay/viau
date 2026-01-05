@@ -7,9 +7,11 @@
 .province-card i,
 .buildings-list i,
 .building-types-grid i {
-    display: inline-block;
-    line-height: 1;
+    display: inline-block !important;
+    line-height: 1 !important;
     vertical-align: middle;
+    font-size: inherit !important;
+    margin: 0 !important;
 }
 
 /* Родительские элементы с иконками должны быть flex-контейнерами */
@@ -22,6 +24,15 @@
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+/* Переопределяем общие правила для иконок внутри построек */
+.building-stats .stat-item > i,
+.building-header h4 > i,
+.building-type-stats .stat-row > i {
+    display: inline-block !important;
+    width: auto !important;
+    text-align: left !important;
 }
 
 /* Заголовок секции провинций */
@@ -184,9 +195,11 @@
 }
 
 .building-header h4 i {
-    color: var(--success);
-    font-size: 0.9em;
+    color: var(--success) !important;
+    font-size: 0.9em !important;
     flex-shrink: 0;
+    display: inline-block !important;
+    line-height: 1 !important;
 }
 
 /* Описание постройки */
@@ -214,9 +227,11 @@
 }
 
 .building-stats .stat-item i {
-    color: var(--warning);
-    font-size: 1.1em;
+    color: var(--warning) !important;
+    font-size: 1.1em !important;
     flex-shrink: 0;
+    display: inline-block !important;
+    line-height: 1 !important;
 }
 
 /* ===================================
@@ -257,9 +272,11 @@
 }
 
 .building-type-card h4 i {
-    color: var(--primary);
-    font-size: 0.95em;
+    color: var(--primary) !important;
+    font-size: 0.95em !important;
     flex-shrink: 0;
+    display: inline-block !important;
+    line-height: 1 !important;
 }
 
 .building-type-card p {
@@ -288,18 +305,20 @@
 }
 
 .building-type-stats .stat-row i {
-    color: var(--warning);
-    font-size: 1em;
+    color: var(--warning) !important;
+    font-size: 1em !important;
     min-width: 16px;
     flex-shrink: 0;
+    display: inline-block !important;
+    line-height: 1 !important;
 }
 
 .building-type-stats .stat-row:first-child i {
-    color: var(--primary);
+    color: var(--primary) !important;
 }
 
 .building-type-stats .stat-row:last-child i {
-    color: var(--success);
+    color: var(--success) !important;
 }
 
 /* ===================================
