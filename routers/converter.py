@@ -158,7 +158,7 @@ async def convert_resource(request: Request):
         }, status_code=400)
     
     amount_in_gold = amount / resources[from_resource]['rate']
-    result = int(amount_in_gold * resources[to_resource]['rate'])
+    result = round(amount_in_gold * resources[to_resource]['rate'], 2)
     
     rate = resources[to_resource]['rate'] / resources[from_resource]['rate']
     
@@ -230,7 +230,7 @@ async def convert_mixed(request: Request):
             rate_value = currencies[to_item]['rate'] / resources[from_item]['rate']
         rate = round(rate_value, 2)
     else:
-        result = int(amount_in_gold * resources[to_item]['rate'])
+        result = round(amount_in_gold * resources[to_item]['rate'], 2)
         rate_value = resources[to_item]['rate']
         if from_type == 'currency':
             rate_value = resources[to_item]['rate'] / currencies[from_item]['rate']

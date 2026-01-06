@@ -324,7 +324,7 @@ async function convertCurrency() {
 }
 
 async function convertResource() {
-	const amount = parseInt(resourceAmountFrom.value);
+	const amount = parseFloat(resourceAmountFrom.value);
 	const from = resourceFrom.value;
 	const to = resourceTo.value;
 	
@@ -408,7 +408,7 @@ resourceFrom.addEventListener('change', updateResourceConversion);
 resourceTo.addEventListener('change', updateResourceConversion);
 
 async function updateResourceConversion() {
-	const amount = parseInt(resourceAmountFrom.value);
+	const amount = parseFloat(resourceAmountFrom.value);
 	const from = resourceFrom.value;
 	const to = resourceTo.value;
 	
