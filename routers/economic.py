@@ -4,6 +4,8 @@ from pydantic import BaseModel
 from typing import Optional
 import sqlite3
 import sys
+import json
+import math
 from datetime import datetime
 
 router = APIRouter(prefix="/api/economic")
@@ -889,8 +891,39 @@ async def get_balance_forecast(country_id: str, request: Request):
                 'income': round(layer_tax, 2)
             }
         
-        # Расходы пока не учитываются (будут добавлены позже)
-        total_expenses = 0.0
+        # Расчет расходов на содержание зданий
+        cursor.execute('''
+            SELECT bt.maintenance_cost
+            FROM buildings b
+            JOIN building_types bt ON b.building_type_id = bt.id
+            JOIN provinces p ON b.province_id = p.id
+            WHERE p.country_id = ?
+        ''', (country_id,))
+        
+        buildings_maintenance = 0.0
+        buildings_count = 0
+        for row in cursor.fetchall():
+            # maintenance_cost хранится в золоте, нужно конвертировать в валюту страны
+            maintenance_in_gold = row['maintenance_cost']
+            
+            # Получаем курс основной валюты
+            try:
+                converter_data_file = 'data/converter_data.json'
+                with open(converter_data_file, 'r', encoding='utf-8') as f:
+                    converter_data = json.load(f)
+                    currency_rate = converter_data.get('currencies', {}).get(country['main_currency'], {}).get('rate', 1)
+            except:
+                currency_rate = 1
+            
+            # Конвертируем и округляем до десятков вверх
+            maintenance_in_currency = maintenance_in_gold * currency_rate
+            maintenance_in_currency = math.ceil(maintenance_in_currency / 10) * 10
+            
+            buildings_maintenance += maintenance_in_currency
+            buildings_count += 1
+        
+        # Общие расходы = содержание зданий
+        total_expenses = buildings_maintenance
         
         total_income = tax_income
         net_change = total_income - total_expenses
@@ -903,7 +936,11 @@ async def get_balance_forecast(country_id: str, request: Request):
                 'income': round(total_income, 2),
                 'expenses': round(total_expenses, 2),
                 'net_change': round(net_change, 2),
-                'tax_breakdown': tax_breakdown
+                'tax_breakdown': tax_breakdown,
+                'expenses_breakdown': {
+                    'buildings_maintenance': round(buildings_maintenance, 2),
+                    'buildings_count': buildings_count
+                }
             }
         })
         

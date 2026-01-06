@@ -216,6 +216,15 @@ const economicModule = (function() {
                             <span class="forecast-value">-${(balanceData?.forecast?.expenses || 0).toFixed(2)}</span>
                         </div>
                     </div>
+                    ${balanceData?.forecast?.expenses_breakdown?.buildings_count > 0 ? `
+                        <div class="forecast-item buildings">
+                            <i class="fas fa-industry"></i>
+                            <div>
+                                <span class="forecast-label">Содержание зданий (${balanceData.forecast.expenses_breakdown.buildings_count} шт.)</span>
+                                <span class="forecast-value">-${(balanceData.forecast.expenses_breakdown.buildings_maintenance || 0).toFixed(2)}</span>
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
 
