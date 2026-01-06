@@ -1417,8 +1417,8 @@ async def get_buildings_bonuses(country_id: str, request: Request):
         
         return JSONResponse({
             'success': True,
-            'education_bonus': round(education_bonus * 100, 2),  # Конвертируем в проценты
-            'science_bonus': round(science_bonus * 100, 2),      # Конвертируем в проценты
+            'education_bonus': round(education_bonus, 4),  # Значения уже в процентах
+            'science_bonus': round(science_bonus, 4),      # Значения уже в процентах
             'education_buildings': education_buildings,
             'science_buildings': science_buildings,
             'total_education_buildings': sum(b['count'] for b in education_buildings),

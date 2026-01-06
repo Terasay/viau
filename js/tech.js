@@ -264,7 +264,15 @@ function renderTechTree() {
                         </div>
                         <div id="value-education" class="param-slider-value">${education.toFixed(1)}</div>
                     </div>
-                    ${educationBonusHTML}
+                    <div class="param-description">
+                        <div style="font-size: 0.85em; color: var(--text-secondary); margin-top: 8px;">
+                            <div>Естественный прирост: <strong>+0.10%/ход</strong></div>
+                            ${buildingsBonuses.total_education_buildings > 0 ? `<div>Бонус от зданий: <strong>+${buildingsBonuses.education_bonus.toFixed(2)}%/ход</strong></div>` : ''}
+                            <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border);">
+                                Общий прирост: <strong style="color: var(--primary);">+${(0.10 + (buildingsBonuses.education_bonus || 0)).toFixed(2)}%/ход</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="param-card">
@@ -288,7 +296,15 @@ function renderTechTree() {
                         </div>
                         <div id="value-science" class="param-slider-value">${science.toFixed(1)}</div>
                     </div>
-                    ${scienceBonusHTML}
+                    <div class="param-description">
+                        <div style="font-size: 0.85em; color: var(--text-secondary); margin-top: 8px;">
+                            <div>Естественный прирост: <strong>+0.10%/ход</strong></div>
+                            ${buildingsBonuses.total_science_buildings > 0 ? `<div>Бонус от зданий: <strong>+${buildingsBonuses.science_bonus.toFixed(2)}%/ход</strong></div>` : ''}
+                            <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border);">
+                                Общий прирост: <strong style="color: var(--primary);">+${(0.10 + (buildingsBonuses.science_bonus || 0)).toFixed(2)}%/ход</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -336,7 +352,15 @@ function renderTechTree() {
                         <div class="param-value-display">
                             <span class="param-value-large">${education.toFixed(1)}%</span>
                         </div>
-                        ${educationBonusHTML}
+                        <div class="param-description">
+                            <div style="font-size: 0.85em; color: var(--text-secondary); margin-top: 8px;">
+                                <div>Естественный прирост: <strong>+0.10%/ход</strong></div>
+                                ${buildingsBonuses.total_education_buildings > 0 ? `<div>Бонус от зданий: <strong>+${buildingsBonuses.education_bonus.toFixed(2)}%/ход</strong></div>` : ''}
+                                <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border);">
+                                    Общий прирост: <strong style="color: var(--primary);">+${(0.10 + (buildingsBonuses.education_bonus || 0)).toFixed(2)}%/ход</strong>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="param-card">
@@ -347,7 +371,15 @@ function renderTechTree() {
                         <div class="param-value-display">
                             <span class="param-value-large">${science.toFixed(1)}%</span>
                         </div>
-                        ${scienceBonusHTML}
+                        <div class="param-description">
+                            <div style="font-size: 0.85em; color: var(--text-secondary); margin-top: 8px;">
+                                <div>Естественный прирост: <strong>+0.10%/ход</strong></div>
+                                ${buildingsBonuses.total_science_buildings > 0 ? `<div>Бонус от зданий: <strong>+${buildingsBonuses.science_bonus.toFixed(2)}%/ход</strong></div>` : ''}
+                                <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border);">
+                                    Общий прирост: <strong style="color: var(--primary);">+${(0.10 + (buildingsBonuses.science_bonus || 0)).toFixed(2)}%/ход</strong>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
