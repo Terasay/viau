@@ -1344,3 +1344,92 @@ async def get_countries_for_tech_view(request: Request):
         }, status_code=500)
     finally:
         conn.close()
+
+
+@router.get("/country/{country_id}/buildings-bonuses")
+async def get_buildings_bonuses(country_id: str, request: Request):
+    """Получение бонусов от зданий для образования и науки"""
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    conn = sqlite3.connect('users.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    try:
+        # Проверяем доступ
+        cursor.execute('SELECT player_id FROM countries WHERE id = ?', (country_id,))
+        country = cursor.fetchone()
+        
+        if not country:
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        if user['role'] not in ['admin', 'moderator']:
+            if country['player_id'] != user['id']:
+                return JSONResponse({'success': False, 'error': 'Доступ запрещён'}, status_code=403)
+        
+        # Подсчитываем бонусы от зданий
+        cursor.execute('''
+            SELECT 
+                bt.effect_type,
+                bt.effect_value,
+                bt.name as building_name,
+                COUNT(b.id) as building_count
+            FROM buildings b
+            JOIN provinces p ON b.province_id = p.id
+            JOIN building_types bt ON b.building_type_id = bt.id
+            WHERE p.country_id = ? 
+                AND bt.effect_type IN ('education_growth', 'science_growth')
+            GROUP BY bt.id, bt.effect_type, bt.effect_value, bt.name
+        ''', (country_id,))
+        
+        buildings_data = cursor.fetchall()
+        
+        education_bonus = 0
+        science_bonus = 0
+        education_buildings = []
+        science_buildings = []
+        
+        for row in buildings_data:
+            effect_type = row['effect_type']
+            effect_value = row['effect_value']
+            building_name = row['building_name']
+            building_count = row['building_count']
+            total_bonus = effect_value * building_count
+            
+            if effect_type == 'education_growth':
+                education_bonus += total_bonus
+                education_buildings.append({
+                    'name': building_name,
+                    'count': building_count,
+                    'bonus_per_building': effect_value,
+                    'total_bonus': total_bonus
+                })
+            elif effect_type == 'science_growth':
+                science_bonus += total_bonus
+                science_buildings.append({
+                    'name': building_name,
+                    'count': building_count,
+                    'bonus_per_building': effect_value,
+                    'total_bonus': total_bonus
+                })
+        
+        return JSONResponse({
+            'success': True,
+            'education_bonus': round(education_bonus * 100, 2),  # Конвертируем в проценты
+            'science_bonus': round(science_bonus * 100, 2),      # Конвертируем в проценты
+            'education_buildings': education_buildings,
+            'science_buildings': science_buildings,
+            'total_education_buildings': sum(b['count'] for b in education_buildings),
+            'total_science_buildings': sum(b['count'] for b in science_buildings)
+        })
+        
+    except Exception as e:
+        print(f'Ошибка получения бонусов от зданий: {e}')
+        return JSONResponse({
+            'success': False,
+            'error': 'Ошибка получения бонусов от зданий'
+        }, status_code=500)
+    finally:
+        conn.close()

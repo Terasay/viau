@@ -1181,3 +1181,55 @@ body.dark-mode .btn-toggle-hidden {
     }
 }
 
+/* Бонусы от зданий */
+.buildings-bonus {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(99, 102, 241, 0.1) 100%);
+    border-left: 3px solid var(--primary);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.buildings-bonus:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.15) 100%);
+    transform: translateX(3px);
+}
+
+.buildings-bonus i {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    font-size: 1.1em;
+}
+
+.education-buildings-bonus i {
+    background: linear-gradient(135deg, rgba(109, 40, 217, 0.15) 0%, rgba(109, 40, 217, 0.25) 100%);
+    color: #6d28d9;
+}
+
+.science-buildings-bonus i {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.25) 100%);
+    color: #3b82f6;
+}
+
+.buildings-bonus span {
+    color: var(--text-primary);
+}
+
+body.dark-mode .buildings-bonus {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.2) 100%);
+}
+
+body.dark-mode .buildings-bonus:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.25) 100%);
+}
+

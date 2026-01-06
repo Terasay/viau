@@ -363,9 +363,9 @@ let provincesModule = (function() {
         if (!effectType || !effectValue) return '';
         
         const effects = {
-            // Образовательные эффекты
-            'education_growth': `+${effectValue}% к приросту образования/ход`,
-            'science_growth': `+${effectValue}% к приросту науки/ход`,
+            // Образовательные эффекты (значения в долях, умножаем на 100 для процентов)
+            'education_growth': `+${(effectValue * 100).toFixed(1)}% к приросту образования/ход`,
+            'science_growth': `+${(effectValue * 100).toFixed(1)}% к приросту науки/ход`,
             
             // Производственные эффекты
             'production_rifles': `Производит ${effectValue} винтовок/ход`,

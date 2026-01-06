@@ -10,6 +10,7 @@ let currentResearchPoints = 0;
 let showHiddenTechs = localStorage.getItem('showHiddenTechs') === 'true';
 let isAdminView = false;
 let educationScienceData = {};
+let buildingsBonuses = { education_bonus: 0, science_bonus: 0, education_buildings: [], science_buildings: [] };
 
 async function initTechnologies(category = 'land_forces') {
     console.log('Initializing tech tree for category:', category);
@@ -121,6 +122,27 @@ async function initTechnologies(category = 'land_forces') {
                     };
                 }
             }
+            
+            // Загружаем бонусы от зданий
+            console.log('Fetching buildings bonuses for:', viewingCountryId);
+            const bonusesResponse = await fetch(`/api/tech/country/${viewingCountryId}/buildings-bonuses`, {
+                headers: { 'Authorization': token }
+            });
+            
+            if (bonusesResponse.ok) {
+                const bonusesData = await bonusesResponse.json();
+                console.log('Buildings bonuses:', bonusesData);
+                if (bonusesData.success) {
+                    buildingsBonuses = {
+                        education_bonus: bonusesData.education_bonus || 0,
+                        science_bonus: bonusesData.science_bonus || 0,
+                        education_buildings: bonusesData.education_buildings || [],
+                        science_buildings: bonusesData.science_buildings || [],
+                        total_education_buildings: bonusesData.total_education_buildings || 0,
+                        total_science_buildings: bonusesData.total_science_buildings || 0
+                    };
+                }
+            }
         } else {
             playerProgress = {
                 researched: [],
@@ -197,6 +219,28 @@ function renderTechTree() {
         const education = educationScienceData.education_level || 0;
         const science = educationScienceData.science_level || 0;
         
+        // Формируем HTML для бонусов от образовательных зданий
+        let educationBonusHTML = '';
+        if (buildingsBonuses.total_education_buildings > 0) {
+            educationBonusHTML = `
+                <div class="buildings-bonus education-buildings-bonus">
+                    <i class="fas fa-building"></i>
+                    <span>Бонус от зданий (${buildingsBonuses.total_education_buildings} шт.): +${buildingsBonuses.education_bonus.toFixed(2)}%/ход</span>
+                </div>
+            `;
+        }
+        
+        // Формируем HTML для бонусов от научных зданий
+        let scienceBonusHTML = '';
+        if (buildingsBonuses.total_science_buildings > 0) {
+            scienceBonusHTML = `
+                <div class="buildings-bonus science-buildings-bonus">
+                    <i class="fas fa-building"></i>
+                    <span>Бонус от зданий (${buildingsBonuses.total_science_buildings} шт.): +${buildingsBonuses.science_bonus.toFixed(2)}%/ход</span>
+                </div>
+            `;
+        }
+        
         eduSciSection.innerHTML = `
             <div class="education-science-container">
                 <div class="param-card">
@@ -220,6 +264,7 @@ function renderTechTree() {
                         </div>
                         <div id="value-education" class="param-slider-value">${education.toFixed(1)}</div>
                     </div>
+                    ${educationBonusHTML}
                 </div>
                 
                 <div class="param-card">
@@ -243,6 +288,7 @@ function renderTechTree() {
                         </div>
                         <div id="value-science" class="param-slider-value">${science.toFixed(1)}</div>
                     </div>
+                    ${scienceBonusHTML}
                 </div>
             </div>
             
@@ -258,6 +304,28 @@ function renderTechTree() {
             const playerEduSciSection = document.createElement('div');
             playerEduSciSection.className = 'tech-education-science-section player-view';
             
+            // Формируем HTML для бонусов от образовательных зданий
+            let educationBonusHTML = '';
+            if (buildingsBonuses.total_education_buildings > 0) {
+                educationBonusHTML = `
+                    <div class="buildings-bonus education-buildings-bonus">
+                        <i class="fas fa-building"></i>
+                        <span>Бонус от зданий (${buildingsBonuses.total_education_buildings} шт.): +${buildingsBonuses.education_bonus.toFixed(2)}%/ход</span>
+                    </div>
+                `;
+            }
+            
+            // Формируем HTML для бонусов от научных зданий
+            let scienceBonusHTML = '';
+            if (buildingsBonuses.total_science_buildings > 0) {
+                scienceBonusHTML = `
+                    <div class="buildings-bonus science-buildings-bonus">
+                        <i class="fas fa-building"></i>
+                        <span>Бонус от зданий (${buildingsBonuses.total_science_buildings} шт.): +${buildingsBonuses.science_bonus.toFixed(2)}%/ход</span>
+                    </div>
+                `;
+            }
+            
             playerEduSciSection.innerHTML = `
                 <div class="education-science-container">
                     <div class="param-card">
@@ -268,6 +336,7 @@ function renderTechTree() {
                         <div class="param-value-display">
                             <span class="param-value-large">${education.toFixed(1)}%</span>
                         </div>
+                        ${educationBonusHTML}
                     </div>
                     
                     <div class="param-card">
@@ -278,6 +347,7 @@ function renderTechTree() {
                         <div class="param-value-display">
                             <span class="param-value-large">${science.toFixed(1)}%</span>
                         </div>
+                        ${scienceBonusHTML}
                     </div>
                 </div>
             `;
