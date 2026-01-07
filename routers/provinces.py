@@ -94,31 +94,31 @@ def init_db():
             ('Оружейная мастерская', 'Производит холодное оружие и простое огнестрельное оружие.', 
              5000, 500, 'military_infantry', 'production_rifles', 50, 'arquebus'),
             ('Завод винтовок', 'Массовое производство современных винтовок для армии.', 
-             12000, 1200, 'military_infantry', 'production_rifles', 200, 'tech_rifles_1'),
+             12000, 1200, 'military_infantry', 'production_rifles', 200, 'mass_rifle_production'),
             ('Пороховой завод', 'Производство пороха и боеприпасов для пехоты.', 
              8000, 800, 'military_infantry', 'production_ammunition', 500, 'early_muskets'),
             
             # ПРОИЗВОДСТВЕННЫЕ ПОСТРОЙКИ - ТЕХНИКА
             ('Завод артиллерии', 'Производство пушек и артиллерийских орудий.', 
-             15000, 1500, 'military_vehicles', 'production_artillery', 10, 'tech_artillery_1'),
+             15000, 1500, 'military_vehicles', 'production_artillery', 10, 'field_artillery_1'),
             ('Танковый завод', 'Производство бронетехники и танков.', 
-             25000, 2500, 'military_vehicles', 'production_tanks', 5, 'tech_tanks_1'),
+             25000, 2500, 'military_vehicles', 'production_tanks', 5, None),
             ('Авиационный завод', 'Производство самолётов для военных нужд.', 
-             30000, 3000, 'military_vehicles', 'production_aircraft', 3, 'tech_aircraft_1'),
+             30000, 3000, 'military_vehicles', 'production_aircraft', 3, None),
             ('Автомобильный завод', 'Производство военных грузовиков и транспорта.', 
-             18000, 1800, 'military_vehicles', 'production_vehicles', 20, 'tech_vehicles_1'),
+             18000, 1800, 'military_vehicles', 'production_vehicles', 20, None),
             
             # ПРОИЗВОДСТВЕННЫЕ ПОСТРОЙКИ - ФЛОТ
             ('Верфь парусных кораблей', 'Строительство парусных военных судов.', 
-             20000, 2000, 'military_naval', 'production_sailing_ships', 2, None),
+             20000, 2000, 'military_naval', 'production_sailing_ships', 2, 'galleons_1'),
             ('Паровая верфь', 'Строительство паровых военных кораблей.', 
-             35000, 3500, 'military_naval', 'production_steam_ships', 1, 'tech_steam_ships_1'),
+             35000, 3500, 'military_naval', 'production_steam_ships', 1, 'steam_ships_of_line'),
             ('Верфь эсминцев', 'Строительство современных эсминцев и фрегатов.', 
-             50000, 5000, 'military_naval', 'production_destroyers', 1, 'tech_destroyers_1'),
+             50000, 5000, 'military_naval', 'production_destroyers', 1, 'cruisers_1'),
             ('Верфь линкоров', 'Строительство больших линейных кораблей.', 
-             80000, 8000, 'military_naval', 'production_battleships', 1, 'tech_battleships_1'),
+             80000, 8000, 'military_naval', 'production_battleships', 1, 'pre_dreadnoughts'),
             ('Верфь подводных лодок', 'Строительство подводных лодок.', 
-             40000, 4000, 'military_naval', 'production_submarines', 1, 'tech_submarines_1'),
+             40000, 4000, 'military_naval', 'production_submarines', 1, 'torpedoes'),
         ]
         
         cursor.executemany('''
@@ -446,10 +446,14 @@ async def get_building_types(request: Request):
         for row in cursor.fetchall():
             # Проверяем доступность постройки по технологиям
             required_tech = row['required_tech_id']
-            is_available = True
             
-            if required_tech and country_id:
-                is_available = required_tech in researched_techs
+            # Если постройка требует технологию
+            if required_tech:
+                # Она доступна только если передан country_id И технология изучена
+                is_available = country_id and (required_tech in researched_techs)
+            else:
+                # Постройки без требований всегда доступны
+                is_available = True
             
             building_types.append({
                 'id': row['id'],
