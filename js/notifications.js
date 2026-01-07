@@ -81,19 +81,45 @@ function closeNotification(notification) {
 
 // Удобные алиасы
 function showSuccess(title, message, duration = 4000) {
-    return showNotification(title, message, 'success', duration);
+    console.log('🎉 showSuccess called:', { title, message, duration });
+    try {
+        const result = showNotification(title, message, 'success', duration);
+        console.log('🎉 showSuccess result:', result);
+        return result;
+    } catch (error) {
+        console.error('🎉 showSuccess ERROR:', error);
+        throw error;
+    }
 }
 
 function showError(title, message, duration = 5000) {
-    return showNotification(title, message, 'error', duration);
+    console.log('❌ showError called:', { title, message, duration });
+    try {
+        return showNotification(title, message, 'error', duration);
+    } catch (error) {
+        console.error('❌ showError ERROR:', error);
+        throw error;
+    }
 }
 
 function showWarning(title, message, duration = 4500) {
-    return showNotification(title, message, 'warning', duration);
+    console.log('⚠️ showWarning called:', { title, message, duration });
+    try {
+        return showNotification(title, message, 'warning', duration);
+    } catch (error) {
+        console.error('⚠️ showWarning ERROR:', error);
+        throw error;
+    }
 }
 
 function showInfo(title, message, duration = 4000) {
-    return showNotification(title, message, 'info', duration);
+    console.log('ℹ️ showInfo called:', { title, message, duration });
+    try {
+        return showNotification(title, message, 'info', duration);
+    } catch (error) {
+        console.error('ℹ️ showInfo ERROR:', error);
+        throw error;
+    }
 }
 
 // Экспорт в глобальную область
