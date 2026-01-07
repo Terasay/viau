@@ -372,7 +372,12 @@ async function handleCancelApplication() {
 }
 
 function showSuccessModal() {
-    document.getElementById('successModal').classList.add('active');
+    if (typeof window.showSuccess === 'function') {
+        window.showSuccess('Успех!', 'Ваша заявка успешно отправлена и находится на рассмотрении у администрации');
+        setTimeout(() => window.location.reload(), 2000);
+    } else {
+        document.getElementById('successModal').classList.add('active');
+    }
 }
 
 function showLoginModal() {

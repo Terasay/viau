@@ -293,18 +293,16 @@ async function upgradeSkill(skill) {
 }
 
 function showCharSuccess(message) {
-    // Используем систему модальных окон из game.js
-    if (window.showAlert) {
-        window.showAlert('Успех', message, 'success');
+    if (typeof window.showSuccess === 'function') {
+        window.showSuccess('Успех', message);
     } else {
         alert(message);
     }
 }
 
 function showCharError(message) {
-    // Используем систему модальных окон из game.js
-    if (window.showAlert) {
-        window.showAlert('Ошибка', message, 'error');
+    if (typeof window.showError === 'function') {
+        window.showError('Ошибка', message);
     } else {
         alert(message);
     }

@@ -404,7 +404,20 @@ function toggleTheme() {
 }
 
 function showToast(message, type = 'success') {
+    if (typeof window.showSuccess === 'function') {
+        if (type === 'error') {
+            window.showError('Ошибка', message);
+        } else if (type === 'warning') {
+            window.showWarning('Предупреждение', message);
+        } else {
+            window.showSuccess('Успех', message);
+        }
+        return;
+    }
+    
+    // Fallback к старой системе
     const toast = document.getElementById('toast');
+    if (!toast) return;
     const icon = toast.querySelector('.toast-icon i');
     const title = toast.querySelector('.toast-title');
     const messageElement = toast.querySelector('.toast-message');
