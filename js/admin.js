@@ -1673,9 +1673,9 @@ window.updateCountryCurrency = async function(countryId, currencyCode) {
         const data = await response.json();
         
         if (data.success) {
-            alert('Валюта обновлена!');
+            window.showSuccess('Успех', 'Валюта успешно обновлена');
         } else {
-            alert('Ошибка: ' + data.message);
+            window.showError('Ошибка', data.message || 'Не удалось обновить валюту');
         }
     } catch (e) {
         alert('Ошибка: ' + e.message);
@@ -1699,9 +1699,9 @@ window.updateCountryResource = async function(countryId, resourceCode) {
         const data = await response.json();
         
         if (data.success) {
-            alert('Ресурс обновлён!');
+            window.showSuccess('Успех', 'Ресурс успешно обновлён');
         } else {
-            alert('Ошибка: ' + data.message);
+            window.showError('Ошибка', data.message || 'Не удалось обновить ресурс');
         }
     } catch (e) {
         alert('Ошибка: ' + e.message);

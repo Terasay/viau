@@ -363,11 +363,11 @@ async function handleCancelApplication() {
             alert('Заявка успешно отозвана');
             window.location.reload();
         } else {
-            alert(data.error || 'Ошибка при отзыве заявки');
+            window.showError('Ошибка', data.error || 'Не удалось отправить заявку');
         }
     } catch (error) {
-        console.error('Cancel error:', error);
-        alert('Ошибка при отзыве заявки');
+        console.error('Error:', error);
+        window.showError('Ошибка', 'Произошла ошибка при отправке заявки');
     }
 }
 

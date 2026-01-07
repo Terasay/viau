@@ -202,7 +202,7 @@ async function submitUploadMap() {
     const file = fileInput.files[0];
     
     if (!name) {
-        showUploadStatus('Введите название карты', 'error');
+        window.showWarning('Предупреждение', 'Введите название карты');
         return;
     }
     

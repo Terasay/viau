@@ -246,7 +246,7 @@ async function convertCurrencyToResource() {
 	const resource = document.getElementById('mixed-resource-to').value;
 	
 	if (isNaN(amount) || amount <= 0) {
-		alert('Введите корректную сумму');
+		window.showWarning('Предупреждение', 'Введите корректную сумму');
 		return;
 	}
 	

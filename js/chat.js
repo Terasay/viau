@@ -714,7 +714,7 @@ function showEditMessageInput(messageElem, msgData, textElem) {
     
     saveBtn.onclick = async () => {
         const newText = editInput.value.trim();
-        if (!newText) return alert('Текст не может быть пустым');
+        if (!newText) { window.showWarning('Предупреждение', 'Текст не может быть пустым'); return; }
         await editMessageApi(msgData.id, newText);
     };
     
@@ -747,7 +747,7 @@ function setupWebSocket() {
             } else if (data.type === 'online_users' && Array.isArray(data.users)) {
                 updateOnlineUsers(data.users);
             } else if (data.error) {
-                alert(data.error);
+                window.showError('Ошибка', data.error);
             }
         } catch (e) {
             console.error('Ошибка обработки сообщения WebSocket:', e);

@@ -499,8 +499,8 @@ const economicModule = (function() {
                 }
             }
             
-            if (window.showAlert) {
-                await window.showAlert('Успех', isAdmin ? 'Все настройки успешно обновлены' : 'Налоги успешно обновлены');
+            if (typeof window.showSuccess === 'function') {
+                window.showSuccess('Успех', isAdmin ? 'Все настройки успешно обновлены' : 'Налоги успешно обновлены');
             } else {
                 alert(isAdmin ? 'Все настройки успешно обновлены' : 'Налоги успешно обновлены');
             }
@@ -508,8 +508,8 @@ const economicModule = (function() {
             
         } catch (e) {
             console.error('Ошибка сохранения настроек:', e);
-            if (window.showAlert) {
-                await window.showAlert('Ошибка', e.message || 'Не удалось сохранить настройки');
+            if (typeof window.showError === 'function') {
+                window.showError('Ошибка', e.message || 'Не удалось сохранить настройки');
             } else {
                 alert('Ошибка: ' + (e.message || 'Не удалось сохранить настройки'));
             }
