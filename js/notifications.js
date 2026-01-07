@@ -16,7 +16,9 @@ function initNotifications() {
 }
 
 function showNotification(title, message, type = 'info', duration = 5000) {
+    console.log('📢 showNotification called:', { title, message, type, duration });
     initNotifications();
+    console.log('📢 Container initialized:', notificationContainer);
 
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
@@ -42,7 +44,9 @@ function showNotification(title, message, type = 'info', duration = 5000) {
         ${duration > 0 ? `<div class="notification-progress" style="--duration: ${duration}ms"></div>` : ''}
     `;
 
+    console.log('📢 Appending notification to container');
     notificationContainer.appendChild(notification);
+    console.log('📢 Notification appended, total children:', notificationContainer.children.length);
 
     // Анимация появления
     setTimeout(() => {

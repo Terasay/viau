@@ -1274,8 +1274,13 @@ async function researchTechnology(techId) {
             
             // Показываем уведомление
             const fullMessage = details ? `${message}<br/>${details}` : message;
+            console.log('🎯 Trying to show notification:', fullMessage);
+            console.log('🎯 window.showSuccess type:', typeof window.showSuccess);
+            
             if (typeof window.showSuccess === 'function') {
-                window.showSuccess('Успех!', fullMessage);
+                console.log('🎯 Calling window.showSuccess...');
+                const notification = window.showSuccess('Успех!', fullMessage);
+                console.log('🎯 Notification returned:', notification);
             } else {
                 console.error('window.showSuccess не найдена!');
                 showModal('Успех!', `<i class="fas fa-check-circle"></i><p>${fullMessage}</p>`, 'success', ['OK']);
