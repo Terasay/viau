@@ -329,7 +329,7 @@ async function convertResource() {
 	const to = resourceTo.value;
 	
 	if (isNaN(amount) || amount <= 0) {
-		alert('Введите корректное количество');
+		window.showWarning('Некорректные данные', 'Введите корректное количество');
 		return;
 	}
 	

@@ -37,7 +37,7 @@ async function initTechnologies(category = 'land_forces') {
             await showCountrySelector();
             return;
         } else {
-            showError('Ошибка: страна не найдена');
+            showTechError('Ошибка: страна не найдена');
             return;
         }
     }
@@ -71,7 +71,7 @@ async function initTechnologies(category = 'land_forces') {
             console.log('Tech data loaded:', techData);
         } else {
             console.error('Failed to load tech tree for category:', category);
-            showError('Не удалось загрузить древо технологий');
+            showTechError('Не удалось загрузить древо технологий');
             return;
         }
         
@@ -1276,7 +1276,7 @@ async function researchTechnology(techId) {
     }
 }
 
-function showError(message) {
+function showTechError(message) {
     const container = document.getElementById('tech-tree-content');
     if (container) {
         container.innerHTML = `
@@ -1358,7 +1358,7 @@ async function showCountrySelector() {
         const data = await response.json();
         
         if (!data.success) {
-            showError('Ошибка загрузки списка стран');
+            showTechError('Ошибка загрузки списка стран');
             return;
         }
         
@@ -1395,7 +1395,7 @@ async function showCountrySelector() {
         
     } catch (error) {
         console.error('Error loading countries:', error);
-        showError('Не удалось загрузить список стран');
+        showTechError('Не удалось загрузить список стран');
     }
 }
 

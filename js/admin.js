@@ -1645,14 +1645,14 @@ window.updateMainCurrency = async function(countryId) {
         const data = await response.json();
         
         if (data.success) {
-            alert('Основная валюта обновлена!');
+            window.showSuccess('Успех!', 'Основная валюта обновлена!');
             await window.loadCountriesEconomic();
         } else {
-            alert('Ошибка: ' + data.message);
+            window.showError('Ошибка', data.message);
         }
     } catch (e) {
         console.error('Ошибка в updateMainCurrency:', e);
-        alert('Ошибка: ' + e.message);
+        window.showError('Ошибка', e.message);
     }
 };
 
