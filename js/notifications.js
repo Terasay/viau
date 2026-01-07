@@ -99,3 +99,11 @@ window.showError = showError;
 window.showWarning = showWarning;
 window.showInfo = showInfo;
 window.closeNotification = closeNotification;
+
+// Логируем успешную загрузку
+console.log('✅ Notifications system loaded:', {
+    showSuccess: typeof window.showSuccess,
+    showError: typeof window.showError,
+    showWarning: typeof window.showWarning,
+    showInfo: typeof window.showInfo
+});

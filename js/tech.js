@@ -14,6 +14,13 @@ let buildingsBonuses = { education_bonus: 0, science_bonus: 0, education_buildin
 
 async function initTechnologies(category = 'land_forces') {
     console.log('Initializing tech tree for category:', category);
+    console.log('🔍 Checking notifications system:', {
+        showSuccess: typeof window.showSuccess,
+        showError: typeof window.showError,
+        showWarning: typeof window.showWarning,
+        showInfo: typeof window.showInfo
+    });
+    
     currentCategory = category;
     
     if (!viewingCountryId && window.gameState) {
@@ -1265,14 +1272,33 @@ async function researchTechnology(techId) {
             
             closeTechInfo();
             
-            window.showSuccess('Успех!', details ? `${message}<br/>${details}` : message);
+            // Показываем уведомление
+            const fullMessage = details ? `${message}<br/>${details}` : message;
+            if (typeof window.showSuccess === 'function') {
+                window.showSuccess('Успех!', fullMessage);
+            } else {
+                console.error('window.showSuccess не найдена!');
+                showModal('Успех!', `<i class="fas fa-check-circle"></i><p>${fullMessage}</p>`, 'success', ['OK']);
+            }
         } else {
-            window.showError('Ошибка', data.error || 'Не удалось изучить технологию');
+            const errorMsg = data.error || 'Не удалось изучить технологию';
+            if (typeof window.showError === 'function') {
+                window.showError('Ошибка', errorMsg);
+            } else {
+                console.error('window.showError не найдена!');
+                showModal('Ошибка', `<i class="fas fa-exclamation-circle"></i><p>${errorMsg}</p>`, 'error', ['OK']);
+            }
         }
         
     } catch (error) {
         console.error('Error researching technology:', error);
-        window.showError('Ошибка', 'Произошла ошибка при изучении технологии');
+        const errorMsg = 'Произошла ошибка при изучении технологии';
+        if (typeof window.showError === 'function') {
+            window.showError('Ошибка', errorMsg);
+        } else {
+            console.error('window.showError не найдена!');
+            showModal('Ошибка', `<i class="fas fa-exclamation-circle"></i><p>${errorMsg}</p>`, 'error', ['OK']);
+        }
     }
 }
 
