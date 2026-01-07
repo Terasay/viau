@@ -96,7 +96,7 @@ def init_db():
             ('Завод винтовок', 'Массовое производство современных винтовок для армии.', 
              12000, 1200, 'military_infantry', 'production_rifles', 200, 'tech_rifles_1'),
             ('Пороховой завод', 'Производство пороха и боеприпасов для пехоты.', 
-             8000, 800, 'military_infantry', 'production_ammunition', 500, None),
+             8000, 800, 'military_infantry', 'production_ammunition', 500, 'early_muskets'),
             
             # ПРОИЗВОДСТВЕННЫЕ ПОСТРОЙКИ - ТЕХНИКА
             ('Завод артиллерии', 'Производство пушек и артиллерийских орудий.', 
