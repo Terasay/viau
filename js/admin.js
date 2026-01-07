@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.showApproveModal = async function(appId, username) {
         const app = allApplications.find(a => a.id === appId);
         if (!app) {
-            alert('Заявка не найдена');
+            window.showError('Ошибка', 'Заявка не найдена');
             return;
         }
 
@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const relatives = document.getElementById('approve-relatives')?.value.trim();
 
         if (!firstName || !lastName || !countryOrigin || !age || !country) {
-            alert('Заполните все обязательные поля');
+            window.showWarning('Неполные данные', 'Заполните все обязательные поля');
             return;
         }
 
@@ -432,15 +432,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const data = await resp.json();
             if (data.success) {
-                alert('Заявка одобрена! Пользователь получил роль "player".');
+                window.showSuccess('Успех!', 'Заявка одобрена! Пользователь получил роль "player".');
                 document.querySelector('.modal-overlay-admin').remove();
                 await loadApplications();
             } else {
-                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                window.showError('Ошибка', data.error || 'Неизвестная ошибка');
             }
         } catch (e) {
             console.error('Error approving application:', e);
-            alert('Ошибка при одобрении заявки');
+            window.showError('Ошибка', 'Ошибка при одобрении заявки');
         }
     };
 
@@ -475,7 +475,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.rejectApplication = async function(appId) {
         const reason = document.getElementById('reject-reason').value.trim();
         if (!reason) {
-            alert('Укажите причину отклонения');
+            window.showWarning('Незаполнено поле', 'Укажите причину отклонения');
             return;
         }
 
@@ -494,15 +494,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const data = await resp.json();
             if (data.success) {
-                alert('Заявка отклонена');
+                window.showSuccess('Готово', 'Заявка отклонена');
                 document.querySelector('.modal-overlay-admin').remove();
                 await loadApplications();
             } else {
-                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                window.showError('Ошибка', data.error || 'Неизвестная ошибка');
             }
         } catch (e) {
             console.error('Error rejecting application:', e);
-            alert('Ошибка при отклонении заявки');
+            window.showError('Ошибка', 'Ошибка при отклонении заявки');
         }
     };
 

@@ -1210,7 +1210,7 @@ async function researchTechnology(techId) {
     console.log('Starting research for:', techId);
     
     if (!viewingCountryId) {
-        showError('Страна не выбрана');
+        window.showError('Ошибка', 'Страна не выбрана');
         return;
     }
     
@@ -1218,14 +1218,14 @@ async function researchTechnology(techId) {
     const isAdmin = user && (user.role === 'admin' || user.role === 'moderator');
     
     if (!isAdmin && viewingCountryId !== currentCountryId) {
-        showError('Вы можете изучать технологии только для своей страны');
+        window.showError('Ошибка', 'Вы можете изучать технологии только для своей страны');
         return;
     }
     
     if (!isAdmin && selectedTech) {
         const cost = selectedTech.year || 0;
         if (currentResearchPoints < cost) {
-            showError(`Недостаточно очков исследований!<br/><strong>Требуется:</strong> ${cost} ОИ<br/><strong>Доступно:</strong> ${currentResearchPoints} ОИ`);
+            window.showError('Недостаточно ОИ', `<strong>Требуется:</strong> ${cost} ОИ<br/><strong>Доступно:</strong> ${currentResearchPoints} ОИ`);
             return;
         }
     }
@@ -1248,11 +1248,12 @@ async function researchTechnology(techId) {
         
         if (data.success) {
             let message = 'Технология успешно изучена!';
+            let details = '';
             
             if (data.research_points_remaining !== undefined) {
                 currentResearchPoints = data.research_points_remaining;
                 updateResearchPointsDisplay();
-                message += `<br/><strong>Потрачено:</strong> ${data.research_points_spent} ОИ<br/><strong>Осталось:</strong> ${currentResearchPoints} ОИ`;
+                details = `<strong>Потрачено:</strong> ${data.research_points_spent} ОИ<br/><strong>Осталось:</strong> ${currentResearchPoints} ОИ`;
             }
             
             if (!playerProgress.researched) {
@@ -1264,14 +1265,14 @@ async function researchTechnology(techId) {
             
             closeTechInfo();
             
-            showSuccess(message);
+            window.showSuccess('Успех!', details ? `${message}<br/>${details}` : message);
         } else {
-            showError(data.error || 'Не удалось изучить технологию');
+            window.showError('Ошибка', data.error || 'Не удалось изучить технологию');
         }
         
     } catch (error) {
         console.error('Error researching technology:', error);
-        showError('Произошла ошибка при изучении технологии');
+        window.showError('Ошибка', 'Произошла ошибка при изучении технологии');
     }
 }
 
@@ -1472,7 +1473,7 @@ async function editResearchPoints() {
     
     const newPoints = parseInt(result);
     if (isNaN(newPoints) || newPoints < 0) {
-        showError('Некорректное значение. Введите число больше или равно 0.');
+        window.showError('Ошибка ввода', 'Некорректное значение. Введите число больше или равно 0.');
         return;
     }
     
@@ -1492,13 +1493,13 @@ async function editResearchPoints() {
         if (data.success) {
             currentResearchPoints = newPoints;
             updateResearchPointsDisplay();
-            showSuccess(`Очки исследований успешно обновлены: ${newPoints} ОИ`);
+            window.showSuccess('Успех!', `Очки исследований успешно обновлены: ${newPoints} ОИ`);
         } else {
-            showError('Ошибка: ' + (data.error || 'Не удалось обновить ОИ'));
+            window.showError('Ошибка', data.error || 'Не удалось обновить ОИ');
         }
     } catch (error) {
         console.error('Error updating research points:', error);
-        showError('Произошла ошибка при обновлении ОИ');
+        window.showError('Ошибка', 'Произошла ошибка при обновлении ОИ');
     }
 }
 
@@ -1545,14 +1546,6 @@ function showModal(title, message, type = 'info', buttons = ['OK']) {
             if (e.target === overlay) closeModal(false);
         };
     });
-}
-
-function showSuccess(message) {
-    return showModal('Успех!', `<i class="fas fa-check-circle"></i><p>${message}</p>`, 'success', ['OK']);
-}
-
-function showError(message) {
-    return showModal('Ошибка', `<i class="fas fa-exclamation-circle"></i><p>${message}</p>`, 'error', ['OK']);
 }
 
 function showConfirm(title, message) {
@@ -1678,7 +1671,7 @@ function updateParamDisplay(param, value) {
 
 async function saveEducationScience() {
     if (!viewingCountryId) {
-        showError('Страна не выбрана');
+        window.showError('Ошибка', 'Страна не выбрана');
         return;
     }
     
@@ -1686,7 +1679,7 @@ async function saveEducationScience() {
     const scienceSlider = document.getElementById('science-slider');
     
     if (!educationSlider || !scienceSlider) {
-        showError('Элементы интерфейса не найдены');
+        window.showError('Ошибка', 'Элементы интерфейса не найдены');
         return;
     }
     
@@ -1715,13 +1708,13 @@ async function saveEducationScience() {
                 education_level: education,
                 science_level: science
             };
-            showSuccess('Параметры образования и науки успешно сохранены!');
+            window.showSuccess('Успех!', 'Параметры образования и науки успешно сохранены!');
         } else {
-            showError(data.error || 'Не удалось сохранить параметры');
+            window.showError('Ошибка', data.error || 'Не удалось сохранить параметры');
         }
     } catch (error) {
         console.error('Error saving education/science:', error);
-        showError('Произошла ошибка при сохранении параметров');
+        window.showError('Ошибка', 'Произошла ошибка при сохранении параметров');
     }
 }
 

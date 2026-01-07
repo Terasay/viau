@@ -105,8 +105,10 @@ async function loadCountryData() {
         const userCountry = data.countries.find(c => c.player_id === currentUser.id);
 
         if (!userCountry) {
-            alert('У вас нет зарегистрированной страны. Пожалуйста, заполните заявку.');
-            window.location.href = '/registration';
+            window.showWarning('Нет страны', 'У вас нет зарегистрированной страны. Пожалуйста, заполните заявку.', 3000);
+            setTimeout(() => {
+                window.location.href = '/registration';
+            }, 3000);
             return;
         }
 
@@ -115,8 +117,10 @@ async function loadCountryData() {
 
     } catch (error) {
         console.error('Error loading country data:', error);
-        alert('Ошибка загрузки данных страны');
-        window.location.href = '/';
+        window.showError('Ошибка', 'Ошибка загрузки данных страны', 3000);
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 3000);
     }
 }
 
@@ -926,7 +930,7 @@ async function saveStatistics() {
     // Проверяем суммы процентов
     const religionsSum = Object.values(religions).reduce((a, b) => a + b, 0);
     if (religionsSum > 100) {
-        alert(`Сумма процентов религий превышает 100% (${religionsSum.toFixed(1)}%)`);
+        window.showError('Ошибка валидации', `Сумма процентов религий превышает 100% (${religionsSum.toFixed(1)}%)`);
         return;
     }
     
@@ -935,13 +939,13 @@ async function saveStatistics() {
         culturesSum += Object.values(ethnos.nations).reduce((a, b) => a + b, 0);
     }
     if (culturesSum > 100) {
-        alert(`Сумма процентов наций превышает 100% (${culturesSum.toFixed(1)}%)`);
+        window.showError('Ошибка валидации', `Сумма процентов наций превышает 100% (${culturesSum.toFixed(1)}%)`);
         return;
     }
     
     const layersSum = Object.values(socialLayers).reduce((a, b) => a + b, 0);
     if (layersSum > 100) {
-        alert(`Сумма процентов социальных слоёв превышает 100% (${layersSum.toFixed(1)}%)`);
+        window.showError('Ошибка валидации', `Сумма процентов социальных слоёв превышает 100% (${layersSum.toFixed(1)}%)`);
         return;
     }
     
