@@ -274,7 +274,7 @@ async function checkAuth() {
         
         if (data.logged_in) {
             if (data.banned) {
-                alert('Ваш аккаунт заблокирован');
+                window.showError('Блокировка', 'Ваш аккаунт заблокирован');
                 logout();
                 return;
             }
@@ -774,10 +774,10 @@ async function deleteMessageApi(id) {
         if (data.success) {
             loadChatHistory();
         } else {
-            alert(data.error || 'Ошибка удаления');
+            window.showError('Ошибка', data.error || 'Не удалось удалить сообщение');
         }
     } catch (e) {
-        alert('Ошибка удаления');
+        window.showError('Ошибка', 'Произошла ошибка при удалении сообщения');
     }
 }
 
@@ -796,10 +796,10 @@ async function editMessageApi(id, text) {
         if (data.success) {
             loadChatHistory();
         } else {
-            alert(data.error || 'Ошибка редактирования');
+            window.showError('Ошибка', data.error || 'Не удалось отредактировать сообщение');
         }
     } catch (e) {
-        alert('Ошибка редактирования');
+        window.showError('Ошибка', 'Произошла ошибка при редактировании сообщения');
     }
 }
 
@@ -807,7 +807,7 @@ function sendMessage() {
     const text = messageInput.value.trim();
     if (!text && selectedFiles.length === 0) return;
     if (currentUser.muted) {
-        alert('Вы не можете отправлять сообщения, так как вы замучены');
+        window.showWarning('Мьют', 'Вы не можете отправлять сообщения, так как вы замучены');
         return;
     }
     
@@ -837,7 +837,7 @@ function sendMessage() {
         replyToMessage = null;
         replyPreview.classList.remove('active');
     } else {
-        alert('Нет соединения с сервером');
+        window.showError('Ошибка', 'Нет соединения с сервером');
     }
 }
 
@@ -965,7 +965,7 @@ function setupEventListeners() {
             saveSettingsBtn.addEventListener('click', () => {
                 saveSettings();
                 settingsModal.classList.remove('active');
-                alert('Настройки сохранены!');
+                window.showSuccess('Успех', 'Настройки успешно сохранены');
             });
         }
 
@@ -1145,7 +1145,7 @@ function uploadAllFiles(files, text, token) {
                     ws.send(JSON.stringify({ token, text: msgText }));
                 }
                 if (errors.length > 0) {
-                    alert(errors.join('\n'));
+                    window.showError('Ошибки загрузки', errors.join('<br/>'));
                 }
             }
         });
