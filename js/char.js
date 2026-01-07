@@ -50,11 +50,11 @@ async function loadAllCharacters() {
         if (data.success) {
             populateCharacterSelect(data.characters);
         } else {
-            showError(data.error || 'Не удалось загрузить список персонажей');
+            showCharError(data.error || 'Не удалось загрузить список персонажей');
         }
     } catch (error) {
         console.error('Error loading characters:', error);
-        showError('Ошибка при загрузке списка персонажей');
+        showCharError('Ошибка при загрузке списка персонажей');
     }
 }
 
@@ -96,11 +96,11 @@ async function loadCharacterById(characterId) {
             currentCharacter = data.character;
             displayCharacter(currentCharacter);
         } else {
-            showError(data.error || 'Не удалось загрузить персонажа');
+            showCharError(data.error || 'Не удалось загрузить персонажа');
         }
     } catch (error) {
         console.error('Error loading character:', error);
-        showError('Ошибка при загрузке персонажа');
+        showCharError('Ошибка при загрузке персонажа');
     }
 }
 
@@ -108,7 +108,7 @@ async function loadMyCharacter() {
     const token = localStorage.getItem('token');
     
     if (!token) {
-        showError('Требуется авторизация');
+        showCharError('Требуется авторизация');
         return;
     }
 
@@ -135,11 +135,11 @@ async function loadMyCharacter() {
                 currentCharacter = data.character;
                 displayCharacter(currentCharacter);
             } else {
-                showError(data.error || 'Не удалось загрузить персонажа');
+                showCharError(data.error || 'Не удалось загрузить персонажа');
             }
         } catch (error) {
             console.error('Error loading character:', error);
-            showError('Ошибка при загрузке персонажа');
+            showCharError('Ошибка при загрузке персонажа');
         }
     }
 }
@@ -241,13 +241,13 @@ async function upgradeSkill(skill) {
     const token = localStorage.getItem('token');
     
     if (!token) {
-        showError('Требуется авторизация');
+        showCharError('Требуется авторизация');
         return;
     }
 
     // Проверяем наличие очков
     if (currentCharacter.skill_points <= 0) {
-        showError('Недостаточно очков навыков');
+        showCharError('Недостаточно очков навыков');
         return;
     }
 
@@ -275,7 +275,7 @@ async function upgradeSkill(skill) {
         if (data.success) {
             currentCharacter = data.character;
             displayCharacter(currentCharacter);
-            showSuccess(data.message || 'Навык улучшен!');
+            showCharSuccess(data.message || 'Навык улучшен!');
             
             // Анимация улучшения
             const skillItem = document.querySelector(`[data-skill="${skill}"]`).closest('.skill-item');
@@ -284,15 +284,15 @@ async function upgradeSkill(skill) {
                 skillItem.style.animation = 'fadeIn 0.5s ease';
             }, 10);
         } else {
-            showError(data.error || 'Не удалось улучшить навык');
+            showCharError(data.error || 'Не удалось улучшить навык');
         }
     } catch (error) {
         console.error('Error upgrading skill:', error);
-        showError('Ошибка при улучшении навыка');
+        showCharError('Ошибка при улучшении навыка');
     }
 }
 
-function showSuccess(message) {
+function showCharSuccess(message) {
     // Используем систему модальных окон из game.js
     if (window.showAlert) {
         window.showAlert('Успех', message, 'success');
@@ -301,7 +301,7 @@ function showSuccess(message) {
     }
 }
 
-function showError(message) {
+function showCharError(message) {
     // Используем систему модальных окон из game.js
     if (window.showAlert) {
         window.showAlert('Ошибка', message, 'error');

@@ -66,11 +66,11 @@ async function loadSecretCoins() {
             userCoins = data.coins;
             document.getElementById('user-coins').textContent = userCoins;
         } else {
-            showError('Не удалось загрузить баланс');
+            showShopError('Не удалось загрузить баланс');
         }
     } catch (error) {
         console.error('Error loading coins:', error);
-        showError('Ошибка загрузки баланса');
+        showShopError('Ошибка загрузки баланса');
     }
 }
 
@@ -95,7 +95,7 @@ function setupEventListeners() {
 
 function showPurchaseConfirmation(item, price) {
     if (userCoins < price) {
-        showError(`Недостаточно монет! Требуется: ${price}, у вас: ${userCoins}`);
+        showShopError(`Недостаточно монет! Требуется: ${price}, у вас: ${userCoins}`);
         return;
     }
 
@@ -156,13 +156,13 @@ async function purchaseItem(item, price) {
             closeModal();
             userCoins = data.new_balance;
             document.getElementById('user-coins').textContent = userCoins;
-            showSuccess(data.message || 'Покупка совершена успешно!');
+            showShopSuccess(data.message || 'Покупка совершена успешно!');
         } else {
-            showError(data.error || 'Не удалось совершить покупку');
+            showShopError(data.error || 'Не удалось совершить покупку');
         }
     } catch (error) {
         console.error('Error purchasing item:', error);
-        showError('Ошибка при покупке');
+        showShopError('Ошибка при покупке');
     }
 }
 
@@ -171,7 +171,7 @@ function closeModal() {
     modal.classList.remove('visible');
 }
 
-function showSuccess(message) {
+function showShopSuccess(message) {
     // Создаем простое уведомление
     const notification = document.createElement('div');
     notification.style.cssText = `
@@ -202,7 +202,7 @@ function showSuccess(message) {
     }, 3000);
 }
 
-function showError(message) {
+function showShopError(message) {
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;

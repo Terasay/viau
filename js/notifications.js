@@ -81,45 +81,19 @@ function closeNotification(notification) {
 
 // Удобные алиасы
 function showSuccess(title, message, duration = 4000) {
-    console.log('🎉 showSuccess called:', { title, message, duration });
-    try {
-        const result = showNotification(title, message, 'success', duration);
-        console.log('🎉 showSuccess result:', result);
-        return result;
-    } catch (error) {
-        console.error('🎉 showSuccess ERROR:', error);
-        throw error;
-    }
+    return showNotification(title, message, 'success', duration);
 }
 
 function showError(title, message, duration = 5000) {
-    console.log('❌ showError called:', { title, message, duration });
-    try {
-        return showNotification(title, message, 'error', duration);
-    } catch (error) {
-        console.error('❌ showError ERROR:', error);
-        throw error;
-    }
+    return showNotification(title, message, 'error', duration);
 }
 
 function showWarning(title, message, duration = 4500) {
-    console.log('⚠️ showWarning called:', { title, message, duration });
-    try {
-        return showNotification(title, message, 'warning', duration);
-    } catch (error) {
-        console.error('⚠️ showWarning ERROR:', error);
-        throw error;
-    }
+    return showNotification(title, message, 'warning', duration);
 }
 
 function showInfo(title, message, duration = 4000) {
-    console.log('ℹ️ showInfo called:', { title, message, duration });
-    try {
-        return showNotification(title, message, 'info', duration);
-    } catch (error) {
-        console.error('ℹ️ showInfo ERROR:', error);
-        throw error;
-    }
+    return showNotification(title, message, 'info', duration);
 }
 
 // Экспорт в глобальную область
@@ -129,11 +103,3 @@ window.showError = showError;
 window.showWarning = showWarning;
 window.showInfo = showInfo;
 window.closeNotification = closeNotification;
-
-// Логируем успешную загрузку
-console.log('✅ Notifications system loaded:', {
-    showSuccess: typeof window.showSuccess,
-    showError: typeof window.showError,
-    showWarning: typeof window.showWarning,
-    showInfo: typeof window.showInfo
-});

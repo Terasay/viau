@@ -486,7 +486,7 @@ let provincesModule = (function() {
             
             const data = await response.json();
             if (data.success) {
-                await showSuccess('Здание построено', data.message);
+                await showProvSuccess('Здание построено', data.message);
                 // Обновляем баланс страны
                 if (window.gameState) {
                     await window.gameState.updateCountry();
@@ -495,11 +495,11 @@ let provincesModule = (function() {
                 const provinceName = provinces.find(p => p.id === provinceId)?.name || '';
                 await showBuildings(provinceId, provinceName);
             } else {
-                await showError('Ошибка', data.error);
+                await showProvError('Ошибка', data.error);
             }
         } catch (error) {
             console.error('Error building:', error);
-            await showError('Ошибка', error.message);
+            await showProvError('Ошибка', error.message);
         }
     }
 
@@ -517,16 +517,16 @@ let provincesModule = (function() {
             
             const data = await response.json();
             if (data.success) {
-                await showSuccess('Успешно', data.message);
+                await showProvSuccess('Успешно', data.message);
                 // Перезагружаем список построек
                 const provinceName = provinces.find(p => p.id === provinceId)?.name || '';
                 await showBuildings(provinceId, provinceName);
             } else {
-                await showError('Ошибка', data.error);
+                await showProvError('Ошибка', data.error);
             }
         } catch (error) {
             console.error('Error demolishing:', error);
-            await showError('Ошибка', error.message);
+            await showProvError('Ошибка', error.message);
         }
     }
 
@@ -567,7 +567,7 @@ let provincesModule = (function() {
         const square = document.getElementById('province-square').value.trim();
         
         if (!name || !cityName || !square) {
-            await showError('Ошибка', 'Все поля обязательны для заполнения');
+            await showProvError('Ошибка', 'Все поля обязательны для заполнения');
             return;
         }
         
@@ -592,15 +592,15 @@ let provincesModule = (function() {
             const data = await response.json();
             if (data.success) {
                 closeModal();
-                await showSuccess('Успешно', data.message);
+                await showProvSuccess('Успешно', data.message);
                 await loadProvinces();
                 render();
             } else {
-                await showError('Ошибка', data.error);
+                await showProvError('Ошибка', data.error);
             }
         } catch (error) {
             console.error('Error saving province:', error);
-            await showError('Ошибка', error.message);
+            await showProvError('Ошибка', error.message);
         }
     }
 
@@ -655,15 +655,15 @@ let provincesModule = (function() {
             
             const data = await response.json();
             if (data.success) {
-                await showSuccess('Успешно', data.message);
+                await showProvSuccess('Успешно', data.message);
                 await loadProvinces();
                 render();
             } else {
-                await showError('Ошибка', data.error);
+                await showProvError('Ошибка', data.error);
             }
         } catch (error) {
             console.error('Error deleting province:', error);
-            await showError('Ошибка', error.message);
+            await showProvError('Ошибка', error.message);
         }
     }
 
@@ -700,7 +700,7 @@ let provincesModule = (function() {
     }
 
     // Вспомогательные функции для модальных окон
-    function showSuccess(title, message) {
+    function showProvSuccess(title, message) {
         return new Promise((resolve) => {
             const modal = document.getElementById('modal-overlay');
             const modalBody = document.getElementById('modal-body');
@@ -723,7 +723,7 @@ let provincesModule = (function() {
         });
     }
 
-    function showError(title, message) {
+    function showProvError(title, message) {
         return new Promise((resolve) => {
             const modal = document.getElementById('modal-overlay');
             const modalBody = document.getElementById('modal-body');
