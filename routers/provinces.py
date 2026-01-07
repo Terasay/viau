@@ -128,13 +128,33 @@ def init_db():
         ''', default_buildings)
         print(f'✓ Добавлено {len(default_buildings)} типов построек')
     else:
-        # Если в таблице есть старые постройки без категорий, обновляем их
-        cursor.execute('SELECT id, name FROM building_types WHERE building_category IS NULL OR building_category = ""')
-        old_buildings = cursor.fetchall()
-        if old_buildings:
-            # Устанавливаем дефолтную категорию для старых построек
-            cursor.execute('UPDATE building_types SET building_category = "educational" WHERE building_category IS NULL OR building_category = ""')
-            print(f'✓ Обновлено {len(old_buildings)} старых построек')
+        # Если в таблице есть старые постройки, обновляем их required_tech_id
+        tech_mappings = {
+            'Оружейная мастерская': 'arquebus',
+            'Завод винтовок': 'mass_rifle_production',
+            'Пороховой завод': 'early_muskets',
+            'Завод артиллерии': 'field_artillery_1',
+            'Танковый завод': None,
+            'Авиационный завод': None,
+            'Автомобильный завод': None,
+            'Верфь парусных кораблей': 'galleons_1',
+            'Паровая верфь': 'steam_ships_of_line',
+            'Верфь эсминцев': 'cruisers_1',
+            'Верфь линкоров': 'pre_dreadnoughts',
+            'Верфь подводных лодок': 'torpedoes'
+        }
+        
+        updated_count = 0
+        for building_name, tech_id in tech_mappings.items():
+            cursor.execute(
+                'UPDATE building_types SET required_tech_id = ? WHERE name = ?',
+                (tech_id, building_name)
+            )
+            if cursor.rowcount > 0:
+                updated_count += cursor.rowcount
+        
+        if updated_count > 0:
+            print(f'✓ Обновлено required_tech_id для {updated_count} построек')
     
     conn.commit()
     conn.close()
