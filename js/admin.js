@@ -1544,7 +1544,7 @@ window.manageCountryResources = async function(countryId, countryName) {
     
     if (!modalOverlay || !modalContent) {
         console.error('Модальное окно не найдено в DOM', { modalOverlay, modalContent });
-        alert('Ошибка: элементы модального окна не найдены');
+        window.showError('Ошибка', 'Элементы модального окна не найдены');
         return;
     }
     
@@ -1553,7 +1553,7 @@ window.manageCountryResources = async function(countryId, countryName) {
 
     if (!modalTitle || !modalForm) {
         console.error('Элементы внутри модального окна не найдены', { modalTitle, modalForm, modalContent });
-        alert('Ошибка: не удалось открыть модальное окно');
+        window.showError('Ошибка', 'Не удалось открыть модальное окно');
         return;
     }
 
@@ -1571,7 +1571,7 @@ window.manageCountryResources = async function(countryId, countryName) {
         const data = await response.json();
         
         if (!data.success) {
-            alert('Ошибка загрузки ресурсов');
+            window.showError('Ошибка', 'Ошибка загрузки ресурсов');
             return;
         }
 
@@ -1624,7 +1624,7 @@ window.manageCountryResources = async function(countryId, countryName) {
         modalForm.innerHTML = formHtml;
         modalOverlay.classList.add('active');
     } catch (e) {
-        alert('Ошибка: ' + e.message);
+		window.showError('Ошибка', e.message);
     }
 };
 
@@ -1678,7 +1678,7 @@ window.updateCountryCurrency = async function(countryId, currencyCode) {
             window.showError('Ошибка', data.message || 'Не удалось обновить валюту');
         }
     } catch (e) {
-        alert('Ошибка: ' + e.message);
+		window.showError('Ошибка', e.message);
     }
 };
 
@@ -1704,7 +1704,7 @@ window.updateCountryResource = async function(countryId, resourceCode) {
             window.showError('Ошибка', data.message || 'Не удалось обновить ресурс');
         }
     } catch (e) {
-        alert('Ошибка: ' + e.message);
+		window.showError('Ошибка', e.message);
     }
 };
 

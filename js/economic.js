@@ -499,20 +499,12 @@ const economicModule = (function() {
                 }
             }
             
-            if (typeof window.showSuccess === 'function') {
-                window.showSuccess('Успех', isAdmin ? 'Все настройки успешно обновлены' : 'Налоги успешно обновлены');
-            } else {
-                alert(isAdmin ? 'Все настройки успешно обновлены' : 'Налоги успешно обновлены');
-            }
+            window.showSuccess('Успех', isAdmin ? 'Все настройки успешно обновлены' : 'Налоги успешно обновлены');
             await refresh();
             
         } catch (e) {
             console.error('Ошибка сохранения настроек:', e);
-            if (typeof window.showError === 'function') {
-                window.showError('Ошибка', e.message || 'Не удалось сохранить настройки');
-            } else {
-                alert('Ошибка: ' + (e.message || 'Не удалось сохранить настройки'));
-            }
+            window.showError('Ошибка', e.message || 'Не удалось сохранить настройки');
         }
     }
 

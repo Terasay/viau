@@ -263,7 +263,7 @@ async function submitEditMap() {
     const newName = document.getElementById('editMapNameInput').value.trim();
     
     if (!newName) {
-        alert('Введите название карты');
+        window.showWarning('Проверка формы', 'Введите название карты');
         return;
     }
     
@@ -288,10 +288,10 @@ async function submitEditMap() {
             closeEditModal();
             loadMaps();
         } else {
-            alert(data.error || 'Ошибка редактирования');
+            window.showError('Ошибка', data.error || 'Ошибка редактирования');
         }
     } catch (error) {
-        alert('Ошибка соединения');
+        window.showError('Ошибка', 'Ошибка соединения');
     }
 }
 
@@ -317,10 +317,10 @@ async function deleteMap(mapId) {
         if (data.success) {
             loadMaps();
         } else {
-            alert(data.error || 'Ошибка удаления');
+            window.showError('Ошибка', data.error || 'Ошибка удаления');
         }
     } catch (error) {
-        alert('Ошибка соединения');
+        window.showError('Ошибка', 'Ошибка соединения');
     }
 }
 

@@ -282,18 +282,18 @@ async function handleSubmit() {
     const fairPlay = document.getElementById('fairPlay').checked;
     
     if (!firstName || !lastName || !countryOrigin || !age || !country) {
-        alert('Пожалуйста, заполните все обязательные поля');
+        window.showWarning('Проверка формы', 'Пожалуйста, заполните все обязательные поля');
         return;
     }
     
     if (!rulesAccept || !fairPlay) {
-        alert('Необходимо согласиться с правилами игры');
+        window.showWarning('Проверка формы', 'Необходимо согласиться с правилами игры');
         return;
     }
     
     const referralCode = document.getElementById('referralCode').value.trim();
     if (referralCode && (referralCode.length !== 4 || !/^[A-Z]{4}$/.test(referralCode))) {
-        alert('Реферальный код должен состоять из 4 букв латинского алфавита (A-Z)');
+        window.showWarning('Неверный формат', 'Реферальный код должен состоять из 4 букв латинского алфавита (A-Z)');
         return;
     }
     
@@ -331,13 +331,13 @@ async function handleSubmit() {
         if (data.success) {
             showSuccessModal();
         } else {
-            alert(data.error || 'Ошибка при отправке заявки');
+            window.showError('Ошибка', data.error || 'Ошибка при отправке заявки');
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Подать заявку';
         }
     } catch (error) {
         console.error('Submit error:', error);
-        alert('Ошибка при отправке заявки');
+        window.showError('Ошибка', 'Ошибка при отправке заявки');
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Подать заявку';
     }
@@ -360,8 +360,8 @@ async function handleCancelApplication() {
         const data = await response.json();
         
         if (data.success) {
-            alert('Заявка успешно отозвана');
-            window.location.reload();
+            window.showSuccess('Успех', 'Заявка успешно отозвана');
+            setTimeout(() => window.location.reload(), 1500);
         } else {
             window.showError('Ошибка', data.error || 'Не удалось отправить заявку');
         }

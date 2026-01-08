@@ -274,7 +274,7 @@ async function convertCurrencyToResource() {
 		}
 	} catch (error) {
 		console.error('Ошибка конвертации:', error);
-		alert('Ошибка конвертации');
+		window.showError('Ошибка', 'Ошибка конвертации');
 	}
 }
 
@@ -297,7 +297,7 @@ async function convertCurrency() {
 	const to = currencyTo.value;
 	
 	if (isNaN(amount) || amount <= 0) {
-		alert('Введите корректную сумму');
+		window.showWarning('Проверка данных', 'Введите корректную сумму');
 		return;
 	}
 	
@@ -319,7 +319,7 @@ async function convertCurrency() {
 		}
 	} catch (error) {
 		console.error('Ошибка конвертации:', error);
-		alert('Ошибка конвертации');
+		window.showError('Ошибка', 'Ошибка конвертации');
 	}
 }
 
@@ -351,7 +351,7 @@ async function convertResource() {
 		}
 	} catch (error) {
 		console.error('Ошибка конвертации:', error);
-		alert('Ошибка конвертации');
+		window.showError('Ошибка', 'Ошибка конвертации');
 	}
 }
 
@@ -696,7 +696,7 @@ mixedConvertBtn.addEventListener('click', async () => {
 	const toItem = mixedResourceTo.value;
 	
 	if (isNaN(amount) || amount <= 0) {
-		alert('Введите корректную сумму');
+		window.showWarning('Проверка данных', 'Введите корректную сумму');
 		return;
 	}
 	
@@ -728,7 +728,7 @@ mixedConvertBtn.addEventListener('click', async () => {
 		}
 	} catch (error) {
 		console.error('Ошибка конвертации:', error);
-		alert('Ошибка конвертации');
+		window.showError('Ошибка', 'Ошибка конвертации');
 	}
 });
 
