@@ -202,6 +202,10 @@
     line-height: 1 !important;
 }
 
+.building-header .btn-icon {
+    flex-shrink: 0;
+}
+
 /* Описание постройки */
 .building-description {
     margin: 0 0 16px 0;

@@ -334,6 +334,13 @@ let provincesModule = (function() {
                             <h4>
                                 <i class="fas fa-industry"></i> ${building.name}
                             </h4>
+                            ${isAdminView ? `
+                                <button class="btn-icon btn-danger" 
+                                        onclick="provincesModule.demolishBuilding(${building.id}, ${provinceId})" 
+                                        title="Удалить здание">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
                         </div>
                         <p class="building-description">${building.description}</p>
                         <div class="building-stats">
@@ -486,7 +493,7 @@ let provincesModule = (function() {
             
             const data = await response.json();
             if (data.success) {
-                await showProvSuccess('Здание построено', data.message);
+                window.showSuccess('Здание построено', data.message);
                 // Обновляем баланс страны
                 if (window.gameState) {
                     await window.gameState.updateCountry();
@@ -495,16 +502,16 @@ let provincesModule = (function() {
                 const provinceName = provinces.find(p => p.id === provinceId)?.name || '';
                 await showBuildings(provinceId, provinceName);
             } else {
-                await showProvError('Ошибка', data.error);
+                window.showError('Ошибка', data.error);
             }
         } catch (error) {
             console.error('Error building:', error);
-            await showProvError('Ошибка', error.message);
+            window.showError('Ошибка', error.message);
         }
     }
 
     async function demolishBuilding(buildingId, provinceId) {
-        if (!confirm('Вы уверены, что хотите снести это здание?')) return;
+        if (!confirm('Вы уверены, что хотите снести это здание? Это действие необратимо.')) return;
         
         try {
             const token = localStorage.getItem('token');
@@ -517,16 +524,16 @@ let provincesModule = (function() {
             
             const data = await response.json();
             if (data.success) {
-                await showProvSuccess('Успешно', data.message);
+                window.showSuccess('Успешно', data.message);
                 // Перезагружаем список построек
                 const provinceName = provinces.find(p => p.id === provinceId)?.name || '';
                 await showBuildings(provinceId, provinceName);
             } else {
-                await showProvError('Ошибка', data.error);
+                window.showError('Ошибка', data.error);
             }
         } catch (error) {
             console.error('Error demolishing:', error);
-            await showProvError('Ошибка', error.message);
+            window.showError('Ошибка', error.message);
         }
     }
 
