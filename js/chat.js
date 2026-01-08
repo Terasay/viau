@@ -562,10 +562,17 @@ function addMessage(messageData, save = true, prepend = false) {
         const replyBlock = document.createElement('div');
         replyBlock.className = 'message-reply';
         replyBlock.dataset.replyTo = messageData.replyTo.id;
-        replyBlock.innerHTML = `
-            <div class="message-reply-username">${messageData.replyTo.username}</div>
-            <div class="message-reply-text">${messageData.replyTo.text}</div>
-        `;
+        
+        const replyUsername = document.createElement('div');
+        replyUsername.className = 'message-reply-username';
+        replyUsername.textContent = messageData.replyTo.username;
+        
+        const replyText = document.createElement('div');
+        replyText.className = 'message-reply-text';
+        replyText.textContent = messageData.replyTo.text;
+        
+        replyBlock.appendChild(replyUsername);
+        replyBlock.appendChild(replyText);
         content.appendChild(replyBlock);
     }
     
