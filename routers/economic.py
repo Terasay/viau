@@ -133,12 +133,21 @@ def init_db():
             country_id TEXT NOT NULL,
             equipment_code TEXT NOT NULL,
             amount INTEGER DEFAULT 0,
+            ever_had INTEGER DEFAULT 0,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             FOREIGN KEY (country_id) REFERENCES countries (id) ON DELETE CASCADE,
             UNIQUE(country_id, equipment_code)
         )
     ''')
+    
+    # Миграция: добавляем поле ever_had если его нет
+    cursor.execute("PRAGMA table_info(country_military_equipment)")
+    columns = [column[1] for column in cursor.fetchall()]
+    if 'ever_had' not in columns:
+        cursor.execute('ALTER TABLE country_military_equipment ADD COLUMN ever_had INTEGER DEFAULT 0')
+        # Устанавливаем ever_had = 1 для всех существующих записей с amount > 0
+        cursor.execute('UPDATE country_military_equipment SET ever_had = 1 WHERE amount > 0')
     
     # Таблица настроек среднего заработка по классам
     cursor.execute('''
@@ -558,17 +567,36 @@ async def get_available_currencies():
 async def get_available_military_equipment():
     """Получение списка доступных типов военного снаряжения"""
     equipment_types = {
-        'rifles': {'name': 'Винтовки', 'icon': 'fa-gun'},
-        'ammunition': {'name': 'Боеприпасы', 'icon': 'fa-box'},
-        'artillery': {'name': 'Артиллерия', 'icon': 'fa-bomb'},
-        'tanks': {'name': 'Танки', 'icon': 'fa-tank'},
-        'aircraft': {'name': 'Самолёты', 'icon': 'fa-plane'},
-        'vehicles': {'name': 'Грузовики', 'icon': 'fa-truck'},
-        'sailing_ships': {'name': 'Парусные корабли', 'icon': 'fa-ship'},
-        'steam_ships': {'name': 'Паровые корабли', 'icon': 'fa-ship'},
-        'destroyers': {'name': 'Эсминцы', 'icon': 'fa-ship'},
-        'battleships': {'name': 'Линкоры', 'icon': 'fa-ship'},
-        'submarines': {'name': 'Подводные лодки', 'icon': 'fa-ship'}
+        # Пехотное вооружение (градация по уровням)
+        'arquebuses': {'name': 'Аркебузы', 'icon': 'fa-gun', 'price': 5, 'level': 1},
+        'light_muskets': {'name': 'Лёгкие мушкеты', 'icon': 'fa-gun', 'price': 8, 'level': 2},
+        'muskets': {'name': 'Мушкеты', 'icon': 'fa-gun', 'price': 12, 'level': 3},
+        'rifles': {'name': 'Нарезные ружья', 'icon': 'fa-gun', 'price': 18, 'level': 4},
+        'needle_rifles': {'name': 'Игольчатые винтовки', 'icon': 'fa-gun', 'price': 25, 'level': 5},
+        'bolt_action_rifles': {'name': 'Магазинные винтовки', 'icon': 'fa-gun', 'price': 35, 'level': 6},
+        
+        # Артиллерия и техника
+        'field_artillery': {'name': 'Полевая артиллерия', 'icon': 'fa-bomb', 'price': 200, 'level': 1},
+        'siege_artillery': {'name': 'Осадная артиллерия', 'icon': 'fa-bomb', 'price': 350, 'level': 2},
+        'heavy_artillery': {'name': 'Тяжёлая артиллерия', 'icon': 'fa-bomb', 'price': 500, 'level': 3},
+        'light_tanks': {'name': 'Лёгкие танки', 'icon': 'fa-shield-alt', 'price': 1000, 'level': 1},
+        'medium_tanks': {'name': 'Средние танки', 'icon': 'fa-shield-alt', 'price': 1800, 'level': 2},
+        'heavy_tanks': {'name': 'Тяжёлые танки', 'icon': 'fa-shield-alt', 'price': 3000, 'level': 3},
+        'fighters': {'name': 'Истребители', 'icon': 'fa-plane', 'price': 2000, 'level': 1},
+        'bombers': {'name': 'Бомбардировщики', 'icon': 'fa-plane', 'price': 3500, 'level': 2},
+        'transport_vehicles': {'name': 'Грузовики', 'icon': 'fa-truck', 'price': 150, 'level': 1},
+        'armored_vehicles': {'name': 'Бронетранспортёры', 'icon': 'fa-truck-monster', 'price': 400, 'level': 2},
+        
+        # Военно-морской флот (градация по уровням)
+        'galleons': {'name': 'Галеоны', 'icon': 'fa-ship', 'price': 800, 'level': 1},
+        'ships_of_line': {'name': 'Линейные корабли', 'icon': 'fa-ship', 'price': 1200, 'level': 2},
+        'steam_frigates': {'name': 'Паровые фрегаты', 'icon': 'fa-ship', 'price': 2000, 'level': 3},
+        'ironclads': {'name': 'Броненосцы', 'icon': 'fa-ship', 'price': 3500, 'level': 4},
+        'pre_dreadnoughts': {'name': 'Эскадренные броненосцы', 'icon': 'fa-ship', 'price': 5000, 'level': 5},
+        'dreadnoughts': {'name': 'Дредноуты', 'icon': 'fa-ship', 'price': 8000, 'level': 6},
+        'destroyers': {'name': 'Эсминцы', 'icon': 'fa-ship', 'price': 1500, 'level': 1},
+        'cruisers': {'name': 'Крейсера', 'icon': 'fa-ship', 'price': 4000, 'level': 2},
+        'submarines': {'name': 'Подводные лодки', 'icon': 'fa-ship', 'price': 2500, 'level': 1}
     }
     return JSONResponse({'success': True, 'equipment': equipment_types})
 
@@ -707,14 +735,17 @@ async def get_country_military_equipment(country_id: str, request: Request):
         
         # Получаем всё снаряжение
         cursor.execute('''
-            SELECT equipment_code, amount
+            SELECT equipment_code, amount, ever_had
             FROM country_military_equipment
             WHERE country_id = ?
         ''', (country_id,))
         
         equipment = {}
         for row in cursor.fetchall():
-            equipment[row['equipment_code']] = row['amount']
+            equipment[row['equipment_code']] = {
+                'amount': row['amount'],
+                'ever_had': row['ever_had']
+            }
         
         return JSONResponse({'success': True, 'equipment': equipment})
         
@@ -744,13 +775,17 @@ async def update_country_military_equipment(country_id: str, request: Request):
     try:
         now = datetime.now().isoformat()
         
+        # Устанавливаем ever_had = 1 если amount > 0
+        ever_had = 1 if amount > 0 else 0
+        
         cursor.execute('''
-            INSERT INTO country_military_equipment (country_id, equipment_code, amount, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO country_military_equipment (country_id, equipment_code, amount, ever_had, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
             ON CONFLICT(country_id, equipment_code) DO UPDATE SET
                 amount = excluded.amount,
+                ever_had = CASE WHEN excluded.amount > 0 THEN 1 ELSE country_military_equipment.ever_had END,
                 updated_at = excluded.updated_at
-        ''', (country_id, equipment_code, amount, now, now))
+        ''', (country_id, equipment_code, amount, ever_had, now, now))
         
         conn.commit()
         return JSONResponse({'success': True})

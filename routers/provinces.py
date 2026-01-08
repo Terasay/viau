@@ -63,7 +63,7 @@ BUILDING_TYPES = {
         'maintenance_cost': 500,
         'building_category': 'military_infantry',
         'required_tech_ids': ['arquebus'],
-        'effects': [('production_rifles', 50)]
+        'effects': [('production_arquebuses', 50)]
     },
     'Завод винтовок': {
         'description': 'Массовое производство современных винтовок для армии.',
@@ -72,14 +72,6 @@ BUILDING_TYPES = {
         'building_category': 'military_infantry',
         'required_tech_ids': ['mass_rifle_production'],
         'effects': [('production_rifles', 200)]
-    },
-    'Пороховой завод': {
-        'description': 'Производство пороха и боеприпасов для пехоты.',
-        'base_cost': 8000,
-        'maintenance_cost': 800,
-        'building_category': 'military_infantry',
-        'required_tech_ids': ['early_muskets'],
-        'effects': [('production_ammunition', 500)]
     },
     
 

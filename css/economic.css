@@ -492,12 +492,29 @@ body.dark-mode .resource-item:hover {
     font-size: 1.1em;
     font-weight: 600;
     color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.item-level {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: var(--radius);
+    font-size: 0.75em;
+    color: var(--primary);
+    font-weight: 700;
 }
 
 .military-item-code {
     font-size: 0.85em;
     color: var(--text-tertiary);
     font-family: 'Fira Mono', 'Courier New', monospace;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .military-item-amount {

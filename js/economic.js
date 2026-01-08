@@ -438,30 +438,45 @@ const economicModule = (function() {
         // Категории снаряжения
         const categories = {
             'infantry': {
-                name: 'Пехотное снаряжение',
+                name: 'Пехотное вооружение',
                 icon: 'fa-user-shield',
-                items: ['rifles', 'ammunition']
+                items: ['arquebuses', 'light_muskets', 'muskets', 'rifles', 'needle_rifles', 'bolt_action_rifles']
             },
             'vehicles': {
                 name: 'Артиллерия и техника',
                 icon: 'fa-truck-monster',
-                items: ['artillery', 'tanks', 'aircraft', 'vehicles']
+                items: ['field_artillery', 'siege_artillery', 'heavy_artillery', 'light_tanks', 'medium_tanks', 'heavy_tanks', 'fighters', 'bombers', 'transport_vehicles', 'armored_vehicles']
             },
             'naval': {
                 name: 'Военно-морской флот',
                 icon: 'fa-anchor',
-                items: ['sailing_ships', 'steam_ships', 'destroyers', 'battleships', 'submarines']
+                items: ['galleons', 'ships_of_line', 'steam_frigates', 'ironclads', 'pre_dreadnoughts', 'dreadnoughts', 'destroyers', 'cruisers', 'submarines']
             }
         };
 
         // Отображаем категории
         if (availableMilitaryEquipment && typeof availableMilitaryEquipment === 'object' && Object.keys(availableMilitaryEquipment).length > 0) {
             for (const [catId, category] of Object.entries(categories)) {
-                // Считаем общее количество в категории
+                // Считаем общее количество в категории и проверяем видимость
                 let totalAmount = 0;
+                let hasVisibleItems = false;
+                
                 for (const itemCode of category.items) {
-                    totalAmount += (militaryEquipment[itemCode] || 0);
+                    const equipData = militaryEquipment[itemCode];
+                    if (equipData) {
+                        const amount = equipData.amount || 0;
+                        const everHad = equipData.ever_had || 0;
+                        
+                        // Показываем только если хоть раз было
+                        if (everHad > 0) {
+                            totalAmount += amount;
+                            hasVisibleItems = true;
+                        }
+                    }
                 }
+                
+                // Пропускаем категорию если нет видимых элементов
+                if (!hasVisibleItems) continue;
 
                 html += `
                     <div class="military-category">
@@ -477,19 +492,29 @@ const economicModule = (function() {
                             <div class="category-items">
                 `;
 
-                // Отображаем элементы категории
+                // Отображаем элементы категории (только те, что были хоть раз)
                 for (const itemCode of category.items) {
                     const info = availableMilitaryEquipment[itemCode];
-                    if (info) {
-                        const amount = militaryEquipment[itemCode] || 0;
+                    const equipData = militaryEquipment[itemCode];
+                    
+                    if (info && equipData && equipData.ever_had > 0) {
+                        const amount = equipData.amount || 0;
+                        const price = info.price || 0;
+                        const level = info.level || 1;
+                        
                         html += `
                             <div class="military-item">
                                 <div class="military-item-icon">
                                     <i class="fas ${info.icon}"></i>
                                 </div>
                                 <div class="military-item-info">
-                                    <div class="military-item-name">${info.name}</div>
-                                    <div class="military-item-code">${itemCode}</div>
+                                    <div class="military-item-name">
+                                        ${info.name}
+                                        <span class="item-level">ур. ${level}</span>
+                                    </div>
+                                    <div class="military-item-code">
+                                        ${itemCode} • ${price} <i class="fas fa-coins" style="font-size: 0.85em; color: #ffd700;"></i>/ед.
+                                    </div>
                                 </div>
                                 <div class="military-item-amount">${amount.toLocaleString('ru-RU')}</div>
                             </div>
