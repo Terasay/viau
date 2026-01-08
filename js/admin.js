@@ -126,6 +126,56 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    const deleteUserForm = document.getElementById('delete-user-form');
+    const deleteUserResult = document.getElementById('delete-user-result');
+    
+    if (deleteUserForm) {
+        deleteUserForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('delete-user-id').value;
+            
+            if (!confirm(`⚠️ ВЫ УВЕРЕНЫ?\n\nЭто полностью удалит пользователя ID ${userId} из системы!\n\nБудет удалено:\n- Аккаунт\n- Аватар\n- Заявки\n- Сообщения в чате\n- Персонаж\n- Страна (если есть)\n\nЭто действие НЕОБРАТИМО!`)) {
+                return;
+            }
+            
+            if (!confirm(`ПОСЛЕДНЕЕ ПРЕДУПРЕЖДЕНИЕ!\n\nВы действительно хотите НАВСЕГДА удалить пользователя ID ${userId}?\n\nВведённые данные НЕ МОГУТ БЫТЬ ВОССТАНОВЛЕНЫ!`)) {
+                return;
+            }
+            
+            deleteUserResult.textContent = 'Удаление...';
+            deleteUserResult.className = '';
+            
+            try {
+                const resp = await fetch('/admin/delete-user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token
+                    },
+                    body: JSON.stringify({ user_id: parseInt(userId) })
+                });
+                
+                const data = await resp.json();
+                
+                if (data.success) {
+                    window.showSuccess('Успешно удалено', data.message);
+                    deleteUserResult.textContent = data.message;
+                    deleteUserResult.className = 'form-result success';
+                    deleteUserForm.reset();
+                    await loadUsers();
+                } else {
+                    window.showError('Ошибка', data.error || 'Не удалось удалить пользователя');
+                    deleteUserResult.textContent = data.error || 'Ошибка удаления';
+                    deleteUserResult.className = 'form-result error';
+                }
+            } catch (err) {
+                window.showError('Ошибка', 'Ошибка запроса');
+                deleteUserResult.textContent = 'Ошибка запроса';
+                deleteUserResult.className = 'form-result error';
+            }
+        });
+    }
+
     const userActionForm = document.getElementById('user-action-form');
     const actionResult = document.getElementById('action-result');
     userActionForm.addEventListener('submit', async (e) => {

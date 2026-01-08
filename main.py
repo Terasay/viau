@@ -782,6 +782,93 @@ async def admin_set_status(request: Request):
 	conn.close()
 	return JSONResponse({'success': True})
 
+@app.post('/admin/delete-user')
+async def delete_user(request: Request):
+	"""Полное удаление пользователя и всех его данных"""
+	token = request.headers.get('Authorization')
+	payload = decode_jwt(token)
+	if not payload:
+		return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+	
+	admin = get_user_by_username(payload['username'])
+	if not admin or admin[4] != 'admin':
+		return JSONResponse({'success': False, 'error': 'Недостаточно прав'}, status_code=403)
+	
+	data = await request.json()
+	user_id = data.get('user_id')
+	
+	if not user_id:
+		return JSONResponse({'success': False, 'error': 'Не указан ID пользователя'}, status_code=400)
+	
+	conn = sqlite3.connect(DB_FILE)
+	c = conn.cursor()
+	
+	try:
+		# Получаем информацию о пользователе
+		c.execute('SELECT username, email, country, role, avatar FROM users WHERE id=?', (user_id,))
+		user = c.fetchone()
+		
+		if not user:
+			return JSONResponse({'success': False, 'error': 'Пользователь не найден'}, status_code=404)
+		
+		username, email, country, role, avatar = user
+		
+		# Удаляем аватар если есть
+		if avatar:
+			avatar_path = os.path.join(AVATARS_DIR, avatar)
+			if os.path.exists(avatar_path):
+				try:
+					os.remove(avatar_path)
+				except Exception as e:
+					print(f"Error deleting avatar: {e}")
+		
+		# Освобождаем страну если была назначена
+		if country:
+			import json
+			countries_path = 'data/countries.json'
+			try:
+				with open(countries_path, 'r', encoding='utf-8') as f:
+					countries = json.load(f)
+				
+				for c_data in countries:
+					if c_data['id'] == country:
+						c_data['available'] = True
+						break
+				
+				with open(countries_path, 'w', encoding='utf-8') as f:
+					json.dump(countries, f, ensure_ascii=False, indent=4)
+			except Exception as e:
+				print(f"Error updating countries.json: {e}")
+		
+		# Удаляем заявки пользователя
+		c.execute('DELETE FROM player_applications WHERE user_id=?', (user_id,))
+		
+		# Удаляем сообщения в чате
+		c.execute('DELETE FROM messages WHERE username=?', (username,))
+		
+		# Удаляем персонажа если есть
+		c.execute('DELETE FROM characters WHERE user_id=?', (user_id,))
+		
+		# Удаляем страну из countries если существует
+		c.execute('DELETE FROM countries WHERE player_id=?', (user_id,))
+		
+		# Удаляем самого пользователя
+		c.execute('DELETE FROM users WHERE id=?', (user_id,))
+		
+		conn.commit()
+		
+		return JSONResponse({
+			'success': True,
+			'message': f'Пользователь "{username}" ({email}) полностью удалён из системы.'
+		})
+		
+	except Exception as e:
+		print(f"Error deleting user: {e}")
+		conn.rollback()
+		return JSONResponse({'success': False, 'error': f'Ошибка при удалении: {str(e)}'}, status_code=500)
+	finally:
+		conn.close()
+
 @app.post('/admin/remove-player-country')
 async def remove_player_country(request: Request):
 	"""Снимает игрока со страны и возвращает роль user"""
