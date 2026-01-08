@@ -682,6 +682,64 @@ const economicModule = (function() {
         }
     }
 
+    async function saveMilitaryEquipment() {
+        const user = window.gameState?.getUser();
+        if (!user || (user.role !== 'admin' && user.role !== 'moderator')) {
+            alert('Требуются права администратора');
+            return;
+        }
+
+        // Собираем все значения из input полей
+        const updates = {};
+        const inputs = document.querySelectorAll('.military-item-input');
+        
+        for (const input of inputs) {
+            const equipCode = input.id.replace('equip-', '');
+            const newAmount = parseInt(input.value) || 0;
+            const oldAmount = militaryEquipment[equipCode]?.amount || 0;
+            
+            // Сохраняем только изменённые значения
+            if (newAmount !== oldAmount) {
+                updates[equipCode] = newAmount;
+            }
+        }
+
+        if (Object.keys(updates).length === 0) {
+            alert('Нет изменений для сохранения');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            
+            // Отправляем каждое обновление
+            for (const [equipCode, amount] of Object.entries(updates)) {
+                const response = await fetch(`/api/economic/country/${countryId}/update-military-equipment`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        equipment_code: equipCode,
+                        amount: amount
+                    })
+                });
+
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(`Ошибка обновления ${equipCode}: ${data.error}`);
+                }
+            }
+
+            alert(`Военный склад успешно обновлён (${Object.keys(updates).length} изменений)`);
+            await refresh();
+        } catch (e) {
+            console.error('Ошибка сохранения военного снаряжения:', e);
+            alert('Ошибка сохранения: ' + e.message);
+        }
+    }
+
     return {
         init,
         refresh,
