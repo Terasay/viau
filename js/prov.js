@@ -418,9 +418,9 @@ let provincesModule = (function() {
             'military_naval': { name: 'Верфи и кораблестроение', buildings: [] }
         };
         
-        // Фильтруем только доступные постройки и группируем по категориям
+        // Админ видит все постройки, игроки - только доступные
         buildingTypes.forEach(type => {
-            if (type.is_available && categories[type.building_category]) {
+            if (categories[type.building_category] && (type.is_available || isAdminView)) {
                 categories[type.building_category].buildings.push(type);
             }
         });
