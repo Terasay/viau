@@ -126,6 +126,20 @@ def init_db():
         )
     ''')
     
+    # Таблица военного снаряжения
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS country_military_equipment (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            country_id TEXT NOT NULL,
+            equipment_code TEXT NOT NULL,
+            amount INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (country_id) REFERENCES countries (id) ON DELETE CASCADE,
+            UNIQUE(country_id, equipment_code)
+        )
+    ''')
+    
     # Таблица настроек среднего заработка по классам
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS country_income_settings (
@@ -540,6 +554,24 @@ async def get_available_currencies():
     except Exception as e:
         return JSONResponse({'success': False, 'message': str(e)}, status_code=500)
 
+@router.get("/available-military-equipment")
+async def get_available_military_equipment():
+    """Получение списка доступных типов военного снаряжения"""
+    equipment_types = {
+        'rifles': {'name': 'Винтовки', 'icon': 'fa-gun'},
+        'ammunition': {'name': 'Боеприпасы', 'icon': 'fa-box'},
+        'artillery': {'name': 'Артиллерия', 'icon': 'fa-bomb'},
+        'tanks': {'name': 'Танки', 'icon': 'fa-tank'},
+        'aircraft': {'name': 'Самолёты', 'icon': 'fa-plane'},
+        'vehicles': {'name': 'Грузовики', 'icon': 'fa-truck'},
+        'sailing_ships': {'name': 'Парусные корабли', 'icon': 'fa-ship'},
+        'steam_ships': {'name': 'Паровые корабли', 'icon': 'fa-ship'},
+        'destroyers': {'name': 'Эсминцы', 'icon': 'fa-ship'},
+        'battleships': {'name': 'Линкоры', 'icon': 'fa-ship'},
+        'submarines': {'name': 'Подводные лодки', 'icon': 'fa-ship'}
+    }
+    return JSONResponse({'success': True, 'equipment': equipment_types})
+
 @router.get("/available-resources")
 async def get_available_resources():
     """Получить список всех доступных ресурсов из converter_data.json"""
@@ -648,6 +680,85 @@ async def update_country_resource(country_id: str, request: Request):
         return JSONResponse({'success': True, 'message': 'Ресурс обновлён'})
     except Exception as e:
         return JSONResponse({'success': False, 'message': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.get("/country/{country_id}/military-equipment")
+async def get_country_military_equipment(country_id: str, request: Request):
+    """Получение военного снаряжения страны"""
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Проверяем доступ
+        cursor.execute('SELECT * FROM countries WHERE id = ?', (country_id,))
+        country = cursor.fetchone()
+        if not country:
+            return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
+        
+        # Админы и модераторы могут смотреть любую страну
+        if user['role'] not in ['admin', 'moderator']:
+            if country['player_id'] != user['id']:
+                return JSONResponse({'success': False, 'error': 'Нет доступа к этой стране'}, status_code=403)
+        
+        # Получаем всё снаряжение
+        cursor.execute('''
+            SELECT equipment_code, amount
+            FROM country_military_equipment
+            WHERE country_id = ?
+        ''', (country_id,))
+        
+        equipment = {}
+        for row in cursor.fetchall():
+            equipment[row['equipment_code']] = row['amount']
+        
+        return JSONResponse({'success': True, 'equipment': equipment})
+        
+    except Exception as e:
+        print(f'Error loading military equipment: {e}')
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+@router.post("/country/{country_id}/update-military-equipment")
+async def update_country_military_equipment(country_id: str, request: Request):
+    """Обновление военного снаряжения (только админ)"""
+    user = await check_admin(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация администратора'}, status_code=403)
+    
+    data = await request.json()
+    equipment_code = data.get('equipment_code')
+    amount = data.get('amount', 0)
+    
+    if not equipment_code:
+        return JSONResponse({'success': False, 'error': 'Не указан код снаряжения'}, status_code=400)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        now = datetime.now().isoformat()
+        
+        cursor.execute('''
+            INSERT INTO country_military_equipment (country_id, equipment_code, amount, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(country_id, equipment_code) DO UPDATE SET
+                amount = excluded.amount,
+                updated_at = excluded.updated_at
+        ''', (country_id, equipment_code, amount, now, now))
+        
+        conn.commit()
+        return JSONResponse({'success': True})
+        
+    except Exception as e:
+        conn.rollback()
+        print(f'Error updating military equipment: {e}')
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
     finally:
         conn.close()
 

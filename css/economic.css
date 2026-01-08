@@ -346,6 +346,36 @@ body.dark-mode .resource-item:hover {
     background: linear-gradient(135deg, rgba(129, 140, 248, 0.05) 0%, rgba(167, 139, 250, 0.05) 100%);
 }
 
+/* Военный склад */
+.military-warehouse-section {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.05) 100%);
+    border: 2px solid rgba(239, 68, 68, 0.3);
+}
+
+.military-warehouse-section .section-header i {
+    color: #ef4444;
+}
+
+.military-item {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.08) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.military-item:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(220, 38, 38, 0.12) 100%);
+    border-color: #ef4444;
+}
+
+.military-item .resource-icon {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+    color: #ef4444;
+}
+
+.military-item .resource-amount {
+    color: #ef4444;
+    font-weight: 800;
+}
+
 /* Баланс и прогноз */
 .balance-section {
     display: grid;

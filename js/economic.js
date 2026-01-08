@@ -3,10 +3,12 @@ const economicModule = (function() {
     let countryName = '';
     let availableCurrencies = {};
     let availableResources = {};
+    let availableMilitaryEquipment = {};
     let countryData = null;
     let balanceData = null;
     let taxSettings = {};
     let incomeSettings = {};
+    let militaryEquipment = {};
 
     async function init(playerCountryId, playerCountryName = '') {
         console.log('economicModule.init вызван с параметрами:', { playerCountryId, playerCountryName });
@@ -36,6 +38,7 @@ const economicModule = (function() {
         
         await loadAvailableData();
         await loadCountryResources();
+        await loadMilitaryEquipment();
         await loadBalanceData();
         await loadTaxSettings();
         await loadIncomeSettings();
@@ -44,24 +47,29 @@ const economicModule = (function() {
 
     async function loadAvailableData() {
         try {
-            const [currResponse, resResponse] = await Promise.all([
+            const [currResponse, resResponse, equipResponse] = await Promise.all([
                 fetch('/api/economic/available-currencies'),
-                fetch('/api/economic/available-resources')
+                fetch('/api/economic/available-resources'),
+                fetch('/api/economic/available-military-equipment')
             ]);
             
             const currData = await currResponse.json();
             const resData = await resResponse.json();
+            const equipData = await equipResponse.json();
             
             console.log('Available currencies loaded:', currData);
             console.log('Available resources loaded:', resData);
+            console.log('Available military equipment loaded:', equipData);
             
             if (currData.success) availableCurrencies = currData.currencies;
             if (resData.success) availableResources = resData.resources;
+            if (equipData.success) availableMilitaryEquipment = equipData.equipment;
             
             console.log('Currencies object:', availableCurrencies);
             console.log('Resources object:', availableResources);
+            console.log('Military equipment object:', availableMilitaryEquipment);
         } catch (e) {
-            console.error('Ошибка загрузки валют/ресурсов:', e);
+            console.error('Ошибка загрузки валют/ресурсов/снаряжения:', e);
         }
     }
 
@@ -78,12 +86,32 @@ const economicModule = (function() {
             
             if (data.success) {
                 countryData = data;
-                console.log('Country data set:', countryData);
             } else {
-                console.error('Ошибка загрузки ресурсов страны:', data.message);
+                console.error('Failed to load resources:', data.error);
             }
         } catch (e) {
             console.error('Ошибка загрузки ресурсов:', e);
+        }
+    }
+
+    async function loadMilitaryEquipment() {
+        try {
+            const token = localStorage.getItem('token');
+            console.log('Loading military equipment for country:', countryId);
+            const response = await fetch(`/api/economic/country/${countryId}/military-equipment`, {
+                headers: { 'Authorization': token }
+            });
+            const data = await response.json();
+            
+            console.log('Military equipment response:', data);
+            
+            if (data.success) {
+                militaryEquipment = data.equipment;
+            } else {
+                console.error('Failed to load military equipment:', data.error);
+            }
+        } catch (e) {
+            console.error('Ошибка загрузки военного снаряжения:', e);
         }
     }
 
@@ -97,7 +125,6 @@ const economicModule = (function() {
             
             if (data.success) {
                 balanceData = data;
-                console.log('Balance data loaded:', balanceData);
             } else {
                 console.error('Ошибка загрузки баланса:', data.message);
             }
@@ -399,6 +426,40 @@ const economicModule = (function() {
                 </div>
             </div>
 
+            <!-- Военный склад -->
+            <div class="economy-section military-warehouse-section">
+                <div class="section-header">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Военный склад</h3>
+                </div>
+                <div class="resources-list">
+        `;
+
+        // Отображаем военное снаряжение
+        if (availableMilitaryEquipment && typeof availableMilitaryEquipment === 'object' && Object.keys(availableMilitaryEquipment).length > 0) {
+            for (const [code, info] of Object.entries(availableMilitaryEquipment)) {
+                const amount = militaryEquipment[code] || 0;
+                html += `
+                    <div class="resource-item military-item">
+                        <div class="resource-icon">
+                            <i class="fas ${info.icon}"></i>
+                        </div>
+                        <div class="resource-info">
+                            <div class="resource-name">${info.name}</div>
+                            <div class="resource-code">${code}</div>
+                        </div>
+                        <div class="resource-amount">${amount.toLocaleString('ru-RU')}</div>
+                    </div>
+                `;
+            }
+        } else {
+            html += '<p style="color: var(--text-tertiary); text-align: center; padding: 20px;">Нет доступного снаряжения</p>';
+        }
+
+        html += `
+                </div>
+            </div>
+
             <div class="economy-footer">
                 <button class="btn-refresh" onclick="economicModule.refresh()">
                     <i class="fas fa-sync-alt"></i> Обновить данные
@@ -411,6 +472,7 @@ const economicModule = (function() {
 
     async function refresh() {
         await loadCountryResources();
+        await loadMilitaryEquipment();
         await loadBalanceData();
         await loadTaxSettings();
         await loadIncomeSettings();
@@ -434,6 +496,7 @@ const economicModule = (function() {
         localStorage.setItem('econViewingCountryName', selectedCountryName);
         
         // Перезагружаем данные
+        await loadMilitaryEquipment();
         await loadCountryResources();
         await loadBalanceData();
         await loadTaxSettings();
