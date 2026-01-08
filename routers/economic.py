@@ -892,10 +892,13 @@ async def get_balance_forecast(country_id: str, request: Request):
             }
         
         # Расчет расходов на содержание зданий
+        # Импортируем BUILDING_TYPES из provinces.py
+        sys.path.append('..')
+        from routers.provinces import BUILDING_TYPES
+        
         cursor.execute('''
-            SELECT bt.maintenance_cost
+            SELECT b.building_type_name
             FROM buildings b
-            JOIN building_types bt ON b.building_type_id = bt.id
             JOIN provinces p ON b.province_id = p.id
             WHERE p.country_id = ?
         ''', (country_id,))
@@ -903,8 +906,14 @@ async def get_balance_forecast(country_id: str, request: Request):
         buildings_maintenance = 0.0
         buildings_count = 0
         for row in cursor.fetchall():
+            building_name = row['building_type_name']
+            
+            # Получаем данные постройки из константы
+            if building_name not in BUILDING_TYPES:
+                continue  # Пропускаем удаленные типы построек
+            
             # maintenance_cost хранится в золоте, нужно конвертировать в валюту страны
-            maintenance_in_gold = row['maintenance_cost']
+            maintenance_in_gold = BUILDING_TYPES[building_name]['maintenance_cost']
             
             # Получаем курс основной валюты
             try:

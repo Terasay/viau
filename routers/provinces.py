@@ -14,15 +14,13 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
-# ЕДИНСТВЕННЫЙ ИСТОЧНИК ДАННЫХ О ПОСТРОЙКАХ
 BUILDING_TYPES = {
-    # ОБРАЗОВАТЕЛЬНЫЕ ПОСТРОЙКИ
     'Обсерватории': {
         'description': 'На вершине башни мерцают линзы и латунные круги: звездочёты отмечают ходы светил, вычисляют затмения и сверяют календарь по небесам.',
         'base_cost': 3000,
         'maintenance_cost': 300,
         'building_category': 'educational',
-        'required_tech_ids': ['latin_schools'],  # Список требуемых технологий
+        'required_tech_ids': ['latin_schools'],
         'effects': [('science_growth', 0.10)]
     },
     'Университет': {
@@ -84,6 +82,7 @@ BUILDING_TYPES = {
         'effects': [('production_ammunition', 500)]
     },
     
+
     # ВОЕННЫЕ ПОСТРОЙКИ - ТЕХНИКА
     'Завод артиллерии': {
         'description': 'Производство пушек и артиллерийских орудий.',
@@ -98,7 +97,7 @@ BUILDING_TYPES = {
         'base_cost': 25000,
         'maintenance_cost': 2500,
         'building_category': 'military_vehicles',
-        'required_tech_ids': [],  # Пустой список = нет требований
+        'required_tech_ids': [],
         'effects': [('production_tanks', 5)]
     },
     'Авиационный завод': {
@@ -118,6 +117,7 @@ BUILDING_TYPES = {
         'effects': [('production_vehicles', 20)]
     },
     
+
     # ВОЕННЫЕ ПОСТРОЙКИ - ФЛОТ
     'Верфь парусных кораблей': {
         'description': 'Строительство парусных военных судов.',
@@ -166,7 +166,6 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
     
-    # Таблица провинций
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS provinces (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -179,7 +178,6 @@ def init_db():
         )
     ''')
     
-    # Таблица построек (хранит только фактически построенные здания)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS buildings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -191,13 +189,11 @@ def init_db():
         )
     ''')
     
-    # Миграция: переименовываем колонку building_type_id в building_type_name
     cursor.execute("PRAGMA table_info(buildings)")
     columns = [row[1] for row in cursor.fetchall()]
     
     if 'building_type_id' in columns and 'building_type_name' not in columns:
-        print('🔄 Миграция построек на новую систему...')
-        # Создаем новую таблицу
+        print('Миграция построек на новую систему...')
         cursor.execute('''
             CREATE TABLE buildings_new (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -209,7 +205,6 @@ def init_db():
             )
         ''')
         
-        # Копируем данные со сопоставлением ID -> имя
         cursor.execute('''
             INSERT INTO buildings_new (id, province_id, building_type_name, level, built_at)
             SELECT b.id, b.province_id, bt.name, b.level, b.built_at
@@ -218,7 +213,6 @@ def init_db():
             WHERE bt.name IS NOT NULL
         ''')
         
-        # Удаляем старую таблицу и переименовываем новую
         cursor.execute('DROP TABLE buildings')
         cursor.execute('ALTER TABLE buildings_new RENAME TO buildings')
         print('✓ Построки мигрированы на систему без БД типов')
@@ -226,7 +220,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Инициализируем таблицы при импорте модуля
 init_db()
 
 def get_currency_rate(currency_code):
@@ -240,13 +233,12 @@ def get_currency_rate(currency_code):
                 return data['currencies'][currency_code]['rate']
     except Exception as e:
         print(f'Ошибка получения курса валюты: {e}')
-    return 1  # Дефолтный курс
+    return 1
 
 def convert_gold_to_currency(gold_amount, currency_code):
     """Конвертировать золото в валюту и округлить до десятков вверх"""
     currency_rate = get_currency_rate(currency_code)
     price = gold_amount * currency_rate
-    # Округление до десятков вверх
     return math.ceil(price / 10) * 10
 
 async def get_current_user(request: Request):
@@ -266,7 +258,6 @@ async def get_provinces(country_id: str, request: Request):
     cursor = conn.cursor()
     
     try:
-        # Проверяем доступ к стране
         cursor.execute('SELECT player_id FROM countries WHERE id = ?', (country_id,))
         country = cursor.fetchone()
         
@@ -277,7 +268,6 @@ async def get_provinces(country_id: str, request: Request):
             if country['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Нет доступа к этой стране'}, status_code=403)
         
-        # Получаем провинции
         cursor.execute('''
             SELECT id, name, city_name, square, created_at
             FROM provinces
@@ -325,12 +315,10 @@ async def create_province(request: Request):
     cursor = conn.cursor()
     
     try:
-        # Проверяем существование страны
         cursor.execute('SELECT id FROM countries WHERE id = ?', (country_id,))
         if not cursor.fetchone():
             return JSONResponse({'success': False, 'error': 'Страна не найдена'}, status_code=404)
         
-        # Создаем провинцию
         created_at = datetime.now().isoformat()
         cursor.execute('''
             INSERT INTO provinces (country_id, name, city_name, square, created_at)
@@ -371,12 +359,10 @@ async def update_province(province_id: int, request: Request):
     cursor = conn.cursor()
     
     try:
-        # Проверяем существование провинции
         cursor.execute('SELECT id FROM provinces WHERE id = ?', (province_id,))
         if not cursor.fetchone():
             return JSONResponse({'success': False, 'error': 'Провинция не найдена'}, status_code=404)
         
-        # Обновляем провинцию
         cursor.execute('''
             UPDATE provinces
             SET name = ?, city_name = ?, square = ?
@@ -407,12 +393,10 @@ async def delete_province(province_id: int, request: Request):
     cursor = conn.cursor()
     
     try:
-        # Проверяем существование провинции
         cursor.execute('SELECT id FROM provinces WHERE id = ?', (province_id,))
         if not cursor.fetchone():
             return JSONResponse({'success': False, 'error': 'Провинция не найдена'}, status_code=404)
         
-        # Удаляем провинцию (постройки удалятся автоматически через CASCADE)
         cursor.execute('DELETE FROM provinces WHERE id = ?', (province_id,))
         
         conn.commit()
@@ -439,7 +423,6 @@ async def get_province_buildings(province_id: int, request: Request):
     cursor = conn.cursor()
     
     try:
-        # Проверяем доступ к провинции
         cursor.execute('''
             SELECT p.id, c.player_id
             FROM provinces p
@@ -455,7 +438,6 @@ async def get_province_buildings(province_id: int, request: Request):
             if province['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Нет доступа к этой провинции'}, status_code=403)
         
-        # Получаем постройки из БД (только ID и имя типа)
         cursor.execute('''
             SELECT id, building_type_name, level, built_at
             FROM buildings
@@ -467,13 +449,11 @@ async def get_province_buildings(province_id: int, request: Request):
         for row in cursor.fetchall():
             building_name = row['building_type_name']
             
-            # Берем данные из константы
             if building_name not in BUILDING_TYPES:
-                continue  # Пропускаем удаленные типы построек
+                continue
             
             building_data = BUILDING_TYPES[building_name]
             
-            # Формируем массив эффектов
             effects = []
             for effect_type, effect_value in building_data['effects']:
                 effects.append({
@@ -509,14 +489,12 @@ async def get_building_types(request: Request):
     if not user:
         return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
     
-    # Получаем country_id из query параметра (опционально)
     country_id = request.query_params.get('country_id')
     
     conn = get_db()
     cursor = conn.cursor()
     
     try:
-        # Получаем список изученных технологий для страны (если указана)
         researched_techs = set()
         if country_id:
             cursor.execute('''
@@ -525,21 +503,15 @@ async def get_building_types(request: Request):
             ''', (country_id,))
             researched_techs = {row['tech_id'] for row in cursor.fetchall()}
         
-        # Формируем список построек из константы
         building_types = []
         for building_name, building_data in BUILDING_TYPES.items():
-            # Проверяем доступность постройки по технологиям
             required_techs = building_data['required_tech_ids']
             
-            # Если постройка требует технологии
             if required_techs:
-                # Она доступна только если передан country_id И ВСЕ технологии изучены
                 is_available = country_id and all(tech in researched_techs for tech in required_techs)
             else:
-                # Постройки без требований всегда доступны
                 is_available = True
             
-            # Формируем массив эффектов
             effects = []
             for effect_type, effect_value in building_data['effects']:
                 effects.append({
@@ -553,12 +525,11 @@ async def get_building_types(request: Request):
                 'base_cost': building_data['base_cost'],
                 'maintenance_cost': building_data['maintenance_cost'],
                 'building_category': building_data['building_category'],
-                'required_tech_ids': building_data['required_tech_ids'],  # Список технологий
+                'required_tech_ids': building_data['required_tech_ids'],
                 'is_available': is_available,
                 'effects': effects
             })
         
-        # Сортируем по категории и цене
         building_types.sort(key=lambda x: (x['building_category'], x['base_cost']))
         
         return JSONResponse({
@@ -594,7 +565,6 @@ async def build_building(province_id: int, request: Request):
     cursor = conn.cursor()
     
     try:
-        # Проверяем доступ к провинции и получаем данные страны
         cursor.execute('''
             SELECT p.id, p.country_id, c.player_id, c.main_currency
             FROM provinces p
@@ -610,7 +580,6 @@ async def build_building(province_id: int, request: Request):
             if province['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Нет доступа к этой провинции'}, status_code=403)
         
-        # Получаем баланс страны из таблицы country_currencies
         currency_code = province['main_currency'] or 'ESC'
         cursor.execute('''
             SELECT amount FROM country_currencies 
@@ -620,24 +589,20 @@ async def build_building(province_id: int, request: Request):
         balance_row = cursor.fetchone()
         current_balance = balance_row['amount'] if balance_row else 0
         
-        # Конвертируем цену из золота в валюту страны
         actual_cost = convert_gold_to_currency(building_data['base_cost'], currency_code)
         
-        # Проверяем баланс страны
         if current_balance < actual_cost:
             return JSONResponse({
                 'success': False, 
                 'error': f'Недостаточно средств. Требуется: {actual_cost}, доступно: {current_balance}'
             }, status_code=400)
         
-        # Списываем деньги из country_currencies
         cursor.execute('''
             UPDATE country_currencies
             SET amount = amount - ?
             WHERE country_id = ? AND currency_code = ?
         ''', (actual_cost, province['country_id'], currency_code))
         
-        # Создаем здание мгновенно
         built_at = datetime.now().isoformat()
         cursor.execute('''
             INSERT INTO buildings (province_id, building_type_name, level, built_at)
@@ -668,7 +633,6 @@ async def demolish_building(building_id: int, request: Request):
     cursor = conn.cursor()
     
     try:
-        # Проверяем доступ к зданию
         cursor.execute('''
             SELECT b.id, c.player_id
             FROM buildings b
@@ -685,7 +649,6 @@ async def demolish_building(building_id: int, request: Request):
             if building['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Нет доступа к этому зданию'}, status_code=403)
         
-        # Удаляем здание
         cursor.execute('DELETE FROM buildings WHERE id = ?', (building_id,))
         
         conn.commit()
@@ -700,6 +663,3 @@ async def demolish_building(building_id: int, request: Request):
         return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
     finally:
         conn.close()
-
-# Эндпоинты для управления каталогом построек удалены
-# Постройки теперь фиксированы и задаются в init_db()
