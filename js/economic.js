@@ -534,6 +534,11 @@ const economicModule = (function() {
 
         html += `
                 </div>
+                ${isAdmin ? `
+                    <button class="btn-save-military" onclick="economicModule.saveMilitaryEquipment()">
+                        <i class="fas fa-save"></i> Сохранить военный склад
+                    </button>
+                ` : ''}
             </div>
 
             <div class="economy-footer">
@@ -685,6 +690,7 @@ const economicModule = (function() {
         saveSettings,
         updateTaxDisplay,
         toggleCategory,
+        saveMilitaryEquipment,
         saveTaxSettings: saveSettings  // алиас для обратной совместимости
     };
 })();

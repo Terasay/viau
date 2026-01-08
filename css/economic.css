@@ -529,6 +529,93 @@ body.dark-mode .resource-item:hover {
     border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
+.military-item-input {
+    width: 120px;
+    padding: 10px 16px;
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #ef4444;
+    font-family: 'Fira Mono', 'Courier New', monospace;
+    background: rgba(239, 68, 68, 0.1);
+    border: 2px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.military-item-input:hover {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.military-item-input:focus {
+    outline: none;
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.item-hidden {
+    opacity: 0.5;
+    background: linear-gradient(135deg, rgba(107, 114, 128, 0.05) 0%, rgba(75, 85, 99, 0.05) 100%);
+    border-color: rgba(107, 114, 128, 0.2);
+}
+
+.item-hidden .military-item-icon {
+    background: linear-gradient(135deg, rgba(107, 114, 128, 0.15) 0%, rgba(75, 85, 99, 0.2) 100%);
+    color: var(--text-tertiary);
+}
+
+.item-hidden-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background: rgba(107, 114, 128, 0.15);
+    border: 1px solid rgba(107, 114, 128, 0.3);
+    border-radius: var(--radius);
+    font-size: 0.7em;
+    color: var(--text-tertiary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.item-hidden-badge i {
+    margin-right: 4px;
+}
+
+.btn-save-military {
+    width: 100%;
+    padding: 16px 32px;
+    margin-top: 20px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 1.1em;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-save-military:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.btn-save-military:active {
+    transform: translateY(0);
+}
+
+.btn-save-military i {
+    font-size: 1.2em;
+}
+
 /* Баланс и прогноз */
 .balance-section {
     display: grid;
