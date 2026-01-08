@@ -72,61 +72,115 @@ def init_db():
         )
     ''')
     
+    # Таблица эффектов построек (множественные эффекты для одной постройки)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS building_effects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            building_type_id INTEGER NOT NULL,
+            effect_type TEXT NOT NULL,
+            effect_value REAL NOT NULL,
+            FOREIGN KEY (building_type_id) REFERENCES building_types (id) ON DELETE CASCADE
+        )
+    ''')
+    
     # Добавляем базовые типы построек, если их нет (цены указаны в золоте)
     cursor.execute('SELECT COUNT(*) as count FROM building_types')
     existing_count = cursor.fetchone()['count']
     
     # Если таблица пустая, добавляем постройки
     if existing_count == 0:
+        # Базовые типы построек БЕЗ эффектов (эффекты будут в отдельной таблице)
         default_buildings = [
-            # ОБРАЗОВАТЕЛЬНЫЕ ПОСТРОЙКИ (влияют на прирост образования и науки)
-            # Цены в золоте (gold units)
-            ('Школа', 'Начальное образование для населения. Увеличивает прирост образования.', 
-             3000, 300, 'educational', 'education_growth', 0.05, None),
+            # (name, description, base_cost, maintenance_cost, building_category, required_tech_id)
+            ('Обсерватории', 'На вершине башни мерцают линзы и латунные круги: звездочёты отмечают ходы светил, вычисляют затмения и сверяют календарь по небесам.', 
+             3000, 300, 'educational', None),
             ('Университет', 'Высшее учебное заведение. Значительно увеличивает прирост образования и науки.', 
-             8000, 800, 'educational', 'education_growth', 0.15, None),
-            ('Академия наук', 'Центр научных исследований. Максимально увеличивает прирост науки.', 
-             15000, 1500, 'educational', 'science_growth', 0.20, None),
+             8000, 800, 'educational', None),
+            ('Академия наук', 'Центр научных исследований. Максимально увеличивает прирост науки и образования.', 
+             15000, 1500, 'educational', None),
             ('Библиотека', 'Хранилище знаний. Увеличивает прирост образования.', 
-             2000, 200, 'educational', 'education_growth', 0.03, None),
+             2000, 200, 'educational', None),
             
             # ПРОИЗВОДСТВЕННЫЕ ПОСТРОЙКИ - ПЕХОТНОЕ СНАРЯЖЕНИЕ
             ('Оружейная мастерская', 'Производит холодное оружие и простое огнестрельное оружие.', 
-             5000, 500, 'military_infantry', 'production_rifles', 50, 'arquebus'),
+             5000, 500, 'military_infantry', 'arquebus'),
             ('Завод винтовок', 'Массовое производство современных винтовок для армии.', 
-             12000, 1200, 'military_infantry', 'production_rifles', 200, 'mass_rifle_production'),
+             12000, 1200, 'military_infantry', 'mass_rifle_production'),
             ('Пороховой завод', 'Производство пороха и боеприпасов для пехоты.', 
-             8000, 800, 'military_infantry', 'production_ammunition', 500, 'early_muskets'),
+             8000, 800, 'military_infantry', 'early_muskets'),
             
             # ПРОИЗВОДСТВЕННЫЕ ПОСТРОЙКИ - ТЕХНИКА
             ('Завод артиллерии', 'Производство пушек и артиллерийских орудий.', 
-             15000, 1500, 'military_vehicles', 'production_artillery', 10, 'field_artillery_1'),
+             15000, 1500, 'military_vehicles', 'field_artillery_1'),
             ('Танковый завод', 'Производство бронетехники и танков.', 
-             25000, 2500, 'military_vehicles', 'production_tanks', 5, None),
+             25000, 2500, 'military_vehicles', None),
             ('Авиационный завод', 'Производство самолётов для военных нужд.', 
-             30000, 3000, 'military_vehicles', 'production_aircraft', 3, None),
+             30000, 3000, 'military_vehicles', None),
             ('Автомобильный завод', 'Производство военных грузовиков и транспорта.', 
-             18000, 1800, 'military_vehicles', 'production_vehicles', 20, None),
+             18000, 1800, 'military_vehicles', None),
             
             # ПРОИЗВОДСТВЕННЫЕ ПОСТРОЙКИ - ФЛОТ
             ('Верфь парусных кораблей', 'Строительство парусных военных судов.', 
-             20000, 2000, 'military_naval', 'production_sailing_ships', 2, 'galleons_1'),
+             20000, 2000, 'military_naval', 'galleons_1'),
             ('Паровая верфь', 'Строительство паровых военных кораблей.', 
-             35000, 3500, 'military_naval', 'production_steam_ships', 1, 'steam_ships_of_line'),
+             35000, 3500, 'military_naval', 'steam_ships_of_line'),
             ('Верфь эсминцев', 'Строительство современных эсминцев и фрегатов.', 
-             50000, 5000, 'military_naval', 'production_destroyers', 1, 'cruisers_1'),
+             50000, 5000, 'military_naval', 'cruisers_1'),
             ('Верфь линкоров', 'Строительство больших линейных кораблей.', 
-             80000, 8000, 'military_naval', 'production_battleships', 1, 'pre_dreadnoughts'),
+             80000, 8000, 'military_naval', 'pre_dreadnoughts'),
             ('Верфь подводных лодок', 'Строительство подводных лодок.', 
-             40000, 4000, 'military_naval', 'production_submarines', 1, 'torpedoes'),
+             40000, 4000, 'military_naval', 'torpedoes'),
         ]
         
         cursor.executemany('''
             INSERT INTO building_types 
-            (name, description, base_cost, maintenance_cost, building_category, effect_type, effect_value, required_tech_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (name, description, base_cost, maintenance_cost, building_category, required_tech_id)
+            VALUES (?, ?, ?, ?, ?, ?)
         ''', default_buildings)
         print(f'✓ Добавлено {len(default_buildings)} типов построек')
+        
+        # Теперь добавляем эффекты для каждой постройки
+        # Получаем ID построек
+        cursor.execute('SELECT id, name FROM building_types')
+        building_ids = {row['name']: row['id'] for row in cursor.fetchall()}
+        
+        # Эффекты для каждой постройки (building_type_id, effect_type, effect_value)
+        building_effects = [
+            # Обсерватории - науку и образование
+            (building_ids['Обсерватории'], 'science_growth', 0.04),
+            (building_ids['Обсерватории'], 'education_growth', 0.03),
+            
+            # Университет - больше образования и немного науки
+            (building_ids['Университет'], 'education_growth', 0.15),
+            (building_ids['Университет'], 'science_growth', 0.08),
+            
+            # Академия наук - максимум науки и образования
+            (building_ids['Академия наук'], 'science_growth', 0.20),
+            (building_ids['Академия наук'], 'education_growth', 0.10),
+            
+            # Библиотека - только образование
+            (building_ids['Библиотека'], 'education_growth', 0.03),
+            
+            # Военные постройки (по одному эффекту)
+            (building_ids['Оружейная мастерская'], 'production_rifles', 50),
+            (building_ids['Завод винтовок'], 'production_rifles', 200),
+            (building_ids['Пороховой завод'], 'production_ammunition', 500),
+            (building_ids['Завод артиллерии'], 'production_artillery', 10),
+            (building_ids['Танковый завод'], 'production_tanks', 5),
+            (building_ids['Авиационный завод'], 'production_aircraft', 3),
+            (building_ids['Автомобильный завод'], 'production_vehicles', 20),
+            (building_ids['Верфь парусных кораблей'], 'production_sailing_ships', 2),
+            (building_ids['Паровая верфь'], 'production_steam_ships', 1),
+            (building_ids['Верфь эсминцев'], 'production_destroyers', 1),
+            (building_ids['Верфь линкоров'], 'production_battleships', 1),
+            (building_ids['Верфь подводных лодок'], 'production_submarines', 1),
+        ]
+        
+        cursor.executemany('''
+            INSERT INTO building_effects (building_type_id, effect_type, effect_value)
+            VALUES (?, ?, ?)
+        ''', building_effects)
+        print(f'✓ Добавлено {len(building_effects)} эффектов для построек')
     else:
         # Если в таблице есть старые постройки, обновляем их required_tech_id
         tech_mappings = {
@@ -394,12 +448,11 @@ async def get_province_buildings(province_id: int, request: Request):
                 b.id,
                 b.level,
                 b.built_at,
+                b.building_type_id,
                 bt.name,
                 bt.description,
                 bt.base_cost,
-                bt.maintenance_cost,
-                bt.effect_type,
-                bt.effect_value
+                bt.maintenance_cost
             FROM buildings b
             JOIN building_types bt ON b.building_type_id = bt.id
             WHERE b.province_id = ?
@@ -408,6 +461,20 @@ async def get_province_buildings(province_id: int, request: Request):
         
         buildings = []
         for row in cursor.fetchall():
+            # Получаем все эффекты для этой постройки
+            cursor.execute('''
+                SELECT effect_type, effect_value
+                FROM building_effects
+                WHERE building_type_id = ?
+            ''', (row['building_type_id'],))
+            
+            effects = []
+            for effect_row in cursor.fetchall():
+                effects.append({
+                    'effect_type': effect_row['effect_type'],
+                    'effect_value': effect_row['effect_value']
+                })
+            
             buildings.append({
                 'id': row['id'],
                 'name': row['name'],
@@ -415,9 +482,8 @@ async def get_province_buildings(province_id: int, request: Request):
                 'level': row['level'],
                 'base_cost': row['base_cost'],
                 'maintenance_cost': row['maintenance_cost'],
-                'effect_type': row['effect_type'],
-                'effect_value': row['effect_value'],
-                'built_at': row['built_at']
+                'built_at': row['built_at'],
+                'effects': effects  # Массив эффектов
             })
         
         return JSONResponse({
@@ -457,7 +523,7 @@ async def get_building_types(request: Request):
         cursor.execute('''
             SELECT 
                 id, name, description, base_cost, maintenance_cost, 
-                building_category, effect_type, effect_value, required_tech_id
+                building_category, required_tech_id
             FROM building_types
             ORDER BY building_category, base_cost
         ''')
@@ -475,6 +541,20 @@ async def get_building_types(request: Request):
                 # Постройки без требований всегда доступны
                 is_available = True
             
+            # Получаем все эффекты для этой постройки
+            cursor.execute('''
+                SELECT effect_type, effect_value
+                FROM building_effects
+                WHERE building_type_id = ?
+            ''', (row['id'],))
+            
+            effects = []
+            for effect_row in cursor.fetchall():
+                effects.append({
+                    'effect_type': effect_row['effect_type'],
+                    'effect_value': effect_row['effect_value']
+                })
+            
             building_types.append({
                 'id': row['id'],
                 'name': row['name'],
@@ -482,10 +562,9 @@ async def get_building_types(request: Request):
                 'base_cost': row['base_cost'],
                 'maintenance_cost': row['maintenance_cost'],
                 'building_category': row['building_category'],
-                'effect_type': row['effect_type'],
-                'effect_value': row['effect_value'],
                 'required_tech_id': row['required_tech_id'],
-                'is_available': is_available
+                'is_available': is_available,
+                'effects': effects  # Массив эффектов
             })
         
         return JSONResponse({

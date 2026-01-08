@@ -325,8 +325,23 @@ let provincesModule = (function() {
             html += '<div class="buildings-list">';
             
             buildings.forEach(building => {
-                const effectText = getEffectText(building.effect_type, building.effect_value);
                 const displayMaintenance = formatPrice(building.maintenance_cost);
+                
+                // Формируем список всех эффектов
+                let effectsHtml = '';
+                if (building.effects && building.effects.length > 0) {
+                    building.effects.forEach(effect => {
+                        const effectText = getEffectText(effect.effect_type, effect.effect_value);
+                        if (effectText) {
+                            effectsHtml += `
+                                <div class="stat-item">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>${effectText}</span>
+                                </div>
+                            `;
+                        }
+                    });
+                }
                 
                 html += `
                     <div class="building-item">
@@ -344,16 +359,11 @@ let provincesModule = (function() {
                         </div>
                         <p class="building-description">${building.description}</p>
                         <div class="building-stats">
+                            ${effectsHtml}
                             <div class="stat-item">
                                 <i class="fas fa-coins"></i>
                                 <span>Содержание: ${displayMaintenance}/ход</span>
                             </div>
-                            ${effectText ? `
-                                <div class="stat-item">
-                                    <i class="fas fa-chart-line"></i>
-                                    <span>${effectText}</span>
-                                </div>
-                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -429,10 +439,25 @@ let provincesModule = (function() {
             `;
             
             category.buildings.forEach(type => {
-                const effectText = getEffectText(type.effect_type, type.effect_value);
                 const icon = getCategoryIcon(type.building_category);
                 const displayCost = formatPrice(type.base_cost);
                 const displayMaintenance = formatPrice(type.maintenance_cost);
+                
+                // Формируем список всех эффектов
+                let effectsHtml = '';
+                if (type.effects && type.effects.length > 0) {
+                    type.effects.forEach(effect => {
+                        const effectText = getEffectText(effect.effect_type, effect.effect_value);
+                        if (effectText) {
+                            effectsHtml += `
+                                <div class="stat-row">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>${effectText}</span>
+                                </div>
+                            `;
+                        }
+                    });
+                }
                 
                 html += `
                     <div class="building-type-card">
@@ -447,12 +472,7 @@ let provincesModule = (function() {
                                 <i class="fas fa-wrench"></i>
                                 <span>Содержание: ${displayMaintenance}/ход</span>
                             </div>
-                            ${effectText ? `
-                                <div class="stat-row">
-                                    <i class="fas fa-chart-line"></i>
-                                    <span>${effectText}</span>
-                                </div>
-                            ` : ''}
+                            ${effectsHtml}
                         </div>
                         <button class="btn-primary btn-full" onclick="provincesModule.buildBuilding(${provinceId}, ${type.id})">
                             Построить
