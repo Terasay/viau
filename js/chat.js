@@ -1295,13 +1295,20 @@ const contextMenu = document.createElement('div');
 contextMenu.className = 'context-menu';
 document.body.appendChild(contextMenu);
 
+let currentContextMessageId = null;
+
 function showContextMenu(e, messageElement, messageData) {
     e.preventDefault();
     
-    if (contextMenu.style.display === 'block') {
+    if (contextMenu.style.display === 'block' && currentContextMessageId === messageData.id) {
         contextMenu.style.display = 'none';
+        currentContextMessageId = null;
         return;
     }
+    
+    currentContextMessageId = messageData.id;
+    
+    const canDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
     
     contextMenu.innerHTML = `
         <div class="context-menu-item" data-action="copy">
@@ -1312,11 +1319,13 @@ function showContextMenu(e, messageElement, messageData) {
             <i class="fas fa-hashtag"></i>
             <span>Копировать ID</span>
         </div>
+        ${canDelete ? `
         <div class="context-menu-divider"></div>
         <div class="context-menu-item danger" data-action="delete">
             <i class="fas fa-trash"></i>
             <span>Удалить сообщение</span>
         </div>
+        ` : ''}
     `;
     
     contextMenu.style.display = 'block';
@@ -1364,6 +1373,7 @@ function showContextMenu(e, messageElement, messageData) {
 
 document.addEventListener('click', () => {
     contextMenu.style.display = 'none';
+    currentContextMessageId = null;
 });
 
 const reactionPicker = document.createElement('div');
