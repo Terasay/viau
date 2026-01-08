@@ -101,7 +101,6 @@ def init_db():
             ('Библиотека', 'Хранилище знаний. Увеличивает прирост образования.', 
              2000, 200, 'educational', None),
             
-            # ПРОИЗВОДСТВЕННЫЕ ПОСТРОЙКИ - ПЕХОТНОЕ СНАРЯЖЕНИЕ
             ('Оружейная мастерская', 'Производит холодное оружие и простое огнестрельное оружие.', 
              5000, 500, 'military_infantry', 'arquebus'),
             ('Завод винтовок', 'Массовое производство современных винтовок для армии.', 
@@ -109,7 +108,6 @@ def init_db():
             ('Пороховой завод', 'Производство пороха и боеприпасов для пехоты.', 
              8000, 800, 'military_infantry', 'early_muskets'),
             
-            # ПРОИЗВОДСТВЕННЫЕ ПОСТРОЙКИ - ТЕХНИКА
             ('Завод артиллерии', 'Производство пушек и артиллерийских орудий.', 
              15000, 1500, 'military_vehicles', 'field_artillery_1'),
             ('Танковый завод', 'Производство бронетехники и танков.', 
@@ -139,29 +137,17 @@ def init_db():
         ''', default_buildings)
         print(f'✓ Добавлено {len(default_buildings)} типов построек')
         
-        # Теперь добавляем эффекты для каждой постройки
-        # Получаем ID построек
         cursor.execute('SELECT id, name FROM building_types')
         building_ids = {row['name']: row['id'] for row in cursor.fetchall()}
         
-        # Эффекты для каждой постройки (building_type_id, effect_type, effect_value)
         building_effects = [
-            # Обсерватории - науку и образование
             (building_ids['Обсерватории'], 'science_growth', 0.04),
             (building_ids['Обсерватории'], 'education_growth', 0.03),
-            
-            # Университет - больше образования и немного науки
             (building_ids['Университет'], 'education_growth', 0.15),
             (building_ids['Университет'], 'science_growth', 0.08),
-            
-            # Академия наук - максимум науки и образования
             (building_ids['Академия наук'], 'science_growth', 0.20),
             (building_ids['Академия наук'], 'education_growth', 0.10),
-            
-            # Библиотека - только образование
             (building_ids['Библиотека'], 'education_growth', 0.03),
-            
-            # Военные постройки (по одному эффекту)
             (building_ids['Оружейная мастерская'], 'production_rifles', 50),
             (building_ids['Завод винтовок'], 'production_rifles', 200),
             (building_ids['Пороховой завод'], 'production_ammunition', 500),
@@ -182,6 +168,69 @@ def init_db():
         ''', building_effects)
         print(f'✓ Добавлено {len(building_effects)} эффектов для построек')
     else:
+        # МИГРАЦИЯ: Переименовываем старые постройки
+        rename_mappings = {
+            'Школа': 'Обсерватории',
+            'Школы': 'Обсерватории'
+        }
+        
+        for old_name, new_name in rename_mappings.items():
+            cursor.execute(
+                'UPDATE building_types SET name = ?, description = ? WHERE name = ?',
+                (new_name, 
+                 'На вершине башни мерцают линзы и латунные круги: звездочёты отмечают ходы светил, вычисляют затмения и сверяют календарь по небесам.',
+                 old_name)
+            )
+            if cursor.rowcount > 0:
+                print(f'✓ Переименована постройка "{old_name}" -> "{new_name}"')
+        
+        # МИГРАЦИЯ: Обновляем эффекты для существующих построек
+        # Сначала проверяем, есть ли эффекты в building_effects
+        cursor.execute('SELECT COUNT(*) as count FROM building_effects')
+        effects_count = cursor.fetchone()['count']
+        
+        if effects_count == 0:
+            # Если эффектов нет - мигрируем из старой структуры
+            cursor.execute('SELECT id, name, effect_type, effect_value FROM building_types WHERE effect_type IS NOT NULL')
+            old_effects = cursor.fetchall()
+            
+            migrated_effects = []
+            for row in old_effects:
+                migrated_effects.append((row['id'], row['effect_type'], row['effect_value']))
+            
+            if migrated_effects:
+                cursor.executemany('''
+                    INSERT INTO building_effects (building_type_id, effect_type, effect_value)
+                    VALUES (?, ?, ?)
+                ''', migrated_effects)
+                print(f'✓ Мигрировано {len(migrated_effects)} эффектов из старой структуры')
+            
+            # Добавляем дополнительные эффекты для образовательных построек
+            cursor.execute('SELECT id, name FROM building_types')
+            building_ids = {row['name']: row['id'] for row in cursor.fetchall()}
+            
+            additional_effects = []
+            if 'Обсерватории' in building_ids:
+                additional_effects.extend([
+                    (building_ids['Обсерватории'], 'science_growth', 0.04),
+                    (building_ids['Обсерватории'], 'education_growth', 0.03),
+                ])
+            if 'Университет' in building_ids:
+                additional_effects.extend([
+                    (building_ids['Университет'], 'science_growth', 0.08),
+                ])
+            if 'Академия наук' in building_ids:
+                additional_effects.extend([
+                    (building_ids['Академия наук'], 'education_growth', 0.10),
+                ])
+            
+            if additional_effects:
+                cursor.executemany('''
+                    INSERT OR IGNORE INTO building_effects (building_type_id, effect_type, effect_value)
+                    VALUES (?, ?, ?)
+                ''', additional_effects)
+                print(f'✓ Добавлено {len(additional_effects)} дополнительных эффектов')
+        
         # Если в таблице есть старые постройки, обновляем их required_tech_id
         tech_mappings = {
             'Оружейная мастерская': 'arquebus',
