@@ -1353,8 +1353,7 @@ async def get_buildings_bonuses(country_id: str, request: Request):
     if not user:
         return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
     
-    conn = sqlite3.connect('users.db')
-    conn.row_factory = sqlite3.Row
+    conn = get_db()
     cursor = conn.cursor()
     
     try:
