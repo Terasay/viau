@@ -6,6 +6,9 @@ import sqlite3
 import sys
 from datetime import datetime
 
+sys.path.append('..')
+from routers.provinces import BUILDING_TYPES
+
 router = APIRouter(prefix="/api/tech", tags=["technologies"])
 
 def get_db():
@@ -1371,16 +1374,12 @@ async def get_buildings_bonuses(country_id: str, request: Request):
         # Подсчитываем бонусы от зданий
         cursor.execute('''
             SELECT 
-                bt.effect_type,
-                bt.effect_value,
-                bt.name as building_name,
+                b.building_type_name,
                 COUNT(b.id) as building_count
             FROM buildings b
             JOIN provinces p ON b.province_id = p.id
-            JOIN building_types bt ON b.building_type_id = bt.id
-            WHERE p.country_id = ? 
-                AND bt.effect_type IN ('education_growth', 'science_growth')
-            GROUP BY bt.id, bt.effect_type, bt.effect_value, bt.name
+            WHERE p.country_id = ?
+            GROUP BY b.building_type_name
         ''', (country_id,))
         
         buildings_data = cursor.fetchall()
@@ -1391,28 +1390,35 @@ async def get_buildings_bonuses(country_id: str, request: Request):
         science_buildings = []
         
         for row in buildings_data:
-            effect_type = row['effect_type']
-            effect_value = row['effect_value']
-            building_name = row['building_name']
+            building_name = row['building_type_name']
             building_count = row['building_count']
-            total_bonus = effect_value * building_count
             
-            if effect_type == 'education_growth':
-                education_bonus += total_bonus
-                education_buildings.append({
-                    'name': building_name,
-                    'count': building_count,
-                    'bonus_per_building': effect_value,
-                    'total_bonus': total_bonus
-                })
-            elif effect_type == 'science_growth':
-                science_bonus += total_bonus
-                science_buildings.append({
-                    'name': building_name,
-                    'count': building_count,
-                    'bonus_per_building': effect_value,
-                    'total_bonus': total_bonus
-                })
+            # Проверяем, существует ли тип постройки
+            if building_name not in BUILDING_TYPES:
+                continue
+            
+            building_data = BUILDING_TYPES[building_name]
+            
+            # Обрабатываем эффекты постройки
+            for effect_type, effect_value in building_data['effects']:
+                total_bonus = effect_value * building_count
+                
+                if effect_type == 'education_growth':
+                    education_bonus += total_bonus
+                    education_buildings.append({
+                        'name': building_name,
+                        'count': building_count,
+                        'bonus_per_building': effect_value,
+                        'total_bonus': total_bonus
+                    })
+                elif effect_type == 'science_growth':
+                    science_bonus += total_bonus
+                    science_buildings.append({
+                        'name': building_name,
+                        'count': building_count,
+                        'bonus_per_building': effect_value,
+                        'total_bonus': total_bonus
+                    })
         
         return JSONResponse({
             'success': True,
