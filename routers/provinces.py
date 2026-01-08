@@ -14,6 +14,153 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+# ЕДИНСТВЕННЫЙ ИСТОЧНИК ДАННЫХ О ПОСТРОЙКАХ
+BUILDING_TYPES = {
+    # ОБРАЗОВАТЕЛЬНЫЕ ПОСТРОЙКИ
+    'Обсерватории': {
+        'description': 'На вершине башни мерцают линзы и латунные круги: звездочёты отмечают ходы светил, вычисляют затмения и сверяют календарь по небесам.',
+        'base_cost': 3000,
+        'maintenance_cost': 300,
+        'building_category': 'educational',
+        'required_tech_id': 'latin_schools',
+        'effects': [('science_growth', 0.10)]
+    },
+    'Университет': {
+        'description': 'Каменные аудитории и шумные диспуты под сводами: здесь учат праву, медицине и философии, а рукописи переходят из рук в руки до глубокой ночи.',
+        'base_cost': 8000,
+        'maintenance_cost': 800,
+        'building_category': 'educational',
+        'required_tech_id': 'universities_1',
+        'effects': [('education_growth', 0.20), ('science_growth', 0.08)]
+    },
+    'Королевская академия наук': {
+        'description': 'Закрытые заседания, доклады и опытные мастерские под покровительством короны: лучшие умы спорят о природе вещей и проверяют смелые теории.',
+        'base_cost': 15000,
+        'maintenance_cost': 1500,
+        'building_category': 'educational',
+        'required_tech_id': 'scientific_societies',
+        'effects': [('science_growth', 0.40)]
+    },
+    'Национальная библиотека': {
+        'description': 'Тихие залы и бесконечные стеллажи: сюда стекаются книги, карты и хроники со всего света, чтобы хранители знаний берегли их от времени и огня.',
+        'base_cost': 2000,
+        'maintenance_cost': 200,
+        'building_category': 'educational',
+        'required_tech_id': 'state_education',
+        'effects': [('education_growth', 0.10), ('science_growth', 0.20)]
+    },
+    'Высшее училище': {
+        'description': 'Практичные классы и строгие наставники: здесь готовят инженеров, писцов и врачевателей, оттачивая ремесло учёности на задачах дня.',
+        'base_cost': 2000,
+        'maintenance_cost': 200,
+        'building_category': 'educational',
+        'required_tech_id': 'gymnasiums_1',
+        'effects': [('education_growth', 0.10)]
+    },
+    
+    # ВОЕННЫЕ ПОСТРОЙКИ - ПЕХОТА
+    'Оружейная мастерская': {
+        'description': 'Производит холодное оружие и простое огнестрельное оружие.',
+        'base_cost': 5000,
+        'maintenance_cost': 500,
+        'building_category': 'military_infantry',
+        'required_tech_id': 'arquebus',
+        'effects': [('production_rifles', 50)]
+    },
+    'Завод винтовок': {
+        'description': 'Массовое производство современных винтовок для армии.',
+        'base_cost': 12000,
+        'maintenance_cost': 1200,
+        'building_category': 'military_infantry',
+        'required_tech_id': 'mass_rifle_production',
+        'effects': [('production_rifles', 200)]
+    },
+    'Пороховой завод': {
+        'description': 'Производство пороха и боеприпасов для пехоты.',
+        'base_cost': 8000,
+        'maintenance_cost': 800,
+        'building_category': 'military_infantry',
+        'required_tech_id': 'early_muskets',
+        'effects': [('production_ammunition', 500)]
+    },
+    
+    # ВОЕННЫЕ ПОСТРОЙКИ - ТЕХНИКА
+    'Завод артиллерии': {
+        'description': 'Производство пушек и артиллерийских орудий.',
+        'base_cost': 15000,
+        'maintenance_cost': 1500,
+        'building_category': 'military_vehicles',
+        'required_tech_id': 'field_artillery_1',
+        'effects': [('production_artillery', 10)]
+    },
+    'Танковый завод': {
+        'description': 'Производство бронетехники и танков.',
+        'base_cost': 25000,
+        'maintenance_cost': 2500,
+        'building_category': 'military_vehicles',
+        'required_tech_id': None,
+        'effects': [('production_tanks', 5)]
+    },
+    'Авиационный завод': {
+        'description': 'Производство самолётов для военных нужд.',
+        'base_cost': 30000,
+        'maintenance_cost': 3000,
+        'building_category': 'military_vehicles',
+        'required_tech_id': None,
+        'effects': [('production_aircraft', 3)]
+    },
+    'Автомобильный завод': {
+        'description': 'Производство военных грузовиков и транспорта.',
+        'base_cost': 18000,
+        'maintenance_cost': 1800,
+        'building_category': 'military_vehicles',
+        'required_tech_id': None,
+        'effects': [('production_vehicles', 20)]
+    },
+    
+    # ВОЕННЫЕ ПОСТРОЙКИ - ФЛОТ
+    'Верфь парусных кораблей': {
+        'description': 'Строительство парусных военных судов.',
+        'base_cost': 20000,
+        'maintenance_cost': 2000,
+        'building_category': 'military_naval',
+        'required_tech_id': 'galleons_1',
+        'effects': [('production_sailing_ships', 2)]
+    },
+    'Паровая верфь': {
+        'description': 'Строительство паровых военных кораблей.',
+        'base_cost': 35000,
+        'maintenance_cost': 3500,
+        'building_category': 'military_naval',
+        'required_tech_id': 'steam_ships_of_line',
+        'effects': [('production_steam_ships', 1)]
+    },
+    'Верфь эсминцев': {
+        'description': 'Строительство современных эсминцев и фрегатов.',
+        'base_cost': 50000,
+        'maintenance_cost': 5000,
+        'building_category': 'military_naval',
+        'required_tech_id': 'cruisers_1',
+        'effects': [('production_destroyers', 1)]
+    },
+    'Верфь линкоров': {
+        'description': 'Строительство больших линейных кораблей.',
+        'base_cost': 80000,
+        'maintenance_cost': 8000,
+        'building_category': 'military_naval',
+        'required_tech_id': 'pre_dreadnoughts',
+        'effects': [('production_battleships', 1)]
+    },
+    'Верфь подводных лодок': {
+        'description': 'Строительство подводных лодок.',
+        'base_cost': 40000,
+        'maintenance_cost': 4000,
+        'building_category': 'military_naval',
+        'required_tech_id': 'torpedoes',
+        'effects': [('production_submarines', 1)]
+    }
+}
+
 def init_db():
     """Инициализация таблиц провинций и построек"""
     conn = get_db()
@@ -32,234 +179,49 @@ def init_db():
         )
     ''')
     
-    # Таблица типов построек (цены в золоте)
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS building_types (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE,
-            description TEXT,
-            base_cost INTEGER NOT NULL DEFAULT 1000,
-            maintenance_cost INTEGER NOT NULL DEFAULT 100,
-            building_category TEXT NOT NULL DEFAULT 'educational',
-            effect_type TEXT,
-            effect_value REAL,
-            required_tech_id TEXT
-        )
-    ''')
-    
-    # Миграция: добавляем новые колонки если их нет
-    cursor.execute("PRAGMA table_info(building_types)")
-    columns = [row[1] for row in cursor.fetchall()]
-    
-    if 'building_category' not in columns:
-        cursor.execute('ALTER TABLE building_types ADD COLUMN building_category TEXT NOT NULL DEFAULT "educational"')
-        print('✓ Добавлена колонка building_category')
-    
-    if 'required_tech_id' not in columns:
-        cursor.execute('ALTER TABLE building_types ADD COLUMN required_tech_id TEXT')
-        print('✓ Добавлена колонка required_tech_id')
-    
-    # Таблица построек в провинциях
+    # Таблица построек (хранит только фактически построенные здания)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS buildings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             province_id INTEGER NOT NULL,
-            building_type_id INTEGER NOT NULL,
+            building_type_name TEXT NOT NULL,
             level INTEGER NOT NULL DEFAULT 1,
             built_at TEXT NOT NULL,
-            FOREIGN KEY (province_id) REFERENCES provinces (id) ON DELETE CASCADE,
-            FOREIGN KEY (building_type_id) REFERENCES building_types (id)
+            FOREIGN KEY (province_id) REFERENCES provinces (id) ON DELETE CASCADE
         )
     ''')
     
-    # Таблица эффектов построек (множественные эффекты для одной постройки)
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS building_effects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            building_type_id INTEGER NOT NULL,
-            effect_type TEXT NOT NULL,
-            effect_value REAL NOT NULL,
-            FOREIGN KEY (building_type_id) REFERENCES building_types (id) ON DELETE CASCADE
-        )
-    ''')
+    # Миграция: переименовываем колонку building_type_id в building_type_name
+    cursor.execute("PRAGMA table_info(buildings)")
+    columns = [row[1] for row in cursor.fetchall()]
     
-    # Добавляем базовые типы построек, если их нет (цены указаны в золоте)
-    cursor.execute('SELECT COUNT(*) as count FROM building_types')
-    existing_count = cursor.fetchone()['count']
-    
-    # Если таблица пустая, добавляем постройки
-    if existing_count == 0:
-        # Базовые типы построек БЕЗ эффектов (эффекты будут в отдельной таблице)
-        default_buildings = [
-            # (name, description, base_cost, maintenance_cost, building_category, required_tech_id)
-            ('Обсерватории', 'На вершине башни мерцают линзы и латунные круги: звездочёты отмечают ходы светил, вычисляют затмения и сверяют календарь по небесам.', 
-             3000, 300, 'educational', 'latin_schools'),
-            ('Университет', 'Каменные аудитории и шумные диспуты под сводами: здесь учат праву, медицине и философии, а рукописи переходят из рук в руки до глубокой ночи.', 
-             8000, 800, 'educational', 'universities_1'),
-            ('Королевская академия наук', 'Закрытые заседания, доклады и опытные мастерские под покровительством короны: лучшие умы спорят о природе вещей и проверяют смелые теории.', 
-             15000, 1500, 'educational', 'scientific_societies'),
-            ('Национальная библиотека', 'Тихие залы и бесконечные стеллажи: сюда стекаются книги, карты и хроники со всего света, чтобы хранители знаний берегли их от времени и огня.', 
-             2000, 200, 'educational', 'state_education'),
-            ('Высшее училище', 'Практичные классы и строгие наставники: здесь готовят инженеров, писцов и врачевателей, оттачивая ремесло учёности на задачах дня.', 
-             2000, 200, 'educational', 'gymnasiums_1'),
-
-            ('Оружейная мастерская', 'Производит холодное оружие и простое огнестрельное оружие.', 
-             5000, 500, 'military_infantry', 'arquebus'),
-            ('Завод винтовок', 'Массовое производство современных винтовок для армии.', 
-             12000, 1200, 'military_infantry', 'mass_rifle_production'),
-            ('Пороховой завод', 'Производство пороха и боеприпасов для пехоты.', 
-             8000, 800, 'military_infantry', 'early_muskets'),
-            
-            ('Завод артиллерии', 'Производство пушек и артиллерийских орудий.', 
-             15000, 1500, 'military_vehicles', 'field_artillery_1'),
-            ('Танковый завод', 'Производство бронетехники и танков.', 
-             25000, 2500, 'military_vehicles', None),
-            ('Авиационный завод', 'Производство самолётов для военных нужд.', 
-             30000, 3000, 'military_vehicles', None),
-            ('Автомобильный завод', 'Производство военных грузовиков и транспорта.', 
-             18000, 1800, 'military_vehicles', None),
-            
-            # ПРОИЗВОДСТВЕННЫЕ ПОСТРОЙКИ - ФЛОТ
-            ('Верфь парусных кораблей', 'Строительство парусных военных судов.', 
-             20000, 2000, 'military_naval', 'galleons_1'),
-            ('Паровая верфь', 'Строительство паровых военных кораблей.', 
-             35000, 3500, 'military_naval', 'steam_ships_of_line'),
-            ('Верфь эсминцев', 'Строительство современных эсминцев и фрегатов.', 
-             50000, 5000, 'military_naval', 'cruisers_1'),
-            ('Верфь линкоров', 'Строительство больших линейных кораблей.', 
-             80000, 8000, 'military_naval', 'pre_dreadnoughts'),
-            ('Верфь подводных лодок', 'Строительство подводных лодок.', 
-             40000, 4000, 'military_naval', 'torpedoes'),
-        ]
-        
-        cursor.executemany('''
-            INSERT INTO building_types 
-            (name, description, base_cost, maintenance_cost, building_category, required_tech_id)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', default_buildings)
-        print(f'✓ Добавлено {len(default_buildings)} типов построек')
-        
-        cursor.execute('SELECT id, name FROM building_types')
-        building_ids = {row['name']: row['id'] for row in cursor.fetchall()}
-        
-        building_effects = [
-            (building_ids['Обсерватории'], 'science_growth', 0.10),
-            (building_ids['Национальная библиотека'], 'education_growth', 0.10),
-            (building_ids['Национальная библиотека'], 'science_growth', 0.20),
-            (building_ids['Университет'], 'education_growth', 0.20),
-            (building_ids['Университет'], 'science_growth', 0.08),
-            (building_ids['Королевская академия наук'], 'science_growth', 0.40),
-            (building_ids['Высшее училище'], 'education_growth', 0.10),
-            (building_ids['Оружейная мастерская'], 'production_rifles', 50),
-            (building_ids['Завод винтовок'], 'production_rifles', 200),
-            (building_ids['Пороховой завод'], 'production_ammunition', 500),
-            (building_ids['Завод артиллерии'], 'production_artillery', 10),
-            (building_ids['Танковый завод'], 'production_tanks', 5),
-            (building_ids['Авиационный завод'], 'production_aircraft', 3),
-            (building_ids['Автомобильный завод'], 'production_vehicles', 20),
-            (building_ids['Верфь парусных кораблей'], 'production_sailing_ships', 2),
-            (building_ids['Паровая верфь'], 'production_steam_ships', 1),
-            (building_ids['Верфь эсминцев'], 'production_destroyers', 1),
-            (building_ids['Верфь линкоров'], 'production_battleships', 1),
-            (building_ids['Верфь подводных лодок'], 'production_submarines', 1),
-        ]
-        
-        cursor.executemany('''
-            INSERT INTO building_effects (building_type_id, effect_type, effect_value)
-            VALUES (?, ?, ?)
-        ''', building_effects)
-        print(f'✓ Добавлено {len(building_effects)} эффектов для построек')
-    else:
-        # МИГРАЦИЯ: Переименовываем старые постройки
-        rename_mappings = {
-            'Школа': 'Обсерватории',
-            'Школы': 'Обсерватории'
-        }
-        
-        for old_name, new_name in rename_mappings.items():
-            cursor.execute(
-                'UPDATE building_types SET name = ?, description = ? WHERE name = ?',
-                (new_name, 
-                 'На вершине башни мерцают линзы и латунные круги: звездочёты отмечают ходы светил, вычисляют затмения и сверяют календарь по небесам.',
-                 old_name)
+    if 'building_type_id' in columns and 'building_type_name' not in columns:
+        print('🔄 Миграция построек на новую систему...')
+        # Создаем новую таблицу
+        cursor.execute('''
+            CREATE TABLE buildings_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                province_id INTEGER NOT NULL,
+                building_type_name TEXT NOT NULL,
+                level INTEGER NOT NULL DEFAULT 1,
+                built_at TEXT NOT NULL,
+                FOREIGN KEY (province_id) REFERENCES provinces (id) ON DELETE CASCADE
             )
-            if cursor.rowcount > 0:
-                print(f'✓ Переименована постройка "{old_name}" -> "{new_name}"')
+        ''')
         
-        # МИГРАЦИЯ: Обновляем эффекты для существующих построек
-        # Сначала проверяем, есть ли эффекты в building_effects
-        cursor.execute('SELECT COUNT(*) as count FROM building_effects')
-        effects_count = cursor.fetchone()['count']
+        # Копируем данные со сопоставлением ID -> имя
+        cursor.execute('''
+            INSERT INTO buildings_new (id, province_id, building_type_name, level, built_at)
+            SELECT b.id, b.province_id, bt.name, b.level, b.built_at
+            FROM buildings b
+            LEFT JOIN building_types bt ON b.building_type_id = bt.id
+            WHERE bt.name IS NOT NULL
+        ''')
         
-        if effects_count == 0:
-            # Если эффектов нет - мигрируем из старой структуры
-            cursor.execute('SELECT id, name, effect_type, effect_value FROM building_types WHERE effect_type IS NOT NULL')
-            old_effects = cursor.fetchall()
-            
-            migrated_effects = []
-            for row in old_effects:
-                migrated_effects.append((row['id'], row['effect_type'], row['effect_value']))
-            
-            if migrated_effects:
-                cursor.executemany('''
-                    INSERT INTO building_effects (building_type_id, effect_type, effect_value)
-                    VALUES (?, ?, ?)
-                ''', migrated_effects)
-                print(f'✓ Мигрировано {len(migrated_effects)} эффектов из старой структуры')
-            
-            # Добавляем дополнительные эффекты для образовательных построек
-            cursor.execute('SELECT id, name FROM building_types')
-            building_ids = {row['name']: row['id'] for row in cursor.fetchall()}
-            
-            additional_effects = []
-            if 'Обсерватории' in building_ids:
-                additional_effects.extend([
-                    (building_ids['Обсерватории'], 'science_growth', 0.04),
-                    (building_ids['Обсерватории'], 'education_growth', 0.03),
-                ])
-            if 'Университет' in building_ids:
-                additional_effects.extend([
-                    (building_ids['Университет'], 'science_growth', 0.08),
-                ])
-            if 'Академия наук' in building_ids:
-                additional_effects.extend([
-                    (building_ids['Академия наук'], 'education_growth', 0.10),
-                ])
-            
-            if additional_effects:
-                cursor.executemany('''
-                    INSERT OR IGNORE INTO building_effects (building_type_id, effect_type, effect_value)
-                    VALUES (?, ?, ?)
-                ''', additional_effects)
-                print(f'✓ Добавлено {len(additional_effects)} дополнительных эффектов')
-        
-        # Если в таблице есть старые постройки, обновляем их required_tech_id
-        tech_mappings = {
-            'Оружейная мастерская': 'arquebus',
-            'Завод винтовок': 'mass_rifle_production',
-            'Пороховой завод': 'early_muskets',
-            'Завод артиллерии': 'field_artillery_1',
-            'Танковый завод': None,
-            'Авиационный завод': None,
-            'Автомобильный завод': None,
-            'Верфь парусных кораблей': 'galleons_1',
-            'Паровая верфь': 'steam_ships_of_line',
-            'Верфь эсминцев': 'cruisers_1',
-            'Верфь линкоров': 'pre_dreadnoughts',
-            'Верфь подводных лодок': 'torpedoes'
-        }
-        
-        updated_count = 0
-        for building_name, tech_id in tech_mappings.items():
-            cursor.execute(
-                'UPDATE building_types SET required_tech_id = ? WHERE name = ?',
-                (tech_id, building_name)
-            )
-            if cursor.rowcount > 0:
-                updated_count += cursor.rowcount
-        
-        if updated_count > 0:
-            print(f'✓ Обновлено required_tech_id для {updated_count} построек')
+        # Удаляем старую таблицу и переименовываем новую
+        cursor.execute('DROP TABLE buildings')
+        cursor.execute('ALTER TABLE buildings_new RENAME TO buildings')
+        print('✓ Построки мигрированы на систему без БД типов')
     
     conn.commit()
     conn.close()
@@ -493,48 +455,41 @@ async def get_province_buildings(province_id: int, request: Request):
             if province['player_id'] != user['id']:
                 return JSONResponse({'success': False, 'error': 'Нет доступа к этой провинции'}, status_code=403)
         
-        # Получаем постройки
+        # Получаем постройки из БД (только ID и имя типа)
         cursor.execute('''
-            SELECT 
-                b.id,
-                b.level,
-                b.built_at,
-                b.building_type_id,
-                bt.name,
-                bt.description,
-                bt.base_cost,
-                bt.maintenance_cost
-            FROM buildings b
-            JOIN building_types bt ON b.building_type_id = bt.id
-            WHERE b.province_id = ?
-            ORDER BY b.built_at DESC
+            SELECT id, building_type_name, level, built_at
+            FROM buildings
+            WHERE province_id = ?
+            ORDER BY built_at DESC
         ''', (province_id,))
         
         buildings = []
         for row in cursor.fetchall():
-            # Получаем все эффекты для этой постройки
-            cursor.execute('''
-                SELECT effect_type, effect_value
-                FROM building_effects
-                WHERE building_type_id = ?
-            ''', (row['building_type_id'],))
+            building_name = row['building_type_name']
             
+            # Берем данные из константы
+            if building_name not in BUILDING_TYPES:
+                continue  # Пропускаем удаленные типы построек
+            
+            building_data = BUILDING_TYPES[building_name]
+            
+            # Формируем массив эффектов
             effects = []
-            for effect_row in cursor.fetchall():
+            for effect_type, effect_value in building_data['effects']:
                 effects.append({
-                    'effect_type': effect_row['effect_type'],
-                    'effect_value': effect_row['effect_value']
+                    'effect_type': effect_type,
+                    'effect_value': effect_value
                 })
             
             buildings.append({
                 'id': row['id'],
-                'name': row['name'],
-                'description': row['description'],
+                'name': building_name,
+                'description': building_data['description'],
                 'level': row['level'],
-                'base_cost': row['base_cost'],
-                'maintenance_cost': row['maintenance_cost'],
+                'base_cost': building_data['base_cost'],
+                'maintenance_cost': building_data['maintenance_cost'],
                 'built_at': row['built_at'],
-                'effects': effects  # Массив эффектов
+                'effects': effects
             })
         
         return JSONResponse({
@@ -570,19 +525,11 @@ async def get_building_types(request: Request):
             ''', (country_id,))
             researched_techs = {row['tech_id'] for row in cursor.fetchall()}
         
-        # Получаем все типы построек
-        cursor.execute('''
-            SELECT 
-                id, name, description, base_cost, maintenance_cost, 
-                building_category, required_tech_id
-            FROM building_types
-            ORDER BY building_category, base_cost
-        ''')
-        
+        # Формируем список построек из константы
         building_types = []
-        for row in cursor.fetchall():
+        for building_name, building_data in BUILDING_TYPES.items():
             # Проверяем доступность постройки по технологиям
-            required_tech = row['required_tech_id']
+            required_tech = building_data['required_tech_id']
             
             # Если постройка требует технологию
             if required_tech:
@@ -592,31 +539,27 @@ async def get_building_types(request: Request):
                 # Постройки без требований всегда доступны
                 is_available = True
             
-            # Получаем все эффекты для этой постройки
-            cursor.execute('''
-                SELECT effect_type, effect_value
-                FROM building_effects
-                WHERE building_type_id = ?
-            ''', (row['id'],))
-            
+            # Формируем массив эффектов
             effects = []
-            for effect_row in cursor.fetchall():
+            for effect_type, effect_value in building_data['effects']:
                 effects.append({
-                    'effect_type': effect_row['effect_type'],
-                    'effect_value': effect_row['effect_value']
+                    'effect_type': effect_type,
+                    'effect_value': effect_value
                 })
             
             building_types.append({
-                'id': row['id'],
-                'name': row['name'],
-                'description': row['description'],
-                'base_cost': row['base_cost'],
-                'maintenance_cost': row['maintenance_cost'],
-                'building_category': row['building_category'],
-                'required_tech_id': row['required_tech_id'],
+                'name': building_name,
+                'description': building_data['description'],
+                'base_cost': building_data['base_cost'],
+                'maintenance_cost': building_data['maintenance_cost'],
+                'building_category': building_data['building_category'],
+                'required_tech_id': building_data['required_tech_id'],
                 'is_available': is_available,
-                'effects': effects  # Массив эффектов
+                'effects': effects
             })
+        
+        # Сортируем по категории и цене
+        building_types.sort(key=lambda x: (x['building_category'], x['base_cost']))
         
         return JSONResponse({
             'success': True,
@@ -636,10 +579,16 @@ async def build_building(province_id: int, request: Request):
         return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
     
     data = await request.json()
-    building_type_id = data.get('building_type_id')
+    building_name = data.get('building_name')  # Теперь передаем имя вместо ID
     
-    if not building_type_id:
+    if not building_name:
         return JSONResponse({'success': False, 'error': 'Не указан тип здания'}, status_code=400)
+    
+    # Проверяем существование типа постройки
+    if building_name not in BUILDING_TYPES:
+        return JSONResponse({'success': False, 'error': 'Тип здания не найден'}, status_code=404)
+    
+    building_data = BUILDING_TYPES[building_name]
     
     conn = get_db()
     cursor = conn.cursor()
@@ -671,15 +620,8 @@ async def build_building(province_id: int, request: Request):
         balance_row = cursor.fetchone()
         current_balance = balance_row['amount'] if balance_row else 0
         
-        # Получаем данные типа здания
-        cursor.execute('SELECT * FROM building_types WHERE id = ?', (building_type_id,))
-        building_type = cursor.fetchone()
-        
-        if not building_type:
-            return JSONResponse({'success': False, 'error': 'Тип здания не найден'}, status_code=404)
-        
         # Конвертируем цену из золота в валюту страны
-        actual_cost = convert_gold_to_currency(building_type['base_cost'], currency_code)
+        actual_cost = convert_gold_to_currency(building_data['base_cost'], currency_code)
         
         # Проверяем баланс страны
         if current_balance < actual_cost:
@@ -698,15 +640,15 @@ async def build_building(province_id: int, request: Request):
         # Создаем здание мгновенно
         built_at = datetime.now().isoformat()
         cursor.execute('''
-            INSERT INTO buildings (province_id, building_type_id, level, built_at)
+            INSERT INTO buildings (province_id, building_type_name, level, built_at)
             VALUES (?, ?, 1, ?)
-        ''', (province_id, building_type_id, built_at))
+        ''', (province_id, building_name, built_at))
         
         conn.commit()
         
         return JSONResponse({
             'success': True,
-            'message': f'Построено: {building_type["name"]}'
+            'message': f'Построено: {building_name}'
         })
     
     except Exception as e:
