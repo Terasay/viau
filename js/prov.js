@@ -443,6 +443,10 @@ let provincesModule = (function() {
                 const displayCost = formatPrice(type.base_cost);
                 const displayMaintenance = formatPrice(type.maintenance_cost);
                 
+                // Визуальная пометка для недоступных построек (для админа)
+                const unavailableStyle = (!type.is_available && isAdminView) ? ' style="opacity: 0.7; border: 2px dashed var(--warning);"' : '';
+                const unavailableBadge = (!type.is_available && isAdminView) ? '<div style="background: var(--warning); color: white; padding: 6px 10px; border-radius: 4px; font-size: 0.8em; margin-bottom: 10px; text-align: center; font-weight: 600;"><i class="fas fa-lock"></i> Скрыто для игроков (требуется технология)</div>' : '';
+                
                 // Формируем список всех эффектов
                 let effectsHtml = '';
                 if (type.effects && type.effects.length > 0) {
@@ -460,7 +464,8 @@ let provincesModule = (function() {
                 }
                 
                 html += `
-                    <div class="building-type-card">
+                    <div class="building-type-card"${unavailableStyle}>
+                        ${unavailableBadge}
                         <h4><i class="${icon}"></i> ${type.name}</h4>
                         <p>${type.description}</p>
                         <div class="building-type-stats">
@@ -474,7 +479,7 @@ let provincesModule = (function() {
                             </div>
                             ${effectsHtml}
                         </div>
-                        <button class="btn-primary btn-full" onclick="provincesModule.buildBuilding(${provinceId}, ${type.id})">
+                        <button class="btn-primary btn-full" onclick="provincesModule.buildBuilding(${provinceId}, '${type.name}')">
                             Построить
                         </button>
                     </div>
@@ -497,7 +502,7 @@ let provincesModule = (function() {
         return icons[category] || 'fas fa-building';
     }
 
-    async function buildBuilding(provinceId, buildingTypeId) {
+    async function buildBuilding(provinceId, buildingName) {
         if (!confirm('Вы уверены, что хотите построить это здание?')) return;
         
         try {
@@ -508,7 +513,7 @@ let provincesModule = (function() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ building_type_id: buildingTypeId })
+                body: JSON.stringify({ building_name: buildingName })
             });
             
             const data = await response.json();
