@@ -356,24 +356,160 @@ body.dark-mode .resource-item:hover {
     color: #ef4444;
 }
 
-.military-item {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.08) 100%);
+.military-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.military-category {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
     border: 1px solid rgba(239, 68, 68, 0.3);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    cursor: pointer;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.08) 100%);
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.category-header:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%);
+}
+
+.category-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 1.2em;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.category-title i {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.3) 100%);
+    border-radius: var(--radius);
+    color: #ef4444;
+    font-size: 1.3em;
+}
+
+.category-total {
+    margin-left: auto;
+    padding: 6px 16px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-full);
+    font-size: 0.85em;
+    font-weight: 800;
+    color: #ef4444;
+    font-family: 'Fira Mono', 'Courier New', monospace;
+}
+
+.category-arrow {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ef4444;
+    font-size: 1.2em;
+    transition: transform 0.3s ease;
+}
+
+.category-arrow.rotate {
+    transform: rotate(180deg);
+}
+
+.category-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-content.open {
+    max-height: 2000px;
+}
+
+.category-items {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--bg-primary);
+}
+
+.military-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.05) 100%);
+    border-radius: var(--radius);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    transition: all 0.3s ease;
 }
 
 .military-item:hover {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(220, 38, 38, 0.12) 100%);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
     border-color: #ef4444;
+    transform: translateX(8px);
 }
 
-.military-item .resource-icon {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+.military-item-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.2) 100%);
+    border-radius: var(--radius);
     color: #ef4444;
+    font-size: 1.5em;
+    flex-shrink: 0;
 }
 
-.military-item .resource-amount {
-    color: #ef4444;
+.military-item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.military-item-name {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.military-item-code {
+    font-size: 0.85em;
+    color: var(--text-tertiary);
+    font-family: 'Fira Mono', 'Courier New', monospace;
+}
+
+.military-item-amount {
+    font-size: 1.4em;
     font-weight: 800;
+    color: #ef4444;
+    font-family: 'Fira Mono', 'Courier New', monospace;
+    white-space: nowrap;
+    padding: 8px 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: var(--radius);
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 /* Баланс и прогноз */

@@ -432,23 +432,74 @@ const economicModule = (function() {
                     <i class="fas fa-shield-alt"></i>
                     <h3>Военный склад</h3>
                 </div>
-                <div class="resources-list">
+                <div class="military-categories">
         `;
 
-        // Отображаем военное снаряжение
+        // Категории снаряжения
+        const categories = {
+            'infantry': {
+                name: 'Пехотное снаряжение',
+                icon: 'fa-user-shield',
+                items: ['rifles', 'ammunition']
+            },
+            'vehicles': {
+                name: 'Артиллерия и техника',
+                icon: 'fa-truck-monster',
+                items: ['artillery', 'tanks', 'aircraft', 'vehicles']
+            },
+            'naval': {
+                name: 'Военно-морской флот',
+                icon: 'fa-anchor',
+                items: ['sailing_ships', 'steam_ships', 'destroyers', 'battleships', 'submarines']
+            }
+        };
+
+        // Отображаем категории
         if (availableMilitaryEquipment && typeof availableMilitaryEquipment === 'object' && Object.keys(availableMilitaryEquipment).length > 0) {
-            for (const [code, info] of Object.entries(availableMilitaryEquipment)) {
-                const amount = militaryEquipment[code] || 0;
+            for (const [catId, category] of Object.entries(categories)) {
+                // Считаем общее количество в категории
+                let totalAmount = 0;
+                for (const itemCode of category.items) {
+                    totalAmount += (militaryEquipment[itemCode] || 0);
+                }
+
                 html += `
-                    <div class="resource-item military-item">
-                        <div class="resource-icon">
-                            <i class="fas ${info.icon}"></i>
+                    <div class="military-category">
+                        <div class="category-header" onclick="economicModule.toggleCategory('${catId}')">
+                            <div class="category-title">
+                                <i class="fas ${category.icon}"></i>
+                                <span>${category.name}</span>
+                                <span class="category-total">${totalAmount.toLocaleString('ru-RU')} ед.</span>
+                            </div>
+                            <i class="fas fa-chevron-down category-arrow" id="arrow-${catId}"></i>
                         </div>
-                        <div class="resource-info">
-                            <div class="resource-name">${info.name}</div>
-                            <div class="resource-code">${code}</div>
+                        <div class="category-content" id="category-${catId}">
+                            <div class="category-items">
+                `;
+
+                // Отображаем элементы категории
+                for (const itemCode of category.items) {
+                    const info = availableMilitaryEquipment[itemCode];
+                    if (info) {
+                        const amount = militaryEquipment[itemCode] || 0;
+                        html += `
+                            <div class="military-item">
+                                <div class="military-item-icon">
+                                    <i class="fas ${info.icon}"></i>
+                                </div>
+                                <div class="military-item-info">
+                                    <div class="military-item-name">${info.name}</div>
+                                    <div class="military-item-code">${itemCode}</div>
+                                </div>
+                                <div class="military-item-amount">${amount.toLocaleString('ru-RU')}</div>
+                            </div>
+                        `;
+                    }
+                }
+
+                html += `
+                            </div>
                         </div>
-                        <div class="resource-amount">${amount.toLocaleString('ru-RU')}</div>
                     </div>
                 `;
             }
@@ -582,6 +633,25 @@ const economicModule = (function() {
         }
     }
 
+    function toggleCategory(categoryId) {
+        const content = document.getElementById(`category-${categoryId}`);
+        const arrow = document.getElementById(`arrow-${categoryId}`);
+        
+        if (!content || !arrow) return;
+        
+        const isOpen = content.classList.contains('open');
+        
+        if (isOpen) {
+            // Закрываем
+            content.classList.remove('open');
+            arrow.classList.remove('rotate');
+        } else {
+            // Открываем
+            content.classList.add('open');
+            arrow.classList.add('rotate');
+        }
+    }
+
     return {
         init,
         refresh,
@@ -589,6 +659,7 @@ const economicModule = (function() {
         selectCountry,
         saveSettings,
         updateTaxDisplay,
+        toggleCategory,
         saveTaxSettings: saveSettings  // алиас для обратной совместимости
     };
 })();
