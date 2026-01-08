@@ -593,8 +593,7 @@ function addMessage(messageData, save = true, prepend = false) {
     }
     content.appendChild(text);
 
-    const canEditOrDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
-    if (canEditOrDelete && messageData.id) {
+    if (messageData.id) {
         const actions = document.createElement('div');
         actions.className = 'message-actions';
         
@@ -616,7 +615,10 @@ function addMessage(messageData, save = true, prepend = false) {
         };
         actions.appendChild(replyBtn);
         
-        if (messageData.username === currentUser.username) {
+        const canEdit = messageData.username === currentUser.username;
+        const canDelete = (messageData.username === currentUser.username) || (currentUser.role === 'admin');
+        
+        if (canEdit) {
             const editBtn = document.createElement('button');
             editBtn.innerHTML = '<i class="fas fa-pen"></i>';
             editBtn.title = 'Редактировать';
@@ -627,18 +629,20 @@ function addMessage(messageData, save = true, prepend = false) {
             actions.appendChild(editBtn);
         }
         
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'danger';
-        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-        deleteBtn.title = 'Удалить';
-        deleteBtn.onclick = async (e) => {
-            e.stopPropagation();
-            if (confirm('Удалить сообщение?')) {
-                await deleteMessageApi(messageData.id);
-                message.remove();
-            }
-        };
-        actions.appendChild(deleteBtn);
+        if (canDelete) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'danger';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.title = 'Удалить';
+            deleteBtn.onclick = async (e) => {
+                e.stopPropagation();
+                if (confirm('Удалить сообщение?')) {
+                    await deleteMessageApi(messageData.id);
+                    message.remove();
+                }
+            };
+            actions.appendChild(deleteBtn);
+        }
         
         const moreBtn = document.createElement('button');
         moreBtn.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
@@ -1293,6 +1297,11 @@ document.body.appendChild(contextMenu);
 
 function showContextMenu(e, messageElement, messageData) {
     e.preventDefault();
+    
+    if (contextMenu.style.display === 'block') {
+        contextMenu.style.display = 'none';
+        return;
+    }
     
     contextMenu.innerHTML = `
         <div class="context-menu-item" data-action="copy">
