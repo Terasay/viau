@@ -445,7 +445,15 @@ let provincesModule = (function() {
                 
                 // Визуальная пометка для недоступных построек (для админа)
                 const unavailableStyle = (!type.is_available && isAdminView) ? ' style="opacity: 0.7; border: 2px dashed var(--warning);"' : '';
-                const unavailableBadge = (!type.is_available && isAdminView) ? '<div style="background: var(--warning); color: white; padding: 6px 10px; border-radius: 4px; font-size: 0.8em; margin-bottom: 10px; text-align: center; font-weight: 600;"><i class="fas fa-lock"></i> Скрыто для игроков (требуется технология)</div>' : '';
+                
+                // Формируем текст с требуемыми технологиями (если есть и постройка недоступна)
+                let unavailableBadge = '';
+                if (!type.is_available && isAdminView) {
+                    const techList = type.required_tech_ids && type.required_tech_ids.length > 0 
+                        ? type.required_tech_ids.join(', ') 
+                        : 'неизвестна';
+                    unavailableBadge = `<div style="background: var(--warning); color: white; padding: 6px 10px; border-radius: 4px; font-size: 0.8em; margin-bottom: 10px; text-align: center; font-weight: 600;"><i class="fas fa-lock"></i> Скрыто для игроков<br><small style="font-size: 0.9em;">Требуется: ${techList}</small></div>`;
+                }
                 
                 // Формируем список всех эффектов
                 let effectsHtml = '';

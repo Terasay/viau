@@ -22,7 +22,7 @@ BUILDING_TYPES = {
         'base_cost': 3000,
         'maintenance_cost': 300,
         'building_category': 'educational',
-        'required_tech_id': 'latin_schools',
+        'required_tech_ids': ['latin_schools'],  # Список требуемых технологий
         'effects': [('science_growth', 0.10)]
     },
     'Университет': {
@@ -30,7 +30,7 @@ BUILDING_TYPES = {
         'base_cost': 8000,
         'maintenance_cost': 800,
         'building_category': 'educational',
-        'required_tech_id': 'universities_1',
+        'required_tech_ids': ['universities_1'],
         'effects': [('education_growth', 0.20), ('science_growth', 0.08)]
     },
     'Королевская академия наук': {
@@ -38,7 +38,7 @@ BUILDING_TYPES = {
         'base_cost': 15000,
         'maintenance_cost': 1500,
         'building_category': 'educational',
-        'required_tech_id': 'scientific_societies',
+        'required_tech_ids': ['scientific_societies'],
         'effects': [('science_growth', 0.40)]
     },
     'Национальная библиотека': {
@@ -46,7 +46,7 @@ BUILDING_TYPES = {
         'base_cost': 2000,
         'maintenance_cost': 200,
         'building_category': 'educational',
-        'required_tech_id': 'state_education',
+        'required_tech_ids': ['state_education'],
         'effects': [('education_growth', 0.10), ('science_growth', 0.20)]
     },
     'Высшее училище': {
@@ -54,7 +54,7 @@ BUILDING_TYPES = {
         'base_cost': 2000,
         'maintenance_cost': 200,
         'building_category': 'educational',
-        'required_tech_id': 'gymnasiums_1',
+        'required_tech_ids': ['gymnasiums_1'],
         'effects': [('education_growth', 0.10)]
     },
     
@@ -64,7 +64,7 @@ BUILDING_TYPES = {
         'base_cost': 5000,
         'maintenance_cost': 500,
         'building_category': 'military_infantry',
-        'required_tech_id': 'arquebus',
+        'required_tech_ids': ['arquebus'],
         'effects': [('production_rifles', 50)]
     },
     'Завод винтовок': {
@@ -72,7 +72,7 @@ BUILDING_TYPES = {
         'base_cost': 12000,
         'maintenance_cost': 1200,
         'building_category': 'military_infantry',
-        'required_tech_id': 'mass_rifle_production',
+        'required_tech_ids': ['mass_rifle_production'],
         'effects': [('production_rifles', 200)]
     },
     'Пороховой завод': {
@@ -80,7 +80,7 @@ BUILDING_TYPES = {
         'base_cost': 8000,
         'maintenance_cost': 800,
         'building_category': 'military_infantry',
-        'required_tech_id': 'early_muskets',
+        'required_tech_ids': ['early_muskets'],
         'effects': [('production_ammunition', 500)]
     },
     
@@ -90,7 +90,7 @@ BUILDING_TYPES = {
         'base_cost': 15000,
         'maintenance_cost': 1500,
         'building_category': 'military_vehicles',
-        'required_tech_id': 'field_artillery_1',
+        'required_tech_ids': ['field_artillery_1'],
         'effects': [('production_artillery', 10)]
     },
     'Танковый завод': {
@@ -98,7 +98,7 @@ BUILDING_TYPES = {
         'base_cost': 25000,
         'maintenance_cost': 2500,
         'building_category': 'military_vehicles',
-        'required_tech_id': None,
+        'required_tech_ids': [],  # Пустой список = нет требований
         'effects': [('production_tanks', 5)]
     },
     'Авиационный завод': {
@@ -106,7 +106,7 @@ BUILDING_TYPES = {
         'base_cost': 30000,
         'maintenance_cost': 3000,
         'building_category': 'military_vehicles',
-        'required_tech_id': None,
+        'required_tech_ids': [],
         'effects': [('production_aircraft', 3)]
     },
     'Автомобильный завод': {
@@ -114,7 +114,7 @@ BUILDING_TYPES = {
         'base_cost': 18000,
         'maintenance_cost': 1800,
         'building_category': 'military_vehicles',
-        'required_tech_id': None,
+        'required_tech_ids': [],
         'effects': [('production_vehicles', 20)]
     },
     
@@ -124,7 +124,7 @@ BUILDING_TYPES = {
         'base_cost': 20000,
         'maintenance_cost': 2000,
         'building_category': 'military_naval',
-        'required_tech_id': 'galleons_1',
+        'required_tech_ids': ['galleons_1'],
         'effects': [('production_sailing_ships', 2)]
     },
     'Паровая верфь': {
@@ -132,7 +132,7 @@ BUILDING_TYPES = {
         'base_cost': 35000,
         'maintenance_cost': 3500,
         'building_category': 'military_naval',
-        'required_tech_id': 'steam_ships_of_line',
+        'required_tech_ids': ['steam_ships_of_line'],
         'effects': [('production_steam_ships', 1)]
     },
     'Верфь эсминцев': {
@@ -140,7 +140,7 @@ BUILDING_TYPES = {
         'base_cost': 50000,
         'maintenance_cost': 5000,
         'building_category': 'military_naval',
-        'required_tech_id': 'cruisers_1',
+        'required_tech_ids': ['cruisers_1'],
         'effects': [('production_destroyers', 1)]
     },
     'Верфь линкоров': {
@@ -148,7 +148,7 @@ BUILDING_TYPES = {
         'base_cost': 80000,
         'maintenance_cost': 8000,
         'building_category': 'military_naval',
-        'required_tech_id': 'pre_dreadnoughts',
+        'required_tech_ids': ['pre_dreadnoughts'],
         'effects': [('production_battleships', 1)]
     },
     'Верфь подводных лодок': {
@@ -156,7 +156,7 @@ BUILDING_TYPES = {
         'base_cost': 40000,
         'maintenance_cost': 4000,
         'building_category': 'military_naval',
-        'required_tech_id': 'torpedoes',
+        'required_tech_ids': ['torpedoes'],
         'effects': [('production_submarines', 1)]
     }
 }
@@ -529,12 +529,12 @@ async def get_building_types(request: Request):
         building_types = []
         for building_name, building_data in BUILDING_TYPES.items():
             # Проверяем доступность постройки по технологиям
-            required_tech = building_data['required_tech_id']
+            required_techs = building_data['required_tech_ids']
             
-            # Если постройка требует технологию
-            if required_tech:
-                # Она доступна только если передан country_id И технология изучена
-                is_available = country_id and (required_tech in researched_techs)
+            # Если постройка требует технологии
+            if required_techs:
+                # Она доступна только если передан country_id И ВСЕ технологии изучены
+                is_available = country_id and all(tech in researched_techs for tech in required_techs)
             else:
                 # Постройки без требований всегда доступны
                 is_available = True
@@ -553,7 +553,7 @@ async def get_building_types(request: Request):
                 'base_cost': building_data['base_cost'],
                 'maintenance_cost': building_data['maintenance_cost'],
                 'building_category': building_data['building_category'],
-                'required_tech_id': building_data['required_tech_id'],
+                'required_tech_ids': building_data['required_tech_ids'],  # Список технологий
                 'is_available': is_available,
                 'effects': effects
             })
