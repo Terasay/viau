@@ -456,77 +456,91 @@ const economicModule = (function() {
 
         // Отображаем категории
         if (availableMilitaryEquipment && typeof availableMilitaryEquipment === 'object' && Object.keys(availableMilitaryEquipment).length > 0) {
-            for (const [catId, category] of Object.entries(categories)) {
-                // Считаем общее количество в категории и проверяем видимость
-                let totalAmount = 0;
+            for (const [categoryId, category] of Object.entries(categories)) {
+                let totalInCategory = 0;
                 let hasVisibleItems = false;
                 
+                // Подсчитываем общее количество и проверяем видимость
                 for (const itemCode of category.items) {
                     const equipData = militaryEquipment[itemCode];
                     if (equipData) {
-                        const amount = equipData.amount || 0;
-                        const everHad = equipData.ever_had || 0;
-                        
-                        // Показываем только если хоть раз было
-                        if (everHad > 0) {
-                            totalAmount += amount;
+                        totalInCategory += equipData.amount || 0;
+                        if (equipData.ever_had > 0) {
                             hasVisibleItems = true;
                         }
                     }
                 }
                 
-                // Пропускаем категорию если нет видимых элементов
-                if (!hasVisibleItems) continue;
-
-                html += `
-                    <div class="military-category">
-                        <div class="category-header" onclick="economicModule.toggleCategory('${catId}')">
-                            <div class="category-title">
-                                <i class="fas ${category.icon}"></i>
-                                <span>${category.name}</span>
-                                <span class="category-total">${totalAmount.toLocaleString('ru-RU')} ед.</span>
+                // Если админ или есть видимые элементы, показываем категорию
+                if (isAdmin || hasVisibleItems) {
+                    html += `
+                        <div class="military-category">
+                            <div class="category-header" onclick="economicModule.toggleCategory('${categoryId}')">
+                                <div class="category-title">
+                                    <i class="fas ${category.icon}"></i>
+                                    <span>${category.name}</span>
+                                </div>
+                                ${totalInCategory > 0 ? `<div class="category-total">Всего: ${totalInCategory}</div>` : ''}
+                                <div class="category-arrow" id="arrow-${categoryId}">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
                             </div>
-                            <i class="fas fa-chevron-down category-arrow" id="arrow-${catId}"></i>
-                        </div>
-                        <div class="category-content" id="category-${catId}">
-                            <div class="category-items">
-                `;
-
-                // Отображаем элементы категории (только те, что были хоть раз)
-                for (const itemCode of category.items) {
-                    const info = availableMilitaryEquipment[itemCode];
-                    const equipData = militaryEquipment[itemCode];
+                            <div class="category-content" id="category-${categoryId}">
+                                <div class="category-items">
+                    `;
                     
-                    if (info && equipData && equipData.ever_had > 0) {
-                        const amount = equipData.amount || 0;
-                        const price = info.price || 0;
-                        const level = info.level || 1;
+                    // Отображаем элементы категории
+                    for (const itemCode of category.items) {
+                        const itemData = availableMilitaryEquipment[itemCode];
+                        if (!itemData) continue;
                         
-                        html += `
-                            <div class="military-item">
-                                <div class="military-item-icon">
-                                    <i class="fas ${info.icon}"></i>
-                                </div>
-                                <div class="military-item-info">
-                                    <div class="military-item-name">
-                                        ${info.name}
-                                        <span class="item-level">ур. ${level}</span>
+                        const equipData = militaryEquipment[itemCode];
+                        const amount = equipData?.amount || 0;
+                        const everHad = equipData?.ever_had || 0;
+                        
+                        // Показываем админу все, игрокам - только с ever_had > 0
+                        if (isAdmin || everHad > 0) {
+                            const isHidden = everHad === 0;
+                            const { name, icon, price, level } = itemData;
+                            
+                            html += `
+                                <div class="military-item ${isHidden ? 'item-hidden' : ''}">
+                                    <div class="military-item-icon">
+                                        <i class="fas ${icon}"></i>
                                     </div>
-                                    <div class="military-item-code">
-                                        ${itemCode} • ${price} <i class="fas fa-coins" style="font-size: 0.85em; color: #ffd700;"></i>/ед.
+                                    <div class="military-item-info">
+                                        <div class="military-item-name">
+                                            ${name}
+                                            <span class="item-level">ур. ${level}</span>
+                                            ${isHidden && isAdmin ? '<span class="item-hidden-badge"><i class="fas fa-eye-slash"></i> Скрыто от игрока</span>' : ''}
+                                        </div>
+                                        <div class="military-item-code">
+                                            ${itemCode} • ${price} 💰/ед.
+                                        </div>
                                     </div>
+                                    ${isAdmin ? `
+                                        <input 
+                                            type="number" 
+                                            class="military-item-input" 
+                                            id="equip-${itemCode}" 
+                                            value="${amount}" 
+                                            min="0"
+                                            placeholder="0"
+                                        />
+                                    ` : `
+                                        <div class="military-item-amount">${amount}</div>
+                                    `}
                                 </div>
-                                <div class="military-item-amount">${amount.toLocaleString('ru-RU')}</div>
-                            </div>
-                        `;
+                            `;
+                        }
                     }
-                }
-
-                html += `
+                    
+                    html += `
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             }
         } else {
             html += '<p style="color: var(--text-tertiary); text-align: center; padding: 20px;">Нет доступного снаряжения</p>';
