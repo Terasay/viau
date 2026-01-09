@@ -139,7 +139,7 @@ BUILDING_TYPES = {
         'base_cost': 15000,
         'maintenance_cost': 1500,
         'building_category': 'military_naval',
-        'required_tech_ids': ['galleons'],
+        'required_tech_ids': ['galleons_1'],
         'effects': []
     },
     'Корабельный двор': {
