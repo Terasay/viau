@@ -606,7 +606,7 @@ async def get_available_military_equipment():
         'bombers': {'name': 'Бомбардировщики', 'icon': 'fa-plane', 'price': 3500, 'batch_size': 15, 'resources': {'wood': 5, 'iron': 35, 'cuprum': 8}, 'required_tech': 'bombers', 'required_tech_name': get_tech_name('bombers')},
         
         # Военно-морской флот (на 1 ед.)
-        'galleons': {'name': 'Галеоны', 'icon': 'fa-ship', 'price': 800, 'batch_size': 1, 'resources': {'wood': 120, 'iron': 10, 'bronze': 3}, 'required_tech': 'galleons', 'required_tech_name': get_tech_name('galleons_1')},
+        'galleons': {'name': 'Галеоны', 'icon': 'fa-ship', 'price': 800, 'batch_size': 1, 'resources': {'wood': 120, 'iron': 10, 'bronze': 3}, 'required_tech': 'galleons_1', 'required_tech_name': get_tech_name('galleons_1')},
         'ships_of_line': {'name': 'Линейные корабли', 'icon': 'fa-ship', 'price': 1200, 'batch_size': 1, 'resources': {'wood': 180, 'iron': 15, 'bronze': 5}, 'required_tech': 'ships_of_line', 'required_tech_name': get_tech_name('ships_of_line')},
         'steam_frigates': {'name': 'Паровые фрегаты', 'icon': 'fa-ship', 'price': 2000, 'batch_size': 1, 'resources': {'wood': 60, 'iron': 40, 'bronze': 8}, 'required_tech': 'steam_frigates', 'required_tech_name': get_tech_name('steam_frigates')},
         'ironclads': {'name': 'Броненосцы', 'icon': 'fa-ship', 'price': 3500, 'batch_size': 1, 'resources': {'wood': 20, 'iron': 120, 'bronze': 15}, 'required_tech': 'ironclad', 'required_tech_name': get_tech_name('ironclad')},
