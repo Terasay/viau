@@ -864,6 +864,20 @@ let provincesModule = (function() {
                     </div>
                 `;
             } else {
+                // Показываем информацию о здании
+                html += `
+                    <div class="building-production-info">
+                        <div class="building-info-item">
+                            <i class="fas fa-industry"></i>
+                            <span>${data.building_name}</span>
+                        </div>
+                        <div class="building-info-item">
+                            <i class="fas fa-coins"></i>
+                            <span>Содержание: ${data.maintenance_cost}/ход</span>
+                        </div>
+                    </div>
+                `;
+                
                 // Показываем текущее производство
                 if (data.current_production) {
                     const current = data.available_equipment.find(eq => eq.code === data.current_production);
@@ -871,7 +885,7 @@ let provincesModule = (function() {
                         html += `
                             <div class="production-current">
                                 <i class="fas fa-check-circle"></i>
-                                <span>Текущее: ${current.name}</span>
+                                <span>Текущее: ${current.name} (${current.actual_production} шт/ход)</span>
                             </div>
                         `;
                     }
@@ -883,7 +897,8 @@ let provincesModule = (function() {
                 data.available_equipment.forEach(equipment => {
                     const isActive = equipment.code === data.current_production;
                     const isAvailable = equipment.available;
-                    const disabledClass = isAvailable ? '' : 'disabled';
+                    const canProduce = equipment.can_produce;
+                    const disabledClass = (isAvailable && canProduce) ? '' : 'disabled';
                     
                     // Формируем строку с ресурсами (используя названия вместо ID)
                     let resourcesHtml = '';
@@ -905,16 +920,23 @@ let provincesModule = (function() {
                             </div>
                             
                             ${!isAvailable ? '<div class="tech-required-badge">Требуется технология</div>' : ''}
+                            ${isAvailable && !canProduce ? '<div class="tech-required-badge too-expensive">Слишком дорого для завода</div>' : ''}
                             
                             <div class="production-card-info">
                                 <div class="batch-info">
                                     <i class="fas fa-box"></i>
-                                    <span>${equipment.batch_size} шт/ход</span>
+                                    <span>${equipment.actual_production} шт/ход</span>
                                 </div>
+                                ${equipment.production_multiplier > 1 ? `
+                                    <div class="production-bonus">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span>×${equipment.production_multiplier} производительность</span>
+                                    </div>
+                                ` : ''}
                                 ${resourcesHtml}
                             </div>
                             
-                            ${isAvailable && !isActive ? `
+                            ${isAvailable && canProduce && !isActive ? `
                                 <button class="btn-select-production" onclick="provincesModule.setProduction(${buildingId}, '${equipment.code}')">
                                     Выбрать
                                 </button>

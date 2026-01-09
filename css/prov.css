@@ -436,6 +436,29 @@
     font-size: 1.2em;
 }
 
+/* Информация о здании */
+.building-production-info {
+    display: flex;
+    gap: 20px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+}
+
+.building-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+.building-info-item i {
+    color: var(--primary);
+}
+
 /* Сетка карточек производства (4 в ряд) */
 .production-grid {
     display: grid;
@@ -500,6 +523,27 @@
     border-radius: 10px;
     text-align: center;
     font-weight: 500;
+}
+
+.tech-required-badge.too-expensive {
+    background: var(--danger);
+}
+
+.production-bonus {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--success);
+    font-weight: 600;
+    padding: 4px 8px;
+    background: var(--success-bg);
+    border-radius: 4px;
+    font-size: 0.85em;
+}
+
+.production-bonus i {
+    color: var(--success);
+    font-size: 0.9em;
 }
 
 .production-card-info {

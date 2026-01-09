@@ -833,6 +833,7 @@ async def get_available_production(building_id: int, request: Request):
         
         building_data = BUILDING_TYPES[building_type_name]
         building_category = building_data.get('building_category')
+        maintenance_cost = building_data.get('maintenance_cost', 0)
         
         # Определяем какие типы снаряжения доступны для этой категории
         category_equipment = {
@@ -884,6 +885,23 @@ async def get_available_production(building_id: int, request: Request):
                 if not is_admin and not is_available:
                     continue
                 
+                batch_size = eq_info.get('batch_size', 1)
+                equipment_price = eq_info.get('price', 1)
+                
+                # Рассчитываем производственную мощность здания
+                cost_per_unit = maintenance_cost / batch_size if batch_size > 0 else 0
+                
+                # Проверка: может ли завод производить это снаряжение
+                can_produce = cost_per_unit >= equipment_price
+                
+                # Расчёт множителя производства (если может производить)
+                production_multiplier = 1.0
+                actual_production = batch_size
+                
+                if can_produce and equipment_price > 0:
+                    production_multiplier = cost_per_unit / equipment_price
+                    actual_production = int(batch_size * production_multiplier)
+                
                 available.append({
                     'code': eq_code,
                     'name': eq_info.get('name'),
@@ -891,7 +909,11 @@ async def get_available_production(building_id: int, request: Request):
                     'required_tech_name': eq_info.get('required_tech_name'),
                     'available': is_available,
                     'resources': eq_info.get('resources', {}),
-                    'batch_size': eq_info.get('batch_size', 1)
+                    'batch_size': batch_size,
+                    'price': equipment_price,
+                    'can_produce': can_produce,
+                    'production_multiplier': round(production_multiplier, 2),
+                    'actual_production': actual_production
                 })
         
         return JSONResponse({
@@ -899,6 +921,8 @@ async def get_available_production(building_id: int, request: Request):
             'available_equipment': available,
             'current_production': building['production_type'],
             'building_category': building_category,
+            'building_name': building_type_name,
+            'maintenance_cost': maintenance_cost,
             'is_admin': is_admin
         })
         
