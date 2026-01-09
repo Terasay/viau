@@ -325,7 +325,11 @@ let provincesModule = (function() {
             html += '<div class="buildings-list">';
             
             buildings.forEach(building => {
-                const displayMaintenance = formatPrice(building.maintenance_cost);
+                // Рассчитываем реальное содержание с учётом funding_percentage
+                const fundingPercentage = building.funding_percentage || 100;
+                const actualMaintenanceCostGold = Math.floor(building.maintenance_cost * fundingPercentage / 100);
+                const displayMaintenance = convertGoldToPrice(actualMaintenanceCostGold);
+                const fundingSuffix = fundingPercentage !== 100 ? ` (${fundingPercentage}%)` : '';
                 
                 // Проверяем является ли здание производственным
                 const isProductionBuilding = building.category && 
@@ -398,7 +402,7 @@ let provincesModule = (function() {
                             ${effectsHtml}
                             <div class="stat-item">
                                 <i class="fas fa-coins"></i>
-                                <span>Содержание: ${displayMaintenance}/ход</span>
+                                <span>Содержание: ${displayMaintenance} ${currencyName}/ход${fundingSuffix}</span>
                             </div>
                         </div>
                     </div>
@@ -884,6 +888,10 @@ let provincesModule = (function() {
                     const efficiency = data.production_efficiency || 100;
                     const actualCost = data.actual_maintenance_cost || data.maintenance_cost;
                     
+                    // Конвертируем золото в валюту страны
+                    const baseCostConverted = convertGoldToPrice(data.maintenance_cost);
+                    const actualCostConverted = convertGoldToPrice(actualCost);
+                    
                     html += `
                         <div class="funding-control-panel">
                             <div class="funding-header">
@@ -903,6 +911,7 @@ let provincesModule = (function() {
                                     step="5" 
                                     value="${fundingPercentage}"
                                     class="funding-slider"
+                                    data-base-cost="${data.maintenance_cost}"
                                 >
                                 <div class="funding-value-display">
                                     <span id="funding-display-${buildingId}">${fundingPercentage}%</span>
@@ -911,7 +920,7 @@ let provincesModule = (function() {
                             <div class="funding-stats">
                                 <div class="funding-stat">
                                     <i class="fas fa-coins"></i>
-                                    <span>Реальные затраты: <strong id="actual-cost-${buildingId}">${actualCost}</strong>/ход</span>
+                                    <span>Реальные затраты: <strong id="actual-cost-${buildingId}">${actualCostConverted} ${currencyName}</strong>/ход</span>
                                 </div>
                                 <div class="funding-stat">
                                     <i class="fas fa-chart-line"></i>
@@ -923,7 +932,7 @@ let provincesModule = (function() {
                                 id="apply-funding-btn-${buildingId}"
                                 onclick="provincesModule.applyFunding(${buildingId})"
                             >
-                                <i class="fas fa-check"></i> Применить финансирование
+                                <i class="fas fa-check"></i> Применить
                             </button>
                         </div>
                     `;
@@ -1015,9 +1024,10 @@ let provincesModule = (function() {
                         // Обновляем отображение процента
                         document.getElementById(`funding-display-${buildingId}`).textContent = `${percentage}%`;
                         
-                        // Рассчитываем реальные затраты
-                        const actualCost = Math.floor(baseCost * percentage / 100);
-                        document.getElementById(`actual-cost-${buildingId}`).textContent = actualCost;
+                        // Рассчитываем реальные затраты в золоте и конвертируем в валюту
+                        const actualCostGold = Math.floor(baseCost * percentage / 100);
+                        const actualCostConverted = convertGoldToPrice(actualCostGold);
+                        document.getElementById(`actual-cost-${buildingId}`).textContent = `${actualCostConverted} ${currencyName}`;
                         
                         // Рассчитываем эффективность (та же формула что на бэке)
                         let efficiency = 100;
@@ -1095,8 +1105,8 @@ let provincesModule = (function() {
             
             await showProvSuccess('Успех', data.message);
             
-            // Перезагружаем меню производства для обновления показателей
-            showProductionMenu(buildingId);
+            // Закрываем модалку и перезагружаем список построек вместо меню производства
+            closeModal();
             
         } catch (error) {
             console.error('Error setting funding:', error);

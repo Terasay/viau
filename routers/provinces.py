@@ -528,7 +528,7 @@ async def get_province_buildings(province_id: int, request: Request):
                     if row['production_type'] in all_equipment:
                         production_type_name = all_equipment[row['production_type']].get('name')
             
-            funding_percentage = row['funding_percentage'] if row['funding_percentage'] else 100
+            funding_percentage = row['funding_percentage'] if row['funding_percentage'] is not None else 100
             
             buildings.append({
                 'id': row['id'],
