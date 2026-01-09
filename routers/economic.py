@@ -567,36 +567,36 @@ async def get_available_currencies():
 async def get_available_military_equipment():
     """Получение списка доступных типов военного снаряжения"""
     equipment_types = {
-        # Пехотное вооружение (градация по уровням)
-        'arquebuses': {'name': 'Аркебузы', 'icon': 'fa-gun', 'price': 5, 'level': 1},
-        'light_muskets': {'name': 'Лёгкие мушкеты', 'icon': 'fa-gun', 'price': 8, 'level': 2},
-        'muskets': {'name': 'Мушкеты', 'icon': 'fa-gun', 'price': 12, 'level': 3},
-        'rifles': {'name': 'Нарезные ружья', 'icon': 'fa-gun', 'price': 18, 'level': 4},
-        'needle_rifles': {'name': 'Игольчатые винтовки', 'icon': 'fa-gun', 'price': 25, 'level': 5},
-        'bolt_action_rifles': {'name': 'Магазинные винтовки', 'icon': 'fa-gun', 'price': 35, 'level': 6},
+        # Пехотное вооружение
+        'arquebuses': {'name': 'Аркебузы', 'icon': 'fa-gun', 'price': 5},
+        'light_muskets': {'name': 'Лёгкие мушкеты', 'icon': 'fa-gun', 'price': 8},
+        'muskets': {'name': 'Мушкеты', 'icon': 'fa-gun', 'price': 12},
+        'rifles': {'name': 'Нарезные ружья', 'icon': 'fa-gun', 'price': 18},
+        'needle_rifles': {'name': 'Игольчатые винтовки', 'icon': 'fa-gun', 'price': 25},
+        'bolt_action_rifles': {'name': 'Магазинные винтовки', 'icon': 'fa-gun', 'price': 35},
         
         # Артиллерия и техника
-        'field_artillery': {'name': 'Полевая артиллерия', 'icon': 'fa-bomb', 'price': 200, 'level': 1},
-        'siege_artillery': {'name': 'Осадная артиллерия', 'icon': 'fa-bomb', 'price': 350, 'level': 2},
-        'heavy_artillery': {'name': 'Тяжёлая артиллерия', 'icon': 'fa-bomb', 'price': 500, 'level': 3},
-        'light_tanks': {'name': 'Лёгкие танки', 'icon': 'fa-shield-alt', 'price': 1000, 'level': 1},
-        'medium_tanks': {'name': 'Средние танки', 'icon': 'fa-shield-alt', 'price': 1800, 'level': 2},
-        'heavy_tanks': {'name': 'Тяжёлые танки', 'icon': 'fa-shield-alt', 'price': 3000, 'level': 3},
-        'fighters': {'name': 'Истребители', 'icon': 'fa-plane', 'price': 2000, 'level': 1},
-        'bombers': {'name': 'Бомбардировщики', 'icon': 'fa-plane', 'price': 3500, 'level': 2},
-        'transport_vehicles': {'name': 'Грузовики', 'icon': 'fa-truck', 'price': 150, 'level': 1},
-        'armored_vehicles': {'name': 'Бронетранспортёры', 'icon': 'fa-truck-monster', 'price': 400, 'level': 2},
+        'field_artillery': {'name': 'Полевая артиллерия', 'icon': 'fa-bomb', 'price': 200},
+        'siege_artillery': {'name': 'Осадная артиллерия', 'icon': 'fa-bomb', 'price': 350},
+        'heavy_artillery': {'name': 'Тяжёлая артиллерия', 'icon': 'fa-bomb', 'price': 500},
+        'light_tanks': {'name': 'Лёгкие танки', 'icon': 'fa-shield-alt', 'price': 1000},
+        'medium_tanks': {'name': 'Средние танки', 'icon': 'fa-shield-alt', 'price': 1800},
+        'heavy_tanks': {'name': 'Тяжёлые танки', 'icon': 'fa-shield-alt', 'price': 3000},
+        'fighters': {'name': 'Истребители', 'icon': 'fa-plane', 'price': 2000},
+        'bombers': {'name': 'Бомбардировщики', 'icon': 'fa-plane', 'price': 3500},
+        'transport_vehicles': {'name': 'Грузовики', 'icon': 'fa-truck', 'price': 150},
+        'armored_vehicles': {'name': 'Бронетранспортёры', 'icon': 'fa-truck-monster', 'price': 400},
         
-        # Военно-морской флот (градация по уровням)
-        'galleons': {'name': 'Галеоны', 'icon': 'fa-ship', 'price': 800, 'level': 1},
-        'ships_of_line': {'name': 'Линейные корабли', 'icon': 'fa-ship', 'price': 1200, 'level': 2},
-        'steam_frigates': {'name': 'Паровые фрегаты', 'icon': 'fa-ship', 'price': 2000, 'level': 3},
-        'ironclads': {'name': 'Броненосцы', 'icon': 'fa-ship', 'price': 3500, 'level': 4},
-        'pre_dreadnoughts': {'name': 'Эскадренные броненосцы', 'icon': 'fa-ship', 'price': 5000, 'level': 5},
-        'dreadnoughts': {'name': 'Дредноуты', 'icon': 'fa-ship', 'price': 8000, 'level': 6},
-        'destroyers': {'name': 'Эсминцы', 'icon': 'fa-ship', 'price': 1500, 'level': 1},
-        'cruisers': {'name': 'Крейсера', 'icon': 'fa-ship', 'price': 4000, 'level': 2},
-        'submarines': {'name': 'Подводные лодки', 'icon': 'fa-ship', 'price': 2500, 'level': 1}
+        # Военно-морской флот
+        'galleons': {'name': 'Галеоны', 'icon': 'fa-ship', 'price': 800},
+        'ships_of_line': {'name': 'Линейные корабли', 'icon': 'fa-ship', 'price': 1200},
+        'steam_frigates': {'name': 'Паровые фрегаты', 'icon': 'fa-ship', 'price': 2000},
+        'ironclads': {'name': 'Броненосцы', 'icon': 'fa-ship', 'price': 3500},
+        'pre_dreadnoughts': {'name': 'Эскадренные броненосцы', 'icon': 'fa-ship', 'price': 5000},
+        'dreadnoughts': {'name': 'Дредноуты', 'icon': 'fa-ship', 'price': 8000},
+        'destroyers': {'name': 'Эсминцы', 'icon': 'fa-ship', 'price': 1500},
+        'cruisers': {'name': 'Крейсера', 'icon': 'fa-ship', 'price': 4000},
+        'submarines': {'name': 'Подводные лодки', 'icon': 'fa-ship', 'price': 2500}
     }
     return JSONResponse({'success': True, 'equipment': equipment_types})
 
