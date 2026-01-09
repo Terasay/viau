@@ -584,9 +584,9 @@ async def get_available_military_equipment():
     """Получение списка доступных типов военного снаряжения"""
     equipment_types = {
         # Пехотное вооружение (на 100 ед.)
-        'arquebuses': {'name': 'Аркебузы', 'icon': 'fa-gun', 'price': 5, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 2}, 'required_tech': 'arquebus', 'required_tech_name': get_tech_name('arquebus')},
-        'light_muskets': {'name': 'Лёгкие мушкеты', 'icon': 'fa-gun', 'price': 8, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 3}, 'required_tech': 'light_muskets', 'required_tech_name': get_tech_name('light_muskets')},
-        'muskets': {'name': 'Мушкеты', 'icon': 'fa-gun', 'price': 12, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 4}, 'required_tech': 'flintlock_musket_1', 'required_tech_name': get_tech_name('flintlock_musket_1')},
+        'arquebuses': {'name': 'Аркебузы', 'icon': 'fa-gun', 'price': 1, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 2}, 'required_tech': 'arquebus', 'required_tech_name': get_tech_name('arquebus')},
+        'light_muskets': {'name': 'Лёгкие мушкеты', 'icon': 'fa-gun', 'price': 2, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 3}, 'required_tech': 'light_muskets', 'required_tech_name': get_tech_name('light_muskets')},
+        'muskets': {'name': 'Мушкеты', 'icon': 'fa-gun', 'price': 3, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 4}, 'required_tech': 'flintlock_musket_1', 'required_tech_name': get_tech_name('flintlock_musket_1')},
         'rifles': {'name': 'Нарезные ружья', 'icon': 'fa-gun', 'price': 18, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 5}, 'required_tech': 'rifles', 'required_tech_name': get_tech_name('rifles')},
         'needle_rifles': {'name': 'Игольчатые винтовки', 'icon': 'fa-gun', 'price': 25, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 6, 'cuprum': 1}, 'required_tech': 'needle_gun', 'required_tech_name': get_tech_name('needle_gun')},
         'bolt_action_rifles': {'name': 'Магазинные винтовки', 'icon': 'fa-gun', 'price': 35, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 7, 'cuprum': 1, 'tin': 1}, 'required_tech': 'magazine_rifles_1', 'required_tech_name': get_tech_name('magazine_rifles_1')},
