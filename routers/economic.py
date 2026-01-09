@@ -13,9 +13,9 @@ router = APIRouter(prefix="/api/economic")
 def get_tech_name(tech_id: str) -> str:
     """Получить название технологии по её ID"""
     sys.path.append('..')
-    from routers.tech import LAND_FORCES_TECH, NAVAL_TECH, PRODUCTION_TECH, SCIENCE_TECH
+    from routers.tech import LAND_FORCES_TECH, NAVY_TECH, EDUCATION_TECH, ECONOMY_TECH, INDUSTRY_TECH, INFRASTRUCTURE_TECH
     
-    all_trees = [LAND_FORCES_TECH, NAVAL_TECH, PRODUCTION_TECH, SCIENCE_TECH]
+    all_trees = [LAND_FORCES_TECH, NAVY_TECH, EDUCATION_TECH, ECONOMY_TECH, INDUSTRY_TECH, INFRASTRUCTURE_TECH]
     
     for tree in all_trees:
         for line in tree.get('lines', []):
@@ -26,6 +26,7 @@ def get_tech_name(tech_id: str) -> str:
     return tech_id  # Возвращаем ID если название не найдено
 
 def get_db():
+
     conn = sqlite3.connect('users.db')
     conn.row_factory = sqlite3.Row
     return conn
