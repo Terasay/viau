@@ -841,8 +841,8 @@ let provincesModule = (function() {
             
             // Создаем мапу названий ресурсов
             const resourceNames = {};
-            if (converterData.resources) {
-                Object.entries(converterData.resources).forEach(([code, info]) => {
+            if (converterData.success && converterData.data && converterData.data.resources) {
+                Object.entries(converterData.data.resources).forEach(([code, info]) => {
                     resourceNames[code] = info.name;
                 });
             }
