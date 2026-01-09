@@ -501,7 +501,7 @@ const economicModule = (function() {
                         // Показываем админу все, игрокам - только с ever_had > 0
                         if (isAdmin || everHad > 0) {
                             const isHidden = everHad === 0;
-                            const { name, icon, price, batch_size, resources } = itemData;
+                            const { name, icon, price, batch_size, resources, required_tech } = itemData;
                             
                             // Формируем строку с ресурсами
                             let resourcesStr = '';
@@ -515,6 +515,9 @@ const economicModule = (function() {
                                 resourcesStr = ` • Ресурсы (на ${batch_size} ед.): ${resourceParts.join(', ')}`;
                             }
                             
+                            // Добавляем информацию о требуемой технологии
+                            const techStr = required_tech ? ` • Технология: ${required_tech}` : '';
+                            
                             html += `
                                 <div class="military-item ${isHidden ? 'item-hidden' : ''}">
                                     <div class="military-item-icon">
@@ -526,7 +529,7 @@ const economicModule = (function() {
                                             ${isHidden && isAdmin ? '<span class="item-hidden-badge"><i class="fas fa-eye-slash"></i> Скрыто от игрока</span>' : ''}
                                         </div>
                                         <div class="military-item-code">
-                                            ${itemCode} • ${price}/ед.${resourcesStr}
+                                            ${itemCode} • ${price}/ед.${resourcesStr}${techStr}
                                         </div>
                                     </div>
                                     ${isAdmin ? `
