@@ -327,6 +327,12 @@ let provincesModule = (function() {
             buildings.forEach(building => {
                 const displayMaintenance = formatPrice(building.maintenance_cost);
                 
+                // Проверяем является ли здание производственным
+                const isProductionBuilding = building.category && 
+                    (building.category.includes('military_infantry') || 
+                     building.category.includes('military_artillery') || 
+                     building.category.includes('military_naval'));
+                
                 // Формируем список всех эффектов
                 let effectsHtml = '';
                 if (building.effects && building.effects.length > 0) {
@@ -343,22 +349,52 @@ let provincesModule = (function() {
                     });
                 }
                 
+                // Отображаем текущее производство
+                let productionHtml = '';
+                if (isProductionBuilding) {
+                    if (building.production_type) {
+                        productionHtml = `
+                            <div class="stat-item production-status">
+                                <i class="fas fa-cog"></i>
+                                <span>Производство: ${building.production_type_name || building.production_type}</span>
+                            </div>
+                        `;
+                    } else {
+                        productionHtml = `
+                            <div class="stat-item production-status inactive">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Производство не выбрано</span>
+                            </div>
+                        `;
+                    }
+                }
+                
                 html += `
                     <div class="building-item">
                         <div class="building-header">
                             <h4>
                                 <i class="fas fa-industry"></i> ${building.name}
                             </h4>
-                            ${isAdminView ? `
-                                <button class="btn-icon btn-danger" 
-                                        onclick="provincesModule.demolishBuilding(${building.id}, ${provinceId})" 
-                                        title="Удалить здание">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            ` : ''}
+                            <div class="building-actions">
+                                ${isProductionBuilding ? `
+                                    <button class="btn-icon btn-primary" 
+                                            onclick="provincesModule.showProductionMenu(${building.id})" 
+                                            title="Выбрать производство">
+                                        <i class="fas fa-cogs"></i>
+                                    </button>
+                                ` : ''}
+                                ${isAdminView ? `
+                                    <button class="btn-icon btn-danger" 
+                                            onclick="provincesModule.demolishBuilding(${building.id}, ${provinceId})" 
+                                            title="Удалить здание">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
                         </div>
                         <p class="building-description">${building.description}</p>
                         <div class="building-stats">
+                            ${productionHtml}
                             ${effectsHtml}
                             <div class="stat-item">
                                 <i class="fas fa-coins"></i>
@@ -785,6 +821,140 @@ let provincesModule = (function() {
     }
 
     // Публичный API модуля
+    async function showProductionMenu(buildingId) {
+        try {
+            const response = await fetch(`/api/provinces/buildings/${buildingId}/available-production`, {
+                headers: { 'Authorization': localStorage.getItem('token') }
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                showProvError('Ошибка', data.error);
+                return;
+            }
+            
+            const modal = document.getElementById('modal-overlay');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalFooter = document.getElementById('modal-footer');
+            
+            modalTitle.textContent = 'Выбор производства';
+            
+            let html = '<div class="production-list">';
+            
+            if (data.available_equipment.length === 0) {
+                html += `
+                    <div class="placeholder-text">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        <p>Нет доступных технологий для производства</p>
+                    </div>
+                `;
+            } else {
+                // Показываем текущее производство
+                if (data.current_production) {
+                    const current = data.available_equipment.find(eq => eq.code === data.current_production);
+                    if (current) {
+                        html += `
+                            <div class="production-current">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Текущее: ${current.name}</span>
+                            </div>
+                        `;
+                    }
+                }
+                
+                // Список доступного снаряжения
+                data.available_equipment.forEach(equipment => {
+                    const isActive = equipment.code === data.current_production;
+                    const isAvailable = equipment.available;
+                    const disabledClass = isAvailable ? '' : 'disabled';
+                    
+                    // Формируем строку с ресурсами
+                    let resourcesStr = '';
+                    if (equipment.resources) {
+                        const resources = Object.entries(equipment.resources)
+                            .map(([res, amount]) => `${res}: ${amount}`)
+                            .join(', ');
+                        resourcesStr = `Ресурсы на партию (${equipment.batch_size} шт.): ${resources}`;
+                    }
+                    
+                    html += `
+                        <div class="production-item ${disabledClass} ${isActive ? 'active' : ''}">
+                            <div class="production-header">
+                                <h4>${equipment.name}</h4>
+                                ${isActive ? '<span class="badge badge-success">Активно</span>' : ''}
+                                ${!isAvailable ? '<span class="badge badge-warning">Требуется технология</span>' : ''}
+                            </div>
+                            <div class="production-info">
+                                ${equipment.required_tech_name ? `
+                                    <div class="stat-item">
+                                        <i class="fas fa-flask"></i>
+                                        <span>Технология: ${equipment.required_tech_name}</span>
+                                    </div>
+                                ` : ''}
+                                ${resourcesStr ? `
+                                    <div class="stat-item">
+                                        <i class="fas fa-cubes"></i>
+                                        <span>${resourcesStr}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="stat-item">
+                                    <i class="fas fa-box"></i>
+                                    <span>Производство: ${equipment.batch_size} шт/ход</span>
+                                </div>
+                            </div>
+                            ${isAvailable && !isActive ? `
+                                <button class="btn-primary" onclick="provincesModule.setProduction(${buildingId}, '${equipment.code}')">
+                                    Выбрать производство
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+            }
+            
+            html += '</div>';
+            
+            modalBody.innerHTML = html;
+            modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
+            modal.classList.add('visible');
+            
+        } catch (error) {
+            console.error('Error loading production menu:', error);
+            showProvError('Ошибка', 'Не удалось загрузить список производства');
+        }
+    }
+
+    async function setProduction(buildingId, equipmentCode) {
+        try {
+            const response = await fetch(`/api/provinces/buildings/${buildingId}/set-production`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ equipment_code: equipmentCode })
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                showProvError('Ошибка', data.error);
+                return;
+            }
+            
+            await showProvSuccess('Успех', data.message);
+            
+            // Обновляем список производства
+            showProductionMenu(buildingId);
+            
+        } catch (error) {
+            console.error('Error setting production:', error);
+            showProvError('Ошибка', 'Не удалось установить производство');
+        }
+    }
+
     return {
         init,
         ensureDataLoaded,
@@ -796,7 +966,9 @@ let provincesModule = (function() {
         showAddProvinceModal,
         saveProvince,
         editProvince,
-        deleteProvince
+        deleteProvince,
+        showProductionMenu,
+        setProduction
     };
 })();
 

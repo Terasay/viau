@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 import sqlite3
 import sys
 import math
+import json
 from datetime import datetime
 
 sys.path.append('..')
@@ -56,100 +57,114 @@ BUILDING_TYPES = {
         'effects': [('education_growth', 0.10)]
     },
     
-    # ВОЕННЫЕ ПОСТРОЙКИ - ПЕХОТА
-    'Оружейная мастерская': {
-        'description': 'Производит холодное оружие и простое огнестрельное оружие.',
-        'base_cost': 5000,
-        'maintenance_cost': 500,
+    # ОРУЖЕЙНАЯ ЛИНИЯ (производство пехотного снаряжения)
+    'Оружейный двор': {
+        'description': 'Ряды мастерских и кузниц, где оружейники чинят старое и собирают простые стволы по заказу гарнизона.',
+        'base_cost': 3000,
+        'maintenance_cost': 300,
         'building_category': 'military_infantry',
         'required_tech_ids': ['arquebus'],
-        'effects': [('production_arquebuses', 50)]
+        'effects': []
     },
-    'Завод винтовок': {
-        'description': 'Массовое производство современных винтовок для армии.',
-        'base_cost': 12000,
-        'maintenance_cost': 1200,
+    'Оружейная мануфактура': {
+        'description': 'Под одной крышей трудятся десятки мастеров: детали делаются партиями, а сборка идёт почти без остановки.',
+        'base_cost': 8000,
+        'maintenance_cost': 800,
         'building_category': 'military_infantry',
-        'required_tech_ids': ['mass_rifle_production'],
-        'effects': [('production_rifles', 200)]
+        'required_tech_ids': ['flintlock_musket_1'],
+        'effects': []
     },
-    
-
-    # ВОЕННЫЕ ПОСТРОЙКИ - ТЕХНИКА
-    'Завод артиллерии': {
-        'description': 'Производство пушек и артиллерийских орудий.',
-        'base_cost': 15000,
-        'maintenance_cost': 1500,
-        'building_category': 'military_vehicles',
-        'required_tech_ids': ['field_artillery_1'],
-        'effects': [('production_artillery', 10)]
-    },
-    'Танковый завод': {
-        'description': 'Производство бронетехники и танков.',
-        'base_cost': 25000,
-        'maintenance_cost': 2500,
-        'building_category': 'military_vehicles',
-        'required_tech_ids': [],
-        'effects': [('production_tanks', 5)]
-    },
-    'Авиационный завод': {
-        'description': 'Производство самолётов для военных нужд.',
-        'base_cost': 30000,
-        'maintenance_cost': 3000,
-        'building_category': 'military_vehicles',
-        'required_tech_ids': [],
-        'effects': [('production_aircraft', 3)]
-    },
-    'Автомобильный завод': {
-        'description': 'Производство военных грузовиков и транспорта.',
+    'Оружейный завод': {
+        'description': 'Цеха с машинами и строгими нормами: сталь, сверление, калибровка и серийная сборка становятся делом конвейера.',
         'base_cost': 18000,
         'maintenance_cost': 1800,
-        'building_category': 'military_vehicles',
-        'required_tech_ids': [],
-        'effects': [('production_vehicles', 20)]
+        'building_category': 'military_infantry',
+        'required_tech_ids': ['breechloader_1'],
+        'effects': []
     },
-    
-
-    # ВОЕННЫЕ ПОСТРОЙКИ - ФЛОТ
-    'Верфь парусных кораблей': {
-        'description': 'Строительство парусных военных судов.',
-        'base_cost': 20000,
-        'maintenance_cost': 2000,
-        'building_category': 'military_naval',
-        'required_tech_ids': ['galleons_1'],
-        'effects': [('production_sailing_ships', 2)]
-    },
-    'Паровая верфь': {
-        'description': 'Строительство паровых военных кораблей.',
+    'Крупный оружейный завод': {
+        'description': 'Целый промышленный квартал: свои склады, испытательные площадки и потоки заказов, способные вооружать армии.',
         'base_cost': 35000,
         'maintenance_cost': 3500,
-        'building_category': 'military_naval',
-        'required_tech_ids': ['steam_ships_of_line'],
-        'effects': [('production_steam_ships', 1)]
+        'building_category': 'military_infantry',
+        'required_tech_ids': ['magazine_rifles_1'],
+        'effects': []
     },
-    'Верфь эсминцев': {
-        'description': 'Строительство современных эсминцев и фрегатов.',
+    
+    # ЛИТЕЙНО-АРТИЛЛЕРИЙСКАЯ ЛИНИЯ (производство артиллерии)
+    'Литейный двор': {
+        'description': 'Печи, формы и копоть: здесь льют ядра, простые детали и отливают первые орудийные заготовки для войск.',
+        'base_cost': 5000,
+        'maintenance_cost': 500,
+        'building_category': 'military_artillery',
+        'required_tech_ids': ['bronze_cannons'],
+        'effects': []
+    },
+    'Арсенал': {
+        'description': 'Каменные склады под охраной, где хранятся пушки, боеприпасы и запасные части, а мастера поддерживают их в готовности.',
+        'base_cost': 10000,
+        'maintenance_cost': 1000,
+        'building_category': 'military_artillery',
+        'required_tech_ids': ['field_artillery_1'],
+        'effects': []
+    },
+    'Литейная мануфактура': {
+        'description': 'Литьё поставлено на поток: заказы идут сериями, формы унифицируются, а качество проверяют по меркам.',
+        'base_cost': 18000,
+        'maintenance_cost': 1800,
+        'building_category': 'military_artillery',
+        'required_tech_ids': ['rifled_artillery_1'],
+        'effects': []
+    },
+    'Королевская артиллерийская мануфактура': {
+        'description': 'Привилегированное производство под патронажем короны: лучшие литейщики и инженеры создают орудия по государственным чертежам.',
+        'base_cost': 30000,
+        'maintenance_cost': 3000,
+        'building_category': 'military_artillery',
+        'required_tech_ids': ['breech_loading_artillery'],
+        'effects': []
+    },
+    'Артиллерийский завод': {
+        'description': 'Большие цеха обработки и сборки: стволы растачиваются точно, лафеты делаются серийно, испытания проходят по регламенту.',
         'base_cost': 50000,
         'maintenance_cost': 5000,
-        'building_category': 'military_naval',
-        'required_tech_ids': ['cruisers_1'],
-        'effects': [('production_destroyers', 1)]
+        'building_category': 'military_artillery',
+        'required_tech_ids': ['heavy_artillery'],
+        'effects': []
     },
-    'Верфь линкоров': {
-        'description': 'Строительство больших линейных кораблей.',
-        'base_cost': 80000,
-        'maintenance_cost': 8000,
+    
+    # СУДОСТРОИТЕЛЬНАЯ ЛИНИЯ (производство кораблей)
+    'Верфь': {
+        'description': 'Стапели у воды и запах смолы: здесь строят и чинят суда, заготавливая лес и снабжение прямо на месте.',
+        'base_cost': 15000,
+        'maintenance_cost': 1500,
         'building_category': 'military_naval',
-        'required_tech_ids': ['pre_dreadnoughts'],
-        'effects': [('production_battleships', 1)]
+        'required_tech_ids': ['galleons'],
+        'effects': []
     },
-    'Верфь подводных лодок': {
-        'description': 'Строительство подводных лодок.',
-        'base_cost': 40000,
-        'maintenance_cost': 4000,
+    'Корабельный двор': {
+        'description': 'Разросшийся комплекс со складами, мастерскими и доками: корпус, рангоут и оснастка делаются согласованно и быстрее.',
+        'base_cost': 30000,
+        'maintenance_cost': 3000,
         'building_category': 'military_naval',
-        'required_tech_ids': ['torpedoes'],
-        'effects': [('production_submarines', 1)]
+        'required_tech_ids': ['ships_of_line'],
+        'effects': []
+    },
+    'Адмиралтейство': {
+        'description': 'Штаб и управление флотом: здесь утверждают проекты, распределяют заказы, снабжение и следят за готовностью кораблей.',
+        'base_cost': 60000,
+        'maintenance_cost': 6000,
+        'building_category': 'military_naval',
+        'required_tech_ids': ['ironclad'],
+        'effects': []
+    },
+    'Королевское адмиралтейство': {
+        'description': 'Морская власть державы: единые стандарты, большие бюджеты и прямые приказы короны превращают верфи в инструмент политики и войны.',
+        'base_cost': 100000,
+        'maintenance_cost': 10000,
+        'building_category': 'military_naval',
+        'required_tech_ids': ['dreadnought'],
+        'effects': []
     }
 }
 
@@ -176,6 +191,7 @@ def init_db():
             province_id INTEGER NOT NULL,
             building_type_name TEXT NOT NULL,
             level INTEGER NOT NULL DEFAULT 1,
+            production_type TEXT,
             built_at TEXT NOT NULL,
             FOREIGN KEY (province_id) REFERENCES provinces (id) ON DELETE CASCADE
         )
@@ -183,6 +199,13 @@ def init_db():
     
     cursor.execute("PRAGMA table_info(buildings)")
     columns = [row[1] for row in cursor.fetchall()]
+    
+    # Миграция: добавляем поле production_type если его нет
+    if 'production_type' not in columns:
+        print('Добавление поля production_type в таблицу buildings...')
+        cursor.execute('ALTER TABLE buildings ADD COLUMN production_type TEXT')
+        conn.commit()
+        print('✓ Поле production_type добавлено')
     
     if 'building_type_id' in columns and 'building_type_name' not in columns:
         print('Миграция построек на новую систему...')
@@ -431,7 +454,7 @@ async def get_province_buildings(province_id: int, request: Request):
                 return JSONResponse({'success': False, 'error': 'Нет доступа к этой провинции'}, status_code=403)
         
         cursor.execute('''
-            SELECT id, building_type_name, level, built_at
+            SELECT id, building_type_name, level, production_type, built_at
             FROM buildings
             WHERE province_id = ?
             ORDER BY built_at DESC
@@ -453,6 +476,19 @@ async def get_province_buildings(province_id: int, request: Request):
                     'effect_value': effect_value
                 })
             
+            # Получаем название производимого снаряжения если установлено
+            production_type_name = None
+            if row['production_type']:
+                sys.path.append('..')
+                from routers.economic import get_available_military_equipment
+                equipment_response = await get_available_military_equipment()
+                equipment_data = json.loads(equipment_response.body)
+                
+                if equipment_data.get('success'):
+                    all_equipment = equipment_data.get('equipment', {})
+                    if row['production_type'] in all_equipment:
+                        production_type_name = all_equipment[row['production_type']].get('name')
+            
             buildings.append({
                 'id': row['id'],
                 'name': building_name,
@@ -461,7 +497,10 @@ async def get_province_buildings(province_id: int, request: Request):
                 'base_cost': building_data['base_cost'],
                 'maintenance_cost': building_data['maintenance_cost'],
                 'built_at': row['built_at'],
-                'effects': effects
+                'effects': effects,
+                'category': building_data.get('building_category'),
+                'production_type': row['production_type'],
+                'production_type_name': production_type_name
             })
         
         return JSONResponse({
@@ -652,6 +691,208 @@ async def demolish_building(building_id: int, request: Request):
     
     except Exception as e:
         conn.rollback()
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+
+@router.post("/buildings/{building_id}/set-production")
+async def set_building_production(building_id: int, request: Request):
+    """Установка типа производства для здания"""
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    data = await request.json()
+    equipment_code = data.get('equipment_code')
+    
+    if not equipment_code:
+        return JSONResponse({'success': False, 'error': 'Не указан тип снаряжения'}, status_code=400)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Получаем информацию о здании и стране
+        cursor.execute('''
+            SELECT b.id, b.building_type_name, c.id as country_id, c.player_id
+            FROM buildings b
+            JOIN provinces p ON b.province_id = p.id
+            JOIN countries c ON p.country_id = c.id
+            WHERE b.id = ?
+        ''', (building_id,))
+        
+        building = cursor.fetchone()
+        if not building:
+            return JSONResponse({'success': False, 'error': 'Здание не найдено'}, status_code=404)
+        
+        # Проверяем доступ
+        if user['role'] not in ['admin', 'moderator']:
+            if building['player_id'] != user['id']:
+                return JSONResponse({'success': False, 'error': 'Нет доступа к этому зданию'}, status_code=403)
+        
+        # Получаем информацию о типе здания
+        building_type_name = building['building_type_name']
+        if building_type_name not in BUILDING_TYPES:
+            return JSONResponse({'success': False, 'error': 'Тип здания не найден'}, status_code=404)
+        
+        building_data = BUILDING_TYPES[building_type_name]
+        building_category = building_data.get('building_category')
+        
+        # Импортируем данные о снаряжении
+        sys.path.append('..')
+        from routers.economic import get_available_military_equipment
+        equipment_response = await get_available_military_equipment()
+        equipment_data = json.loads(equipment_response.body)
+        
+        if not equipment_data.get('success'):
+            return JSONResponse({'success': False, 'error': 'Не удалось загрузить данные о снаряжении'}, status_code=500)
+        
+        all_equipment = equipment_data.get('equipment', {})
+        
+        # Проверяем существование выбранного снаряжения
+        if equipment_code not in all_equipment:
+            return JSONResponse({'success': False, 'error': 'Неверный тип снаряжения'}, status_code=400)
+        
+        equipment_info = all_equipment[equipment_code]
+        required_tech = equipment_info.get('required_tech')
+        
+        # Определяем какой тип снаряжения может производить это здание
+        allowed_categories = {
+            'military_infantry': ['arquebuses', 'light_muskets', 'muskets', 'rifles', 'needle_rifles', 'bolt_action_rifles'],
+            'military_artillery': ['field_artillery', 'siege_artillery', 'heavy_artillery'],
+            'military_naval': ['galleons', 'ships_of_line', 'steam_frigates', 'ironclads', 'pre_dreadnoughts', 'dreadnoughts', 'destroyers', 'cruisers', 'submarines']
+        }
+        
+        if building_category not in allowed_categories:
+            return JSONResponse({'success': False, 'error': 'Это здание не может производить снаряжение'}, status_code=400)
+        
+        if equipment_code not in allowed_categories[building_category]:
+            return JSONResponse({'success': False, 'error': 'Это здание не может производить данный тип снаряжения'}, status_code=400)
+        
+        # Проверяем наличие технологии у страны
+        cursor.execute('''
+            SELECT tech_id FROM country_technologies
+            WHERE country_id = ? AND tech_id = ? AND researched = 1
+        ''', (building['country_id'], required_tech))
+        
+        tech = cursor.fetchone()
+        if not tech:
+            return JSONResponse({'success': False, 'error': f'Требуется технология: {required_tech}'}, status_code=400)
+        
+        # Устанавливаем тип производства
+        cursor.execute('''
+            UPDATE buildings
+            SET production_type = ?
+            WHERE id = ?
+        ''', (equipment_code, building_id))
+        
+        conn.commit()
+        
+        return JSONResponse({
+            'success': True,
+            'message': f'Производство установлено: {equipment_info.get("name")}',
+            'production_type': equipment_code
+        })
+        
+    except Exception as e:
+        conn.rollback()
+        print(f'Error setting production: {e}')
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+
+@router.get("/buildings/{building_id}/available-production")
+async def get_available_production(building_id: int, request: Request):
+    """Получение доступных типов производства для здания"""
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Получаем информацию о здании и стране
+        cursor.execute('''
+            SELECT b.id, b.building_type_name, b.production_type, c.id as country_id
+            FROM buildings b
+            JOIN provinces p ON b.province_id = p.id
+            JOIN countries c ON p.country_id = c.id
+            WHERE b.id = ?
+        ''', (building_id,))
+        
+        building = cursor.fetchone()
+        if not building:
+            return JSONResponse({'success': False, 'error': 'Здание не найдено'}, status_code=404)
+        
+        building_type_name = building['building_type_name']
+        if building_type_name not in BUILDING_TYPES:
+            return JSONResponse({'success': False, 'error': 'Тип здания не найден'}, status_code=404)
+        
+        building_data = BUILDING_TYPES[building_type_name]
+        building_category = building_data.get('building_category')
+        
+        # Определяем какие типы снаряжения доступны для этой категории
+        category_equipment = {
+            'military_infantry': ['arquebuses', 'light_muskets', 'muskets', 'rifles', 'needle_rifles', 'bolt_action_rifles'],
+            'military_artillery': ['field_artillery', 'siege_artillery', 'heavy_artillery'],
+            'military_naval': ['galleons', 'ships_of_line', 'steam_frigates', 'ironclads', 'pre_dreadnoughts', 'dreadnoughts', 'destroyers', 'cruisers', 'submarines']
+        }
+        
+        if building_category not in category_equipment:
+            return JSONResponse({
+                'success': True,
+                'available_equipment': [],
+                'current_production': building['production_type']
+            })
+        
+        # Получаем исследованные технологии страны
+        cursor.execute('''
+            SELECT tech_id FROM country_technologies
+            WHERE country_id = ? AND researched = 1
+        ''', (building['country_id'],))
+        
+        researched_techs = [row['tech_id'] for row in cursor.fetchall()]
+        
+        # Импортируем данные о снаряжении
+        sys.path.append('..')
+        from routers.economic import get_available_military_equipment
+        equipment_response = await get_available_military_equipment()
+        equipment_data = json.loads(equipment_response.body)
+        
+        if not equipment_data.get('success'):
+            return JSONResponse({'success': False, 'error': 'Не удалось загрузить данные о снаряжении'}, status_code=500)
+        
+        all_equipment = equipment_data.get('equipment', {})
+        
+        # Фильтруем доступное снаряжение
+        available = []
+        for eq_code in category_equipment[building_category]:
+            if eq_code in all_equipment:
+                eq_info = all_equipment[eq_code]
+                required_tech = eq_info.get('required_tech')
+                
+                available.append({
+                    'code': eq_code,
+                    'name': eq_info.get('name'),
+                    'required_tech': required_tech,
+                    'required_tech_name': eq_info.get('required_tech_name'),
+                    'available': required_tech in researched_techs,
+                    'resources': eq_info.get('resources', {}),
+                    'batch_size': eq_info.get('batch_size', 1)
+                })
+        
+        return JSONResponse({
+            'success': True,
+            'available_equipment': available,
+            'current_production': building['production_type'],
+            'building_category': building_category
+        })
+        
+    except Exception as e:
+        print(f'Error getting available production: {e}')
         return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
     finally:
         conn.close()
