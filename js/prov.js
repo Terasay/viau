@@ -873,10 +873,61 @@ let provincesModule = (function() {
                         </div>
                         <div class="building-info-item">
                             <i class="fas fa-coins"></i>
-                            <span>Содержание: ${data.maintenance_cost}/ход</span>
+                            <span>Базовое содержание: ${data.maintenance_cost}/ход</span>
                         </div>
                     </div>
                 `;
+                
+                // Панель управления финансированием (только для military_* зданий)
+                if (data.building_category && data.building_category.startsWith('military_')) {
+                    const fundingPercentage = data.funding_percentage || 100;
+                    const efficiency = data.production_efficiency || 100;
+                    const actualCost = data.actual_maintenance_cost || data.maintenance_cost;
+                    
+                    html += `
+                        <div class="funding-control-panel">
+                            <div class="funding-header">
+                                <h4><i class="fas fa-sliders-h"></i> Управление финансированием</h4>
+                            </div>
+                            <div class="funding-slider-container">
+                                <div class="funding-labels">
+                                    <span>50%</span>
+                                    <span>100%</span>
+                                    <span>200%</span>
+                                </div>
+                                <input 
+                                    type="range" 
+                                    id="funding-slider-${buildingId}" 
+                                    min="50" 
+                                    max="200" 
+                                    step="5" 
+                                    value="${fundingPercentage}"
+                                    class="funding-slider"
+                                >
+                                <div class="funding-value-display">
+                                    <span id="funding-display-${buildingId}">${fundingPercentage}%</span>
+                                </div>
+                            </div>
+                            <div class="funding-stats">
+                                <div class="funding-stat">
+                                    <i class="fas fa-coins"></i>
+                                    <span>Реальные затраты: <strong id="actual-cost-${buildingId}">${actualCost}</strong>/ход</span>
+                                </div>
+                                <div class="funding-stat">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>Эффективность: <strong id="efficiency-${buildingId}">${efficiency.toFixed(1)}%</strong></span>
+                                </div>
+                            </div>
+                            <button 
+                                class="btn-primary btn-apply-funding" 
+                                id="apply-funding-btn-${buildingId}"
+                                onclick="provincesModule.applyFunding(${buildingId})"
+                            >
+                                <i class="fas fa-check"></i> Применить финансирование
+                            </button>
+                        </div>
+                    `;
+                }
                 
                 // Показываем текущее производство
                 if (data.current_production) {
@@ -953,6 +1004,37 @@ let provincesModule = (function() {
             modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
             modal.classList.add('visible');
             
+            // Добавляем обработчик для слайдера финансирования
+            if (data.building_category && data.building_category.startsWith('military_')) {
+                const slider = document.getElementById(`funding-slider-${buildingId}`);
+                if (slider) {
+                    slider.addEventListener('input', (e) => {
+                        const percentage = parseInt(e.target.value);
+                        const baseCost = data.maintenance_cost;
+                        
+                        // Обновляем отображение процента
+                        document.getElementById(`funding-display-${buildingId}`).textContent = `${percentage}%`;
+                        
+                        // Рассчитываем реальные затраты
+                        const actualCost = Math.floor(baseCost * percentage / 100);
+                        document.getElementById(`actual-cost-${buildingId}`).textContent = actualCost;
+                        
+                        // Рассчитываем эффективность (та же формула что на бэке)
+                        let efficiency = 100;
+                        const diff = percentage - 100;
+                        if (diff < 0) {
+                            const penaltyFactor = 1 + Math.abs(diff) / 200;
+                            efficiency = 100 + diff * penaltyFactor;
+                        } else if (diff > 0) {
+                            const diminishingFactor = 1 - diff / 400;
+                            efficiency = 100 + diff * Math.max(diminishingFactor, 0.6);
+                        }
+                        efficiency = Math.max(efficiency, 0);
+                        document.getElementById(`efficiency-${buildingId}`).textContent = `${efficiency.toFixed(1)}%`;
+                    });
+                }
+            }
+            
         } catch (error) {
             console.error('Error loading production menu:', error);
             showProvError('Ошибка', 'Не удалось загрузить список производства');
@@ -988,6 +1070,40 @@ let provincesModule = (function() {
         }
     }
 
+    async function applyFunding(buildingId) {
+        try {
+            const slider = document.getElementById(`funding-slider-${buildingId}`);
+            if (!slider) return;
+            
+            const fundingPercentage = parseInt(slider.value);
+            
+            const response = await fetch(`/api/provinces/buildings/${buildingId}/set-funding`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ funding_percentage: fundingPercentage })
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                showProvError('Ошибка', data.error);
+                return;
+            }
+            
+            await showProvSuccess('Успех', data.message);
+            
+            // Перезагружаем меню производства для обновления показателей
+            showProductionMenu(buildingId);
+            
+        } catch (error) {
+            console.error('Error setting funding:', error);
+            showProvError('Ошибка', 'Не удалось изменить финансирование');
+        }
+    }
+
     return {
         init,
         ensureDataLoaded,
@@ -1001,7 +1117,8 @@ let provincesModule = (function() {
         editProvince,
         deleteProvince,
         showProductionMenu,
-        setProduction
+        setProduction,
+        applyFunding
     };
 })();
 

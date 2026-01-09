@@ -207,6 +207,13 @@ def init_db():
         conn.commit()
         print('✓ Поле production_type добавлено')
     
+    # Миграция: добавляем поле funding_percentage если его нет
+    if 'funding_percentage' not in columns:
+        print('Добавление поля funding_percentage в таблицу buildings...')
+        cursor.execute('ALTER TABLE buildings ADD COLUMN funding_percentage INTEGER DEFAULT 100')
+        conn.commit()
+        print('✓ Поле funding_percentage добавлено')
+    
     if 'building_type_id' in columns and 'building_type_name' not in columns:
         print('Миграция построек на новую систему...')
         cursor.execute('''
@@ -255,6 +262,38 @@ def convert_gold_to_currency(gold_amount, currency_code):
     currency_rate = get_currency_rate(currency_code)
     price = gold_amount * currency_rate
     return math.ceil(price / 10) * 10
+
+def calculate_funding_efficiency(funding_percentage):
+    """Расчет эффективности производства с учетом финансирования (прогрессивная модель)
+    
+    Args:
+        funding_percentage: Процент финансирования (50-200)
+    
+    Returns:
+        float: Эффективность производства в процентах
+    
+    Примеры:
+        50% → ~37% эффективность
+        80% → ~78% эффективность  
+        90% → ~89.5% эффективность
+        100% → 100% эффективность
+        110% → ~109.75% эффективность
+        150% → ~143.75% эффективность
+        200% → ~175% эффективность
+    """
+    if funding_percentage == 100:
+        return 100.0
+    
+    diff = funding_percentage - 100
+    
+    if diff < 0:  # Снижение финансирования - эффективность падает быстрее
+        penalty_factor = 1 + abs(diff) / 200
+        efficiency = 100 + diff * penalty_factor
+    else:  # Повышение финансирования - эффективность растет медленнее (убывающая отдача)
+        diminishing_factor = 1 - diff / 400
+        efficiency = 100 + diff * max(diminishing_factor, 0.6)
+    
+    return max(efficiency, 0)
 
 async def get_current_user(request: Request):
     """Получение текущего пользователя из токена"""
@@ -454,7 +493,7 @@ async def get_province_buildings(province_id: int, request: Request):
                 return JSONResponse({'success': False, 'error': 'Нет доступа к этой провинции'}, status_code=403)
         
         cursor.execute('''
-            SELECT id, building_type_name, level, production_type, built_at
+            SELECT id, building_type_name, level, production_type, funding_percentage, built_at
             FROM buildings
             WHERE province_id = ?
             ORDER BY built_at DESC
@@ -489,6 +528,8 @@ async def get_province_buildings(province_id: int, request: Request):
                     if row['production_type'] in all_equipment:
                         production_type_name = all_equipment[row['production_type']].get('name')
             
+            funding_percentage = row['funding_percentage'] if row['funding_percentage'] else 100
+            
             buildings.append({
                 'id': row['id'],
                 'name': building_name,
@@ -496,6 +537,7 @@ async def get_province_buildings(province_id: int, request: Request):
                 'level': row['level'],
                 'base_cost': building_data['base_cost'],
                 'maintenance_cost': building_data['maintenance_cost'],
+                'funding_percentage': funding_percentage,
                 'built_at': row['built_at'],
                 'effects': effects,
                 'category': building_data.get('building_category'),
@@ -803,6 +845,83 @@ async def set_building_production(building_id: int, request: Request):
         conn.close()
 
 
+@router.post("/buildings/{building_id}/set-funding")
+async def set_building_funding(building_id: int, request: Request):
+    """Установка процента финансирования для производственного здания (50-200%)"""
+    user = await get_current_user(request)
+    if not user:
+        return JSONResponse({'success': False, 'error': 'Требуется авторизация'}, status_code=401)
+    
+    data = await request.json()
+    funding_percentage = data.get('funding_percentage')
+    
+    if not funding_percentage or not isinstance(funding_percentage, (int, float)):
+        return JSONResponse({'success': False, 'error': 'Не указан процент финансирования'}, status_code=400)
+    
+    funding_percentage = int(funding_percentage)
+    
+    if funding_percentage < 50 or funding_percentage > 200:
+        return JSONResponse({'success': False, 'error': 'Процент финансирования должен быть от 50% до 200%'}, status_code=400)
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        # Получаем информацию о здании и проверяем доступ
+        cursor.execute('''
+            SELECT b.id, b.building_type_name, c.player_id
+            FROM buildings b
+            JOIN provinces p ON b.province_id = p.id
+            JOIN countries c ON p.country_id = c.id
+            WHERE b.id = ?
+        ''', (building_id,))
+        
+        building = cursor.fetchone()
+        if not building:
+            return JSONResponse({'success': False, 'error': 'Здание не найдено'}, status_code=404)
+        
+        # Проверяем доступ
+        if user['role'] not in ['admin', 'moderator']:
+            if building['player_id'] != user['id']:
+                return JSONResponse({'success': False, 'error': 'Нет доступа к этому зданию'}, status_code=403)
+        
+        # Проверяем что это производственное здание
+        building_type_name = building['building_type_name']
+        if building_type_name not in BUILDING_TYPES:
+            return JSONResponse({'success': False, 'error': 'Тип здания не найден'}, status_code=404)
+        
+        building_data = BUILDING_TYPES[building_type_name]
+        building_category = building_data.get('building_category')
+        
+        if not building_category or not building_category.startswith('military_'):
+            return JSONResponse({'success': False, 'error': 'Финансирование доступно только для производственных зданий'}, status_code=400)
+        
+        # Устанавливаем финансирование
+        cursor.execute('''
+            UPDATE buildings
+            SET funding_percentage = ?
+            WHERE id = ?
+        ''', (funding_percentage, building_id))
+        
+        conn.commit()
+        
+        efficiency = calculate_funding_efficiency(funding_percentage)
+        
+        return JSONResponse({
+            'success': True,
+            'message': f'Финансирование установлено: {funding_percentage}%',
+            'funding_percentage': funding_percentage,
+            'efficiency': round(efficiency, 2)
+        })
+        
+    except Exception as e:
+        conn.rollback()
+        print(f'Error setting funding: {e}')
+        return JSONResponse({'success': False, 'error': str(e)}, status_code=500)
+    finally:
+        conn.close()
+
+
 @router.get("/buildings/{building_id}/available-production")
 async def get_available_production(building_id: int, request: Request):
     """Получение доступных типов производства для здания"""
@@ -816,7 +935,7 @@ async def get_available_production(building_id: int, request: Request):
     try:
         # Получаем информацию о здании и стране
         cursor.execute('''
-            SELECT b.id, b.building_type_name, b.production_type, c.id as country_id
+            SELECT b.id, b.building_type_name, b.production_type, b.funding_percentage, c.id as country_id
             FROM buildings b
             JOIN provinces p ON b.province_id = p.id
             JOIN countries c ON p.country_id = c.id
@@ -834,6 +953,15 @@ async def get_available_production(building_id: int, request: Request):
         building_data = BUILDING_TYPES[building_type_name]
         building_category = building_data.get('building_category')
         maintenance_cost = building_data.get('maintenance_cost', 0)
+        
+        # Получаем процент финансирования (по умолчанию 100%)
+        funding_percentage = building['funding_percentage'] if building['funding_percentage'] else 100
+        
+        # Рассчитываем эффективность производства (прогрессивная модель)
+        production_efficiency = calculate_funding_efficiency(funding_percentage)
+        
+        # Реальные затраты на содержание
+        actual_maintenance_cost = int(maintenance_cost * funding_percentage / 100)
         
         # Определяем какие типы снаряжения доступны для этой категории
         category_equipment = {
@@ -888,10 +1016,10 @@ async def get_available_production(building_id: int, request: Request):
                 batch_size = eq_info.get('batch_size', 1)
                 equipment_price = eq_info.get('price', 1)
                 
-                # Рассчитываем производственную мощность здания
+                # Рассчитываем производственную мощность здания (по БАЗОВОМУ maintenance_cost)
                 cost_per_unit = maintenance_cost / batch_size if batch_size > 0 else 0
                 
-                # Проверка: может ли завод производить это снаряжение
+                # Проверка: может ли завод производить это снаряжение (проверка по базовым 100%)
                 can_produce = cost_per_unit >= equipment_price
                 
                 # Расчёт множителя производства (если может производить)
@@ -900,7 +1028,15 @@ async def get_available_production(building_id: int, request: Request):
                 
                 if can_produce and equipment_price > 0:
                     production_multiplier = cost_per_unit / equipment_price
-                    actual_production = int(batch_size * production_multiplier)
+                    
+                    # Базовое производство
+                    base_production = batch_size * production_multiplier
+                    
+                    # Применяем эффективность финансирования
+                    production_with_efficiency = base_production * (production_efficiency / 100)
+                    
+                    # Целочисленное производство (если < 1, то 0)
+                    actual_production = int(production_with_efficiency) if production_with_efficiency >= 1 else 0
                 
                 available.append({
                     'code': eq_code,
@@ -923,6 +1059,9 @@ async def get_available_production(building_id: int, request: Request):
             'building_category': building_category,
             'building_name': building_type_name,
             'maintenance_cost': maintenance_cost,
+            'funding_percentage': funding_percentage,
+            'production_efficiency': round(production_efficiency, 2),
+            'actual_maintenance_cost': actual_maintenance_cost,
             'is_admin': is_admin
         })
         
