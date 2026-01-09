@@ -501,7 +501,7 @@ const economicModule = (function() {
                         // Показываем админу все, игрокам - только с ever_had > 0
                         if (isAdmin || everHad > 0) {
                             const isHidden = everHad === 0;
-                            const { name, icon, price, level } = itemData;
+                            const { name, icon, price } = itemData;
                             
                             html += `
                                 <div class="military-item ${isHidden ? 'item-hidden' : ''}">
@@ -511,11 +511,10 @@ const economicModule = (function() {
                                     <div class="military-item-info">
                                         <div class="military-item-name">
                                             ${name}
-                                            <span class="item-level">ур. ${level}</span>
                                             ${isHidden && isAdmin ? '<span class="item-hidden-badge"><i class="fas fa-eye-slash"></i> Скрыто от игрока</span>' : ''}
                                         </div>
                                         <div class="military-item-code">
-                                            ${itemCode} • ${price} 💰/ед.
+                                            ${itemCode} • ${price}/ед.
                                         </div>
                                     </div>
                                     ${isAdmin ? `
