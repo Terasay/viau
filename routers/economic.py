@@ -567,36 +567,38 @@ async def get_available_currencies():
 async def get_available_military_equipment():
     """Получение списка доступных типов военного снаряжения"""
     equipment_types = {
-        # Пехотное вооружение
-        'arquebuses': {'name': 'Аркебузы', 'icon': 'fa-gun', 'price': 5},
-        'light_muskets': {'name': 'Лёгкие мушкеты', 'icon': 'fa-gun', 'price': 8},
-        'muskets': {'name': 'Мушкеты', 'icon': 'fa-gun', 'price': 12},
-        'rifles': {'name': 'Нарезные ружья', 'icon': 'fa-gun', 'price': 18},
-        'needle_rifles': {'name': 'Игольчатые винтовки', 'icon': 'fa-gun', 'price': 25},
-        'bolt_action_rifles': {'name': 'Магазинные винтовки', 'icon': 'fa-gun', 'price': 35},
+        # Пехотное вооружение (на 100 ед.)
+        'arquebuses': {'name': 'Аркебузы', 'icon': 'fa-gun', 'price': 5, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 2}},
+        'light_muskets': {'name': 'Лёгкие мушкеты', 'icon': 'fa-gun', 'price': 8, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 3}},
+        'muskets': {'name': 'Мушкеты', 'icon': 'fa-gun', 'price': 12, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 4}},
+        'rifles': {'name': 'Нарезные ружья', 'icon': 'fa-gun', 'price': 18, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 5}},
+        'needle_rifles': {'name': 'Игольчатые винтовки', 'icon': 'fa-gun', 'price': 25, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 6, 'cuprum': 1}},
+        'bolt_action_rifles': {'name': 'Магазинные винтовки', 'icon': 'fa-gun', 'price': 35, 'batch_size': 100, 'resources': {'wood': 2, 'iron': 7, 'cuprum': 1, 'tin': 1}},
         
-        # Артиллерия и техника
-        'field_artillery': {'name': 'Полевая артиллерия', 'icon': 'fa-bomb', 'price': 200},
-        'siege_artillery': {'name': 'Осадная артиллерия', 'icon': 'fa-bomb', 'price': 350},
-        'heavy_artillery': {'name': 'Тяжёлая артиллерия', 'icon': 'fa-bomb', 'price': 500},
-        'light_tanks': {'name': 'Лёгкие танки', 'icon': 'fa-shield-alt', 'price': 1000},
-        'medium_tanks': {'name': 'Средние танки', 'icon': 'fa-shield-alt', 'price': 1800},
-        'heavy_tanks': {'name': 'Тяжёлые танки', 'icon': 'fa-shield-alt', 'price': 3000},
-        'fighters': {'name': 'Истребители', 'icon': 'fa-plane', 'price': 2000},
-        'bombers': {'name': 'Бомбардировщики', 'icon': 'fa-plane', 'price': 3500},
-        'transport_vehicles': {'name': 'Грузовики', 'icon': 'fa-truck', 'price': 150},
-        'armored_vehicles': {'name': 'Бронетранспортёры', 'icon': 'fa-truck-monster', 'price': 400},
+        # Артиллерия (на 25 ед.)
+        'field_artillery': {'name': 'Полевая артиллерия', 'icon': 'fa-bomb', 'price': 200, 'batch_size': 25, 'resources': {'wood': 5, 'iron': 20, 'bronze': 5}},
+        'siege_artillery': {'name': 'Осадная артиллерия', 'icon': 'fa-bomb', 'price': 350, 'batch_size': 25, 'resources': {'wood': 8, 'iron': 35, 'bronze': 7}},
+        'heavy_artillery': {'name': 'Тяжёлая артиллерия', 'icon': 'fa-bomb', 'price': 500, 'batch_size': 25, 'resources': {'wood': 10, 'iron': 50, 'bronze': 10}},
         
-        # Военно-морской флот
-        'galleons': {'name': 'Галеоны', 'icon': 'fa-ship', 'price': 800},
-        'ships_of_line': {'name': 'Линейные корабли', 'icon': 'fa-ship', 'price': 1200},
-        'steam_frigates': {'name': 'Паровые фрегаты', 'icon': 'fa-ship', 'price': 2000},
-        'ironclads': {'name': 'Броненосцы', 'icon': 'fa-ship', 'price': 3500},
-        'pre_dreadnoughts': {'name': 'Эскадренные броненосцы', 'icon': 'fa-ship', 'price': 5000},
-        'dreadnoughts': {'name': 'Дредноуты', 'icon': 'fa-ship', 'price': 8000},
-        'destroyers': {'name': 'Эсминцы', 'icon': 'fa-ship', 'price': 1500},
-        'cruisers': {'name': 'Крейсера', 'icon': 'fa-ship', 'price': 4000},
-        'submarines': {'name': 'Подводные лодки', 'icon': 'fa-ship', 'price': 2500}
+        # Техника (на 15 ед.)
+        'transport_vehicles': {'name': 'Грузовики', 'icon': 'fa-truck', 'price': 150, 'batch_size': 15, 'resources': {'wood': 3, 'iron': 12}},
+        'armored_vehicles': {'name': 'Бронетранспортёры', 'icon': 'fa-truck-monster', 'price': 400, 'batch_size': 15, 'resources': {'wood': 2, 'iron': 18, 'bronze': 3}},
+        'light_tanks': {'name': 'Лёгкие танки', 'icon': 'fa-shield-alt', 'price': 1000, 'batch_size': 15, 'resources': {'wood': 1, 'iron': 30, 'bronze': 5}},
+        'medium_tanks': {'name': 'Средние танки', 'icon': 'fa-shield-alt', 'price': 1800, 'batch_size': 15, 'resources': {'wood': 1, 'iron': 45, 'bronze': 8}},
+        'heavy_tanks': {'name': 'Тяжёлые танки', 'icon': 'fa-shield-alt', 'price': 3000, 'batch_size': 15, 'resources': {'wood': 1, 'iron': 70, 'bronze': 12}},
+        'fighters': {'name': 'Истребители', 'icon': 'fa-plane', 'price': 2000, 'batch_size': 15, 'resources': {'wood': 3, 'iron': 20, 'cuprum': 5}},
+        'bombers': {'name': 'Бомбардировщики', 'icon': 'fa-plane', 'price': 3500, 'batch_size': 15, 'resources': {'wood': 5, 'iron': 35, 'cuprum': 8}},
+        
+        # Военно-морской флот (на 1 ед.)
+        'galleons': {'name': 'Галеоны', 'icon': 'fa-ship', 'price': 800, 'batch_size': 1, 'resources': {'wood': 120, 'iron': 10, 'bronze': 3}},
+        'ships_of_line': {'name': 'Линейные корабли', 'icon': 'fa-ship', 'price': 1200, 'batch_size': 1, 'resources': {'wood': 180, 'iron': 15, 'bronze': 5}},
+        'steam_frigates': {'name': 'Паровые фрегаты', 'icon': 'fa-ship', 'price': 2000, 'batch_size': 1, 'resources': {'wood': 60, 'iron': 40, 'bronze': 8}},
+        'ironclads': {'name': 'Броненосцы', 'icon': 'fa-ship', 'price': 3500, 'batch_size': 1, 'resources': {'wood': 20, 'iron': 120, 'bronze': 15}},
+        'pre_dreadnoughts': {'name': 'Эскадренные броненосцы', 'icon': 'fa-ship', 'price': 5000, 'batch_size': 1, 'resources': {'wood': 15, 'iron': 170, 'bronze': 20}},
+        'dreadnoughts': {'name': 'Дредноуты', 'icon': 'fa-ship', 'price': 8000, 'batch_size': 1, 'resources': {'wood': 10, 'iron': 260, 'bronze': 30}},
+        'destroyers': {'name': 'Эсминцы', 'icon': 'fa-ship', 'price': 1500, 'batch_size': 1, 'resources': {'wood': 5, 'iron': 60, 'bronze': 6}},
+        'cruisers': {'name': 'Крейсера', 'icon': 'fa-ship', 'price': 4000, 'batch_size': 1, 'resources': {'wood': 8, 'iron': 140, 'bronze': 18}},
+        'submarines': {'name': 'Подводные лодки', 'icon': 'fa-ship', 'price': 2500, 'batch_size': 1, 'resources': {'wood': 2, 'iron': 80, 'bronze': 10, 'cuprum': 5}}
     }
     return JSONResponse({'success': True, 'equipment': equipment_types})
 

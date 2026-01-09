@@ -501,7 +501,19 @@ const economicModule = (function() {
                         // Показываем админу все, игрокам - только с ever_had > 0
                         if (isAdmin || everHad > 0) {
                             const isHidden = everHad === 0;
-                            const { name, icon, price } = itemData;
+                            const { name, icon, price, batch_size, resources } = itemData;
+                            
+                            // Формируем строку с ресурсами
+                            let resourcesStr = '';
+                            if (resources && Object.keys(resources).length > 0) {
+                                const resourceParts = [];
+                                for (const [resCode, resAmount] of Object.entries(resources)) {
+                                    const resInfo = availableResources[resCode];
+                                    const resName = resInfo ? resInfo.name : resCode;
+                                    resourceParts.push(`${resName}: ${resAmount}`);
+                                }
+                                resourcesStr = ` • Ресурсы (на ${batch_size} ед.): ${resourceParts.join(', ')}`;
+                            }
                             
                             html += `
                                 <div class="military-item ${isHidden ? 'item-hidden' : ''}">
@@ -514,7 +526,7 @@ const economicModule = (function() {
                                             ${isHidden && isAdmin ? '<span class="item-hidden-badge"><i class="fas fa-eye-slash"></i> Скрыто от игрока</span>' : ''}
                                         </div>
                                         <div class="military-item-code">
-                                            ${itemCode} • ${price}/ед.
+                                            ${itemCode} • ${price}/ед.${resourcesStr}
                                         </div>
                                     </div>
                                     ${isAdmin ? `
