@@ -773,7 +773,7 @@ async def set_building_production(building_id: int, request: Request):
         # Проверяем наличие технологии у страны
         cursor.execute('''
             SELECT tech_id FROM country_technologies
-            WHERE country_id = ? AND tech_id = ? AND researched = 1
+            WHERE country_id = ? AND tech_id = ?
         ''', (building['country_id'], required_tech))
         
         tech = cursor.fetchone()
@@ -851,7 +851,7 @@ async def get_available_production(building_id: int, request: Request):
         # Получаем исследованные технологии страны
         cursor.execute('''
             SELECT tech_id FROM country_technologies
-            WHERE country_id = ? AND researched = 1
+            WHERE country_id = ?
         ''', (building['country_id'],))
         
         researched_techs = [row['tech_id'] for row in cursor.fetchall()]
