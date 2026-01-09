@@ -867,19 +867,29 @@ async def get_available_production(building_id: int, request: Request):
         
         all_equipment = equipment_data.get('equipment', {})
         
+        # Получаем информацию о пользователе для проверки роли
+        cursor.execute('SELECT role FROM users WHERE id = ?', (user['id'],))
+        user_row = cursor.fetchone()
+        is_admin = user_row and user_row['role'] in ['admin', 'moderator']
+        
         # Фильтруем доступное снаряжение
         available = []
         for eq_code in category_equipment[building_category]:
             if eq_code in all_equipment:
                 eq_info = all_equipment[eq_code]
                 required_tech = eq_info.get('required_tech')
+                is_available = required_tech in researched_techs
+                
+                # Для обычных игроков показываем только доступное снаряжение
+                if not is_admin and not is_available:
+                    continue
                 
                 available.append({
                     'code': eq_code,
                     'name': eq_info.get('name'),
                     'required_tech': required_tech,
                     'required_tech_name': eq_info.get('required_tech_name'),
-                    'available': required_tech in researched_techs,
+                    'available': is_available,
                     'resources': eq_info.get('resources', {}),
                     'batch_size': eq_info.get('batch_size', 1)
                 })
@@ -888,7 +898,8 @@ async def get_available_production(building_id: int, request: Request):
             'success': True,
             'available_equipment': available,
             'current_production': building['production_type'],
-            'building_category': building_category
+            'building_category': building_category,
+            'is_admin': is_admin
         })
         
     except Exception as e:

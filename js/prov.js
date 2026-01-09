@@ -823,15 +823,28 @@ let provincesModule = (function() {
     // Публичный API модуля
     async function showProductionMenu(buildingId) {
         try {
-            const response = await fetch(`/api/provinces/buildings/${buildingId}/available-production`, {
-                headers: { 'Authorization': localStorage.getItem('token') }
-            });
+            // Загружаем данные о производстве и названиях ресурсов параллельно
+            const [productionResponse, converterResponse] = await Promise.all([
+                fetch(`/api/provinces/buildings/${buildingId}/available-production`, {
+                    headers: { 'Authorization': localStorage.getItem('token') }
+                }),
+                fetch('/api/converter/data')
+            ]);
             
-            const data = await response.json();
+            const data = await productionResponse.json();
+            const converterData = await converterResponse.json();
             
             if (!data.success) {
                 showProvError('Ошибка', data.error);
                 return;
+            }
+            
+            // Создаем мапу названий ресурсов
+            const resourceNames = {};
+            if (converterData.resources) {
+                Object.entries(converterData.resources).forEach(([code, info]) => {
+                    resourceNames[code] = info.name;
+                });
             }
             
             const modal = document.getElementById('modal-overlay');
@@ -841,7 +854,7 @@ let provincesModule = (function() {
             
             modalTitle.textContent = 'Выбор производства';
             
-            let html = '<div class="production-list">';
+            let html = '';
             
             if (data.available_equipment.length === 0) {
                 html += `
@@ -864,57 +877,55 @@ let provincesModule = (function() {
                     }
                 }
                 
-                // Список доступного снаряжения
+                // Сетка снаряжения (по 4 в ряд)
+                html += '<div class="production-grid">';
+                
                 data.available_equipment.forEach(equipment => {
                     const isActive = equipment.code === data.current_production;
                     const isAvailable = equipment.available;
                     const disabledClass = isAvailable ? '' : 'disabled';
                     
-                    // Формируем строку с ресурсами
-                    let resourcesStr = '';
-                    if (equipment.resources) {
-                        const resources = Object.entries(equipment.resources)
-                            .map(([res, amount]) => `${res}: ${amount}`)
-                            .join(', ');
-                        resourcesStr = `Ресурсы на партию (${equipment.batch_size} шт.): ${resources}`;
+                    // Формируем строку с ресурсами (используя названия вместо ID)
+                    let resourcesHtml = '';
+                    if (equipment.resources && Object.keys(equipment.resources).length > 0) {
+                        const resourcesList = Object.entries(equipment.resources)
+                            .map(([code, amount]) => {
+                                const name = resourceNames[code] || code;
+                                return `<span class="resource-tag">${name}: ${amount}</span>`;
+                            })
+                            .join('');
+                        resourcesHtml = `<div class="resources-tags">${resourcesList}</div>`;
                     }
                     
                     html += `
-                        <div class="production-item ${disabledClass} ${isActive ? 'active' : ''}">
-                            <div class="production-header">
+                        <div class="production-card ${disabledClass} ${isActive ? 'active' : ''}">
+                            <div class="production-card-header">
                                 <h4>${equipment.name}</h4>
-                                ${isActive ? '<span class="badge badge-success">Активно</span>' : ''}
-                                ${!isAvailable ? '<span class="badge badge-warning">Требуется технология</span>' : ''}
+                                ${isActive ? '<i class="fas fa-check-circle active-icon"></i>' : ''}
                             </div>
-                            <div class="production-info">
-                                ${equipment.required_tech_name ? `
-                                    <div class="stat-item">
-                                        <i class="fas fa-flask"></i>
-                                        <span>Технология: ${equipment.required_tech_name}</span>
-                                    </div>
-                                ` : ''}
-                                ${resourcesStr ? `
-                                    <div class="stat-item">
-                                        <i class="fas fa-cubes"></i>
-                                        <span>${resourcesStr}</span>
-                                    </div>
-                                ` : ''}
-                                <div class="stat-item">
+                            
+                            ${!isAvailable ? '<div class="tech-required-badge">Требуется технология</div>' : ''}
+                            
+                            <div class="production-card-info">
+                                <div class="batch-info">
                                     <i class="fas fa-box"></i>
-                                    <span>Производство: ${equipment.batch_size} шт/ход</span>
+                                    <span>${equipment.batch_size} шт/ход</span>
                                 </div>
+                                ${resourcesHtml}
                             </div>
+                            
                             ${isAvailable && !isActive ? `
-                                <button class="btn-primary" onclick="provincesModule.setProduction(${buildingId}, '${equipment.code}')">
-                                    Выбрать производство
+                                <button class="btn-select-production" onclick="provincesModule.setProduction(${buildingId}, '${equipment.code}')">
+                                    Выбрать
                                 </button>
                             ` : ''}
+                            ${isActive ? '<div class="active-label">Активно</div>' : ''}
                         </div>
                     `;
                 });
+                
+                html += '</div>';
             }
-            
-            html += '</div>';
             
             modalBody.innerHTML = html;
             modalFooter.innerHTML = '<button class="btn-secondary" onclick="closeModal()">Закрыть</button>';
